@@ -20,7 +20,6 @@ class LoginUserAction
             // throw new Exception($this->exception_codes['general']['internal_server_error']);
         }
 
-
         // return app(UserService::class)->createUser($name, $emailObject, $password);
     }
 }
