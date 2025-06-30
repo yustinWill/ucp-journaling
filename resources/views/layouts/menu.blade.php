@@ -30,15 +30,15 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        <li class="menu-item">
+        <li class="menu-item @if (request()->routeIs(['master_data.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-database"></i>
                 <div data-i18n="Dashboards">Master Data</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="index.html" class="menu-link">
-                        <div data-i18n="Analytics">Kontak</div>
+                <li class="menu-item @if (request()->routeIs(['master_data.contact.*'])) active @endif">
+                    <a href="{{ route('master_data.contact.index') }}" class="menu-link">
+                        <div>Kontak</div>
                     </a>
                 </li>
                 <li class="menu-item">
