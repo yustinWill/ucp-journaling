@@ -109,7 +109,7 @@
             </svg>
           </span>
         </span>
-        <span class="app-brand-text demo text-heading fw-bold">Vuexy</span>
+        <span class="app-brand-text demo text-heading fw-bold">RIYO APP</span>
       </a>
       <!-- /Logo -->
       <div class="authentication-inner row m-0">
@@ -137,21 +137,20 @@
         <div
           class="d-flex col-12 col-xl-4 align-items-center authentication-bg p-sm-12 p-6">
           <div class="w-px-400 mx-auto mt-12 pt-5">
-            <h4 class="mb-1">Welcome to Vuexy! 👋</h4>
-            <p class="mb-6">Please sign-in to your account and start the
-              adventure</p>
+            <h4 class="mb-1">Aplikasi Riyo! 👋</h4>
+            <p class="mb-6">Silahkan login dengan memasukkan email dan password Anda!</p>
 
             <form id="formAuthentication" class="mb-6" action="{{ route('authenticate') }}"
               method="POST">
               @csrf
               <div class="mb-6 form-control-validation">
-                <label for="email" class="form-label">Email or Username</label>
+                <label for="email" class="form-label">Email</label>
                 <input
                   type="text"
                   class="form-control"
                   id="email"
                   name="email"
-                  placeholder="Enter your email or username"
+                  placeholder="Masukkan Email Anda"
                   autofocus />
               </div>
               <div class="mb-6 form-password-toggle form-control-validation">
@@ -166,19 +165,6 @@
                     aria-describedby="password" />
                   <span class="input-group-text cursor-pointer"><i
                       class="icon-base ti tabler-eye-off"></i></span>
-                </div>
-              </div>
-              <div class="my-8">
-                <div class="d-flex justify-content-between">
-                  <div class="form-check mb-0 ms-2">
-                    <input class="form-check-input" type="checkbox"
-                      id="remember-me" />
-                    <label class="form-check-label" for="remember-me"> Remember
-                      Me </label>
-                  </div>
-                  <a href="auth-forgot-password-cover.html">
-                    <p class="mb-0">Forgot Password?</p>
-                  </a>
                 </div>
               </div>
               <button class="btn btn-primary d-grid w-100">Sign in</button>

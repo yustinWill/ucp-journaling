@@ -1,4 +1,3 @@
-
 <aside id="layout-menu" class="layout-menu menu-vertical menu">
     <div class="app-brand demo">
         <a href="index.html" class="app-brand-link">
@@ -6,37 +5,23 @@
                 <span class="text-primary">
                     <svg width="32" height="22" viewBox="0 0 32 22" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            fill-rule="evenodd"
-                            clip-rule="evenodd"
+                        <path fill-rule="evenodd" clip-rule="evenodd"
                             d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z"
                             fill="currentColor" />
-                        <path
-                            opacity="0.06"
-                            fill-rule="evenodd"
-                            clip-rule="evenodd"
-                            d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z"
-                            fill="#161616" />
-                        <path
-                            opacity="0.06"
-                            fill-rule="evenodd"
-                            clip-rule="evenodd"
-                            d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z"
-                            fill="#161616" />
-                        <path
-                            fill-rule="evenodd"
-                            clip-rule="evenodd"
+                        <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd"
+                            d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616" />
+                        <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd"
+                            d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616" />
+                        <path fill-rule="evenodd" clip-rule="evenodd"
                             d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z"
                             fill="currentColor" />
                     </svg>
                 </span>
             </span>
-            <span
-                class="app-brand-text demo menu-text fw-bold ms-3">Vuexy</span>
+            <span class="app-brand-text demo menu-text fw-bold ms-3">Vuexy</span>
         </a>
 
-        <a href="javascript:void(0);"
-            class="layout-menu-toggle menu-link text-large ms-auto">
+        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
             <i class="icon-base ti menu-toggle-icon d-none d-xl-block"></i>
             <i class="icon-base ti tabler-x d-block d-xl-none"></i>
         </a>
@@ -45,18 +30,92 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        <!-- Page -->
-        <li class="menu-item active">
-            <a href="index.html" class="menu-link">
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-smart-home"></i>
-                <div data-i18n="Page 1">Page 1</div>
+                <div data-i18n="Dashboards">Master Data</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="index.html" class="menu-link">
+                        <div data-i18n="Analytics">Kontak</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="dashboards-crm.html" class="menu-link">
+                        <div data-i18n="CRM">Produk</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="app-ecommerce-dashboard.html" class="menu-link">
+                        <div data-i18n="eCommerce">Gudang</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="app-logistics-dashboard.html" class="menu-link">
+                        <div data-i18n="Logistics">User</div>
+                    </a>
+                </li>
+            </ul>
         </li>
         <li class="menu-item">
-            <a href="page-2.html" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-app-window"></i>
-                <div data-i18n="Page 2">Page 2</div>
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-smart-home"></i>
+                <div data-i18n="Dashboards">Transaksi Utama</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item active">
+                    <a href="index.html" class="menu-link">
+                        <div data-i18n="Analytics">Pembelian</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="dashboards-crm.html" class="menu-link">
+                        <div data-i18n="CRM">Penjualan</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="app-ecommerce-dashboard.html" class="menu-link">
+                        <div data-i18n="eCommerce">Asset / Inventaris</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="app-logistics-dashboard.html" class="menu-link">
+                        <div data-i18n="Logistics">Stock Opname</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-smart-home"></i>
+                <div data-i18n="Dashboards">Accounting</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="index.html" class="menu-link">
+                        <div data-i18n="Analytics">Jurnal</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-smart-home"></i>
+                <div data-i18n="Dashboards">Laporan</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="index.html" class="menu-link">
+                        <div data-i18n="Analytics">Jurnal Umum</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="index.html" class="menu-link">
+                        <div data-i18n="Analytics">Buku Besar</div>
+                    </a>
+                </li>
+            </ul>
         </li>
     </ul>
 </aside>
