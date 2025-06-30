@@ -30,7 +30,6 @@
         <div class="layout-overlay layout-menu-toggle"></div>
         <div class="drag-target"></div>
     </div>
-    @include('layouts.script')
 </body>
 @include('layouts.script')
 @include('layouts.global_script')
