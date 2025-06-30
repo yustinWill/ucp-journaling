@@ -32,7 +32,7 @@
     <ul class="menu-inner py-1">
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-smart-home"></i>
+                <i class="menu-icon icon-base ti tabler-database"></i>
                 <div data-i18n="Dashboards">Master Data</div>
             </a>
             <ul class="menu-sub">
@@ -60,7 +60,7 @@
         </li>
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-smart-home"></i>
+                <i class="menu-icon icon-base ti tabler-cash-register"></i>
                 <div data-i18n="Dashboards">Transaksi Utama</div>
             </a>
             <ul class="menu-sub">
@@ -88,7 +88,7 @@
         </li>
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-smart-home"></i>
+                <i class="menu-icon icon-base ti tabler-notebook"></i>
                 <div data-i18n="Dashboards">Accounting</div>
             </a>
             <ul class="menu-sub">
@@ -101,7 +101,7 @@
         </li>
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-smart-home"></i>
+                <i class="menu-icon icon-base ti tabler-report-money"></i>
                 <div data-i18n="Dashboards">Laporan</div>
             </a>
             <ul class="menu-sub">
