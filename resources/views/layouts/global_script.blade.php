@@ -1,12 +1,12 @@
 <script>
 	'use strict';
 
-	$(document).ready(function () {
-		$('.select2').select2({
-			placeholder: 'Pilih Data',
-			allowClear: true
-		});
-	});
+	// $(document).ready(function () {
+	// 	$('.select2').select2({
+	// 		placeholder: 'Pilih Data',
+	// 		allowClear: true
+	// 	});
+	// });
 
 	function delay(callback, ms) {
 		var timer = 0;

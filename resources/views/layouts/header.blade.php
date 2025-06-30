@@ -10,7 +10,8 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon"
-        href="../../assets/img/favicon/favicon.ico" />
+        href="../../custom_assets/company_logo.png" />
+        
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

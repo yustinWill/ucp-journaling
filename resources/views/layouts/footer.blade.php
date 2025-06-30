@@ -6,8 +6,7 @@
                 ©
                 <script>
                     document.write(new Date().getFullYear());
-                </script>
-                , Riyo App
+                </script>, Riyo Water. All rights reserved.
             </div>
         </div>
     </div>
