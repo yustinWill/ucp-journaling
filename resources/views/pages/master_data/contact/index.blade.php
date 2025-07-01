@@ -3,6 +3,51 @@
     List Kontak
 @stop
 @section('content')
+    <div class="row">
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-primary"><i
+                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">Rp 100,000,000</h4>
+                    </div>
+                    <p class="mb-1">Piutang Belum Dibayar</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-primary"><i
+                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">Rp 25,000,000</h4>
+                    </div>
+                    <p class="mb-1">Piutang Jatuh Tempo</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-primary"><i
+                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">Rp 5,000,000</h4>
+                    </div>
+                    <p class="mb-1">Kredit Memo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr class="my-6 mx-n6" />
     <div class="card">
         <h5 class="card-header">List Kontak</h5>
         <div class="card-body">
@@ -51,18 +96,19 @@
                         </div>
                     </div>
                 </div>
-
             </form>
             <br>
-
             <div class="mt-4">
                 <div class="d-flex justify-content-end">
                     <div class="btn-group" role="group" aria-label="Basic example">
-                        <button type="button" class="btn btn-md btn-primary waves-effect waves-light"><span
+                        <button type="button" id="btn-import-data"
+                            class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
-                        <button type="button" class="btn btn-md btn-primary waves-effect waves-light"><span
+                        <button type="button" id="btn-export-data"
+                            class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</button>
-                        <button type="button" id="btn-add-data" class="btn btn-md btn-primary waves-effect waves-light"><span
+                        <button type="button" id="btn-add-data"
+                            class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
                     </div>
                 </div>
@@ -193,7 +239,13 @@
                 window.location.href = "{{ route('master_data.contact.add') }}";
             });
 
+            $('#btn-export-data').on('click', function() {
+                window.location.href = "{{ route('master_data.contact.export') }}";
+            });
 
+            $('#btn-import-data').on('click', function() {
+                window.location.href = "{{ route('master_data.contact.import') }}";
+            });
         });
     </script>
 @endsection
