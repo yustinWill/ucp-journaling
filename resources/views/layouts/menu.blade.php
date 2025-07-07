@@ -41,14 +41,14 @@
                         <div>Kontak</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="dashboards-crm.html" class="menu-link">
-                        <div data-i18n="CRM">Produk</div>
+                  <li class="menu-item @if (request()->routeIs(['master_data.storage.*'])) active @endif">
+                    <a href="{{ route('master_data.storage.index') }}" class="menu-link">
+                        <div>Gudang</div>
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a href="app-ecommerce-dashboard.html" class="menu-link">
-                        <div data-i18n="eCommerce">Gudang</div>
+                    <a href="dashboards-crm.html" class="menu-link">
+                        <div data-i18n="CRM">Produk</div>
                     </a>
                 </li>
                 <li class="menu-item">
