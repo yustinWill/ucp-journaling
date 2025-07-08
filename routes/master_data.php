@@ -7,13 +7,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MasterData\ContactController;
 use App\Http\Controllers\MasterData\StorageController;
 use App\Http\Controllers\MasterData\CoaController;
+use App\Http\Controllers\MasterData\UserController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
 $storage_segment = '/gudang';
 $coa_segment = '/coa';
+$user_segment = '/user';
 
-Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $coa_segment) {
+Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $coa_segment, $user_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table')->middleware(EnsureTokenIsValid::class);
@@ -40,5 +42,13 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $coa_segment . '/add', 'add')->name('master_data.coa.add')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $coa_segment . '/export', 'export')->name('master_data.coa.export')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $coa_segment . '/import', 'import')->name('master_data.coa.import')->middleware(EnsureTokenIsValid::class);
+    });
+
+    Route::controller(UserController::class)->group(function () use ($base_segment, $user_segment) {
+        Route::get($base_segment . $user_segment . '/index', 'index')->name('master_data.user.index')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $user_segment . '/index_data_table', 'index_data_table')->name('master_data.user.index_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $user_segment . '/add', 'add')->name('master_data.user.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $user_segment . '/export', 'export')->name('master_data.user.export')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $user_segment . '/import', 'import')->name('master_data.user.import')->middleware(EnsureTokenIsValid::class);
     });
 });

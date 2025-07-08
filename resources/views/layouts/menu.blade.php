@@ -56,8 +56,8 @@
                         <div>COA</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="app-logistics-dashboard.html" class="menu-link">
+                <li class="menu-item @if (request()->routeIs(['master_data.user.*'])) active @endif"">
+                    <a href="{{ route('master_data.user.index') }}" class="menu-link">
                         <div data-i18n="Logistics">User</div>
                     </a>
                 </li>
