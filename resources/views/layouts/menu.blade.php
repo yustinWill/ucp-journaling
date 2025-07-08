@@ -41,7 +41,7 @@
                         <div>Kontak</div>
                     </a>
                 </li>
-                  <li class="menu-item @if (request()->routeIs(['master_data.storage.*'])) active @endif">
+                <li class="menu-item @if (request()->routeIs(['master_data.storage.*'])) active @endif">
                     <a href="{{ route('master_data.storage.index') }}" class="menu-link">
                         <div>Gudang</div>
                     </a>
@@ -49,6 +49,11 @@
                 <li class="menu-item">
                     <a href="dashboards-crm.html" class="menu-link">
                         <div data-i18n="CRM">Produk</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">
+                    <a href="{{ route('master_data.coa.index') }}" class="menu-link">
+                        <div>COA</div>
                     </a>
                 </li>
                 <li class="menu-item">
