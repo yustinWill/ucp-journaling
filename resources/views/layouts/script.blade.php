@@ -22,9 +22,15 @@
 <!-- Vendors JS -->
 <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
 <script src="../../assets/vendor/libs/select2/select2.js"></script>
-<script src="../../custom_js/global_select2.js"></script>
+
 <script src="../../assets/vendor/libs/jquery-repeater/jquery-repeater.js"></script>
 <script src="../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
+
+<script src="../../assets/vendor/libs/moment/moment.js"></script>
+<script src="../../assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js"></script>
+
+<script src="../../custom_js/global_select2.js"></script>
+<script src="../../custom_js/global_date_range_picker.js"></script>
 <!-- Main JS -->
 
 <script src="../../assets/js/main.js"></script>

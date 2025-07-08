@@ -86,9 +86,6 @@
                     </li>
                 </ul>
             </li>
-            <!--/ User -->
         </ul>
     </div>
 </nav>
-
-<!-- / Navbar -->

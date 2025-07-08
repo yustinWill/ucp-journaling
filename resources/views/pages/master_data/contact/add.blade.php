@@ -64,8 +64,6 @@
                 </div>
             </div>
 
-
-
             <hr class="my-6 mx-n6" />
             <h6>2. Data Umum</h6>
             <div class="row g-6">

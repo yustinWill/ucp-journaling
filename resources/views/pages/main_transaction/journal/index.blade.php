@@ -1,0 +1,168 @@
+@extends('layouts.default')
+@section('page_title')
+    List Jurnal
+@stop
+@section('content')
+    <div class="card">
+        <h5 class="card-header">List Jurnal</h5>
+        <div class="card-body">
+            <form class="dt_adv_search" method="GET">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <label class="form-label">Tanggal Jurnal:</label>
+                                <input type="text" id="date-range-picker" class="form-control" />
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <label class="form-label">No Referensi:</label>
+                                <input type="text" class="form-control dt-input" data-column="2"
+                                    placeholder="Cari Berdasarkan Nama Perusahaan" data-column-index="1" />
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <label class="form-label">Dibuat Oleh:</label>
+                                <select class="global-select2 form-select" data-allow-clear="true">
+                                    <option value="AK">Cinta</option>
+                                    <option value="HI">Siti</option>
+                                    <option value="HI">Amar</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <label class="form-label">Notes:</label>
+                                <input type="text" class="form-control dt-input" data-column="3"
+                                    placeholder="Cari Berdasarkan Email" data-column-index="2" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <div class="mt-4">
+                <div class="d-flex justify-content-end">
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" id="btn-add-data"
+                            class="btn btn-md btn-primary waves-effect waves-light"><span
+                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-datatable">
+            <table id="main-table" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Tanggal Jurnal</th>
+                        <th>No Referensi</th>
+                        <th>Notes</th>
+                        <th>Amount</th>
+                        <th>Diinput Oleh</th>
+                        <th>Diinput Pada</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Tanggal Jurnal</th>
+                        <th>No Referensi</th>
+                        <th>Notes</th>
+                        <th>Amount</th>
+                        <th>Diinput Oleh</th>
+                        <th>Diinput Pada</th>
+                        <th>Aksi</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+@stop
+@section('js_script')
+    <script>
+        $(function() {
+            //DataTable
+            const main_table = document.querySelector('#main-table');
+            let dt_adv_filter;
+
+            if (main_table) {
+                dt_adv_filter = new DataTable(main_table, {
+                    ajax: '{{ route('main_transaction.jurnal.index_data_table') }}',
+                    columns: [{
+                            data: 'date'
+                        },
+                        {
+                            data: 'reference_no'
+                        },
+                        {
+                            data: 'notes'
+                        },
+                        {
+                            data: 'amount'
+                        },
+                        {
+                            data: 'created_by'
+                        },
+                        {
+                            data: 'created_at',
+                        },
+                        {
+                            data: null
+                        }
+                    ],
+                    columnDefs: [{
+                            targets: -1,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                return `
+                                <div class="btn-group" role="group" aria-label="Second group">
+                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
+                                        <i class="icon-base ti tabler-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
+                                        <i class="icon-base ti tabler-eye"></i>
+                                    </button>
+                                </div>
+                            `;
+                            }
+                        },
+                        {
+                            targets: [-4],
+                            className: 'text-end',
+                            render: function(data, type, row) {
+                                if (type === 'display' && data != null && !isNaN(data)) {
+                                    return parseFloat(data).toLocaleString('id-ID');
+                                }
+                                return data ?? '';
+                            }
+                        }
+                    ],
+                    layout: {
+                        topStart: {
+                            rowClass: 'm-0',
+                            features: []
+                        },
+                        topEnd: {},
+                        bottomStart: {
+                            rowClass: 'row mx-3 justify-content-between',
+                            features: ['info']
+                        },
+                        bottomEnd: 'paging'
+                    },
+                    language: {
+                        paginate: {
+                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                        }
+                    },
+                    orderCellsTop: true
+                });
+            }
+
+            //Main button click event
+            $('#btn-add-data').on('click', function() {
+                window.location.href = "{{ route('main_transaction.jurnal.add') }}";
+            });
+        });
+    </script>
+@endsection

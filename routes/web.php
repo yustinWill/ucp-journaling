@@ -3,3 +3,4 @@
 require __DIR__.'/auth.php';
 require __DIR__.'/home.php';
 require __DIR__.'/master_data.php';
+require __DIR__.'/main_transaction.php';

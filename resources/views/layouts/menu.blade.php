@@ -63,13 +63,13 @@
                 </li>
             </ul>
         </li>
-        <li class="menu-item">
+        <li class="menu-item @if (request()->routeIs(['main_transaction.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-cash-register"></i>
                 <div data-i18n="Dashboards">Transaksi Utama</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item active">
+                <li class="menu-item">
                     <a href="index.html" class="menu-link">
                         <div data-i18n="Analytics">Pembelian</div>
                     </a>
@@ -77,6 +77,11 @@
                 <li class="menu-item">
                     <a href="dashboards-crm.html" class="menu-link">
                         <div data-i18n="CRM">Penjualan</div>
+                    </a>
+                </li>
+                 <li class="menu-item @if (request()->routeIs(['main_transaction.jurnal.*'])) active @endif">
+                    <a href="{{ route('main_transaction.jurnal.index') }}" class="menu-link">
+                        <div data-i18n="Analytics">Jurnal</div>
                     </a>
                 </li>
                 <li class="menu-item">
@@ -87,19 +92,6 @@
                 <li class="menu-item">
                     <a href="app-logistics-dashboard.html" class="menu-link">
                         <div data-i18n="Logistics">Stock Opname</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <li class="menu-item">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-notebook"></i>
-                <div data-i18n="Dashboards">Accounting</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="index.html" class="menu-link">
-                        <div data-i18n="Analytics">Jurnal</div>
                     </a>
                 </li>
             </ul>
