@@ -69,13 +69,13 @@
                 <div data-i18n="Dashboards">Transaksi Utama</div>
             </a>
             <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="index.html" class="menu-link">
+                <li class="menu-item @if (request()->routeIs(['main_transaction.purchase.*'])) active @endif">
+                    <a href="{{ route('main_transaction.purchase.index') }}" class="menu-link">
                         <div data-i18n="Analytics">Pembelian</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="dashboards-crm.html" class="menu-link">
+                <li class="menu-item @if (request()->routeIs(['main_transaction.sales.*'])) active @endif">
+                    <a href="{{ route('main_transaction.sales.index') }}" class="menu-link">
                         <div data-i18n="CRM">Penjualan</div>
                     </a>
                 </li>
