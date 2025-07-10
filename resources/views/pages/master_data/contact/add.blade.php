@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Tambah Kontak Baru</h5>
-        <form class="card-body form-repeater">
+        <div class="card-body">
             <h6>1. Data Kontak</h6>
             <div class="row g-6">
                 <div class="col-md-6">
@@ -20,36 +20,32 @@
                     <label class="form-label">Tipe Kontak</label>
                     <div class="col mt-2">
                         <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="" id=""
-                                checked="">
-                            <label class="form-check-label">Pelanggan</label>
+                            <input name="contact_type" class="form-check-input" type="radio" value="pelanggan"
+                                id="typePelanggan" checked>
+                            <label class="form-check-label" for="typePelanggan">Pelanggan</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value=""
-                                id="">
-                            <label class="form-check-label">Supplier</label>
+                            <input name="contact_type" class="form-check-input" type="radio" value="supplier"
+                                id="typeSupplier">
+                            <label class="form-check-label" for="typeSupplier">Supplier</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value=""
-                                id="">
-                            <label class="form-check-label">Karyawan</label>
+                            <input name="contact_type" class="form-check-input" type="radio" value="karyawan"
+                                id="typeKaryawan">
+                            <label class="form-check-label" for="typeKaryawan">Karyawan</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value=""
-                                id="">
-                            <label class="form-check-label">Lainnya</label>
+                            <input name="contact_type" class="form-check-input" type="radio" value="lainnya"
+                                id="typeLainnya">
+                            <label class="form-check-label" for="typeLainnya">Lainnya</label>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Group Kontak</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Nama Kontak" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status Kontak</label>
                     <div class="demo-inline-spacing">
                         <label class="switch switch-primary">
-                            <input type="checkbox" class="switch-input" checked="">
+                            <input type="checkbox" class="switch-input" checked>
                             <span class="switch-toggle-slider">
                                 <span class="switch-on">
                                     <i class="icon-base ti tabler-check"></i>
@@ -72,7 +68,7 @@
                     <select class="global-select2 form-select" data-allow-clear="true">
                         <option value="AK">KTP</option>
                         <option value="HI">SIM</option>
-                        <option value="HI">Passport</option>
+                        <option value="PS">Passport</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -86,6 +82,14 @@
                 <div class="col-md-6">
                     <label class="form-label">No Telepon</label>
                     <input type="text" class="form-control" placeholder="Masukkan No Telepon" />
+                </div>
+                <div class="col-md-6 pelanggan-additional-form">
+                    <label class="form-label">Sales Penanggung Jawab</label>
+                    <select class="global-select2 form-select" data-allow-clear="true">
+                        <option value="AK">Sales A</option>
+                        <option value="HI">Sales B</option>
+                        <option value="SC">Sales C</option>
+                    </select>
                 </div>
             </div>
 
@@ -137,7 +141,6 @@
                     <label class="form-label">Kode POS</label>
                     <input type="text" class="form-control" placeholder="Masukkan Kode POS" />
                 </div>
-
             </div>
 
             <hr class="my-6 mx-n6" />
@@ -167,7 +170,6 @@
                     <label class="form-label">Kode POS</label>
                     <input type="text" class="form-control" placeholder="Masukkan Kode POS" />
                 </div>
-
             </div>
 
             <hr class="my-6 mx-n6" />
@@ -178,9 +180,9 @@
                     <select class="global-select2 form-select" data-allow-clear="true">
                         <option value="AK">1 - Asset</option>
                         <option value="HI">2 - Utang</option>
-                        <option value="HI">3 - Modal</option>
-                        <option value="HI">4 - Pendapatan</option>
-                        <option value="HI">5 - Beban</option>
+                        <option value="MD">3 - Modal</option>
+                        <option value="PD">4 - Pendapatan</option>
+                        <option value="BB">5 - Beban</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -188,34 +190,34 @@
                     <select class="global-select2 form-select" data-allow-clear="true">
                         <option value="AK">1 - Asset</option>
                         <option value="HI">2 - Utang</option>
-                        <option value="HI">3 - Modal</option>
-                        <option value="HI">4 - Pendapatan</option>
-                        <option value="HI">5 - Beban</option>
+                        <option value="MD">3 - Modal</option>
+                        <option value="PD">4 - Pendapatan</option>
+                        <option value="BB">5 - Beban</option>
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Syarat Pembayaran</label>
                     <select class="global-select2 form-select" data-allow-clear="true">
-                        <option value="AK">Net 30</option>
-                        <option value="HI">Net 15</option>
+                        <option value="N30">Net 30</option>
+                        <option value="N15">Net 15</option>
                     </select>
                 </div>
             </div>
 
             <hr class="my-6 mx-n6" />
             <h6>7. Info Bank</h6>
-            <div class="row g-6">
-                <div data-repeater-list="group-a">
+            <form class="form-repeater-bank w-100">
+                <div data-repeater-list="group-bank">
                     <div data-repeater-item>
                         <div class="row g-6">
                             <div class="col-md-6">
-                                <label class="form-label" for="form-repeater-1-1">Nama Bank</label>
+                                <label class="form-label">Nama Bank</label>
                                 <select class="bank-select2 form-select" data-allow-clear="true">
-                                    <option value="AK">BCA</option>
-                                    <option value="HI">Mandiri</option>
-                                    <option value="HI">BRI</option>
-                                    <option value="HI">BNI</option>
-                                    <option value="HI">Mega</option>
+                                    <option value="BCA">BCA</option>
+                                    <option value="MANDIRI">Mandiri</option>
+                                    <option value="BRI">BRI</option>
+                                    <option value="BNI">BNI</option>
+                                    <option value="MEGA">Mega</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -231,7 +233,7 @@
                                 <input type="text" class="form-control" placeholder="Masukkan Nomor Rekening" />
                             </div>
                             <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
-                                <button class="btn btn-label-danger mt-xl-6" data-repeater-delete>
+                                <button class="btn btn-label-danger mt-xl-6" data-repeater-delete type="button">
                                     <i class="icon-base ti tabler-x me-1"></i>
                                     <span class="align-middle">Hapus</span>
                                 </button>
@@ -241,48 +243,97 @@
                     </div>
                 </div>
                 <div class="mb-0">
-                    <button class="btn btn-primary" data-repeater-create>
+                    <button class="btn btn-primary" data-repeater-create type="button">
                         <i class="icon-base ti tabler-plus me-1"></i>
-                        <span class="align-middle">Tambah Rekening</span>
+                        <span class="align-middle">Tambah Akun Bank Lain</span>
                     </button>
                 </div>
-            </div>
+            </form>
+
+            <span class="pelanggan-additional-form">
+                <hr class="my-6 mx-n6" />
+                <h6>8. Info Produk Dibeli</h6>
+                <form class="form-repeater-produk w-100">
+                    <div data-repeater-list="group-produk">
+                        <div data-repeater-item>
+                            <div class="row g-6">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nama Produk</label>
+                                    <select class="bank-select2 form-select" data-allow-clear="true">
+                                        <option value="A">Produk A</option>
+                                        <option value="B">Produk B</option>
+                                        <option value="C">Produk C</option>
+                                        <option value="D">Produk D</option>
+                                        <option value="E">Produk E</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Harga Satuan</label>
+                                    <input type="text" class="form-control" placeholder="Masukkan Harga Satuan" />
+                                </div>
+                                <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
+                                    <button class="btn btn-label-danger mt-xl-6" data-repeater-delete type="button">
+                                        <i class="icon-base ti tabler-x me-1"></i>
+                                        <span class="align-middle">Hapus</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <hr />
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <button class="btn btn-primary" data-repeater-create type="button">
+                            <i class="icon-base ti tabler-plus me-1"></i>
+                            <span class="align-middle">Tambah Produk</span>
+                        </button>
+                    </div>
+                </form>
+            </span>
             <div class="pt-6 text-end">
-                <button id="submit-btn" class="btn btn-primary me-4">Simpan Data</button>
+                <button id="submit-btn" class="btn btn-primary me-4" type="button">Simpan Data</button>
             </div>
-        </form>
+        </div>
     </div>
 @endsection
+
 @section('js_script')
     <script>
         $(function() {
-            const formRepeater = $('.form-repeater');
-            if (formRepeater.length) {
-                var row = 2;
-                var col = 1;
-                formRepeater.on('submit', function(e) {
-                    e.preventDefault();
-                });
-                formRepeater.repeater({
-                    show: function() {
-                        $(this).slideDown();
-                        //     $(this).find(".bank-select2").select2({
-                        //               allowClear: true,
-                        // width: '100%'
-                        //     });
-                    },
-                    hide: function(e) {
-                        confirm('Are you sure you want to delete this element?') && $(this).slideUp(e);
-                    }
-                });
+            // Info Bank repeater
+            $('.form-repeater-bank').repeater({
+                show: function() {
+                    $(this).slideDown();
+                    $(this).find('.bank-select2').select2({
+                        allowClear: true,
+                        width: '100%'
+                    });
+                },
+                hide: function(e) {
+                    confirm('Are you sure you want to delete this element?') && $(this).slideUp(e);
+                }
+            });
 
-                // Initialize select2 for existing elements on page load
-                // $('.bank-select2').select2({
-                //     allowClear: true,
-                //     width: '100%'
-                // });
-            }
+            // Produk repeater
+            $('.form-repeater-produk').repeater({
+                show: function() {
+                    $(this).slideDown();
+                    $(this).find('.bank-select2').select2({
+                        allowClear: true,
+                        width: '100%'
+                    });
+                },
+                hide: function(e) {
+                    confirm('Are you sure you want to delete this element?') && $(this).slideUp(e);
+                }
+            });
 
+            // Initialize select2 for all global-select2 and bank-select2
+            $('.global-select2, .bank-select2').select2({
+                allowClear: true,
+                width: '100%'
+            });
+
+            // SweetAlert for submit
             $('#submit-btn').click(function(e) {
                 e.preventDefault();
                 Swal.fire({
@@ -308,9 +359,21 @@
                             },
                         });
                     }
-
-
                 })
+            });
+
+            // Show/hide pelanggan-additional-form
+            function togglePelangganForm() {
+                let selected = $('input[name="contact_type"]:checked').next('label').text().trim();
+                if (selected === 'Pelanggan') {
+                    $('.pelanggan-additional-form').show();
+                } else {
+                    $('.pelanggan-additional-form').hide();
+                }
+            }
+            togglePelangganForm();
+            $('input[name="contact_type"]').on('change', function() {
+                togglePelangganForm();
             });
         });
     </script>
