@@ -269,7 +269,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Harga Satuan</label>
-                                    <input type="text" class="form-control" placeholder="Masukkan Harga Satuan" />
+                                    <input type="text" class="form-control currency-input"
+                                        placeholder="Enter Numeral" />
                                 </div>
                                 <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
                                     <button class="btn btn-label-danger mt-xl-6" data-repeater-delete type="button">
@@ -299,6 +300,7 @@
 @section('js_script')
     <script>
         $(function() {
+            initCleaveCurrency(document);
             // Info Bank repeater
             $('.form-repeater-bank').repeater({
                 show: function() {
@@ -321,6 +323,7 @@
                         allowClear: true,
                         width: '100%'
                     });
+                    initCleaveCurrency(this);
                 },
                 hide: function(e) {
                     confirm('Are you sure you want to delete this element?') && $(this).slideUp(e);
@@ -375,6 +378,7 @@
             $('input[name="contact_type"]').on('change', function() {
                 togglePelangganForm();
             });
+
         });
     </script>
 @endsection

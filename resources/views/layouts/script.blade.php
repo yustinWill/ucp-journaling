@@ -20,7 +20,7 @@
 <!-- endbuild -->
 
 <!-- Vendors JS -->
-<script src="../../assets/vendor/libs/cleave-zen/cleave-zen.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
 <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
 <script src="../../assets/vendor/libs/select2/select2.js"></script>
 
@@ -34,6 +34,7 @@
 <script src="../../custom_js/global_select2.js"></script>
 <script src="../../custom_js/global_date_picker.js"></script>
 <script src="../../custom_js/global_date_range_picker.js"></script>
+<script src="../../custom_js/cleave_input.js"></script>
 <!-- Main JS -->
 
 <script src="../../assets/js/main.js"></script>
