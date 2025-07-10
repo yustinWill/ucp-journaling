@@ -11,7 +11,7 @@
                 <h5>Informasi Transaksi</h5>
                 <hr>
             </div>
-            
+
             <!-- Row 1: Basic Information -->
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
@@ -25,23 +25,27 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Nomor Invoice Supplier <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="supplier-invoice-number" placeholder="Nomor invoice dari supplier" />
+                    <input type="text" class="form-control" id="supplier-invoice-number"
+                        placeholder="Nomor invoice dari supplier" />
                 </div>
             </div>
-            
+
             <!-- Row 2: Invoice Details -->
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Invoice <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="invoice-date" />
+                    <input type="date" class="form-control global-single-date-picker" id="invoice-date"
+                        placeholder="YYYY-MM-DD" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Nomor Invoice Internal <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="internal-invoice-number" value="PI-2025-001" placeholder="Nomor otomatis, dapat diedit" />
+                    <input type="text" class="form-control" id="internal-invoice-number" value="PI-2025-001"
+                        placeholder="Nomor otomatis, dapat diedit" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Jatuh Tempo <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="due-date" />
+                    <input type="date" class="form-control global-single-date-picker" id="due-date"
+                        placeholder="YYYY-MM-DD" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Mata Uang</label>
@@ -52,12 +56,13 @@
                     </select>
                 </div>
             </div>
-            
+
             <!-- Row 3: Additional Information -->
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Supplier</label>
-                    <input type="text" class="form-control" id="supplier-name" placeholder="Nama supplier akan terisi otomatis" readonly>
+                    <input type="text" class="form-control" id="supplier-name"
+                        placeholder="Nama supplier akan terisi otomatis" readonly>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Metode Pembayaran</label>
@@ -69,7 +74,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <!-- Product Information Section -->
             <div class="section-header mt-12">
                 <h5>Informasi Pembelian</h5>
@@ -79,7 +84,7 @@
                     <label for="includeTax" class="form-check-label">Harga Termasuk Pajak</label>
                 </div>
             </div>
-            
+
             <!-- Product Table -->
             <div class="table-responsive">
                 <table class="table table-bordered" id="invoiceTable">
@@ -108,13 +113,15 @@
                                 <input type="number" class="form-control" value="100" readonly>
                             </td>
                             <td>
-                                <input type="number" class="form-control qty-billed" value="100" min="0" required>
+                                <input type="number" class="form-control qty-billed" value="100" min="0"
+                                    required>
                             </td>
                             <td>
                                 <input type="text" class="form-control" value="pcs" readonly>
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-price-field curr-mask" value="250,000" required>
+                                <input type="text" class="form-control unit-price-field curr-mask" value="250,000"
+                                    required>
                             </td>
                             <td>
                                 <select class="form-select tax-select">
@@ -143,13 +150,15 @@
                                 <input type="number" class="form-control" value="50" readonly>
                             </td>
                             <td>
-                                <input type="number" class="form-control qty-billed" value="50" min="0" required>
+                                <input type="number" class="form-control qty-billed" value="50" min="0"
+                                    required>
                             </td>
                             <td>
                                 <input type="text" class="form-control" value="pcs" readonly>
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-price-field curr-mask" value="15,000" required>
+                                <input type="text" class="form-control unit-price-field curr-mask" value="15,000"
+                                    required>
                             </td>
                             <td>
                                 <select class="form-select tax-select">
@@ -170,13 +179,13 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Additional Costs Section -->
             <div class="section-header mt-12">
                 <h5>Biaya Tambahan</h5>
                 <hr>
             </div>
-            
+
             <div class="table-responsive">
                 <table class="table table-bordered" id="additionalCostsTable">
                     <thead>
@@ -203,7 +212,8 @@
                                 <input type="text" class="form-control" placeholder="Deskripsi biaya">
                             </td>
                             <td>
-                                <input type="text" class="form-control additional-cost-amount curr-mask" value="0">
+                                <input type="text" class="form-control additional-cost-amount curr-mask"
+                                    value="0">
                             </td>
                             <td>
                                 <select class="form-select additional-tax-select">
@@ -221,7 +231,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Add Cost Button -->
             <div class="mb-3">
                 <button type="button" class="btn btn-primary" id="addCostRow">
@@ -229,19 +239,20 @@
                     <span class="align-middle">Tambah Biaya</span>
                 </button>
             </div>
-            
+
             <!-- Summary & Additional Information -->
             <div class="section-header mt-12">
                 <h5>Informasi Tambahan & Ringkasan</h5>
                 <hr>
             </div>
-            
+
             <div class="row g-3">
                 <!-- Left Side: Additional Information -->
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Catatan Invoice</label>
-                        <textarea class="form-control" rows="4" id="invoice-notes" placeholder="Catatan atau keterangan tambahan untuk invoice..."></textarea>
+                        <textarea class="form-control" rows="4" id="invoice-notes"
+                            placeholder="Catatan atau keterangan tambahan untuk invoice..."></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Syarat Pembayaran</label>
@@ -249,11 +260,12 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Lampiran Invoice</label>
-                        <input type="file" class="form-control" id="invoice-attachments" accept=".pdf,.jpg,.png" multiple>
+                        <input type="file" class="form-control" id="invoice-attachments" accept=".pdf,.jpg,.png"
+                            multiple>
                         <small class="form-text text-muted">Upload dokumen pendukung invoice</small>
                     </div>
                 </div>
-                
+
                 <!-- Right Side: Summary Section -->
                 <div class="col-md-6">
                     <div class="summary-section ps-4">
@@ -262,7 +274,8 @@
                                 <label class="form-label">Subtotal Barang</label>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="subtotal-items" dir="rtl" value="Rp 25,750,000" readonly>
+                                <input type="text" class="form-control readonly-field" id="subtotal-items"
+                                    dir="rtl" value="Rp 25,750,000" readonly>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -270,7 +283,8 @@
                                 <label class="form-label">Biaya Tambahan</label>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="additional-costs-total" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control readonly-field" id="additional-costs-total"
+                                    dir="rtl" value="Rp 0" readonly>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -278,7 +292,8 @@
                                 <label class="form-label">Total Sebelum Pajak</label>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="subtotal-before-tax" dir="rtl" value="Rp 25,750,000" readonly>
+                                <input type="text" class="form-control readonly-field" id="subtotal-before-tax"
+                                    dir="rtl" value="Rp 25,750,000" readonly>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -286,7 +301,8 @@
                                 <label class="form-label">Total Pajak</label>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="total-tax" dir="rtl" value="Rp 2,832,500" readonly>
+                                <input type="text" class="form-control readonly-field" id="total-tax" dir="rtl"
+                                    value="Rp 2,832,500" readonly>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -294,13 +310,14 @@
                                 <label class="form-label"><strong>Total Invoice</strong></label>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field fw-bold" id="total-invoice" dir="rtl" value="Rp 28,582,500" readonly>
+                                <input type="text" class="form-control readonly-field fw-bold" id="total-invoice"
+                                    dir="rtl" value="Rp 28,582,500" readonly>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <button type="button" class="btn btn-primary" id="submit-btn">Buat</button>
@@ -312,11 +329,11 @@
     <script>
         $(function() {
             // Initialize currency mask
-            initializeCurrencyMask();
-            
+            // initializeCurrencyMask();
+
             // Set default invoice date to today
             $('#invoice-date').val(new Date().toISOString().split('T')[0]);
-            
+
             // Supplier selection change handler
             $('#supplier-select').change(function() {
                 const selectedSupplier = $(this).val();
@@ -325,19 +342,19 @@
                     console.log('Loading supplier details for:', selectedSupplier);
                 }
             });
-            
+
             // PO lookup button handler
             $('#po-lookup-btn').click(function() {
                 // TODO: Open PO lookup modal and populate form
                 console.log('Opening PO lookup modal');
             });
-            
+
             // Calculate line total when quantity billed or price changes
             $(document).on('input', '.qty-billed, .unit-price-field', function() {
                 const row = $(this).closest('tr');
                 calculateLineTotal(row);
             });
-            
+
             // Add cost row
             $('#addCostRow').click(function() {
                 const newRow = `
@@ -372,15 +389,15 @@
                     </tr>
                 `;
                 $('#additionalCostsTableBody').append(newRow);
-                initializeCurrencyMask();
+                // initializeCurrencyMask();
             });
-            
+
             // Remove row function
             window.removeRow = function(button) {
                 $(button).closest('tr').remove();
                 calculateGrandTotal();
             };
-            
+
             // Calculate line total
             function calculateLineTotal(row) {
                 const quantity = parseFloat(row.find('.qty-billed').val()) || 0;
@@ -388,10 +405,10 @@
                 const unitPrice = parseFloat(unitPriceText) || 0;
                 const taxType = row.find('.tax-select').val();
                 const includeTax = $('#includeTax').is(':checked');
-                
+
                 let subtotal = quantity * unitPrice;
                 let taxAmount = 0;
-                
+
                 if (taxType === 'PPN') {
                     if (includeTax) {
                         taxAmount = subtotal * 0.11 / 1.11;
@@ -400,19 +417,19 @@
                         taxAmount = subtotal * 0.11;
                     }
                 }
-                
+
                 const total = subtotal + taxAmount;
                 row.find('.line-total').val(formatCurrency(total));
-                
+
                 calculateGrandTotal();
             }
-            
+
             // Calculate grand total
             function calculateGrandTotal() {
                 let itemsSubtotal = 0;
                 let totalTax = 0;
                 let additionalCosts = 0;
-                
+
                 // Calculate items total
                 $('#invoiceTableBody tr').each(function() {
                     const quantity = parseFloat($(this).find('.qty-billed').val()) || 0;
@@ -420,10 +437,10 @@
                     const unitPrice = parseFloat(unitPriceText) || 0;
                     const taxType = $(this).find('.tax-select').val();
                     const includeTax = $('#includeTax').is(':checked');
-                    
+
                     let lineSubtotal = quantity * unitPrice;
                     let lineTax = 0;
-                    
+
                     if (taxType === 'PPN') {
                         if (includeTax) {
                             lineTax = lineSubtotal * 0.11 / 1.11;
@@ -432,39 +449,39 @@
                             lineTax = lineSubtotal * 0.11;
                         }
                     }
-                    
+
                     itemsSubtotal += lineSubtotal;
                     totalTax += lineTax;
                 });
-                
+
                 // Calculate additional costs
                 $('#additionalCostsTableBody tr').each(function() {
                     const costAmountText = $(this).find('.additional-cost-amount').val().replace(/,/g, '');
                     const costAmount = parseFloat(costAmountText) || 0;
                     const taxType = $(this).find('.additional-tax-select').val();
-                    
+
                     additionalCosts += costAmount;
-                    
+
                     if (taxType === 'PPN') {
                         totalTax += costAmount * 0.11;
                     }
                 });
-                
+
                 const totalBeforeTax = itemsSubtotal + additionalCosts;
                 const grandTotal = totalBeforeTax + totalTax;
-                
+
                 $('#subtotal-items').val(formatCurrency(itemsSubtotal));
                 $('#additional-costs-total').val(formatCurrency(additionalCosts));
                 $('#subtotal-before-tax').val(formatCurrency(totalBeforeTax));
                 $('#total-tax').val(formatCurrency(totalTax));
                 $('#total-invoice').val(formatCurrency(grandTotal));
             }
-            
+
             // Format currency helper
             function formatCurrency(amount) {
                 return 'Rp ' + amount.toLocaleString('id-ID');
             }
-            
+
             // Initialize currency mask
             function initializeCurrencyMask() {
                 $('.curr-mask').each(function() {
@@ -474,14 +491,14 @@
                     });
                 });
             }
-            
-            
+
+
             // Submit button handler
             $('#submit-btn').click(function(e) {
                 e.preventDefault();
-                
+
                 // TODO: Add validation
-                
+
                 Swal.fire({
                     title: 'Simpan Data?',
                     text: "Cek kembali data yang sudah diisi!",
@@ -507,14 +524,20 @@
                     }
                 });
             });
+
+            // $(".curr-mask").addEventListener('input', event => {
+            //     numeralMask.value = formatNumeral(event.target.value, {
+            //         numeralThousandsGroupStyle: 'thousand'
+            // //     });
+            // // });
+
+            // var cleave = new CleaveZen($('.curr-mask')[0], {
+            //     numeral: true,
+            //     numeralThousandsGroupStyle: 'thousand'
+            // });
         });
-        
-        // Add Cleave.js script import
-        if (!document.querySelector('script[src*="cleave"]')) {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js';
-            document.head.appendChild(script);
-        }
-        });
+
+
+        // });
     </script>
 @endsection

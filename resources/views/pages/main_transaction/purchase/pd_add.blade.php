@@ -34,7 +34,7 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Pengiriman <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="delivery-date" />
+                    <input type="date" class="form-control global-single-date-picker" id="delivery-date" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>

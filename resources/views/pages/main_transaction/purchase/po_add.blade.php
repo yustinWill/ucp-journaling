@@ -11,7 +11,7 @@
                 <h5>Informasi Transaksi</h5>
                 <hr>
             </div>
-            
+
             <!-- Row 1: Basic Information -->
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
@@ -29,7 +29,7 @@
                     <input type="email" class="form-control" id="supplier-email" placeholder="email@supplier.com" />
                 </div>
             </div>
-            
+
             <!-- Row 2: Address and Transaction Details -->
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
@@ -38,14 +38,15 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="po-date" />
+                    <input type="text" class="form-control global-single-date-picker" placeholder="YYYY-MM-DD" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="po-number" value="PO-2025-001" placeholder="autofill but editable" />
+                    <input type="text" class="form-control" id="po-number" value="PO-2025-001"
+                        placeholder="autofill but editable" />
                 </div>
             </div>
-            
+
             <!-- Row 3: Payment and Reference -->
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
@@ -64,15 +65,16 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Nomor Referensi Supplier</label>
-                    <input type="text" class="form-control" id="supplier-reference" placeholder="Referensi dari supplier" />
+                    <input type="text" class="form-control" id="supplier-reference"
+                        placeholder="Referensi dari supplier" />
                 </div>
             </div>
-            
+
             <!-- Row 4: Due Date and Warehouse -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Jatuh Tempo <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="due-date" placeholder="autofill" />
+                    <input type="date" class="form-control global-single-date-picker" id="due-date" placeholder="YYYY-MM-DD" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Gudang</label>
@@ -84,7 +86,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <!-- Product Information Section -->
             <div class="section-header mt-12">
                 <h5>Informasi Pembelian</h5>
@@ -94,7 +96,7 @@
                     <label for="includeTax" class="form-check-label">Harga Termasuk Pajak</label>
                 </div>
             </div>
-            
+
             <!-- Product Table -->
             <div class="table-responsive my-4">
                 <table class="table table-bordered" id="productTable">
@@ -122,16 +124,20 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control product-description" name="description[]" placeholder="Deskripsi produk" readonly>
+                                <input type="text" class="form-control product-description" name="description[]"
+                                    placeholder="Deskripsi produk" readonly>
                             </td>
                             <td>
-                                <input type="number" class="form-control quantity-field" name="quantity[]" value="1" min="1" required>
+                                <input type="number" class="form-control quantity-field" name="quantity[]"
+                                    value="1" min="1" required>
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-field" name="unit[]" value="pcs" readonly>
+                                <input type="text" class="form-control unit-field" name="unit[]" value="pcs"
+                                    readonly>
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-price-field curr-mask" name="unit_price[]" dir="rtl" value="0" required>
+                                <input type="text" class="form-control unit-price-field curr-mask" name="unit_price[]"
+                                    dir="rtl" value="0" required>
                             </td>
                             <td>
                                 <select class="form-select tax-select" name="tax[]">
@@ -140,7 +146,8 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control subtotal-field readonly-field" name="subtotal[]" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control subtotal-field readonly-field"
+                                    name="subtotal[]" dir="rtl" value="Rp 0" readonly>
                             </td>
                             <td>
                                 <button class="btn btn-label-danger" type="button" onclick="removeRow(this)">
@@ -160,16 +167,20 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control product-description" name="description[]" placeholder="Deskripsi produk" readonly>
+                                <input type="text" class="form-control product-description" name="description[]"
+                                    placeholder="Deskripsi produk" readonly>
                             </td>
                             <td>
-                                <input type="number" class="form-control quantity-field" name="quantity[]" value="1" min="1">
+                                <input type="number" class="form-control quantity-field" name="quantity[]"
+                                    value="1" min="1">
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-field" name="unit[]" value="pcs" readonly>
+                                <input type="text" class="form-control unit-field" name="unit[]" value="pcs"
+                                    readonly>
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-price-field curr-mask" name="unit_price[]" dir="rtl" value="0">
+                                <input type="text" class="form-control unit-price-field curr-mask" name="unit_price[]"
+                                    dir="rtl" value="0">
                             </td>
                             <td>
                                 <select class="form-select tax-select" name="tax[]">
@@ -178,7 +189,8 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control subtotal-field readonly-field" name="subtotal[]" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control subtotal-field readonly-field"
+                                    name="subtotal[]" dir="rtl" value="Rp 0" readonly>
                             </td>
                             <td>
                                 <button class="btn btn-label-danger" type="button" onclick="removeRow(this)">
@@ -198,16 +210,20 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control product-description" name="description[]" placeholder="Deskripsi produk" readonly>
+                                <input type="text" class="form-control product-description" name="description[]"
+                                    placeholder="Deskripsi produk" readonly>
                             </td>
                             <td>
-                                <input type="number" class="form-control quantity-field" name="quantity[]" value="1" min="1">
+                                <input type="number" class="form-control quantity-field" name="quantity[]"
+                                    value="1" min="1">
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-field" name="unit[]" value="pcs" readonly>
+                                <input type="text" class="form-control unit-field" name="unit[]" value="pcs"
+                                    readonly>
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-price-field curr-mask" name="unit_price[]" dir="rtl" value="0">
+                                <input type="text" class="form-control unit-price-field curr-mask" name="unit_price[]"
+                                    dir="rtl" value="0">
                             </td>
                             <td>
                                 <select class="form-select tax-select" name="tax[]">
@@ -216,7 +232,8 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control subtotal-field readonly-field" name="subtotal[]" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control subtotal-field readonly-field"
+                                    name="subtotal[]" dir="rtl" value="Rp 0" readonly>
                             </td>
                             <td>
                                 <button class="btn btn-label-danger" type="button" onclick="removeRow(this)">
@@ -236,16 +253,20 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control product-description" name="description[]" placeholder="Deskripsi produk" readonly>
+                                <input type="text" class="form-control product-description" name="description[]"
+                                    placeholder="Deskripsi produk" readonly>
                             </td>
                             <td>
-                                <input type="number" class="form-control quantity-field" name="quantity[]" value="1" min="1">
+                                <input type="number" class="form-control quantity-field" name="quantity[]"
+                                    value="1" min="1">
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-field" name="unit[]" value="pcs" readonly>
+                                <input type="text" class="form-control unit-field" name="unit[]" value="pcs"
+                                    readonly>
                             </td>
                             <td>
-                                <input type="text" class="form-control unit-price-field curr-mask" name="unit_price[]" dir="rtl" value="0">
+                                <input type="text" class="form-control unit-price-field curr-mask" name="unit_price[]"
+                                    dir="rtl" value="0">
                             </td>
                             <td>
                                 <select class="form-select tax-select" name="tax[]">
@@ -254,7 +275,8 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control subtotal-field readonly-field" name="subtotal[]" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control subtotal-field readonly-field"
+                                    name="subtotal[]" dir="rtl" value="Rp 0" readonly>
                             </td>
                             <td>
                                 <button class="btn btn-label-danger" type="button" onclick="removeRow(this)">
@@ -266,7 +288,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Add Row Button -->
             <div class="mb-3">
                 <button type="button" class="btn btn-primary" id="addProductRow">
@@ -274,33 +296,36 @@
                     <span class="align-middle">Tambah Produk</span>
                 </button>
             </div>
-            
+
             <!-- Additional Information & Summary -->
             <div class="section-header mt-12">
                 <h5>Informasi Tambahan & Ringkasan</h5>
                 <hr>
             </div>
-            
+
             <div class="row g-3">
                 <!-- Left Side: Additional Information -->
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Pesan</label>
-                        <textarea class="form-control" rows="4" id="supplier-message" placeholder="Catatan atau instruksi khusus untuk supplier" maxlength="500"></textarea>
+                        <textarea class="form-control" rows="4" id="supplier-message"
+                            placeholder="Catatan atau instruksi khusus untuk supplier" maxlength="500"></textarea>
                         <small class="form-text text-muted">Pesan yang akan dikirim ke supplier bersama PO</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Memo</label>
-                        <textarea class="form-control" rows="4" id="internal-memo" placeholder="Catatan internal untuk tim purchasing" maxlength="500"></textarea>
+                        <textarea class="form-control" rows="4" id="internal-memo" placeholder="Catatan internal untuk tim purchasing"
+                            maxlength="500"></textarea>
                         <small class="form-text text-muted">Memo internal untuk tim purchasing</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Lampiran</label>
-                        <input type="file" class="form-control" id="attachment" accept=".xlsx,.xls,.docx,.doc,.pdf,.png,.zip">
+                        <input type="file" class="form-control" id="attachment"
+                            accept=".xlsx,.xls,.docx,.doc,.pdf,.png,.zip">
                         <small class="form-text text-muted">File dapat berupa Excel, Word, PDF, PNG, atau Zip</small>
                     </div>
                 </div>
-                
+
                 <!-- Right Side: Summary Section -->
                 <div class="col-md-6">
                     <div class="summary-section ps-4">
@@ -310,7 +335,8 @@
                                 <small class="form-text text-muted d-block">Total sebelum pajak</small>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="subtotal-amount" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control readonly-field" id="subtotal-amount"
+                                    dir="rtl" value="Rp 0" readonly>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -319,7 +345,8 @@
                                 <small class="form-text text-muted d-block">Total pajak pertambahan nilai</small>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="tax-amount" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control readonly-field" id="tax-amount" dir="rtl"
+                                    value="Rp 0" readonly>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -328,7 +355,8 @@
                                 <small class="form-text text-muted d-block">Total nilai purchase order</small>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field fw-bold" id="total-amount" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control readonly-field fw-bold" id="total-amount"
+                                    dir="rtl" value="Rp 0" readonly>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -337,13 +365,14 @@
                                 <small class="form-text text-muted d-block">Jumlah yang harus dibayar</small>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="estimated-payment" dir="rtl" value="Rp 0" readonly>
+                                <input type="text" class="form-control readonly-field" id="estimated-payment"
+                                    dir="rtl" value="Rp 0" readonly>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <button type="button" class="btn btn-primary" id="submit-btn">Buat</button>
@@ -356,23 +385,51 @@
         $(function() {
             // Initialize currency mask for existing fields
             // initializeCurrencyMask();
-            
+
             // Product data for auto-fill
             const productData = {
-                '1': { description: 'ALBUM SVT VOL 1', unit: 'pcs', price: 250000 },
-                '2': { description: 'Buku Tulis HVS A4', unit: 'pcs', price: 15000 },
-                '3': { description: 'Pensil 2B', unit: 'pcs', price: 3000 },
-                '4': { description: 'Penghapus Karet', unit: 'pcs', price: 2000 }
+                '1': {
+                    description: 'ALBUM SVT VOL 1',
+                    unit: 'pcs',
+                    price: 250000
+                },
+                '2': {
+                    description: 'Buku Tulis HVS A4',
+                    unit: 'pcs',
+                    price: 15000
+                },
+                '3': {
+                    description: 'Pensil 2B',
+                    unit: 'pcs',
+                    price: 3000
+                },
+                '4': {
+                    description: 'Penghapus Karet',
+                    unit: 'pcs',
+                    price: 2000
+                }
             };
-            
+
             // Supplier data for auto-fill
             const supplierData = {
-                '1': { email: 'admin@sumbermakmur.com', address: 'Jl. Industri No. 123, Jakarta Pusat' },
-                '2': { email: 'info@berkahjaya.com', address: 'Jl. Raya Bekasi No. 456, Bekasi' },
-                '3': { email: 'contact@mandirisejahtera.com', address: 'Jl. Sudirman No. 789, Jakarta Selatan' },
-                '4': { email: 'sales@majubersama.com', address: 'Jl. Gatot Subroto No. 321, Jakarta Barat' }
+                '1': {
+                    email: 'admin@sumbermakmur.com',
+                    address: 'Jl. Industri No. 123, Jakarta Pusat'
+                },
+                '2': {
+                    email: 'info@berkahjaya.com',
+                    address: 'Jl. Raya Bekasi No. 456, Bekasi'
+                },
+                '3': {
+                    email: 'contact@mandirisejahtera.com',
+                    address: 'Jl. Sudirman No. 789, Jakarta Selatan'
+                },
+                '4': {
+                    email: 'sales@majubersama.com',
+                    address: 'Jl. Gatot Subroto No. 321, Jakarta Barat'
+                }
             };
-            
+
             // Supplier selection change handler
             $('#supplier-select').change(function() {
                 const selectedSupplier = $(this).val();
@@ -383,7 +440,7 @@
                     $('#delivery-address').val(supplier.address);
                 }
             });
-            
+
             // Product selection change handler
             $(document).on('change', '.product-select', function() {
                 const selectedProduct = $(this).val();
@@ -391,7 +448,7 @@
                 const descriptionField = row.find('.product-description');
                 const unitField = row.find('.unit-field');
                 const priceField = row.find('.unit-price-field');
-                
+
                 if (selectedProduct && productData[selectedProduct]) {
                     const product = productData[selectedProduct];
                     descriptionField.val(product.description);
@@ -404,26 +461,26 @@
                 }
                 calculateRowTotal(row);
             });
-            
+
             // Calculate row total when quantity or price changes
             $(document).on('input', '.quantity-field, .unit-price-field', function() {
                 const row = $(this).closest('tr');
                 calculateRowTotal(row);
             });
-            
+
             // Tax selection change handler
             $(document).on('change', '.tax-select', function() {
                 const row = $(this).closest('tr');
                 calculateRowTotal(row);
             });
-            
+
             // Include tax checkbox handler
             $('#includeTax').change(function() {
                 $('#productTableBody tr').each(function() {
                     calculateRowTotal($(this));
                 });
             });
-            
+
             // Add new product row
             $('#addProductRow').click(function() {
                 const newRow = `
@@ -469,7 +526,7 @@
                 $('#productTableBody').append(newRow);
                 initializeCurrencyMask();
             });
-            
+
             // Remove product row function
             window.removeRow = function(button) {
                 if ($('#productTableBody tr').length > 1) {
@@ -477,7 +534,7 @@
                     calculateGrandTotal();
                 }
             };
-            
+
             // Calculate row total
             function calculateRowTotal(row) {
                 const quantity = parseFloat(row.find('.quantity-field').val()) || 0;
@@ -485,10 +542,10 @@
                 const unitPrice = parseFloat(unitPriceText) || 0;
                 const taxType = row.find('.tax-select').val();
                 const includeTax = $('#includeTax').is(':checked');
-                
+
                 let subtotal = quantity * unitPrice;
                 let taxAmount = 0;
-                
+
                 if (taxType === 'PPN') {
                     if (includeTax) {
                         // Tax-inclusive calculation
@@ -499,28 +556,28 @@
                         taxAmount = subtotal * 0.11;
                     }
                 }
-                
+
                 const total = subtotal + taxAmount;
                 row.find('.subtotal-field').val(formatCurrency(total));
-                
+
                 calculateGrandTotal();
             }
-            
+
             // Calculate grand total
             function calculateGrandTotal() {
                 let subtotal = 0;
                 let taxTotal = 0;
-                
+
                 $('#productTableBody tr').each(function() {
                     const quantity = parseFloat($(this).find('.quantity-field').val()) || 0;
                     const unitPriceText = $(this).find('.unit-price-field').val().replace(/,/g, '');
                     const unitPrice = parseFloat(unitPriceText) || 0;
                     const taxType = $(this).find('.tax-select').val();
                     const includeTax = $('#includeTax').is(':checked');
-                    
+
                     let lineSubtotal = quantity * unitPrice;
                     let lineTax = 0;
-                    
+
                     if (taxType === 'PPN') {
                         if (includeTax) {
                             lineTax = lineSubtotal * 0.11 / 1.11;
@@ -529,24 +586,24 @@
                             lineTax = lineSubtotal * 0.11;
                         }
                     }
-                    
+
                     subtotal += lineSubtotal;
                     taxTotal += lineTax;
                 });
-                
+
                 const total = subtotal + taxTotal;
-                
+
                 $('#subtotal-amount').val(formatCurrency(subtotal));
                 $('#tax-amount').val(formatCurrency(taxTotal));
                 $('#total-amount').val(formatCurrency(total));
                 $('#estimated-payment').val(formatCurrency(total));
             }
-            
+
             // Format currency helper
             function formatCurrency(amount) {
                 return 'Rp ' + amount.toLocaleString('id-ID');
             }
-            
+
             // Initialize currency mask
             function initializeCurrencyMask() {
                 $('.curr-mask').each(function() {
@@ -556,16 +613,16 @@
                     });
                 });
             }
-            
+
             // Auto-calculate due date based on payment terms
             $('#payment-terms').change(function() {
                 const terms = $(this).val();
                 const poDate = new Date($('#po-date').val());
-                
+
                 if (poDate && !isNaN(poDate)) {
                     let dueDate = new Date(poDate);
-                    
-                    switch(terms) {
+
+                    switch (terms) {
                         case 'Net 15':
                             dueDate.setDate(dueDate.getDate() + 15);
                             break;
@@ -582,21 +639,26 @@
                         default:
                             dueDate.setDate(dueDate.getDate() + 30);
                     }
-                    
+
                     $('#due-date').val(dueDate.toISOString().split('T')[0]);
                 }
             });
-            
+
             // Set default PO date to today
             $('#po-date').val(new Date().toISOString().split('T')[0]);
-            
+
             // File upload handling
             $('#attachment').change(function() {
                 const file = this.files[0];
                 if (file) {
                     const maxSize = 10 * 1024 * 1024; // 10MB
-                    const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword', 'application/pdf', 'image/png', 'application/zip'];
-                    
+                    const allowedTypes = [
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/msword', 'application/pdf', 'image/png', 'application/zip'
+                    ];
+
                     if (file.size > maxSize) {
                         Swal.fire({
                             icon: 'error',
@@ -606,7 +668,7 @@
                         this.value = '';
                         return;
                     }
-                    
+
                     if (!allowedTypes.includes(file.type)) {
                         Swal.fire({
                             icon: 'error',
@@ -618,7 +680,7 @@
                     }
                 }
             });
-            
+
             // Form validation function
             function validateForm() {
                 // Check required fields
@@ -630,7 +692,7 @@
                     });
                     return false;
                 }
-                
+
                 if (!$('#supplier-email').val()) {
                     Swal.fire({
                         icon: 'error',
@@ -639,7 +701,7 @@
                     });
                     return false;
                 }
-                
+
                 if (!$('#supplier-address').val() || $('#supplier-address').val().length < 10) {
                     Swal.fire({
                         icon: 'error',
@@ -648,7 +710,7 @@
                     });
                     return false;
                 }
-                
+
                 if (!$('#po-date').val()) {
                     Swal.fire({
                         icon: 'error',
@@ -657,7 +719,7 @@
                     });
                     return false;
                 }
-                
+
                 if (!$('#po-number').val()) {
                     Swal.fire({
                         icon: 'error',
@@ -666,7 +728,7 @@
                     });
                     return false;
                 }
-                
+
                 if (!$('#due-date').val()) {
                     Swal.fire({
                         icon: 'error',
@@ -675,7 +737,7 @@
                     });
                     return false;
                 }
-                
+
                 // Check if at least one product is selected
                 let hasProduct = false;
                 $('#productTableBody tr').each(function() {
@@ -684,7 +746,7 @@
                         return false;
                     }
                 });
-                
+
                 if (!hasProduct) {
                     Swal.fire({
                         icon: 'error',
@@ -693,7 +755,7 @@
                     });
                     return false;
                 }
-                
+
                 // Validate email format
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailPattern.test($('#supplier-email').val())) {
@@ -704,13 +766,13 @@
                     });
                     return false;
                 }
-                
+
                 // Validate dates
                 const poDate = new Date($('#po-date').val());
                 const dueDate = new Date($('#due-date').val());
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                
+
                 if (poDate > today) {
                     Swal.fire({
                         icon: 'error',
@@ -719,7 +781,7 @@
                     });
                     return false;
                 }
-                
+
                 if (dueDate <= poDate) {
                     Swal.fire({
                         icon: 'error',
@@ -728,18 +790,18 @@
                     });
                     return false;
                 }
-                
+
                 return true;
             }
-            
+
             // Submit button handler
             $('#submit-btn').click(function(e) {
                 e.preventDefault();
-                
+
                 if (!validateForm()) {
                     return;
                 }
-                
+
                 Swal.fire({
                     title: 'Simpan Data?',
                     text: "Cek kembali data yang sudah diisi!",
