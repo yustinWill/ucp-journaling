@@ -39,7 +39,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="transaction-date" />
+                    <input type="date" class="form-control global-single-date-picker" id="transaction-date" />
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
@@ -73,7 +73,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Jatuh Tempo <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="due-date" placeholder="autofill" />
+                    <input type="date" class="form-control global-single-date-picker" id="due-date" placeholder="autofill" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Gudang</label>
