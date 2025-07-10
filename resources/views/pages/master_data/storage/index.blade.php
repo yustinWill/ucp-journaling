@@ -10,7 +10,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-box icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">10,000 Total Produk</h4>
                     </div>
@@ -24,7 +24,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-package-import icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">5 Total Produk</h4>
                     </div>
@@ -38,7 +38,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-box-off icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">30 Total Produk</h4>
                     </div>
@@ -52,7 +52,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-building-warehouse icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">11,000 Total Produk</h4>
                     </div>

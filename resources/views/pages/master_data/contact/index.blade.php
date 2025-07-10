@@ -10,7 +10,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-file-invoice icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">Rp 100,000,000</h4>
                     </div>
@@ -24,7 +24,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-calendar-exclamation icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">Rp 25,000,000</h4>
                     </div>
@@ -38,7 +38,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-clipboard-list icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">Rp 5,000,000</h4>
                     </div>

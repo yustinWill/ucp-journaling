@@ -10,7 +10,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-users icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">50</h4>
                     </div>
@@ -24,7 +24,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-user-check icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">45</h4>
                     </div>
@@ -38,7 +38,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-shield icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">5</h4>
                     </div>
@@ -52,7 +52,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-primary"><i
-                                    class="icon-base ti tabler-truck icon-28px"></i></span>
+                                    class="icon-base ti tabler-login icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">40</h4>
                     </div>
