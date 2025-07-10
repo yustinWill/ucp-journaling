@@ -113,4 +113,129 @@ class ContactController extends Controller
     {
         return view('pages.master_data.contact.import', []);
     }
+
+    public function detail($id)
+    {
+        // Mock contact data - in real app, fetch from database
+        $contact = [
+            'id' => $id,
+            'contact_name' => 'Anwar',
+            'company_name' => 'PT Maju Jaya Sentosa',
+            'type' => 'Pelanggan',
+            'group' => '',
+            'email' => 'pelanggan1@example.com',
+            'phone' => '081234567890',
+            'identity_type' => 'KTP',
+            'identity_number' => '3175091203940000.00',
+            'billing_address' => '',
+            'shipping_address' => 'Ciomas, Bogor',
+            'other_info' => '-',
+            'landline' => '',
+            'fax' => '',
+            'npwp' => '01.234.567.8-999.000',
+            'bank_name' => 'Bank Central Asia',
+            'bank_branch' => 'Bogor',
+            'account_holder' => 'Anwar',
+            'account_number' => '541-002-7891',
+            'debt_account' => '(2-20100) Hutang',
+            'receivable_account' => '(1-20100) Piutang',
+            'payment_terms' => ''
+        ];
+
+        return view('pages.master_data.contact.detail', ['contact' => $contact]);
+    }
+
+    public function getProfilData($id)
+    {
+        // Return the same contact data for profile tab
+        $contact = [
+            'id' => $id,
+            'contact_name' => 'Anwar',
+            'company_name' => 'PT Maju Jaya Sentosa',
+            'type' => 'Pelanggan',
+            'group' => '',
+            'email' => 'pelanggan1@example.com',
+            'phone' => '081234567890',
+            'identity_type' => 'KTP',
+            'identity_number' => '3175091203940000.00',
+            'billing_address' => '',
+            'shipping_address' => 'Ciomas, Bogor',
+            'other_info' => '-',
+            'landline' => '',
+            'fax' => '',
+            'npwp' => '01.234.567.8-999.000',
+            'bank_name' => 'Bank Central Asia',
+            'bank_branch' => 'Bogor',
+            'account_holder' => 'Anwar',
+            'account_number' => '541-002-7891',
+            'debt_account' => '(2-20100) Hutang',
+            'receivable_account' => '(1-20100) Piutang',
+            'payment_terms' => ''
+        ];
+
+        return response()->json($contact);
+    }
+
+    public function getTransactionData($id)
+    {
+        $data = [
+            'summary' => [
+                'monthly_invoiced' => 5,
+                'total_amount' => 5,
+                'delivery_receivables' => 0
+            ],
+            'transactions' => [
+                [
+                    'date' => '12/12/2024',
+                    'transaction_number' => 'Sales Invoice #100002',
+                    'due_date' => '2/12/2024',
+                    'status' => 'Paid',
+                    'total' => 'Rp 5,000,000.00'
+                ],
+                [
+                    'date' => '8/12/2024',
+                    'transaction_number' => 'Purchase Order #10001',
+                    'due_date' => '3/1/2025',
+                    'status' => 'Open',
+                    'total' => 'Rp 3,000,000.00'
+                ]
+            ]
+        ];
+
+        return response()->json($data);
+    }
+
+    public function getCreditMemoData($id)
+    {
+        $data = [
+            'credit_memos' => [
+                [
+                    'date' => '5/5/2024',
+                    'credit_memo_number' => 'Credit Memo #100001',
+                    'original_amount' => 'Rp 5,000,000.00',
+                    'used_amount' => 'Rp 500,000.00',
+                    'remaining_balance' => 'Rp 4,500,000.00',
+                    'selected' => true
+                ],
+                [
+                    'date' => '5/5/2024',
+                    'credit_memo_number' => 'Credit Memo #100002',
+                    'original_amount' => 'Rp 4,000,000.00',
+                    'used_amount' => 'Rp 4,000,000.00',
+                    'remaining_balance' => 'Rp -',
+                    'selected' => false
+                ],
+                [
+                    'date' => '5/5/2024',
+                    'credit_memo_number' => 'Credit Memo #100003',
+                    'original_amount' => 'Rp 500,000.00',
+                    'used_amount' => 'Rp 500,000.00',
+                    'remaining_balance' => 'Rp -',
+                    'selected' => false
+                ]
+            ]
+        ];
+
+        return response()->json($data);
+    }
 }

@@ -20,6 +20,10 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/add', 'add')->name('master_data.contact.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $contact_segment . '/detail/{id}', 'detail')->name('master_data.contact.detail')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $contact_segment . '/detail_profil_data/{id}', 'getProfilData')->name('master_data.contact.detail_profil_data')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $contact_segment . '/detail_transaction_data/{id}', 'getTransactionData')->name('master_data.contact.detail_transaction_data')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $contact_segment . '/detail_credit_memo_data/{id}', 'getCreditMemoData')->name('master_data.contact.detail_credit_memo_data')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/export', 'export')->name('master_data.contact.export')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/import', 'import')->name('master_data.contact.import')->middleware(EnsureTokenIsValid::class);
     });
