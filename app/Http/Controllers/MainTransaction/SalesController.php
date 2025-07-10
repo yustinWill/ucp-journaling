@@ -177,4 +177,31 @@ class SalesController extends Controller
     {
         return view('pages.main_transaction.sales.add', []);
     }
+
+    public function salesOrderAdd()
+    {
+        return view('pages.main_transaction.sales.so_add', []);
+    }
+
+    public function salesDeliveryAdd()
+    {
+        return view('pages.main_transaction.sales.sd_add', []);
+    }
+
+    public function salesInvoiceAdd()
+    {
+        return view('pages.main_transaction.sales.si_add', []);
+    }
+
+    public function handleImport(Request $request)
+    {
+        // TODO: Implement sales import functionality
+        return response()->json(['message' => 'Sales import functionality to be implemented'], 200);
+    }
+
+    public function handleExport(Request $request)
+    {
+        // TODO: Implement sales export functionality
+        return response()->json(['message' => 'Sales export functionality to be implemented'], 200);
+    }
 }

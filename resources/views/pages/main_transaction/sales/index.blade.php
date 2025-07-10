@@ -493,34 +493,103 @@
             });
             
             // Button click events
-            $('#btn-add-pesanan, #btn-add-pengiriman, #btn-add-faktur').on('click', function() {
-                window.location.href = "{{ route('main_transaction.sales.add') }}";
+            // Button click events - separated by sales type
+            $('#btn-add-pesanan').on('click', function() {
+                window.location.href = "{{ route('main_transaction.sales.add.so') }}";
             });
             
-            // Import button events
+            $('#btn-add-pengiriman').on('click', function() {
+                window.location.href = "{{ route('main_transaction.sales.add.sd') }}";
+            });
+            
+            $('#btn-add-faktur').on('click', function() {
+                window.location.href = "{{ route('main_transaction.sales.add.si') }}";
+            });
+            
+            // Import button events - with type parameter
             $('#btn-import-pesanan').on('click', function() {
-                console.log('Import Sales Orders');
+                // Create file input for import
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.xlsx,.xls,.csv';
+                fileInput.onchange = function(e) {
+                    const formData = new FormData();
+                    formData.append('file', e.target.files[0]);
+                    formData.append('type', 'pesanan');
+                    
+                    // TODO: Implement actual import functionality
+                    console.log('Import Sales Order file:', e.target.files[0].name);
+                    // fetch('{{ route("main_transaction.sales.import") }}', {
+                    //     method: 'POST',
+                    //     body: formData,
+                    //     headers: {
+                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    //     }
+                    // });
+                };
+                fileInput.click();
             });
             
             $('#btn-import-pengiriman').on('click', function() {
-                console.log('Import Sales Delivery');
+                // Create file input for import
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.xlsx,.xls,.csv';
+                fileInput.onchange = function(e) {
+                    const formData = new FormData();
+                    formData.append('file', e.target.files[0]);
+                    formData.append('type', 'pengiriman');
+                    
+                    // TODO: Implement actual import functionality
+                    console.log('Import Sales Delivery file:', e.target.files[0].name);
+                    // fetch('{{ route("main_transaction.sales.import") }}', {
+                    //     method: 'POST',
+                    //     body: formData,
+                    //     headers: {
+                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    //     }
+                    // });
+                };
+                fileInput.click();
             });
             
             $('#btn-import-faktur').on('click', function() {
-                console.log('Import Sales Invoice');
+                // Create file input for import
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.xlsx,.xls,.csv';
+                fileInput.onchange = function(e) {
+                    const formData = new FormData();
+                    formData.append('file', e.target.files[0]);
+                    formData.append('type', 'faktur');
+                    
+                    // TODO: Implement actual import functionality
+                    console.log('Import Sales Invoice file:', e.target.files[0].name);
+                    // fetch('{{ route("main_transaction.sales.import") }}', {
+                    //     method: 'POST',
+                    //     body: formData,
+                    //     headers: {
+                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    //     }
+                    // });
+                };
+                fileInput.click();
             });
             
-            // Export button events
+            // Export button events - with type parameter
             $('#btn-export-pesanan').on('click', function() {
-                console.log('Export Sales Orders');
+                // Handle export for Sales Order
+                window.location.href = "{{ route('main_transaction.sales.export') }}?type=pesanan";
             });
             
             $('#btn-export-pengiriman').on('click', function() {
-                console.log('Export Sales Delivery');
+                // Handle export for Sales Delivery
+                window.location.href = "{{ route('main_transaction.sales.export') }}?type=pengiriman";
             });
             
             $('#btn-export-faktur').on('click', function() {
-                console.log('Export Sales Invoice');
+                // Handle export for Sales Invoice
+                window.location.href = "{{ route('main_transaction.sales.export') }}?type=faktur";
             });
         });
     </script>

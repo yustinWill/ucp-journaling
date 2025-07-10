@@ -492,41 +492,103 @@
                 }
             });
             
-            // Button click events
-            $('#btn-add-pesanan, #btn-add-pengiriman, #btn-add-faktur').on('click', function() {
-                window.location.href = "{{ route('main_transaction.purchase.add') }}";
+            // Button click events - separated by purchase type
+            $('#btn-add-pesanan').on('click', function() {
+                window.location.href = "{{ route('main_transaction.purchase.add.po') }}";
             });
             
-            // Import button events
+            $('#btn-add-pengiriman').on('click', function() {
+                window.location.href = "{{ route('main_transaction.purchase.add.pd') }}";
+            });
+            
+            $('#btn-add-faktur').on('click', function() {
+                window.location.href = "{{ route('main_transaction.purchase.add.pi') }}";
+            });
+            
+            // Import button events - with type parameter
             $('#btn-import-pesanan').on('click', function() {
-                // Handle import for pesanan
-                console.log('Import Pesanan');
+                // Create file input for import
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.xlsx,.xls,.csv';
+                fileInput.onchange = function(e) {
+                    const formData = new FormData();
+                    formData.append('file', e.target.files[0]);
+                    formData.append('type', 'pesanan');
+                    
+                    // TODO: Implement actual import functionality
+                    console.log('Import Purchase Order file:', e.target.files[0].name);
+                    // fetch('{{ route("main_transaction.purchase.import") }}', {
+                    //     method: 'POST',
+                    //     body: formData,
+                    //     headers: {
+                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    //     }
+                    // });
+                };
+                fileInput.click();
             });
             
             $('#btn-import-pengiriman').on('click', function() {
-                // Handle import for pengiriman
-                console.log('Import Pengiriman');
+                // Create file input for import
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.xlsx,.xls,.csv';
+                fileInput.onchange = function(e) {
+                    const formData = new FormData();
+                    formData.append('file', e.target.files[0]);
+                    formData.append('type', 'pengiriman');
+                    
+                    // TODO: Implement actual import functionality
+                    console.log('Import Purchase Delivery file:', e.target.files[0].name);
+                    // fetch('{{ route("main_transaction.purchase.import") }}', {
+                    //     method: 'POST',
+                    //     body: formData,
+                    //     headers: {
+                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    //     }
+                    // });
+                };
+                fileInput.click();
             });
             
             $('#btn-import-faktur').on('click', function() {
-                // Handle import for faktur
-                console.log('Import Faktur');
+                // Create file input for import
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.xlsx,.xls,.csv';
+                fileInput.onchange = function(e) {
+                    const formData = new FormData();
+                    formData.append('file', e.target.files[0]);
+                    formData.append('type', 'faktur');
+                    
+                    // TODO: Implement actual import functionality
+                    console.log('Import Purchase Invoice file:', e.target.files[0].name);
+                    // fetch('{{ route("main_transaction.purchase.import") }}', {
+                    //     method: 'POST',
+                    //     body: formData,
+                    //     headers: {
+                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    //     }
+                    // });
+                };
+                fileInput.click();
             });
             
-            // Export button events
+            // Export button events - with type parameter
             $('#btn-export-pesanan').on('click', function() {
-                // Handle export for pesanan
-                console.log('Export Pesanan');
+                // Handle export for Purchase Order
+                window.location.href = "{{ route('main_transaction.purchase.export') }}?type=pesanan";
             });
             
             $('#btn-export-pengiriman').on('click', function() {
-                // Handle export for pengiriman
-                console.log('Export Pengiriman');
+                // Handle export for Purchase Delivery
+                window.location.href = "{{ route('main_transaction.purchase.export') }}?type=pengiriman";
             });
             
             $('#btn-export-faktur').on('click', function() {
-                // Handle export for faktur
-                console.log('Export Faktur');
+                // Handle export for Purchase Invoice
+                window.location.href = "{{ route('main_transaction.purchase.export') }}?type=faktur";
             });
         });
     </script>

@@ -23,12 +23,36 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
     Route::controller(PurchaseController::class)->group(function () use ($base_segment, $purchase_segment) {
         Route::get($base_segment . $purchase_segment . '/index', 'index')->name('main_transaction.purchase.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $purchase_segment . '/index_data_table', 'index_data_table')->name('main_transaction.purchase.index_data_table')->middleware(EnsureTokenIsValid::class);
-        Route::get($base_segment . $purchase_segment . '/add', 'add')->name('main_transaction.purchase.add')->middleware(EnsureTokenIsValid::class);
+        
+        // Purchase Order routes
+        Route::get($base_segment . $purchase_segment . '/add_po', 'purchaseOrderAdd')->name('main_transaction.purchase.add.po')->middleware(EnsureTokenIsValid::class);
+        
+        // Purchase Delivery routes
+        Route::get($base_segment . $purchase_segment . '/add_pd', 'purchaseDeliveryAdd')->name('main_transaction.purchase.add.pd')->middleware(EnsureTokenIsValid::class);
+        
+        // Purchase Invoice routes
+        Route::get($base_segment . $purchase_segment . '/add_pi', 'purchaseInvoiceAdd')->name('main_transaction.purchase.add.pi')->middleware(EnsureTokenIsValid::class);
+        
+        // Import/Export routes
+        Route::post($base_segment . $purchase_segment . '/import', 'handleImport')->name('main_transaction.purchase.import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $purchase_segment . '/export', 'handleExport')->name('main_transaction.purchase.export')->middleware(EnsureTokenIsValid::class);
     });
 
     Route::controller(SalesController::class)->group(function () use ($base_segment, $sales_segment) {
         Route::get($base_segment . $sales_segment . '/index', 'index')->name('main_transaction.sales.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $sales_segment . '/index_data_table', 'index_data_table')->name('main_transaction.sales.index_data_table')->middleware(EnsureTokenIsValid::class);
-        Route::get($base_segment . $sales_segment . '/add', 'add')->name('main_transaction.sales.add')->middleware(EnsureTokenIsValid::class);
+        
+        // Sales Order routes
+        Route::get($base_segment . $sales_segment . '/add_so', 'salesOrderAdd')->name('main_transaction.sales.add.so')->middleware(EnsureTokenIsValid::class);
+        
+        // Sales Delivery routes
+        Route::get($base_segment . $sales_segment . '/add_sd', 'salesDeliveryAdd')->name('main_transaction.sales.add.sd')->middleware(EnsureTokenIsValid::class);
+        
+        // Sales Invoice routes
+        Route::get($base_segment . $sales_segment . '/add_si', 'salesInvoiceAdd')->name('main_transaction.sales.add.si')->middleware(EnsureTokenIsValid::class);
+        
+        // Import/Export routes
+        Route::post($base_segment . $sales_segment . '/import', 'handleImport')->name('main_transaction.sales.import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $sales_segment . '/export', 'handleExport')->name('main_transaction.sales.export')->middleware(EnsureTokenIsValid::class);
     });
 });

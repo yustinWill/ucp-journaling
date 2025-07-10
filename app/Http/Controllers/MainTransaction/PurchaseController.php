@@ -156,8 +156,92 @@ class PurchaseController extends Controller
         return response()->json($data, 200);
     }
 
-    public function add()
+    public function purchaseOrderAdd()
     {
-        return view('pages.main_transaction.purchase.add', []);
+        return view('pages.main_transaction.purchase.po_add', []);
+    }
+
+    public function purchaseDeliveryAdd()
+    {
+        return view('pages.main_transaction.purchase.pd_add', []);
+    }
+
+    public function purchaseInvoiceAdd()
+    {
+        return view('pages.main_transaction.purchase.pi_add', []);
+    }
+
+    public function handleImport(Request $request)
+    {
+        $type = $request->get('type', 'pesanan');
+        
+        switch ($type) {
+            case 'pesanan':
+                // Handle Purchase Order import
+                return $this->importPurchaseOrder($request);
+            case 'pengiriman':
+                // Handle Purchase Delivery import
+                return $this->importPurchaseDelivery($request);
+            case 'faktur':
+                // Handle Purchase Invoice import
+                return $this->importPurchaseInvoice($request);
+            default:
+                return response()->json(['error' => 'Invalid import type'], 400);
+        }
+    }
+
+    public function handleExport(Request $request)
+    {
+        $type = $request->get('type', 'pesanan');
+        
+        switch ($type) {
+            case 'pesanan':
+                // Handle Purchase Order export
+                return $this->exportPurchaseOrder($request);
+            case 'pengiriman':
+                // Handle Purchase Delivery export
+                return $this->exportPurchaseDelivery($request);
+            case 'faktur':
+                // Handle Purchase Invoice export
+                return $this->exportPurchaseInvoice($request);
+            default:
+                return response()->json(['error' => 'Invalid export type'], 400);
+        }
+    }
+
+    private function importPurchaseOrder(Request $request)
+    {
+        // TODO: Implement Purchase Order import logic
+        return response()->json(['message' => 'Purchase Order import functionality will be implemented']);
+    }
+
+    private function importPurchaseDelivery(Request $request)
+    {
+        // TODO: Implement Purchase Delivery import logic
+        return response()->json(['message' => 'Purchase Delivery import functionality will be implemented']);
+    }
+
+    private function importPurchaseInvoice(Request $request)
+    {
+        // TODO: Implement Purchase Invoice import logic
+        return response()->json(['message' => 'Purchase Invoice import functionality will be implemented']);
+    }
+
+    private function exportPurchaseOrder(Request $request)
+    {
+        // TODO: Implement Purchase Order export logic
+        return response()->json(['message' => 'Purchase Order export functionality will be implemented']);
+    }
+
+    private function exportPurchaseDelivery(Request $request)
+    {
+        // TODO: Implement Purchase Delivery export logic
+        return response()->json(['message' => 'Purchase Delivery export functionality will be implemented']);
+    }
+
+    private function exportPurchaseInvoice(Request $request)
+    {
+        // TODO: Implement Purchase Invoice export logic
+        return response()->json(['message' => 'Purchase Invoice export functionality will be implemented']);
     }
 }
