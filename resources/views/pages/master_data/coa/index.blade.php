@@ -36,7 +36,7 @@
                     </div>
                 </div>
             </form>
-            <br>
+            <hr class="my-6 mx-n6" />
             <div class="mt-4">
                 <div class="d-flex justify-content-end">
                     <div class="btn-group" role="group" aria-label="Basic example">
