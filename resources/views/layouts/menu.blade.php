@@ -115,6 +115,12 @@
                 <div data-i18n="Chat">Daftar Lainnnya</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['master_data.user.*'])) active @endif">
+            <a href="{{ route('master_data.user.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-users"></i>
+                <div data-i18n="Users">Users</div>
+            </a>
+        </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-settings"></i>
