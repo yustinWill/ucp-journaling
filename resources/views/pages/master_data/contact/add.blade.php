@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah Kontak Baru</h5>
+        <h4 class="card-header">Tambah Kontak Baru</h5>
         <div class="card-body">
             <h6>1. Data Kontak</h6>
             <div class="row g-6">

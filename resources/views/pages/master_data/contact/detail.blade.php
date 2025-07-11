@@ -9,23 +9,10 @@
             <div class="row mb-4">
                 <div class="col-md-8">
                     <h4 class="mb-3">Informasi Kontak</h4>
-                    
-                    <!-- Tab Navigation -->
-                    <div class="nav nav-tabs contact-tabs" id="contactTabs" role="tablist">
-                        <button class="nav-link active" id="profil-tab" data-bs-toggle="tab" data-bs-target="#profil" type="button" role="tab" aria-controls="profil" aria-selected="true">
-                            Profil
-                        </button>
-                        <button class="nav-link" id="transaksi-tab" data-bs-toggle="tab" data-bs-target="#transaksi" type="button" role="tab" aria-controls="transaksi" aria-selected="false">
-                            Transaksi
-                        </button>
-                        <button class="nav-link" id="credit-memo-tab" data-bs-toggle="tab" data-bs-target="#credit-memo" type="button" role="tab" aria-controls="credit-memo" aria-selected="false">
-                            Credit Memo
-                        </button>
-                    </div>
                 </div>
                 
                 <!-- Action Panel -->
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
                     <div class="text-end">
                         <div class="btn-group-vertical" role="group">
                             <button type="button" class="btn btn-primary mb-2">
@@ -42,56 +29,68 @@
                             </button>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
             
             <!-- Contact Title -->
-            <div class="mb-4">
-                <h2 class="fw-bold">{{ $contact['company_name'] }}</h2>
+            <h2>{{ $contact['company_name'] }}</h2>
+            <span>
+                <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
+            </span>
+            <hr class="my-6 mx-n6" />
+
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">Tipe Kontak</label>
+                    <input type="text" class="form-control" value="{{ $contact['type'] }}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Grup Kontak</label>
+                    <input type="text" class="form-control" value="{{ $contact['group'] }}" placeholder="Belum ada grup" disabled />
+                </div>
             </div>
+            <hr class="my-6 mx-n6" />
             
-            <!-- Contact Type & Group -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <label class="form-label">Tipe Kontak:</label>
-                    <div class="mt-1">
-                        <span class="badge bg-warning text-dark">{{ $contact['type'] }}</span>
+            <div class="col-lg-12">
+                <div class="demo-inline-spacing mt-4">
+                    <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
+                        <a class="list-group-item list-group-item-action waves-effect active" id="profil-list-item"
+                            data-bs-toggle="list" href="#horizontal-profil" aria-selected="true" role="tab"
+                            tabindex="-1"><b>Profil</b></a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="transaksi-list-item"
+                            data-bs-toggle="list" href="#horizontal-transaksi" aria-selected="false" role="tab"
+                            tabindex="-1"><b>Transaksi</b></a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="credit-memo-list-item"
+                            data-bs-toggle="list" href="#horizontal-credit-memo" aria-selected="false" role="tab"
+                            tabindex="-1"><b>Credit Memo</b></a>
                     </div>
-                </div>
-                <div class="col-md-9">
-                    <label class="form-label">Grup:</label>
-                    <input type="text" class="form-control" value="{{ $contact['group'] }}" placeholder="Belum ada grup" readonly>
-                </div>
-            </div>
-            
-            <!-- Tab Content -->
-            <div class="tab-content" id="contactTabContent">
-                <!-- Profil Tab -->
-                <div class="tab-pane fade show active" id="profil" role="tabpanel" aria-labelledby="profil-tab">
-                    <div id="profil-content">
-                        <!-- Content will be loaded here by default -->
-                    </div>
-                </div>
-                
-                <!-- Transaksi Tab -->
-                <div class="tab-pane fade" id="transaksi" role="tabpanel" aria-labelledby="transaksi-tab">
-                    <div id="transaksi-content">
-                        <!-- Content will be loaded dynamically -->
-                        <div class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                    <div class="tab-content px-0 mt-0">
+                        <div class="tab-pane fade show active" id="horizontal-profil" role="tabpanel"
+                            aria-labelledby="profil-list-item">
+                            <div id="profil-content">
+                                <!-- Content will be loaded here by default -->
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Credit Memo Tab -->
-                <div class="tab-pane fade" id="credit-memo" role="tabpanel" aria-labelledby="credit-memo-tab">
-                    <div id="credit-memo-content">
-                        <!-- Content will be loaded dynamically -->
-                        <div class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                        <div class="tab-pane fade" id="horizontal-transaksi" role="tabpanel"
+                            aria-labelledby="transaksi-list-item">
+                            <div id="transaksi-content">
+                                <!-- Content will be loaded dynamically -->
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="horizontal-credit-memo" role="tabpanel"
+                            aria-labelledby="credit-memo-list-item">
+                            <div id="credit-memo-content">
+                                <!-- Content will be loaded dynamically -->
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -188,129 +187,123 @@ $(function() {
     loadProfilContent();
     
     // Tab switch event handlers
-    $('#transaksi-tab').on('shown.bs.tab', function () {
+    $('#transaksi-list-item').on('shown.bs.tab', function () {
         loadTransaksiContent();
     });
     
-    $('#credit-memo-tab').on('shown.bs.tab', function () {
+    $('#credit-memo-list-item').on('shown.bs.tab', function () {
         loadCreditMemoContent();
     });
     
     function loadProfilContent() {
         const profilContent = `
-            <!-- Info Umum Section -->
-            <div class="section-header mt-12">
-                <h5>Info Umum</h5>
-                <hr>
-            </div>
-            
-            <div class="row g-3 mb-4">
-                <!-- Left Column -->
+            <h6>1. Data Kontak</h6>
+            <div class="row g-6">
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Kontak</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.contact_name}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nama Perusahaan</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.company_name}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control readonly-field" value="${contactData.email}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nomor Handphone</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.phone}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nomor Telepon</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.landline}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Fax</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.fax}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">NPWP</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.npwp}" readonly>
-                    </div>
-                </div>
-                
-                <!-- Right Column -->
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Identitas</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.identity_type}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nomor Identitas</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.identity_number}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Alamat Penagihan</label>
-                        <textarea class="form-control readonly-field" rows="3" readonly>${contactData.billing_address}</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Alamat Pengiriman</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.shipping_address}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Info Lainnya</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.other_info}" readonly>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Info Bank Section -->
-            <div class="section-header mt-12">
-                <h5>Info Bank</h5>
-                <hr>
-            </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Bank</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.bank_name}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Pemegang Akun Bank</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.account_holder}" readonly>
-                    </div>
+                    <label class="form-label">Nama Kontak</label>
+                    <input type="text" class="form-control" value="${contactData.contact_name}" disabled />
                 </div>
                 <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="form-label">Kantor Cabang</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.bank_branch}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nomor Rekening</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.account_number}" readonly>
-                    </div>
+                    <label class="form-label">Nama Perusahaan</label>
+                    <input type="text" class="form-control" value="${contactData.company_name}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="text" class="form-control" value="${contactData.email}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">No Telepon</label>
+                    <input type="text" class="form-control" value="${contactData.phone}" disabled />
                 </div>
             </div>
-            
-            <!-- Pemetaan Akun Section -->
-            <div class="section-header mt-12">
-                <h5>Pemetaan Akun</h5>
-                <hr>
+
+            <hr class="my-6 mx-n6" />
+            <h6>2. Data Umum</h6>
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">Jenis Identitas</label>
+                    <input type="text" class="form-control" value="${contactData.identity_type}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">No Identitas</label>
+                    <input type="text" class="form-control" value="${contactData.identity_number}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">No Telepon Perusahaan</label>
+                    <input type="text" class="form-control" value="${contactData.landline}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">No Fax</label>
+                    <input type="text" class="form-control" value="${contactData.fax}" disabled />
+                </div>
             </div>
-            
-            <div class="row g-3">
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="form-label">Akun Hutang</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.debt_account}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Akun Piutang</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.receivable_account}" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Syarat Pembayaran Utama</label>
-                        <input type="text" class="form-control readonly-field" value="${contactData.payment_terms}" readonly>
-                    </div>
+
+            <hr class="my-6 mx-n6" />
+            <h6>3. Data Perusahaan</h6>
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">No NPWP</label>
+                    <input type="text" class="form-control" value="${contactData.npwp}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Info Lainnya</label>
+                    <input type="text" class="form-control" value="${contactData.other_info}" disabled />
+                </div>
+            </div>
+
+            <hr class="my-6 mx-n6" />
+            <h6>4. Alamat Penagihan</h6>
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">Alamat</label>
+                    <textarea class="form-control" disabled>${contactData.billing_address}</textarea>
+                </div>
+            </div>
+
+            <hr class="my-6 mx-n6" />
+            <h6>5. Alamat Pengiriman</h6>
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">Alamat</label>
+                    <textarea class="form-control" disabled>${contactData.shipping_address}</textarea>
+                </div>
+            </div>
+
+            <hr class="my-6 mx-n6" />
+            <h6>6. Pemetaan Akun</h6>
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">Akun Hutang</label>
+                    <input type="text" class="form-control" value="${contactData.debt_account}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Akun Piutang</label>
+                    <input type="text" class="form-control" value="${contactData.receivable_account}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Syarat Pembayaran</label>
+                    <input type="text" class="form-control" value="${contactData.payment_terms}" disabled />
+                </div>
+            </div>
+
+            <hr class="my-6 mx-n6" />
+            <h6>7. Info Bank</h6>
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">Nama Bank</label>
+                    <input type="text" class="form-control" value="${contactData.bank_name}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Kantor Cabang</label>
+                    <input type="text" class="form-control" value="${contactData.bank_branch}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Pemegang Akun Bank</label>
+                    <input type="text" class="form-control" value="${contactData.account_holder}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nomor Rekening</label>
+                    <input type="text" class="form-control" value="${contactData.account_number}" disabled />
                 </div>
             </div>
         `;
