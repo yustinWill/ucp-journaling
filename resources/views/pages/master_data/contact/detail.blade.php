@@ -199,7 +199,7 @@ $(function() {
     function loadProfilContent() {
         const profilContent = `
             <!-- Info Umum Section -->
-            <div class="section-header mt-4">
+            <div class="section-header mt-12">
                 <h5>Info Umum</h5>
                 <hr>
             </div>
@@ -263,7 +263,7 @@ $(function() {
             </div>
             
             <!-- Info Bank Section -->
-            <div class="section-header mt-4">
+            <div class="section-header mt-12">
                 <h5>Info Bank</h5>
                 <hr>
             </div>
@@ -292,7 +292,7 @@ $(function() {
             </div>
             
             <!-- Pemetaan Akun Section -->
-            <div class="section-header mt-4">
+            <div class="section-header mt-12">
                 <h5>Pemetaan Akun</h5>
                 <hr>
             </div>
@@ -395,14 +395,15 @@ $(function() {
     
     function loadCreditMemoContent() {
         $.get(`/master_data/contact/detail_credit_memo_data/${contactId}`, function(data) {
+            const creditMemoUrl = "{{ route('main_transaction.credit_memo.add_with_contact', ':id') }}".replace(':id', contactId);
             const creditMemoContent = `
                 <!-- Add Credit Memo Button -->
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <label class="form-label">Tambah Credit Memo:</label>
-                        <button type="button" class="btn btn-primary">
+                        <a href="${creditMemoUrl}" class="btn btn-primary">
                             Tambah Credit Memo
-                        </button>
+                        </a>
                     </div>
                 </div>
                 

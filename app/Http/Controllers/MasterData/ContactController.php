@@ -80,6 +80,36 @@ class ContactController extends Controller
         return view('pages.master_data.contact.add', []);
     }
 
+    public function edit($id)
+    {
+        // Mock contact data - in real app, fetch from database
+        $contact = [
+            'id' => $id,
+            'contact_name' => 'Anwar',
+            'company_name' => 'PT Maju Jaya Sentosa',
+            'type' => 'Pelanggan',
+            'group' => 'VIP Customer',
+            'email' => 'pelanggan1@example.com',
+            'phone' => '081234567890',
+            'landline' => '021-12345678',
+            'fax' => '021-12345679',
+            'identity_type' => 'KTP',
+            'identity_number' => '3175091203940000',
+            'npwp' => '01.234.567.8-999.000',
+            'billing_address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+            'shipping_address' => 'Ciomas, Bogor',
+            'bank_name' => 'Bank Central Asia',
+            'bank_branch' => 'Bogor',
+            'account_holder' => 'Anwar',
+            'account_number' => '541-002-7891',
+            'debt_account' => '(2-20100) Hutang',
+            'receivable_account' => '(1-20100) Piutang',
+            'payment_terms' => 'Net 30'
+        ];
+
+        return view('pages.master_data.contact.edit', ['contact' => $contact]);
+    }
+
     public function export()
     {
         $data = [

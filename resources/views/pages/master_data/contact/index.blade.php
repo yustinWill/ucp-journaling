@@ -198,11 +198,12 @@
                             searchable: false,
                             render: function(data, type, row, meta) {
                                 const detailUrl = "{{ route('master_data.contact.detail', ':id') }}".replace(':id', row.id);
+                                const editUrl = "{{ route('master_data.contact.edit', ':id') }}".replace(':id', row.id);
                                 return `
                                 <div class="btn-group" role="group" aria-label="Second group">
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
+                                    <a href="${editUrl}" class="btn btn-primary btn-sm waves-effect">
                                         <i class="icon-base ti tabler-edit"></i>
-                                    </button>
+                                    </a>
                                     <a href="${detailUrl}" class="btn btn-primary btn-sm waves-effect">
                                         <i class="icon-base ti tabler-eye"></i>
                                     </a>

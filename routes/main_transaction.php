@@ -7,13 +7,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainTransaction\JournalController;
 use App\Http\Controllers\MainTransaction\PurchaseController;
 use App\Http\Controllers\MainTransaction\SalesController;
+use App\Http\Controllers\MainTransaction\CreditMemoController;
 
 $base_segment = '/main_transaction';
 $journal_segment = '/jurnal';
 $purchase_segment = '/pembelian';
 $sales_segment = '/penjualan';
+$credit_memo_segment = '/credit_memo';
 
-Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $sales_segment) {
+Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $sales_segment, $credit_memo_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment . $journal_segment . '/index', 'index')->name('main_transaction.jurnal.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $journal_segment . '/index_data_table', 'index_data_table')->name('main_transaction.jurnal.index_data_table')->middleware(EnsureTokenIsValid::class);
@@ -54,5 +56,14 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         // Import/Export routes
         Route::post($base_segment . $sales_segment . '/import', 'handleImport')->name('main_transaction.sales.import')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $sales_segment . '/export', 'handleExport')->name('main_transaction.sales.export')->middleware(EnsureTokenIsValid::class);
+    });
+
+    Route::controller(CreditMemoController::class)->group(function () use ($base_segment, $credit_memo_segment) {
+        Route::get($base_segment . $credit_memo_segment . '/index', 'index')->name('main_transaction.credit_memo.index')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $credit_memo_segment . '/index_data_table', 'index_data_table')->name('main_transaction.credit_memo.index_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $credit_memo_segment . '/add', 'add')->name('main_transaction.credit_memo.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $credit_memo_segment . '/add/{contact_id?}', 'addWithContact')->name('main_transaction.credit_memo.add_with_contact')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $credit_memo_segment . '/export', 'export')->name('main_transaction.credit_memo.export')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $credit_memo_segment . '/import', 'import')->name('main_transaction.credit_memo.import')->middleware(EnsureTokenIsValid::class);
     });
 });
