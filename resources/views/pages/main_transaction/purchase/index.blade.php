@@ -38,7 +38,7 @@
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-success"><i
-                                    class="icon-base ti tabler-check-circle icon-28px"></i></span>
+                                    class="icon-base ti tabler-calendar-check icon-28px"></i></span>
                         </div>
                         <h4 class="mb-0">Rp 85,000,000</h4>
                     </div>
