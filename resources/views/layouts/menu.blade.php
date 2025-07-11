@@ -46,9 +46,9 @@
                         <div>Gudang</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="dashboards-crm.html" class="menu-link">
-                        <div data-i18n="CRM">Produk</div>
+                <li class="menu-item @if (request()->routeIs(['master_data.product.*'])) active @endif">
+                    <a href="{{ route('master_data.product.index') }}" class="menu-link">
+                        <div>Produk</div>
                     </a>
                 </li>
                 <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">

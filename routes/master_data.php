@@ -6,16 +6,18 @@ use Illuminate\Support\Facades\Route;
 //Controllers
 use App\Http\Controllers\MasterData\ContactController;
 use App\Http\Controllers\MasterData\StorageController;
+use App\Http\Controllers\MasterData\ProductController;
 use App\Http\Controllers\MasterData\CoaController;
 use App\Http\Controllers\MasterData\UserController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
 $storage_segment = '/gudang';
+$product_segment = '/product';
 $coa_segment = '/coa';
 $user_segment = '/user';
 
-Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $coa_segment, $user_segment) {
+Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table')->middleware(EnsureTokenIsValid::class);
@@ -39,6 +41,15 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $storage_segment . '/detail_batch_data_table', 'detail_batch_data_table')->name('master_data.storage.detail_batch_data_table')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $storage_segment . '/export', 'export')->name('master_data.storage.export')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $storage_segment . '/import', 'import')->name('master_data.storage.import')->middleware(EnsureTokenIsValid::class);
+    });
+
+    Route::controller(ProductController::class)->group(function () use ($base_segment, $product_segment) {
+        Route::get($base_segment . $product_segment . '/index', 'index')->name('master_data.product.index')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $product_segment . '/index_data_table', 'index_data_table')->name('master_data.product.index_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $product_segment . '/index_warehouse_data_table', 'index_warehouse_data_table')->name('master_data.product.index_warehouse_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $product_segment . '/add', 'add')->name('master_data.product.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $product_segment . '/export', 'export')->name('master_data.product.export')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $product_segment . '/import', 'import')->name('master_data.product.import')->middleware(EnsureTokenIsValid::class);
     });
 
     Route::controller(CoaController::class)->group(function () use ($base_segment, $coa_segment) {

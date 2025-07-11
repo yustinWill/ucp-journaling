@@ -3,9 +3,11 @@
     List COA
 @stop
 @section('content')
-    <div class="card">
+    <!-- Main Content Card -->
+    <div class="card mt-6">
         <h5 class="card-header">List COA</h5>
         <div class="card-body">
+            <!-- Advanced Search Form -->
             <form class="dt_adv_search" method="GET">
                 <div class="row">
                     <div class="col-12">
@@ -37,9 +39,10 @@
                 </div>
             </form>
             <hr class="my-6 mx-n6" />
+            <!-- Action Buttons -->
             <div class="mt-4">
                 <div class="d-flex justify-content-end">
-                    <div class="btn-group" role="group" aria-label="Basic example">
+                    <div class="d-flex gap-2">
                         <button type="button" id="btn-import-data"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
@@ -53,6 +56,7 @@
                 </div>
             </div>
         </div>
+        <!-- Data Table -->
         <div class="card-datatable">
             <table id="main-table" class="table table-bordered">
                 <thead>
@@ -162,6 +166,8 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
+                    scrollX: true,
+                    responsive: true,
                     orderCellsTop: true
                 });
             }
