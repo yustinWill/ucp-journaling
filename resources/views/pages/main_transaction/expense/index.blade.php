@@ -1,0 +1,264 @@
+@extends('layouts.default')
+@section('page_title')
+    List Pengeluaran
+@stop
+@section('content')
+    <!-- Main Content Card -->
+    <div class="card">
+        <h5 class="card-header">List Pengeluaran</h5>
+        <div class="card-body">
+            <!-- Advanced Search Form -->
+            <form class="dt_adv_search" method="GET">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <label class="form-label">Tanggal Pengeluaran:</label>
+                                <input type="text" id="date-range-picker" class="form-control" />
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <label class="form-label">No Referensi:</label>
+                                <input type="text" class="form-control dt-input" data-column="2"
+                                    placeholder="Cari Berdasarkan No Referensi" data-column-index="1" />
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <label class="form-label">Kategori:</label>
+                                <select class="global-select2 form-select" id="category-filter" data-allow-clear="true">
+                                    <option value="">Semua Kategori</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 col-lg-3">
+                                <label class="form-label">Status:</label>
+                                <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
+                                    <option value="">Semua Status</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <hr class="my-6 mx-n6" />
+            
+            <!-- Action Buttons -->
+            <div class="mt-4">
+                <div class="d-flex justify-content-end">
+                    <div class="d-flex gap-2">
+                        <button type="button" id="btn-import-data"
+                            class="btn btn-md btn-primary waves-effect waves-light">
+                            <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
+                        </button>
+                        <button type="button" id="btn-export-data"
+                            class="btn btn-md btn-primary waves-effect waves-light">
+                            <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
+                        </button>
+                        <button type="button" id="btn-add-data"
+                            class="btn btn-md btn-primary waves-effect waves-light">
+                            <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Table -->
+        <div class="card-datatable">
+            <table id="main-table" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>No Referensi</th>
+                        <th>Keterangan</th>
+                        <th>Kategori</th>
+                        <th>Supplier/Vendor</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Diinput Oleh</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+@stop
+
+@section('js_script')
+    <script>
+        $(function() {
+            // DataTable initialization
+            const main_table = document.querySelector('#main-table');
+            let dt_adv_filter;
+
+            if (main_table) {
+                dt_adv_filter = new DataTable(main_table, {
+                    ajax: `{{ route('main_transaction.expense.index_data_table') }}`,
+                    columns: [
+                        { data: 'date' },
+                        { 
+                            data: 'reference_no',
+                            render: function(data, type, row) {
+                                return `<a href="#" class="text-primary">${data}</a>`;
+                            }
+                        },
+                        { data: 'description' },
+                        { data: 'category' },
+                        { 
+                            data: 'supplier',
+                            render: function(data, type, row) {
+                                return data ? `<a href="#" class="text-primary">${data}</a>` : '-';
+                            }
+                        },
+                        { 
+                            data: 'status',
+                            render: function(data, type, row) {
+                                let badgeClass = '';
+                                switch (data) {
+                                    case 'Draft':
+                                        badgeClass = 'bg-label-secondary';
+                                        break;
+                                    case 'Diajukan':
+                                        badgeClass = 'bg-label-info';
+                                        break;
+                                    case 'Disetujui':
+                                        badgeClass = 'bg-label-success';
+                                        break;
+                                    case 'Dibayar':
+                                        badgeClass = 'bg-label-primary';
+                                        break;
+                                    case 'Ditolak':
+                                        badgeClass = 'bg-label-danger';
+                                        break;
+                                    default:
+                                        badgeClass = 'bg-label-secondary';
+                                }
+                                return `<span class="badge ${badgeClass}">${data}</span>`;
+                            }
+                        },
+                        { 
+                            data: 'amount',
+                            className: 'text-end',
+                            render: function(data, type, row) {
+                                if (type === 'display' && data != null && !isNaN(data)) {
+                                    return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
+                                }
+                                return data ?? '';
+                            }
+                        },
+                        { data: 'created_by' },
+                        {
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                const detailUrl = `{{ route('main_transaction.expense.detail', ':id') }}`.replace(':id', row.id);
+                                const editUrl = `{{ route('main_transaction.expense.edit', ':id') }}`.replace(':id', row.id);
+                                return `
+                                <div class="btn-group" role="group" aria-label="Second group">
+                                    <a href="${editUrl}" class="btn btn-primary btn-sm waves-effect">
+                                        <i class="icon-base ti tabler-edit"></i>
+                                    </a>
+                                    <a href="${detailUrl}" class="btn btn-primary btn-sm waves-effect">
+                                        <i class="icon-base ti tabler-eye"></i>
+                                    </a>
+                                </div>
+                                `;
+                            }
+                        }
+                    ],
+                    layout: {
+                        topStart: { rowClass: 'm-0', features: [] },
+                        topEnd: {},
+                        bottomStart: { rowClass: 'row mx-3 justify-content-between', features: ['info'] },
+                        bottomEnd: 'paging'
+                    },
+                    language: {
+                        paginate: {
+                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                        }
+                    },
+                    scrollX: true,
+                    responsive: true,
+                    orderCellsTop: true
+                });
+            }
+
+            // Load select options from API
+            async function loadCategoryOptions() {
+                try {
+                    const response = await fetch(`{{ route('main_transaction.expense.categories') }}`);
+                    const data = await response.json();
+                    
+                    const categorySelect = $('#category-filter');
+                    categorySelect.empty().append('<option value="">Semua Kategori</option>');
+                    
+                    data.forEach(item => {
+                        categorySelect.append(`<option value="${item.value}">${item.label}</option>`);
+                    });
+                } catch (error) {
+                    console.error('Error loading categories:', error);
+                }
+            }
+
+            async function loadStatusOptions() {
+                try {
+                    const response = await fetch(`{{ route('main_transaction.expense.statuses') }}`);
+                    const data = await response.json();
+                    
+                    const statusSelect = $('#status-filter');
+                    statusSelect.empty().append('<option value="">Semua Status</option>');
+                    
+                    data.forEach(item => {
+                        statusSelect.append(`<option value="${item.value}">${item.label}</option>`);
+                    });
+                } catch (error) {
+                    console.error('Error loading statuses:', error);
+                }
+            }
+
+            async function loadSelectOptions() {
+                await loadCategoryOptions();
+                await loadStatusOptions();
+                
+                // Initialize global-select2 after options are loaded
+                $('.global-select2').select2();
+            }
+
+            // Initialize select options
+            loadSelectOptions();
+
+            // Button click events
+            $('#btn-add-data').on('click', function() {
+                window.location.href = `{{ route('main_transaction.expense.add') }}`;
+            });
+
+            $('#btn-export-data').on('click', function() {
+                window.location.href = `{{ route('main_transaction.expense.export') }}`;
+            });
+
+            $('#btn-import-data').on('click', function() {
+                // Create file input for import
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.xlsx,.xls,.csv';
+                fileInput.onchange = function(e) {
+                    const formData = new FormData();
+                    formData.append('file', e.target.files[0]);
+                    
+                    // TODO: Implement actual import functionality
+                    console.log('Import Expense file:', e.target.files[0].name);
+                    // fetch('{{ route("main_transaction.expense.import") }}', {
+                    //     method: 'POST',
+                    //     body: formData,
+                    //     headers: {
+                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    //     }
+                    // });
+                };
+                fileInput.click();
+            });
+        });
+    </script>
+@endsection

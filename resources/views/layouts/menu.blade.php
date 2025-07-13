@@ -67,6 +67,12 @@
                 <div data-i18n="Chat">Jurnal</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.expense.*'])) active @endif">
+            <a href="{{ route('main_transaction.expense.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-credit-card"></i>
+                <div data-i18n="Chat">Pengeluaran</div>
+            </a>
+        </li>
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Menu C</span>
         </li>

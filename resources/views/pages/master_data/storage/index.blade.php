@@ -134,16 +134,6 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tfoot>
-                    <tr>
-                        <th>Kode Gudang</th>
-                        <th>Nama Gudang</th>
-                        <th>Penanggung Jawab</th>
-                        <th>Alamat</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>

@@ -3,6 +3,7 @@
     List Penjualan
 @stop
 @section('content')
+    <!-- Summary Cards -->
     <div class="row">
         <div class="col-lg-4 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
@@ -47,9 +48,10 @@
             </div>
         </div>
     </div>
-    <hr class="my-6 mx-n6" />
     
-    <ul class="nav nav-tabs" role="tablist">
+    <!-- Tabs -->
+    <div class="mt-6">
+        <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pesanan-tab" type="button"
                 role="tab" aria-controls="pesanan-tab" aria-selected="true">
@@ -71,14 +73,15 @@
                 Faktur
             </button>
         </li>
-    </ul>
-    
-    <div class="row">
-        <div class="tab-content p-3">
+        </ul>
+        
+        <div class="tab-content p-0 mt-3">
             <!-- Pesanan Tab -->
             <div class="tab-pane fade show active" id="pesanan-tab" role="tabpanel">
                 <div class="card">
+                    <h5 class="card-header">Pesanan Penjualan</h5>
                     <div class="card-body">
+                        <!-- Advanced Search Form -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
@@ -94,9 +97,13 @@
                                 <input type="text" class="form-control" id="pesanan-search" placeholder="Cari Transaksi">
                             </div>
                         </div>
+                        
+                        <hr class="my-6 mx-n6" />
+                        
+                        <!-- Action Buttons -->
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
-                                <div class="btn-group" role="group" aria-label="Basic example">
+                                <div class="d-flex gap-2">
                                     <button type="button" id="btn-import-pesanan"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
                                             class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
@@ -110,6 +117,8 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Data Table -->
                     <div class="card-datatable">
                         <table id="pesanan-table" class="table table-bordered">
                             <thead>
@@ -131,7 +140,9 @@
             <!-- Pengiriman Tab -->
             <div class="tab-pane fade" id="pengiriman-tab" role="tabpanel">
                 <div class="card">
+                    <h5 class="card-header">Pengiriman Penjualan</h5>
                     <div class="card-body">
+                        <!-- Advanced Search Form -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
@@ -146,9 +157,13 @@
                                 <input type="text" class="form-control" id="pengiriman-search" placeholder="Cari Transaksi">
                             </div>
                         </div>
+                        
+                        <hr class="my-6 mx-n6" />
+                        
+                        <!-- Action Buttons -->
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
-                                <div class="btn-group" role="group" aria-label="Basic example">
+                                <div class="d-flex gap-2">
                                     <button type="button" id="btn-import-pengiriman"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
                                             class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
@@ -162,6 +177,8 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Data Table -->
                     <div class="card-datatable">
                         <table id="pengiriman-table" class="table table-bordered">
                             <thead>
@@ -180,7 +197,9 @@
             <!-- Faktur Tab -->
             <div class="tab-pane fade" id="faktur-tab" role="tabpanel">
                 <div class="card">
+                    <h5 class="card-header">Faktur Penjualan</h5>
                     <div class="card-body">
+                        <!-- Advanced Search Form -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
@@ -198,9 +217,13 @@
                                 <input type="text" class="form-control" id="faktur-search" placeholder="Cari Transaksi">
                             </div>
                         </div>
+                        
+                        <hr class="my-6 mx-n6" />
+                        
+                        <!-- Action Buttons -->
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
-                                <div class="btn-group" role="group" aria-label="Basic example">
+                                <div class="d-flex gap-2">
                                     <button type="button" id="btn-import-faktur"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
                                             class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
@@ -214,6 +237,8 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Data Table -->
                     <div class="card-datatable">
                         <table id="faktur-table" class="table table-bordered">
                             <thead>
@@ -315,6 +340,8 @@
                             }
                         }
                     ],
+                    scrollX: true,
+                    responsive: true,
                     layout: {
                         topStart: { rowClass: 'm-0', features: [] },
                         topEnd: {},
@@ -367,6 +394,8 @@
                             }
                         }
                     ],
+                    scrollX: true,
+                    responsive: true,
                     layout: {
                         topStart: { rowClass: 'm-0', features: [] },
                         topEnd: {},
@@ -459,6 +488,8 @@
                             }
                         }
                     ],
+                    scrollX: true,
+                    responsive: true,
                     layout: {
                         topStart: { rowClass: 'm-0', features: [] },
                         topEnd: {},
