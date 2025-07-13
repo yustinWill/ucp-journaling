@@ -181,7 +181,7 @@
 
             if (product_table) {
                 let dt_adv_filter = new DataTable(product_table, {
-                    ajax: '{{ route('master_data.storage.detail_product_data_table') }}',
+                    ajax: `{{ route('master_data.storage.detail_product_data_table') }}`,
                     columns: [{
                             data: 'product_code'
                         },
@@ -254,7 +254,7 @@
 
             if (transaction_table) {
                 let dt_adv_filter = new DataTable(transaction_table, {
-                    ajax: '{{ route('master_data.storage.detail_transaction_data_table') }}',
+                    ajax: `{{ route('master_data.storage.detail_transaction_data_table') }}`,
                     columns: [{
                             data: 'transaction_date'
                         },
@@ -327,7 +327,7 @@
 
             if (batch_table) {
                 let dt_adv_filter = new DataTable(batch_table, {
-                    ajax: '{{ route('master_data.storage.detail_batch_data_table') }}',
+                    ajax: `{{ route('master_data.storage.detail_batch_data_table') }}`,
                     columns: [{
                             data: 'batch_code'
                         },

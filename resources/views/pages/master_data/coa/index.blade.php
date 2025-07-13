@@ -94,7 +94,7 @@
 
             if (main_table) {
                 dt_adv_filter = new DataTable(main_table, {
-                    ajax: '{{ route('master_data.coa.index_data_table') }}',
+                    ajax: `{{ route('master_data.coa.index_data_table') }}`,
                     columns: [{
                             data: 'coa_code'
                         },

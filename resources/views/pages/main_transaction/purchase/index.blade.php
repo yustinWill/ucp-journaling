@@ -273,7 +273,7 @@
                 
                 pesananTable = new DataTable('#pesanan-table', {
                     ajax: {
-                        url: '{{ route('main_transaction.purchase.index_data_table') }}',
+                        url: `{{ route('main_transaction.purchase.index_data_table') }}`,
                         data: {
                             tab: 'pesanan'
                         }
@@ -367,7 +367,7 @@
                 
                 pengirimanTable = new DataTable('#pengiriman-table', {
                     ajax: {
-                        url: '{{ route('main_transaction.purchase.index_data_table') }}',
+                        url: `{{ route('main_transaction.purchase.index_data_table') }}`,
                         data: {
                             tab: 'pengiriman'
                         }
@@ -421,7 +421,7 @@
                 
                 fakturTable = new DataTable('#faktur-table', {
                     ajax: {
-                        url: '{{ route('main_transaction.purchase.index_data_table') }}',
+                        url: `{{ route('main_transaction.purchase.index_data_table') }}`,
                         data: {
                             tab: 'faktur'
                         }

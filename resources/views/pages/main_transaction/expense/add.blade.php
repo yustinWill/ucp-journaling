@@ -52,7 +52,7 @@
                     </div>
                     <div class="col-lg-6 col-md-12 mb-3">
                         <label class="form-label">Tanggal Transaksi <span class="text-danger">*</span></label>
-                        <input type="date" id="transaction-date" name="transaction_date" class="form-control" 
+                        <input type="date" class="form-control global-single-date-picker" id="transaction-date" name="transaction_date" 
                                value="{{ date('Y-m-d') }}" required>
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                     </div>
                     <div class="col-lg-6 col-md-12 mb-3">
                         <label class="form-label">Tanggal Jatuh Tempo <span class="text-danger">*</span></label>
-                        <input type="date" id="due-date" name="due_date" class="form-control" placeholder="autofill">
+                        <input type="date" class="form-control global-single-date-picker" id="due-date" name="due_date" placeholder="autofill">
                     </div>
                 </div>
                 
@@ -269,7 +269,7 @@ $(function() {
             placeholder: 'Pilih Penerima',
             allowClear: true,
             ajax: {
-                url: '{{ route('main_transaction.expense.recipients') }}',
+                url: `{{ route('main_transaction.expense.recipients') }}`,
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
@@ -291,7 +291,7 @@ $(function() {
             placeholder: 'Pilih Akun Biaya',
             allowClear: true,
             ajax: {
-                url: '{{ route('main_transaction.expense.accounts') }}',
+                url: `{{ route('main_transaction.expense.accounts') }}`,
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
@@ -453,7 +453,7 @@ $(function() {
             placeholder: 'Pilih Akun Biaya',
             allowClear: true,
             ajax: {
-                url: '{{ route('main_transaction.expense.accounts') }}',
+                url: `{{ route('main_transaction.expense.accounts') }}`,
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {

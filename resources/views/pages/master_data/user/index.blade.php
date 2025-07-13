@@ -156,7 +156,7 @@
 
             if (main_table) {
                 dt_adv_filter = new DataTable(main_table, {
-                    ajax: '{{ route('master_data.user.index_data_table') }}',
+                    ajax: `{{ route('master_data.user.index_data_table') }}`,
                     columns: [{
                             data: 'name'
                         },

@@ -260,7 +260,7 @@
                 
                 productsTable = new DataTable('#products-table', {
                     ajax: {
-                        url: '{{ route('master_data.product.index_data_table') }}',
+                        url: `{{ route('master_data.product.index_data_table') }}`,
                         data: {
                             tab: 'products'
                         }
@@ -390,7 +390,7 @@
                 
                 warehouseTable = new DataTable('#warehouse-table', {
                     ajax: {
-                        url: '{{ route('master_data.product.index_warehouse_data_table') }}',
+                        url: `{{ route('master_data.product.index_warehouse_data_table') }}`,
                         data: {
                             tab: 'warehouse'
                         }
