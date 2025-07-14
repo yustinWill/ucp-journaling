@@ -85,7 +85,7 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
-                                <select class="form-select" id="pesanan-status-filter">
+                                <select class="global-select2 form-select" id="pesanan-status-filter" data-allow-clear="true">
                                     <option value="">Semua Status</option>
                                     <option value="Belum Ditagih">Belum Ditagih</option>
                                     <option value="Dikirim Sebagian">Dikirim Sebagian</option>

@@ -16,7 +16,7 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Pelanggan <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="customer-select" data-allow-clear="true">
+                    <select class="global-select2 form-select" id="customer-select">
                         <option value="">Pilih Pelanggan</option>
                         <option value="1">John</option>
                         <option value="2">PT. Cahaya Abadi</option>
@@ -59,7 +59,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
-                    <select class="form-select" id="payment-terms">
+                    <select class="global-select2 form-select" id="payment-terms">
                         <option value="Net 30" selected>Net 30</option>
                         <option value="Net 15">Net 15</option>
                         <option value="Net 45">Net 45</option>
@@ -85,7 +85,7 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Gudang</label>
-                    <select class="form-select" id="warehouse">
+                    <select class="global-select2 form-select" id="warehouse" data-allow-clear="true">
                         <option value="">Pilih Gudang</option>
                         <option value="1">Gudang Utama</option>
                         <option value="2">Gudang Cabang A</option>
@@ -123,7 +123,7 @@
                     <tbody id="invoiceTableBody">
                         <tr>
                             <td>
-                                <select class="form-select product-select" required>
+                                <select class="global-select2 form-select product-select" required>
                                     <option value="">Pilih Produk</option>
                                     <option value="1" selected>ALBUM SVT</option>
                                     <option value="2">Buku Tulis</option>
@@ -147,7 +147,7 @@
                                 <input type="text" class="form-control discount-field" value="5%" placeholder="5%">
                             </td>
                             <td>
-                                <select class="form-select tax-select">
+                                <select class="global-select2 form-select tax-select" data-allow-clear="true">
                                     <option value="PPN" selected>PPN</option>
                                     <option value="No Tax">Tidak Ada Pajak</option>
                                 </select>
@@ -295,7 +295,7 @@
                 const newRow = `
                     <tr>
                         <td>
-                            <select class="form-select product-select" required>
+                            <select class="global-select2 form-select product-select" required>
                                 <option value="">Pilih Produk</option>
                                 <option value="1">ALBUM SVT</option>
                                 <option value="2">Buku Tulis</option>
@@ -319,7 +319,7 @@
                             <input type="text" class="form-control discount-field" value="0%" placeholder="0%">
                         </td>
                         <td>
-                            <select class="form-select tax-select">
+                            <select class="global-select2 form-select tax-select" data-allow-clear="true">
                                 <option value="PPN">PPN</option>
                                 <option value="No Tax">Tidak Ada Pajak</option>
                             </select>

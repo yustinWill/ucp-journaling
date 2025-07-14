@@ -49,7 +49,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Mata Uang</label>
-                    <select class="form-select" id="currency">
+                    <select class="global-select2 form-select" id="currency" data-allow-clear="true">
                         <option value="IDR" selected>IDR - Rupiah</option>
                         <option value="USD">USD - Dollar</option>
                         <option value="EUR">EUR - Euro</option>
@@ -66,7 +66,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Metode Pembayaran</label>
-                    <select class="form-select" id="payment-method">
+                    <select class="global-select2 form-select" id="payment-method" data-allow-clear="true">
                         <option value="Transfer Bank">Transfer Bank</option>
                         <option value="Cash">Cash</option>
                         <option value="Cek">Cek</option>
@@ -124,7 +124,7 @@
                                     required>
                             </td>
                             <td>
-                                <select class="form-select tax-select">
+                                <select class="global-select2 form-select tax-select" data-allow-clear="true">
                                     <option value="PPN">PPN 11%</option>
                                     <option value="No Tax">Tidak Ada Pajak</option>
                                 </select>
@@ -161,7 +161,7 @@
                                     required>
                             </td>
                             <td>
-                                <select class="form-select tax-select">
+                                <select class="global-select2 form-select tax-select" data-allow-clear="true">
                                     <option value="PPN">PPN 11%</option>
                                     <option value="No Tax">Tidak Ada Pajak</option>
                                 </select>
@@ -200,7 +200,7 @@
                     <tbody id="additionalCostsTableBody">
                         <tr>
                             <td>
-                                <select class="form-select cost-type">
+                                <select class="global-select2 form-select cost-type" data-allow-clear="true">
                                     <option value="">Pilih Jenis Biaya</option>
                                     <option value="Biaya Kirim">Biaya Kirim</option>
                                     <option value="Biaya Asuransi">Biaya Asuransi</option>
@@ -216,7 +216,7 @@
                                     value="0">
                             </td>
                             <td>
-                                <select class="form-select additional-tax-select">
+                                <select class="global-select2 form-select additional-tax-select" data-allow-clear="true">
                                     <option value="PPN">PPN 11%</option>
                                     <option value="No Tax">Tidak Ada Pajak</option>
                                 </select>
