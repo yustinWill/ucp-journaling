@@ -85,7 +85,7 @@
             </div>
 
             <!-- Product Table -->
-            <div class="table-responsive mx-n5 my-4">
+            <div class="mx-n5 my-4">
                 <table class="table table-bordered" id="invoiceTable">
                     <thead>
                         <tr>
@@ -186,7 +186,7 @@
                 <h6>Biaya Tambahan</h6>
             </div>
 
-            <div class="table-responsive mx-n5 my-4">
+            <div class="mx-n5 my-4">
                 <table class="table table-bordered" id="additionalCostsTable">
                     <thead>
                         <tr>

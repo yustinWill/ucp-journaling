@@ -92,7 +92,7 @@
                 </div>
                 
                 <!-- Expense Table -->
-                <div class="table-responsive mx-n5 my-4">
+                <div class="mx-n5 my-4">
                     <table id="expense-table" class="table table-bordered">
                         <thead>
                             <tr>
@@ -274,10 +274,10 @@
                 <div class="mt-4">
                     <div class="d-flex gap-2 justify-content-end">
                         <button type="button" class="btn btn-secondary" id="cancel-btn">
-                            <i class="ti ti-arrow-left me-2"></i>Batalkan
+                            <i class="icon-base ti tabler-arrow-left me-2"></i>Batalkan
                         </button>
                         <button type="submit" class="btn btn-success">
-                            <i class="ti ti-check me-2"></i>Buat
+                            <i class="icon-base ti tabler-check me-2"></i>Buat
                         </button>
                     </div>
                 </div>

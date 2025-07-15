@@ -190,7 +190,54 @@ class ProductController extends Controller
 
     public function add()
     {
-        return view('pages.master_data.product.add', []);
+        $units = [
+            ['value' => 'pcs', 'label' => 'pcs'],
+            ['value' => 'kg', 'label' => 'kg'],
+            ['value' => 'meter', 'label' => 'meter'],
+            ['value' => 'liter', 'label' => 'liter'],
+            ['value' => 'rim', 'label' => 'rim'],
+            ['value' => 'box', 'label' => 'box'],
+            ['value' => 'set', 'label' => 'set'],
+            ['value' => 'roll', 'label' => 'roll'],
+            ['value' => 'pack', 'label' => 'pack']
+        ];
+
+        $categories = [
+            ['value' => 'Alat Tulis', 'label' => 'Alat Tulis'],
+            ['value' => 'Kertas', 'label' => 'Kertas'],
+            ['value' => 'Elektronik', 'label' => 'Elektronik'],
+            ['value' => 'Furniture', 'label' => 'Furniture'],
+            ['value' => 'Konsumsi', 'label' => 'Konsumsi']
+        ];
+
+        $accounts = [
+            ['value' => '1-10100', 'label' => '(1-10100) Kas dan Bank'],
+            ['value' => '1-20100', 'label' => '(1-20100) Piutang'],
+            ['value' => '1-30100', 'label' => '(1-30100) Persediaan'],
+            ['value' => '2-20100', 'label' => '(2-20100) Hutang'],
+            ['value' => '4-40100', 'label' => '(4-40100) Pendapatan Penjualan'],
+            ['value' => '5-50100', 'label' => '(5-50100) Beban Operasional']
+        ];
+
+        $taxes = [
+            ['value' => 'PPN', 'label' => 'PPN (11%)'],
+            ['value' => 'No Tax', 'label' => 'Tidak Ada Pajak']
+        ];
+
+        $products = [
+            ['value' => '1', 'label' => 'Pulpen Pilot G2', 'unit' => 'pcs', 'price' => 12000],
+            ['value' => '2', 'label' => 'Kertas A4 80gsm', 'unit' => 'rim', 'price' => 50000],
+            ['value' => '3', 'label' => 'Spidol Whiteboard', 'unit' => 'pcs', 'price' => 18000],
+            ['value' => '4', 'label' => 'Buku Tulis 38 Lembar', 'unit' => 'pcs', 'price' => 6000]
+        ];
+
+        return view('pages.master_data.product.add', [
+            'units' => $units,
+            'categories' => $categories,
+            'accounts' => $accounts,
+            'taxes' => $taxes,
+            'products' => $products
+        ]);
     }
 
     public function export()

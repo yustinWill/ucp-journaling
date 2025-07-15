@@ -16,15 +16,15 @@
                     <div class="text-end">
                         <div class="btn-group-vertical" role="group">
                             <button type="button" class="btn btn-primary mb-2">
-                                <i class="ti ti-settings me-1"></i>
+                                <i class="icon-base ti tabler-settings me-1"></i>
                                 Kelola Kontak
                             </button>
                             <button type="button" class="btn btn-outline-secondary mb-2">
-                                <i class="ti ti-git-merge me-1"></i>
+                                <i class="icon-base ti tabler-git-merge me-1"></i>
                                 Gabungkan Kontak
                             </button>
                             <button type="button" class="btn btn-outline-danger">
-                                <i class="ti ti-archive me-1"></i>
+                                <i class="icon-base ti tabler-archive me-1"></i>
                                 Arsipkan Kontak
                             </button>
                         </div>
@@ -348,7 +348,7 @@ $(function() {
                     </div>
                 </div>
                 
-                <div class="table-responsive">
+                <div>
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -405,7 +405,7 @@ $(function() {
                     <h5>List History Credit Memo</h5>
                 </div>
                 
-                <div class="table-responsive">
+                <div>
                     <table class="table table-bordered">
                         <thead>
                             <tr>

@@ -52,7 +52,7 @@
                     <div class="input-group">
                         <input type="text" class="form-control" id="so-reference" value="Sales Order 110001" placeholder="Sales Order 110001" />
                         <button class="btn btn-outline-secondary" type="button" id="so-lookup-btn">
-                            <i class="ti ti-link"></i>
+                            <i class="icon-base ti tabler-link"></i>
                         </button>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
             </div>
             
             <!-- Product Table -->
-            <div class="table-responsive mx-n5 my-4">
+            <div class="mx-n5 my-4">
                 <table class="table table-bordered" id="invoiceTable">
                     <thead>
                         <tr>

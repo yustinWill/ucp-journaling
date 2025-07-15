@@ -204,7 +204,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-12">
                     <button type="button" class="btn btn-outline-primary" id="add-bank-account">
-                        <i class="ti ti-plus me-1"></i>
+                        <i class="icon-base ti tabler-plus me-1"></i>
                         Tambah Akun Bank Lain
                     </button>
                 </div>

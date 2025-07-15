@@ -48,7 +48,7 @@
                     <div class="input-group">
                         <input type="text" class="form-control" id="po-reference" placeholder="Kerjasama Utama 11008" />
                         <button class="btn btn-outline-secondary" type="button" id="po-lookup-btn">
-                            <i class="ti ti-link"></i>
+                            <i class="icon-base ti tabler-link"></i>
                         </button>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
             </div>
             
             <!-- Product Table -->
-            <div class="table-responsive mx-n5 my-4">
+            <div class="mx-n5 my-4">
                 <table class="table table-bordered" id="deliveryTable">
                     <thead>
                         <tr>

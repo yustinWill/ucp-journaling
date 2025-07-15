@@ -54,7 +54,7 @@
             </div>
             <hr class="my-6 mx-n6" />
             <h6>2. Tentukan Urutan Kolom Yang Ingin Di Ekspor</h6>
-            <div class="table-responsive text-nowrap">
+            <div class="text-nowrap">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
