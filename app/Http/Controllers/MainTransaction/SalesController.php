@@ -9,7 +9,30 @@ class SalesController extends Controller
 {
     public function index()
     {
-        return view('pages.main_transaction.sales.index', []);
+        $pesananStatuses = [
+            ['value' => 'Belum Ditagih', 'label' => 'Belum Ditagih'],
+            ['value' => 'Dikirim Sebagian', 'label' => 'Dikirim Sebagian'],
+            ['value' => 'Selesai', 'label' => 'Selesai']
+        ];
+
+        $pengirimanStatuses = [
+            ['value' => 'Belum Ditagih', 'label' => 'Belum Ditagih'],
+            ['value' => 'Selesai', 'label' => 'Selesai']
+        ];
+
+        $fakturStatuses = [
+            ['value' => 'Menunggu Pembayaran', 'label' => 'Menunggu Pembayaran'],
+            ['value' => 'Telat Bayar', 'label' => 'Telat Bayar'],
+            ['value' => 'Dibayar', 'label' => 'Dibayar'],
+            ['value' => 'Dibayar Sebagian', 'label' => 'Dibayar Sebagian'],
+            ['value' => 'Belum Dibayar', 'label' => 'Belum Dibayar']
+        ];
+
+        return view('pages.main_transaction.sales.index', [
+            'pesananStatuses' => $pesananStatuses,
+            'pengirimanStatuses' => $pengirimanStatuses,
+            'fakturStatuses' => $fakturStatuses
+        ]);
     }
 
     public function index_data_table(Request $request)
@@ -173,24 +196,119 @@ class SalesController extends Controller
         return response()->json($data, 200);
     }
 
-    public function add()
-    {
-        return view('pages.main_transaction.sales.add', []);
-    }
-
     public function salesOrderAdd()
     {
-        return view('pages.main_transaction.sales.so_add', []);
+        // Get all required options for the Sales Order form
+        $customers = [
+            ['value' => '1', 'label' => 'PT. Cahaya Abadi'],
+            ['value' => '2', 'label' => 'CV. Maju Jaya'],
+            ['value' => '3', 'label' => 'PT. Sukses Mandiri'],
+            ['value' => '4', 'label' => 'CV. Berkah Sentosa'],
+            ['value' => '5', 'label' => 'PT. Nusantara Prima']
+        ];
+
+        $paymentTerms = [
+            ['value' => 'Net 30', 'label' => 'Net 30'],
+            ['value' => 'Net 15', 'label' => 'Net 15'],
+            ['value' => 'Net 45', 'label' => 'Net 45'],
+            ['value' => 'Cash on Delivery', 'label' => 'Cash on Delivery'],
+            ['value' => 'Immediate', 'label' => 'Immediate']
+        ];
+
+        $warehouses = [
+            ['value' => '1', 'label' => 'Gudang Utama'],
+            ['value' => '2', 'label' => 'Gudang Cabang A'],
+            ['value' => '3', 'label' => 'Gudang Cabang B']
+        ];
+
+        $products = [
+            ['value' => '1', 'label' => 'ALBUM SVT'],
+            ['value' => '2', 'label' => 'Buku Tulis'],
+            ['value' => '3', 'label' => 'Pensil'],
+            ['value' => '4', 'label' => 'Penghapus']
+        ];
+
+        $taxOptions = [
+            ['value' => 'PPN', 'label' => 'PPN'],
+            ['value' => 'No Tax', 'label' => 'Tidak Ada Pajak']
+        ];
+
+        return view('pages.main_transaction.sales.so_add', [
+            'customers' => $customers,
+            'paymentTerms' => $paymentTerms,
+            'warehouses' => $warehouses,
+            'products' => $products,
+            'taxOptions' => $taxOptions
+        ]);
     }
 
     public function salesDeliveryAdd()
     {
-        return view('pages.main_transaction.sales.sd_add', []);
+        // Get required options for the Sales Delivery form
+        $customers = [
+            ['value' => '1', 'label' => 'PT. Cahaya Abadi'],
+            ['value' => '2', 'label' => 'CV. Maju Jaya'],
+            ['value' => '3', 'label' => 'PT. Sukses Mandiri'],
+            ['value' => '4', 'label' => 'CV. Berkah Sentosa'],
+            ['value' => '5', 'label' => 'PT. Nusantara Prima']
+        ];
+
+        $warehouses = [
+            ['value' => '1', 'label' => 'Gudang Utama'],
+            ['value' => '2', 'label' => 'Gudang Cabang A'],
+            ['value' => '3', 'label' => 'Gudang Cabang B']
+        ];
+
+        return view('pages.main_transaction.sales.sd_add', [
+            'customers' => $customers,
+            'warehouses' => $warehouses
+        ]);
     }
 
     public function salesInvoiceAdd()
     {
-        return view('pages.main_transaction.sales.si_add', []);
+        // Get all required options for the Sales Invoice form
+        $customers = [
+            ['value' => '1', 'label' => 'PT. Cahaya Abadi'],
+            ['value' => '2', 'label' => 'CV. Maju Jaya'],
+            ['value' => '3', 'label' => 'PT. Sukses Mandiri'],
+            ['value' => '4', 'label' => 'CV. Berkah Sentosa'],
+            ['value' => '5', 'label' => 'PT. Nusantara Prima']
+        ];
+
+        $paymentTerms = [
+            ['value' => 'Net 30', 'label' => 'Net 30'],
+            ['value' => 'Net 15', 'label' => 'Net 15'],
+            ['value' => 'Net 45', 'label' => 'Net 45'],
+            ['value' => 'Cash on Delivery', 'label' => 'Cash on Delivery'],
+            ['value' => 'Immediate', 'label' => 'Immediate']
+        ];
+
+        $warehouses = [
+            ['value' => '1', 'label' => 'Gudang Utama'],
+            ['value' => '2', 'label' => 'Gudang Cabang A'],
+            ['value' => '3', 'label' => 'Gudang Cabang B']
+        ];
+
+        $products = [
+            ['value' => '1', 'label' => 'ALBUM SVT'],
+            ['value' => '2', 'label' => 'Buku Tulis'],
+            ['value' => '3', 'label' => 'Pensil'],
+            ['value' => '4', 'label' => 'Penghapus']
+        ];
+
+        $taxOptions = [
+            ['value' => 'PPN', 'label' => 'PPN'],
+            ['value' => 'No Tax', 'label' => 'Tidak Ada Pajak']
+        ];
+
+        return view('pages.main_transaction.sales.si_add', [
+            'customers' => $customers,
+            'paymentTerms' => $paymentTerms,
+            'warehouses' => $warehouses,
+            'products' => $products,
+            'taxOptions' => $taxOptions
+        ]);
     }
 
     public function handleImport(Request $request)

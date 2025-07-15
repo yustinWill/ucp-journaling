@@ -9,7 +9,35 @@ class ProductController extends Controller
 {
     public function index()
     {
-        return view('pages.master_data.product.index', []);
+        $productCategories = [
+            ['value' => 'Alat Tulis', 'label' => 'Alat Tulis'],
+            ['value' => 'Kertas', 'label' => 'Kertas'],
+            ['value' => 'Elektronik', 'label' => 'Elektronik']
+        ];
+
+        $stockStatuses = [
+            ['value' => 'available', 'label' => 'Stok Tersedia'],
+            ['value' => 'low', 'label' => 'Stok Segera Habis'],
+            ['value' => 'out', 'label' => 'Stok Habis']
+        ];
+
+        $warehouseStatuses = [
+            ['value' => 'ACTIVE', 'label' => 'Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'Tidak Aktif']
+        ];
+
+        $warehouseLocations = [
+            ['value' => 'Jakarta', 'label' => 'Jakarta'],
+            ['value' => 'Bandung', 'label' => 'Bandung'],
+            ['value' => 'Surabaya', 'label' => 'Surabaya']
+        ];
+
+        return view('pages.master_data.product.index', [
+            'productCategories' => $productCategories,
+            'stockStatuses' => $stockStatuses,
+            'warehouseStatuses' => $warehouseStatuses,
+            'warehouseLocations' => $warehouseLocations
+        ]);
     }
 
     public function index_data_table()

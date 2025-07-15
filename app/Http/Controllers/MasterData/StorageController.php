@@ -9,7 +9,22 @@ class StorageController extends Controller
 {
     public function index()
     {
-        return view('pages.master_data.storage.index', []);
+        $storageStatuses = [
+            ['value' => 'ACTIVE', 'label' => 'Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'Inaktif']
+        ];
+
+        $picUsers = [
+            ['value' => '1', 'label' => 'William'],
+            ['value' => '2', 'label' => 'Winona'],
+            ['value' => '3', 'label' => 'Akbar'],
+            ['value' => '4', 'label' => 'Tono']
+        ];
+
+        return view('pages.master_data.storage.index', [
+            'storageStatuses' => $storageStatuses,
+            'picUsers' => $picUsers
+        ]);
     }
 
     public function index_data_table()
@@ -63,7 +78,16 @@ class StorageController extends Controller
 
     public function add()
     {
-        return view('pages.master_data.storage.add', []);
+        $picUsers = [
+            ['value' => '1', 'label' => 'William'],
+            ['value' => '2', 'label' => 'Winona'],
+            ['value' => '3', 'label' => 'Akbar'],
+            ['value' => '4', 'label' => 'Tono']
+        ];
+
+        return view('pages.master_data.storage.add', [
+            'picUsers' => $picUsers
+        ]);
     }
 
     public function export()

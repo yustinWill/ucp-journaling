@@ -18,11 +18,9 @@
                     <label class="form-label">Yang Membayar <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="payer-select" data-allow-clear="true">
                         <option value="">Pilih Kontak</option>
-                        <option value="1" @if(isset($pre_filled_contact) && $pre_filled_contact['id'] == 1) selected @endif>John</option>
-                        <option value="2" @if(isset($pre_filled_contact) && $pre_filled_contact['id'] == 2) selected @endif>PT. Maju Jaya</option>
-                        <option value="3" @if(isset($pre_filled_contact) && $pre_filled_contact['id'] == 3) selected @endif>CV. Sukses Mandiri</option>
-                        <option value="4" @if(isset($pre_filled_contact) && $pre_filled_contact['id'] == 4) selected @endif>PT. Cahaya Abadi</option>
-                        <option value="5" @if(isset($pre_filled_contact) && $pre_filled_contact['id'] == 5) selected @endif>CV. Berkah Sentosa</option>
+                        @foreach($contacts as $contact)
+                            <option value="{{ $contact['value'] }}" @if(isset($pre_filled_contact) && $pre_filled_contact['id'] == $contact['value']) selected @endif>{{ $contact['label'] }}</option>
+                        @endforeach
                     </select>
                     @if(isset($pre_filled_contact))
                         <small class="form-text text-muted">Pre-filled from contact: {{ $pre_filled_contact['name'] }}</small>
@@ -53,11 +51,9 @@
                 <div class="col-md-6">
                     <label class="form-label">Jenis Transaksi <span style="color: red;">*</span></label>
                     <select class="form-select" id="transaction-type">
-                        <option value="pengeluaran-credit-memo" selected>Pengeluaran Kredit Memo</option>
-                        <option value="penerimaan-credit-memo">Penerimaan Kredit Memo</option>
-                        <option value="adjustment">Adjustment</option>
-                        <option value="return">Return</option>
-                        <option value="discount">Discount</option>
+                        @foreach($transactionTypes as $type)
+                            <option value="{{ $type['value'] }}" @if($type['value'] == 'pengeluaran-credit-memo') selected @endif>{{ $type['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -72,11 +68,9 @@
                     <label class="form-label">Pilih Akun <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="account-select" data-allow-clear="true">
                         <option value="">Pilih Akun</option>
-                        <option value="1">(1-20100) Piutang</option>
-                        <option value="2">(2-20100) Hutang</option>
-                        <option value="3">(4-40100) Pendapatan Penjualan</option>
-                        <option value="4">(5-50100) Beban Operasional</option>
-                        <option value="5">(1-11100) Kas dan Bank</option>
+                        @foreach($accounts as $account)
+                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>

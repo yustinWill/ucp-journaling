@@ -85,17 +85,18 @@
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Status:</label>
                                 <select class="global-select2 form-select" data-allow-clear="true">
-                                    <option value="AK">Aktif</option>
-                                    <option value="HI">Inaktif</option>
+                                    <option value="">Semua Status</option>
+                                    @foreach($storageStatuses as $status)
+                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Penanggung Jawab:</label>
                                 <select class="global-select2 form-select" data-allow-clear="true" multiple>
-                                    <option value="AK">William</option>
-                                    <option value="HI">Winona</option>
-                                    <option value="HI">Akbar</option>
-                                    <option value="CA">Tono</option>
+                                    @foreach($picUsers as $user)
+                                        <option value="{{ $user['value'] }}">{{ $user['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
 

@@ -9,7 +9,15 @@ class JournalController extends Controller
 {
     public function index()
     {
-        return view('pages.main_transaction.journal.index', []);
+        $createdByUsers = [
+            ['value' => '1', 'label' => 'Cinta'],
+            ['value' => '2', 'label' => 'Siti'],
+            ['value' => '3', 'label' => 'Amar']
+        ];
+
+        return view('pages.main_transaction.journal.index', [
+            'createdByUsers' => $createdByUsers
+        ]);
     }
 
     public function index_data_table()

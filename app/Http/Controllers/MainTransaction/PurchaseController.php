@@ -203,12 +203,68 @@ class PurchaseController extends Controller
 
     public function purchaseDeliveryAdd()
     {
-        return view('pages.main_transaction.purchase.pd_add', []);
+        // Get required options for the Purchase Delivery form
+        $suppliers = [
+            ['value' => '1', 'label' => 'PT. Sumber Makmur'],
+            ['value' => '2', 'label' => 'CV. Berkah Jaya'],
+            ['value' => '3', 'label' => 'PT. Mandiri Sejahtera'],
+            ['value' => '4', 'label' => 'CV. Maju Bersama']
+        ];
+
+        $warehouses = [
+            ['value' => '1', 'label' => 'Gudang Utama'],
+            ['value' => '2', 'label' => 'Gudang Cabang A'],
+            ['value' => '3', 'label' => 'Gudang Cabang B']
+        ];
+
+        return view('pages.main_transaction.purchase.pd_add', [
+            'suppliers' => $suppliers,
+            'warehouses' => $warehouses
+        ]);
     }
 
     public function purchaseInvoiceAdd()
     {
-        return view('pages.main_transaction.purchase.pi_add', []);
+        // Get required options for the Purchase Invoice form
+        $purchaseDeliveries = [
+            ['value' => 'PD-2025-001', 'label' => 'PD-2025-001 - PT. Sumber Makmur'],
+            ['value' => 'PD-2025-002', 'label' => 'PD-2025-002 - CV. Berkah Jaya'],
+            ['value' => 'PD-2025-003', 'label' => 'PD-2025-003 - PT. Mandiri Sejahtera'],
+            ['value' => 'PD-2025-004', 'label' => 'PD-2025-004 - CV. Maju Bersama']
+        ];
+
+        $currencies = [
+            ['value' => 'IDR', 'label' => 'IDR - Rupiah'],
+            ['value' => 'USD', 'label' => 'USD - Dollar'],
+            ['value' => 'EUR', 'label' => 'EUR - Euro']
+        ];
+
+        $paymentMethods = [
+            ['value' => 'Transfer Bank', 'label' => 'Transfer Bank'],
+            ['value' => 'Cash', 'label' => 'Cash'],
+            ['value' => 'Cek', 'label' => 'Cek'],
+            ['value' => 'Giro', 'label' => 'Giro']
+        ];
+
+        $taxOptions = [
+            ['value' => 'PPN', 'label' => 'PPN 11%'],
+            ['value' => 'No Tax', 'label' => 'Tidak Ada Pajak']
+        ];
+
+        $costTypes = [
+            ['value' => 'Biaya Kirim', 'label' => 'Biaya Kirim'],
+            ['value' => 'Biaya Asuransi', 'label' => 'Biaya Asuransi'],
+            ['value' => 'Biaya Bongkar', 'label' => 'Biaya Bongkar'],
+            ['value' => 'Biaya Lainnya', 'label' => 'Biaya Lainnya']
+        ];
+
+        return view('pages.main_transaction.purchase.pi_add', [
+            'purchaseDeliveries' => $purchaseDeliveries,
+            'currencies' => $currencies,
+            'paymentMethods' => $paymentMethods,
+            'taxOptions' => $taxOptions,
+            'costTypes' => $costTypes
+        ]);
     }
 
     public function handleImport(Request $request)

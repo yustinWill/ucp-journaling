@@ -19,10 +19,9 @@
                 <div class="col-md-6">
                     <label class="form-label">Penanggung Jawab</label>
                     <select class="global-select2 form-select" data-allow-clear="true" multiple>
-                        <option value="AK">William</option>
-                        <option value="HI">Winona</option>
-                        <option value="HI">Akbar</option>
-                        <option value="CA">Tono</option>
+                        @foreach($picUsers as $user)
+                            <option value="{{ $user['value'] }}">{{ $user['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">

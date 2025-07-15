@@ -87,9 +87,9 @@
                                 <label class="form-label">Status:</label>
                                 <select class="global-select2 form-select" id="pesanan-status-filter" data-allow-clear="true">
                                     <option value="">Semua Status</option>
-                                    <option value="Belum Ditagih">Belum Ditagih</option>
-                                    <option value="Dikirim Sebagian">Dikirim Sebagian</option>
-                                    <option value="Selesai">Selesai</option>
+                                    @foreach($pesananStatuses as $status)
+                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -148,8 +148,9 @@
                                 <label class="form-label">Status:</label>
                                 <select class="form-select" id="pengiriman-status-filter">
                                     <option value="">Semua Status</option>
-                                    <option value="Belum Ditagih">Belum Ditagih</option>
-                                    <option value="Selesai">Selesai</option>
+                                    @foreach($pengirimanStatuses as $status)
+                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -205,11 +206,9 @@
                                 <label class="form-label">Status:</label>
                                 <select class="form-select" id="faktur-status-filter">
                                     <option value="">Semua Status</option>
-                                    <option value="Menunggu Pembayaran">Menunggu Pembayaran</option>
-                                    <option value="Telat Bayar">Telat Bayar</option>
-                                    <option value="Dibayar">Dibayar</option>
-                                    <option value="Dibayar Sebagian">Dibayar Sebagian</option>
-                                    <option value="Belum Dibayar">Belum Dibayar</option>
+                                    @foreach($fakturStatuses as $status)
+                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">

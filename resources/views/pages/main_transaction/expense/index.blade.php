@@ -25,12 +25,18 @@
                                 <label class="form-label">Kategori:</label>
                                 <select class="global-select2 form-select" id="category-filter" data-allow-clear="true">
                                     <option value="">Semua Kategori</option>
+                                    @foreach($expenseCategories as $category)
+                                        <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Status:</label>
                                 <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
                                     <option value="">Semua Status</option>
+                                    @foreach($expenseStatuses as $status)
+                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -185,49 +191,8 @@
                 });
             }
 
-            // Load select options from API
-            async function loadCategoryOptions() {
-                try {
-                    const response = await fetch(`{{ route('main_transaction.expense.categories') }}`);
-                    const data = await response.json();
-                    
-                    const categorySelect = $('#category-filter');
-                    categorySelect.empty().append('<option value="">Semua Kategori</option>');
-                    
-                    data.forEach(item => {
-                        categorySelect.append(`<option value="${item.value}">${item.label}</option>`);
-                    });
-                } catch (error) {
-                    console.error('Error loading categories:', error);
-                }
-            }
-
-            async function loadStatusOptions() {
-                try {
-                    const response = await fetch(`{{ route('main_transaction.expense.statuses') }}`);
-                    const data = await response.json();
-                    
-                    const statusSelect = $('#status-filter');
-                    statusSelect.empty().append('<option value="">Semua Status</option>');
-                    
-                    data.forEach(item => {
-                        statusSelect.append(`<option value="${item.value}">${item.label}</option>`);
-                    });
-                } catch (error) {
-                    console.error('Error loading statuses:', error);
-                }
-            }
-
-            async function loadSelectOptions() {
-                await loadCategoryOptions();
-                await loadStatusOptions();
-                
-                // Initialize global-select2 after options are loaded
-                $('.global-select2').select2();
-            }
-
-            // Initialize select options
-            loadSelectOptions();
+            // Initialize global-select2 for already loaded options
+            $('.global-select2').select2();
 
             // Button click events
             $('#btn-add-data').on('click', function() {

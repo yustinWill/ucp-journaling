@@ -63,7 +63,35 @@ class CreditMemoController extends Controller
 
     public function add()
     {
-        return view('pages.main_transaction.credit_memo.add', []);
+        $contacts = [
+            ['value' => '1', 'label' => 'John'],
+            ['value' => '2', 'label' => 'PT. Maju Jaya'],
+            ['value' => '3', 'label' => 'CV. Sukses Mandiri'],
+            ['value' => '4', 'label' => 'PT. Cahaya Abadi'],
+            ['value' => '5', 'label' => 'CV. Berkah Sentosa']
+        ];
+
+        $transactionTypes = [
+            ['value' => 'pengeluaran-credit-memo', 'label' => 'Pengeluaran Kredit Memo'],
+            ['value' => 'penerimaan-credit-memo', 'label' => 'Penerimaan Kredit Memo'],
+            ['value' => 'adjustment', 'label' => 'Adjustment'],
+            ['value' => 'return', 'label' => 'Return'],
+            ['value' => 'discount', 'label' => 'Discount']
+        ];
+
+        $accounts = [
+            ['value' => '1', 'label' => '(1-20100) Piutang'],
+            ['value' => '2', 'label' => '(2-20100) Hutang'],
+            ['value' => '3', 'label' => '(4-40100) Pendapatan Penjualan'],
+            ['value' => '4', 'label' => '(5-50100) Beban Operasional'],
+            ['value' => '5', 'label' => '(1-11100) Kas dan Bank']
+        ];
+
+        return view('pages.main_transaction.credit_memo.add', [
+            'contacts' => $contacts,
+            'transactionTypes' => $transactionTypes,
+            'accounts' => $accounts
+        ]);
     }
 
     public function addWithContact($contact_id = null)

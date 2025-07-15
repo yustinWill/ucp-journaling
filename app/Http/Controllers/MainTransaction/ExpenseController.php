@@ -27,8 +27,8 @@ class ExpenseController extends Controller
         ];
 
         return view('pages.main_transaction.expense.index', [
-            'categories' => $categories,
-            'statuses' => $statuses
+            'expenseCategories' => $categories,
+            'expenseStatuses' => $statuses
         ]);
     }
 

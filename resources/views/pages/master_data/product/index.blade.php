@@ -98,18 +98,18 @@
                                         <label class="form-label">Kategori:</label>
                                         <select class="form-select" id="products-category-filter">
                                             <option value="">Semua Kategori</option>
-                                            <option value="Alat Tulis">Alat Tulis</option>
-                                            <option value="Kertas">Kertas</option>
-                                            <option value="Elektronik">Elektronik</option>
+                                            @foreach($productCategories as $category)
+                                                <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Status Stok:</label>
                                         <select class="form-select" id="products-stock-filter">
                                             <option value="">Semua Status</option>
-                                            <option value="available">Stok Tersedia</option>
-                                            <option value="low">Stok Segera Habis</option>
-                                            <option value="out">Stok Habis</option>
+                                            @foreach($stockStatuses as $status)
+                                                <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
@@ -189,17 +189,18 @@
                                         <label class="form-label">Status:</label>
                                         <select class="form-select" id="warehouse-status-filter">
                                             <option value="">Semua Status</option>
-                                            <option value="ACTIVE">Aktif</option>
-                                            <option value="INACTIVE">Tidak Aktif</option>
+                                            @foreach($warehouseStatuses as $status)
+                                                <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Lokasi:</label>
                                         <select class="form-select" id="warehouse-location-filter">
                                             <option value="">Semua Lokasi</option>
-                                            <option value="Jakarta">Jakarta</option>
-                                            <option value="Bandung">Bandung</option>
-                                            <option value="Surabaya">Surabaya</option>
+                                            @foreach($warehouseLocations as $location)
+                                                <option value="{{ $location['value'] }}">{{ $location['label'] }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
