@@ -158,7 +158,47 @@ class PurchaseController extends Controller
 
     public function purchaseOrderAdd()
     {
-        return view('pages.main_transaction.purchase.po_add', []);
+        // Get all required options for the Purchase Order form
+        $suppliers = [
+            ['value' => '1', 'label' => 'PT. Sumber Makmur'],
+            ['value' => '2', 'label' => 'CV. Berkah Jaya'],
+            ['value' => '3', 'label' => 'PT. Mandiri Sejahtera'],
+            ['value' => '4', 'label' => 'CV. Maju Bersama']
+        ];
+
+        $paymentTerms = [
+            ['value' => 'Net 30', 'label' => 'Net 30'],
+            ['value' => 'Net 15', 'label' => 'Net 15'],
+            ['value' => 'Net 45', 'label' => 'Net 45'],
+            ['value' => 'Cash on Delivery', 'label' => 'Cash on Delivery'],
+            ['value' => 'Immediate', 'label' => 'Immediate']
+        ];
+
+        $warehouses = [
+            ['value' => '1', 'label' => 'Gudang Utama'],
+            ['value' => '2', 'label' => 'Gudang Cabang A'],
+            ['value' => '3', 'label' => 'Gudang Cabang B']
+        ];
+
+        $products = [
+            ['value' => '1', 'label' => 'ALBUM SVT'],
+            ['value' => '2', 'label' => 'Buku Tulis'],
+            ['value' => '3', 'label' => 'Pensil'],
+            ['value' => '4', 'label' => 'Penghapus']
+        ];
+
+        $taxOptions = [
+            ['value' => 'PPN', 'label' => 'PPN'],
+            ['value' => 'No Tax', 'label' => 'Tidak Ada Pajak']
+        ];
+
+        return view('pages.main_transaction.purchase.po_add', [
+            'suppliers' => $suppliers,
+            'paymentTerms' => $paymentTerms,
+            'warehouses' => $warehouses,
+            'products' => $products,
+            'taxOptions' => $taxOptions
+        ]);
     }
 
     public function purchaseDeliveryAdd()

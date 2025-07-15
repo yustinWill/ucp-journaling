@@ -8,8 +8,8 @@
         <form class="card-body" id="creditMemoForm">
             <!-- Informasi Transaksi Section -->
             <div class="section-header mt-12">
-                <h5>Informasi Transaksi</h5>
-                <hr>
+                <h6>Informasi Transaksi</h6>
+                <hr class="mx-n6">
             </div>
             
             <!-- Row 1: Basic Information -->
@@ -40,8 +40,8 @@
             
             <!-- Transaksi 1 Section -->
             <div class="section-header mt-12">
-                <h5>Transaksi 1</h5>
-                <hr>
+                <h6>Transaksi 1</h6>
+                <hr class="mx-n6">
             </div>
             
             <!-- Row 1: Date and Transaction Type -->
@@ -96,8 +96,8 @@
             
             <!-- Additional Information Section -->
             <div class="section-header mt-12">
-                <h5>Informasi Tambahan</h5>
-                <hr>
+                <h6>Informasi Tambahan</h6>
+                <hr class="mx-n6">
             </div>
             
             <div class="row g-3 mb-4">

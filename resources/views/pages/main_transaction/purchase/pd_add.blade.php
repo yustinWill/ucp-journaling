@@ -8,8 +8,8 @@
         <form class="card-body" id="purchaseDeliveryForm">
             <!-- Transaction Information Section -->
             <div class="section-header mt-12">
-                <h5>Informasi Transaksi</h5>
-                <hr>
+                <h6>Informasi Transaksi</h6>
+                <hr class="mx-n6">
             </div>
             
             <!-- Row 1: Basic Information -->
@@ -18,10 +18,9 @@
                     <label class="form-label">Supplier <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="supplier-select" data-allow-clear="true">
                         <option value="">Pilih Supplier</option>
-                        <option value="1">John</option>
-                        <option value="2">PT. Sumber Makmur</option>
-                        <option value="3">CV. Berkah Jaya</option>
-                        <option value="4">PT. Mandiri Sejahtera</option>
+                        @foreach($suppliers as $supplier)
+                            <option value="{{ $supplier['value'] }}">{{ $supplier['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -67,23 +66,22 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Gudang</label>
-                    <select class="form-select" id="warehouse-select">
+                    <select class="global-select2 form-select" id="warehouse-select" data-allow-clear="true">
                         <option value="">Pilih Gudang</option>
-                        <option value="1">Gudang Utama</option>
-                        <option value="2">Gudang Cabang A</option>
-                        <option value="3">Gudang Cabang B</option>
+                        @foreach($warehouses as $warehouse)
+                            <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
             
             <!-- Product Information Section -->
             <div class="section-header mt-12">
-                <h5>Informasi Barang yang Diterima</h5>
-                <hr>
+                <h6>Informasi Barang yang Diterima</h6>
             </div>
             
             <!-- Product Table -->
-            <div class="table-responsive">
+            <div class="table-responsive mx-n5 my-4">
                 <table class="table table-bordered" id="deliveryTable">
                     <thead>
                         <tr>
@@ -121,8 +119,8 @@
             
             <!-- Additional Information -->
             <div class="section-header mt-12">
-                <h5>Informasi Tambahan</h5>
-                <hr>
+                <h6>Informasi Tambahan</h6>
+                <hr class="mx-n6">
             </div>
             
             <div class="row g-3">

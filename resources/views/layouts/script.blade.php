@@ -34,6 +34,7 @@
 <script src="../../custom_js/global_select2.js"></script>
 <script src="../../custom_js/global_date_picker.js"></script>
 <script src="../../custom_js/global_date_range_picker.js"></script>
+<script src="../../custom_js/global_currency.js"></script>
 <script src="../../custom_js/cleave_input.js"></script>
 <!-- Main JS -->
 

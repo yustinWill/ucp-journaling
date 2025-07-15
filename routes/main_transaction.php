@@ -79,6 +79,8 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $expense_segment . '/statuses', 'statuses')->name('main_transaction.expense.statuses')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $expense_segment . '/recipients', 'recipients')->name('main_transaction.expense.recipients')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $expense_segment . '/accounts', 'accounts')->name('main_transaction.expense.accounts')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $expense_segment . '/payment_methods', 'paymentMethods')->name('main_transaction.expense.payment_methods')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $expense_segment . '/payment_terms', 'paymentTerms')->name('main_transaction.expense.payment_terms')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $expense_segment . '/export', 'export')->name('main_transaction.expense.export')->middleware(EnsureTokenIsValid::class);
         Route::post($base_segment . $expense_segment . '/import', 'import')->name('main_transaction.expense.import')->middleware(EnsureTokenIsValid::class);
     });

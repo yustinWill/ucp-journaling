@@ -8,8 +8,8 @@
         <form class="card-body" id="purchaseInvoiceForm">
             <!-- Transaction Information Section -->
             <div class="section-header mt-12">
-                <h5>Informasi Transaksi</h5>
-                <hr>
+                <h6>Informasi Transaksi</h6>
+                <hr class="mx-n6">
             </div>
 
             <!-- Row 1: Basic Information -->
@@ -18,9 +18,9 @@
                     <label class="form-label">Referensi Purchase Delivery <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="pd-reference" data-allow-clear="true">
                         <option value="">Pilih Purchase Delivery</option>
-                        <option value="PD-2025-001">PD-2025-001 - PT. Sumber Makmur</option>
-                        <option value="PD-2025-002">PD-2025-002 - CV. Berkah Jaya</option>
-                        <option value="PD-2025-003">PD-2025-003 - PT. Mandiri Sejahtera</option>
+                        @foreach($purchaseDeliveries as $delivery)
+                            <option value="{{ $delivery['value'] }}">{{ $delivery['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -50,9 +50,9 @@
                 <div class="col-md-3">
                     <label class="form-label">Mata Uang</label>
                     <select class="global-select2 form-select" id="currency" data-allow-clear="true">
-                        <option value="IDR" selected>IDR - Rupiah</option>
-                        <option value="USD">USD - Dollar</option>
-                        <option value="EUR">EUR - Euro</option>
+                        @foreach($currencies as $currency)
+                            <option value="{{ $currency['value'] }}" {{ $currency['value'] == 'IDR' ? 'selected' : '' }}>{{ $currency['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -67,26 +67,25 @@
                 <div class="col-md-6">
                     <label class="form-label">Metode Pembayaran</label>
                     <select class="global-select2 form-select" id="payment-method" data-allow-clear="true">
-                        <option value="Transfer Bank">Transfer Bank</option>
-                        <option value="Cash">Cash</option>
-                        <option value="Cek">Cek</option>
-                        <option value="Giro">Giro</option>
+                        @foreach($paymentMethods as $method)
+                            <option value="{{ $method['value'] }}">{{ $method['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
 
             <!-- Product Information Section -->
             <div class="section-header mt-12">
-                <h5>Informasi Pembelian</h5>
-                <hr>
-                <div class="text-end">
+                <h6>Informasi Pembelian</h6>
+                <hr class="mx-n6">
+                <div class="text-end mb-4">
                     <input type="checkbox" id="includeTax" class="form-check-input me-2">
                     <label for="includeTax" class="form-check-label">Harga Termasuk Pajak</label>
                 </div>
             </div>
 
             <!-- Product Table -->
-            <div class="table-responsive">
+            <div class="table-responsive mx-n5 my-4">
                 <table class="table table-bordered" id="invoiceTable">
                     <thead>
                         <tr>
@@ -125,8 +124,9 @@
                             </td>
                             <td>
                                 <select class="global-select2 form-select tax-select" data-allow-clear="true">
-                                    <option value="PPN">PPN 11%</option>
-                                    <option value="No Tax">Tidak Ada Pajak</option>
+                                    @foreach($taxOptions as $tax)
+                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -162,8 +162,9 @@
                             </td>
                             <td>
                                 <select class="global-select2 form-select tax-select" data-allow-clear="true">
-                                    <option value="PPN">PPN 11%</option>
-                                    <option value="No Tax">Tidak Ada Pajak</option>
+                                    @foreach($taxOptions as $tax)
+                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -182,11 +183,10 @@
 
             <!-- Additional Costs Section -->
             <div class="section-header mt-12">
-                <h5>Biaya Tambahan</h5>
-                <hr>
+                <h6>Biaya Tambahan</h6>
             </div>
 
-            <div class="table-responsive">
+            <div class="table-responsive mx-n5 my-4">
                 <table class="table table-bordered" id="additionalCostsTable">
                     <thead>
                         <tr>
@@ -202,10 +202,9 @@
                             <td>
                                 <select class="global-select2 form-select cost-type" data-allow-clear="true">
                                     <option value="">Pilih Jenis Biaya</option>
-                                    <option value="Biaya Kirim">Biaya Kirim</option>
-                                    <option value="Biaya Asuransi">Biaya Asuransi</option>
-                                    <option value="Biaya Bongkar">Biaya Bongkar</option>
-                                    <option value="Biaya Lainnya">Biaya Lainnya</option>
+                                    @foreach($costTypes as $costType)
+                                        <option value="{{ $costType['value'] }}">{{ $costType['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -217,8 +216,9 @@
                             </td>
                             <td>
                                 <select class="global-select2 form-select additional-tax-select" data-allow-clear="true">
-                                    <option value="PPN">PPN 11%</option>
-                                    <option value="No Tax">Tidak Ada Pajak</option>
+                                    @foreach($taxOptions as $tax)
+                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -242,8 +242,8 @@
 
             <!-- Summary & Additional Information -->
             <div class="section-header mt-12">
-                <h5>Informasi Tambahan & Ringkasan</h5>
-                <hr>
+                <h6>Informasi Tambahan & Ringkasan</h6>
+                <hr class="mx-n6">
             </div>
 
             <div class="row g-3">
@@ -357,15 +357,24 @@
 
             // Add cost row
             $('#addCostRow').click(function() {
+                const costTypeOptions = `
+                    <option value="">Pilih Jenis Biaya</option>
+                    @foreach($costTypes as $costType)
+                        <option value="{{ $costType['value'] }}">{{ $costType['label'] }}</option>
+                    @endforeach
+                `;
+                
+                const taxOptions = `
+                    @foreach($taxOptions as $tax)
+                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                    @endforeach
+                `;
+
                 const newRow = `
                     <tr>
                         <td>
-                            <select class="form-select cost-type">
-                                <option value="">Pilih Jenis Biaya</option>
-                                <option value="Biaya Kirim">Biaya Kirim</option>
-                                <option value="Biaya Asuransi">Biaya Asuransi</option>
-                                <option value="Biaya Bongkar">Biaya Bongkar</option>
-                                <option value="Biaya Lainnya">Biaya Lainnya</option>
+                            <select class="global-select2 form-select cost-type" data-allow-clear="true">
+                                ${costTypeOptions}
                             </select>
                         </td>
                         <td>
@@ -375,9 +384,8 @@
                             <input type="text" class="form-control additional-cost-amount curr-mask" value="0">
                         </td>
                         <td>
-                            <select class="form-select additional-tax-select">
-                                <option value="PPN">PPN 11%</option>
-                                <option value="No Tax">Tidak Ada Pajak</option>
+                            <select class="global-select2 form-select additional-tax-select" data-allow-clear="true">
+                                ${taxOptions}
                             </select>
                         </td>
                         <td>
@@ -477,10 +485,7 @@
                 $('#total-invoice').val(formatCurrency(grandTotal));
             }
 
-            // Format currency helper
-            function formatCurrency(amount) {
-                return 'Rp ' + amount.toLocaleString('id-ID');
-            }
+            // Currency functions are now available globally
 
             // Initialize currency mask
             function initializeCurrencyMask() {

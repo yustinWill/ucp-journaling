@@ -67,17 +67,6 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tfoot>
-                    <tr>
-                        <th>Tanggal Jurnal</th>
-                        <th>No Referensi</th>
-                        <th>Notes</th>
-                        <th>Amount</th>
-                        <th>Diinput Oleh</th>
-                        <th>Diinput Pada</th>
-                        <th>Aksi</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>

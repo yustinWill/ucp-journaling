@@ -11,23 +11,23 @@
                 @csrf
                 
                 <!-- Section 1: Transaction Information -->
-                <h6>Informasi Transaksi</h6>
-                <hr class="my-3">
+                <div class="section-header mt-12">
+                    <h6>Informasi Transaksi</h6>
+                    <hr class="mx-n6">
+                </div>
                 
                 <!-- Row 1: Payment Method, Pay Later, Transaction Number -->
-                <div class="row mb-3">
-                    <div class="col-lg-4 col-md-12 mb-3">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
                         <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
-                        <select id="payment-method" name="payment_method" class="form-select" required>
+                        <select id="payment-method" name="payment_method" class="global-select2 form-select" required>
                             <option value="">Pilih Metode Pembayaran</option>
-                            <option value="cash" selected>Cash</option>
-                            <option value="bank_transfer">Bank Transfer</option>
-                            <option value="credit_card">Credit Card</option>
-                            <option value="check">Check</option>
-                            <option value="e_wallet">E-wallet</option>
+                            @foreach($paymentMethods as $method)
+                                <option value="{{ $method['value'] }}" {{ $method['value'] == 'cash' ? 'selected' : '' }}>{{ $method['label'] }}</option>
+                            @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-2 col-md-12 mb-3 d-flex align-items-center">
+                    <div class="col-md-2 d-flex align-items-center">
                         <div class="form-check mt-4">
                             <input class="form-check-input" type="checkbox" id="pay-later" name="pay_later" value="1">
                             <label class="form-check-label" for="pay-later">
@@ -35,7 +35,7 @@
                             </label>
                         </div>
                     </div>
-                    <div class="col-lg-6 col-md-12 mb-3">
+                    <div class="col-md-6">
                         <label class="form-label">Nomor Transaksi <span class="text-danger">*</span></label>
                         <input type="text" id="transaction-number" name="transaction_number" class="form-control" 
                                value="EXP-2025-001" placeholder="autofill but editable" required>
@@ -43,14 +43,17 @@
                 </div>
                 
                 <!-- Row 2: Recipient and Transaction Date -->
-                <div class="row mb-3">
-                    <div class="col-lg-6 col-md-12 mb-3">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
                         <label class="form-label">Penerima</label>
-                        <select id="recipient" name="recipient" class="form-select">
+                        <select id="recipient" name="recipient" class="global-select2 form-select" data-allow-clear="true">
                             <option value="">Pilih Penerima</option>
+                            @foreach($recipients as $recipient)
+                                <option value="{{ $recipient['value'] }}">{{ $recipient['label'] }}</option>
+                            @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-6 col-md-12 mb-3">
+                    <div class="col-md-6">
                         <label class="form-label">Tanggal Transaksi <span class="text-danger">*</span></label>
                         <input type="date" class="form-control global-single-date-picker" id="transaction-date" name="transaction_date" 
                                value="{{ date('Y-m-d') }}" required>
@@ -58,27 +61,25 @@
                 </div>
                 
                 <!-- Row 3: Payment Terms (Conditional) -->
-                <div id="payment-terms-section" class="row mb-3" style="display: none;">
-                    <div class="col-lg-6 col-md-12 mb-3">
+                <div id="payment-terms-section" class="row g-3 mb-3" style="display: none;">
+                    <div class="col-md-6">
                         <label class="form-label">Syarat Pembayaran <span class="text-danger">*</span></label>
-                        <select id="payment-terms" name="payment_terms" class="form-select">
+                        <select id="payment-terms" name="payment_terms" class="global-select2 form-select">
                             <option value="">Pilih Syarat Pembayaran</option>
-                            <option value="net_15">Net 15</option>
-                            <option value="net_30" selected>Net 30</option>
-                            <option value="net_45">Net 45</option>
-                            <option value="net_60">Net 60</option>
-                            <option value="custom">Custom</option>
+                            @foreach($paymentTerms as $term)
+                                <option value="{{ $term['value'] }}" {{ $term['value'] == 'net_30' ? 'selected' : '' }}>{{ $term['label'] }}</option>
+                            @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-6 col-md-12 mb-3">
+                    <div class="col-md-6">
                         <label class="form-label">Tanggal Jatuh Tempo <span class="text-danger">*</span></label>
                         <input type="date" class="form-control global-single-date-picker" id="due-date" name="due_date" placeholder="autofill">
                     </div>
                 </div>
                 
                 <!-- Row 4: Billing Address -->
-                <div class="row mb-4">
-                    <div class="col-12">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
                         <label class="form-label">Alamat Penagihan</label>
                         <textarea id="billing-address" name="billing_address" class="form-control" 
                                   rows="3" placeholder="Alamat penagihan dari vendor..."></textarea>
@@ -86,11 +87,12 @@
                 </div>
                 
                 <!-- Section 2: Expense Information -->
-                <h6>Informasi Biaya</h6>
-                <hr class="my-3">
+                <div class="section-header mt-12">
+                    <h6>Informasi Biaya</h6>
+                </div>
                 
                 <!-- Expense Table -->
-                <div class="table-responsive mb-4">
+                <div class="table-responsive mx-n5 my-4">
                     <table id="expense-table" class="table table-bordered">
                         <thead>
                             <tr>
@@ -104,8 +106,11 @@
                         <tbody id="expense-rows">
                             <tr class="expense-row">
                                 <td>
-                                    <select name="expense_accounts[]" class="form-select expense-account" required>
+                                    <select name="expense_accounts[]" class="global-select2 form-select expense-account" required>
                                         <option value="">Pilih Akun Biaya</option>
+                                        @foreach($accounts as $account)
+                                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                                        @endforeach
                                     </select>
                                 </td>
                                 <td>
@@ -113,7 +118,7 @@
                                            placeholder="Deskripsi biaya...">
                                 </td>
                                 <td>
-                                    <select name="taxes[]" class="form-select">
+                                    <select name="taxes[]" class="global-select2 form-select" data-allow-clear="true">
                                         <option value="">Tanpa Pajak</option>
                                         <option value="ppn">PPN (11%)</option>
                                     </select>
@@ -123,22 +128,34 @@
                                            placeholder="Rp 0" required>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-danger remove-row" disabled>
-                                        <i class="ti ti-trash"></i>
+                                    <button class="btn btn-label-danger" type="button" onclick="removeRow(this)">
+                                        <i class="icon-base ti tabler-x me-1"></i>
+                                        <span class="align-middle">Hapus</span>
                                     </button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                    <button type="button" id="add-expense-row" class="btn btn-sm btn-primary">
-                        <i class="ti ti-plus me-2"></i>Tambah baris
+                </div>
+
+                <!-- Add Row Button -->
+                <div class="mb-3">
+                    <button type="button" class="btn btn-primary" id="add-expense-row">
+                        <i class="icon-base ti tabler-plus me-1"></i>
+                        <span class="align-middle">Tambah Baris</span>
                     </button>
+                </div>
+
+                <!-- Additional Information & Summary -->
+                <div class="section-header mt-12">
+                    <h6>Informasi Tambahan & Ringkasan</h6>
+                    <hr class="mx-n6">
                 </div>
                 
                 <!-- Split Layout: Memo & Financial Summary -->
                 <div class="row">
                     <!-- Left Side: Memo and Attachment -->
-                    <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="col-md-6 mb-4">
                         <div class="mb-3">
                             <label class="form-label">Memo</label>
                             <textarea id="memo" name="memo" class="form-control" rows="4" 
@@ -153,28 +170,47 @@
                         </div>
                     </div>
                     
-                    <!-- Right Side: Financial Summary -->
-                    <div class="col-lg-6 col-md-12 mb-4">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Subtotal:</span>
-                                    <span id="subtotal" class="fw-bold">Rp 0</span>
+                    <!-- Right Side: Summary Section -->
+                    <div class="col-md-6">
+                        <div class="summary-section ps-4">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Subtotal</label>
                                 </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Total:</span>
-                                    <span id="total-before-discount" class="fw-bold">Rp 0</span>
+                                <div class="col-6">
+                                    <input type="text" class="form-control readonly-field" id="subtotal-amount" dir="rtl" value="Rp 0" readonly>
                                 </div>
-                                <hr>
-                                <div class="mb-3">
-                                    <label class="form-label">Masukan Jumlah Potongan</label>
-                                    <input type="text" id="discount-amount" name="discount_amount" 
-                                           class="form-control currency-input" placeholder="Rp 0">
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Total Pajak</label>
                                 </div>
-                                <hr>
-                                <div class="d-flex justify-content-between">
-                                    <span class="fw-bold">Total:</span>
-                                    <span id="final-total" class="fw-bold text-primary fs-5">Rp 0</span>
+                                <div class="col-6">
+                                    <input type="text" class="form-control readonly-field" id="tax-amount" dir="rtl" value="Rp 0" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Total Sebelum Diskon</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" class="form-control readonly-field" id="total-before-discount" dir="rtl" value="Rp 0" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Diskon</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" class="form-control currency-input" id="discount-amount" name="discount_amount" dir="rtl" placeholder="Rp 0">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label"><strong>Total Akhir</strong></label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" class="form-control readonly-field fw-bold" id="final-total" dir="rtl" value="Rp 0" readonly>
                                 </div>
                             </div>
                         </div>
@@ -183,8 +219,10 @@
                 
                 <!-- Section 3: Conditional Payment Terms Management -->
                 <div id="payment-terms-management" style="display: none;">
-                    <h6>Syarat Pembayaran</h6>
-                    <hr class="my-3">
+                    <div class="section-header mt-12">
+                        <h6>Syarat Pembayaran</h6>
+                        <hr class="mx-n6">
+                    </div>
                     
                     <!-- Payment Terms Information -->
                     <div class="alert alert-info">
@@ -204,11 +242,11 @@
                         <div class="card-body">
                             <div class="mb-3">
                                 <label class="form-label">Syarat Pembayaran <span class="text-danger">*</span></label>
-                                <select id="existing-payment-terms" class="form-select">
+                                <select id="existing-payment-terms" class="global-select2 form-select">
                                     <option value="">Pilih Syarat Pembayaran</option>
-                                    <option value="net_30">Net 30</option>
-                                    <option value="net_45">Net 45</option>
-                                    <option value="net_60">Net 60</option>
+                                    @foreach($paymentTerms as $term)
+                                        <option value="{{ $term['value'] }}">{{ $term['label'] }}</option>
+                                    @endforeach
                                     <option value="custom">└ Syarat Pembayaran baru</option>
                                 </select>
                             </div>
@@ -235,7 +273,7 @@
                 <!-- Action Buttons -->
                 <div class="mt-4">
                     <div class="d-flex gap-2 justify-content-end">
-                        <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ route('main_transaction.expense.index') }}'">
+                        <button type="button" class="btn btn-secondary" id="cancel-btn">
                             <i class="ti ti-arrow-left me-2"></i>Batalkan
                         </button>
                         <button type="submit" class="btn btn-success">
@@ -264,29 +302,10 @@ $(function() {
     initializeCalculations();
     
     function initializeSearchableSelects() {
-        // Recipient select with AJAX
-        $('#recipient').select2({
-            placeholder: 'Pilih Penerima',
-            allowClear: true,
-            ajax: {
-                url: `{{ route('main_transaction.expense.recipients') }}`,
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
+        // Initialize Select2 for existing selects (server-side rendered options)
+        $('#payment-method, #payment-terms, #existing-payment-terms, #recipient').select2();
         
-        // Expense account selects
+        // Only expense account selects use AJAX for dynamic row addition
         $('.expense-account').select2({
             placeholder: 'Pilih Akun Biaya',
             allowClear: true,
@@ -400,20 +419,19 @@ $(function() {
             addExpenseRow();
         });
         
-        // Remove expense row
-        $(document).on('click', '.remove-row', function() {
-            $(this).closest('tr').remove();
-            updateRemoveButtons();
-            calculateTotals();
-        });
+        // Remove expense row function
+        window.removeRow = function(button) {
+            if ($('#expense-rows tr').length > 1) {
+                $(button).closest('tr').remove();
+                calculateTotals();
+            }
+        };
         
         // Currency input formatting
         $(document).on('input', '.currency-input', function() {
-            formatCurrency(this);
+            formatCurrencyInput(this);
             calculateTotals();
         });
-        
-        updateRemoveButtons();
     }
     
     function addExpenseRow() {
@@ -439,8 +457,9 @@ $(function() {
                            placeholder="Rp 0" required>
                 </td>
                 <td>
-                    <button type="button" class="btn btn-sm btn-danger remove-row">
-                        <i class="ti ti-trash"></i>
+                    <button class="btn btn-label-danger" type="button" onclick="removeRow(this)">
+                        <i class="icon-base ti tabler-x me-1"></i>
+                        <span class="align-middle">Hapus</span>
                     </button>
                 </td>
             </tr>
@@ -469,32 +488,9 @@ $(function() {
                 cache: true
             }
         });
-        
-        updateRemoveButtons();
     }
     
-    function updateRemoveButtons() {
-        const rows = $('.expense-row').length;
-        $('.remove-row').prop('disabled', rows <= 1);
-    }
-    
-    function formatCurrency(input) {
-        let value = input.value.replace(/[^\d]/g, '');
-        if (value) {
-            value = parseInt(value).toLocaleString('id-ID');
-            input.value = 'Rp ' + value;
-        } else {
-            input.value = '';
-        }
-    }
-    
-    function parseCurrency(value) {
-        return parseInt(value.replace(/[^\d]/g, '') || '0');
-    }
-    
-    function formatDisplayCurrency(amount) {
-        return 'Rp ' + amount.toLocaleString('id-ID');
-    }
+    // Currency functions are now available globally
     
     function initializeCalculations() {
         // Initial calculation
@@ -502,7 +498,7 @@ $(function() {
         
         // Discount input change
         $('#discount-amount').on('input', function() {
-            formatCurrency(this);
+            formatCurrencyInput(this);
             calculateTotals();
         });
     }
@@ -528,9 +524,10 @@ $(function() {
         const finalTotal = totalBeforeDiscount - discount;
         
         // Update display
-        $('#subtotal').text(formatDisplayCurrency(subtotal));
-        $('#total-before-discount').text(formatDisplayCurrency(totalBeforeDiscount));
-        $('#final-total').text(formatDisplayCurrency(finalTotal));
+        $('#subtotal-amount').val(formatCurrency(subtotal));
+        $('#tax-amount').val(formatCurrency(totalTax));
+        $('#total-before-discount').val(formatCurrency(totalBeforeDiscount));
+        $('#final-total').val(formatCurrency(finalTotal));
     }
     
     // Form submission
@@ -588,6 +585,11 @@ $(function() {
     // Remove validation classes on input
     $('input, select').on('input change', function() {
         $(this).removeClass('is-invalid');
+    });
+
+    // Cancel button handler
+    $('#cancel-btn').on('click', function() {
+        window.location.href = '{{ route('main_transaction.expense.index') }}';
     });
 });
 </script>

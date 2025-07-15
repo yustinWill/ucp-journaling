@@ -9,7 +9,27 @@ class ExpenseController extends Controller
 {
     public function index()
     {
-        return view('pages.main_transaction.expense.index', []);
+        // Get options for filter dropdowns in the list page
+        $categories = [
+            ['value' => 'Operasional', 'label' => 'Operasional'],
+            ['value' => 'Marketing', 'label' => 'Marketing'],
+            ['value' => 'Administrasi', 'label' => 'Administrasi'],
+            ['value' => 'IT', 'label' => 'IT & Technology'],
+            ['value' => 'HRD', 'label' => 'Human Resources']
+        ];
+
+        $statuses = [
+            ['value' => 'Draft', 'label' => 'Draft'],
+            ['value' => 'Diajukan', 'label' => 'Diajukan'],
+            ['value' => 'Disetujui', 'label' => 'Disetujui'],
+            ['value' => 'Dibayar', 'label' => 'Dibayar'],
+            ['value' => 'Ditolak', 'label' => 'Ditolak']
+        ];
+
+        return view('pages.main_transaction.expense.index', [
+            'categories' => $categories,
+            'statuses' => $statuses
+        ]);
     }
 
     public function index_data_table()
@@ -120,7 +140,45 @@ class ExpenseController extends Controller
 
     public function add()
     {
-        return view('pages.main_transaction.expense.add', []);
+        // Get all required options for the form
+        $paymentMethods = [
+            ['value' => 'cash', 'label' => 'Cash'],
+            ['value' => 'bank_transfer', 'label' => 'Bank Transfer'],
+            ['value' => 'credit_card', 'label' => 'Credit Card'],
+            ['value' => 'check', 'label' => 'Check'],
+            ['value' => 'e_wallet', 'label' => 'E-wallet']
+        ];
+
+        $paymentTerms = [
+            ['value' => 'net_15', 'label' => 'Net 15'],
+            ['value' => 'net_30', 'label' => 'Net 30'],
+            ['value' => 'net_45', 'label' => 'Net 45'],
+            ['value' => 'net_60', 'label' => 'Net 60'],
+            ['value' => 'custom', 'label' => 'Custom']
+        ];
+
+        $recipients = [
+            ['value' => 'PT. Supplier Utama', 'label' => 'PT. Supplier Utama'],
+            ['value' => 'CV. Mitra Jaya', 'label' => 'CV. Mitra Jaya'],
+            ['value' => 'PT. Teknologi Maju', 'label' => 'PT. Teknologi Maju'],
+            ['value' => 'UD. Berkah Sejahtera', 'label' => 'UD. Berkah Sejahtera'],
+            ['value' => 'PT. Global Solutions', 'label' => 'PT. Global Solutions']
+        ];
+
+        $accounts = [
+            ['value' => '5101', 'label' => '5101 - Biaya Operasional'],
+            ['value' => '5201', 'label' => '5201 - Biaya Marketing'],
+            ['value' => '5301', 'label' => '5301 - Biaya Administrasi'],
+            ['value' => '5401', 'label' => '5401 - Biaya IT & Teknologi'],
+            ['value' => '5501', 'label' => '5501 - Biaya SDM']
+        ];
+
+        return view('pages.main_transaction.expense.add', [
+            'paymentMethods' => $paymentMethods,
+            'paymentTerms' => $paymentTerms,
+            'recipients' => $recipients,
+            'accounts' => $accounts
+        ]);
     }
 
     public function export()
@@ -138,8 +196,45 @@ class ExpenseController extends Controller
 
     public function edit($id)
     {
+        // Get all required options for the form (same as add form)
+        $paymentMethods = [
+            ['value' => 'cash', 'label' => 'Cash'],
+            ['value' => 'bank_transfer', 'label' => 'Bank Transfer'],
+            ['value' => 'credit_card', 'label' => 'Credit Card'],
+            ['value' => 'check', 'label' => 'Check'],
+            ['value' => 'e_wallet', 'label' => 'E-wallet']
+        ];
+
+        $paymentTerms = [
+            ['value' => 'net_15', 'label' => 'Net 15'],
+            ['value' => 'net_30', 'label' => 'Net 30'],
+            ['value' => 'net_45', 'label' => 'Net 45'],
+            ['value' => 'net_60', 'label' => 'Net 60'],
+            ['value' => 'custom', 'label' => 'Custom']
+        ];
+
+        $recipients = [
+            ['value' => 'PT. Supplier Utama', 'label' => 'PT. Supplier Utama'],
+            ['value' => 'CV. Mitra Jaya', 'label' => 'CV. Mitra Jaya'],
+            ['value' => 'PT. Teknologi Maju', 'label' => 'PT. Teknologi Maju'],
+            ['value' => 'UD. Berkah Sejahtera', 'label' => 'UD. Berkah Sejahtera'],
+            ['value' => 'PT. Global Solutions', 'label' => 'PT. Global Solutions']
+        ];
+
+        $accounts = [
+            ['value' => '5101', 'label' => '5101 - Biaya Operasional'],
+            ['value' => '5201', 'label' => '5201 - Biaya Marketing'],
+            ['value' => '5301', 'label' => '5301 - Biaya Administrasi'],
+            ['value' => '5401', 'label' => '5401 - Biaya IT & Teknologi'],
+            ['value' => '5501', 'label' => '5501 - Biaya SDM']
+        ];
+
         return view('pages.main_transaction.expense.edit', [
-            'id' => $id
+            'id' => $id,
+            'paymentMethods' => $paymentMethods,
+            'paymentTerms' => $paymentTerms,
+            'recipients' => $recipients,
+            'accounts' => $accounts
         ]);
     }
 
@@ -245,5 +340,47 @@ class ExpenseController extends Controller
         }
 
         return response()->json(array_values($accounts));
+    }
+
+    public function paymentMethods(Request $request)
+    {
+        $search = $request->get('search', '');
+        
+        $paymentMethods = [
+            ['value' => 'cash', 'label' => 'Cash'],
+            ['value' => 'bank_transfer', 'label' => 'Bank Transfer'],
+            ['value' => 'credit_card', 'label' => 'Credit Card'],
+            ['value' => 'check', 'label' => 'Check'],
+            ['value' => 'e_wallet', 'label' => 'E-wallet']
+        ];
+
+        if ($search) {
+            $paymentMethods = array_filter($paymentMethods, function($method) use ($search) {
+                return stripos($method['label'], $search) !== false;
+            });
+        }
+
+        return response()->json(array_values($paymentMethods));
+    }
+
+    public function paymentTerms(Request $request)
+    {
+        $search = $request->get('search', '');
+        
+        $paymentTerms = [
+            ['value' => 'net_15', 'label' => 'Net 15'],
+            ['value' => 'net_30', 'label' => 'Net 30'],
+            ['value' => 'net_45', 'label' => 'Net 45'],
+            ['value' => 'net_60', 'label' => 'Net 60'],
+            ['value' => 'custom', 'label' => 'Custom']
+        ];
+
+        if ($search) {
+            $paymentTerms = array_filter($paymentTerms, function($term) use ($search) {
+                return stripos($term['label'], $search) !== false;
+            });
+        }
+
+        return response()->json(array_values($paymentTerms));
     }
 }

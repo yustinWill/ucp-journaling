@@ -6,7 +6,10 @@
     <div class="card mb-6">
         <h5 class="card-header">Tambah Jurnal Baru</h5>
         <form class="card-body" id="main-form">
-            <h6>1. Data Tanggal & Penginput</h6>
+            <div class="section-header mt-12">
+                <h6>Data Tanggal & Penginput</h6>
+                <hr class="mx-n6">
+            </div>
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Jurnal <span style="color: red;">*</span></label>
@@ -21,8 +24,10 @@
                     <input type="text" id='reference-no' class="form-control" value="20250701.JLL.QYZ33U" />
                 </div>
             </div>
-            <hr class="my-4 mx-n4" />
-            <h6>2. Data Debit</h6>
+            <div class="section-header mt-12">
+                <h6>Data Debit</h6>
+                <hr class="mx-n6">
+            </div>
             <div class="row g-3">
                 <div class="col-12">
                     <span class="form-repeater-debit">
@@ -73,8 +78,10 @@
                     </span>
                 </div>
             </div>
-            <hr class="my-4 mx-n4" />
-            <h6>3. Data Kredit</h6>
+            <div class="section-header mt-12">
+                <h6>Data Kredit</h6>
+                <hr class="mx-n6">
+            </div>
             <div class="row g-3">
                 <div class="col-12">
                     <span class="form-repeater-credit">

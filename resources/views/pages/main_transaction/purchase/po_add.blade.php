@@ -8,8 +8,8 @@
         <form class="card-body" id="purchaseOrderForm">
             <!-- Transaction Information Section -->
             <div class="section-header mt-12">
-                <h5>Informasi Transaksi</h5>
-                <hr>
+                <h6>Informasi Transaksi</h6>
+                <hr class="mx-n6">
             </div>
 
             <!-- Row 1: Basic Information -->
@@ -18,10 +18,9 @@
                     <label class="form-label">Supplier <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="supplier-select">
                         <option value="">Pilih Supplier</option>
-                        <option value="1">PT. Sumber Makmur</option>
-                        <option value="2">CV. Berkah Jaya</option>
-                        <option value="3">PT. Mandiri Sejahtera</option>
-                        <option value="4">CV. Maju Bersama</option>
+                        @foreach($suppliers as $supplier)
+                            <option value="{{ $supplier['value'] }}">{{ $supplier['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -56,11 +55,9 @@
                 <div class="col-md-3">
                     <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="payment-terms">
-                        <option value="Net 30" selected>Net 30</option>
-                        <option value="Net 15">Net 15</option>
-                        <option value="Net 45">Net 45</option>
-                        <option value="Cash on Delivery">Cash on Delivery</option>
-                        <option value="Immediate">Immediate</option>
+                        @foreach($paymentTerms as $term)
+                            <option value="{{ $term['value'] }}" {{ $term['value'] == 'Net 30' ? 'selected' : '' }}>{{ $term['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -80,25 +77,25 @@
                     <label class="form-label">Gudang</label>
                     <select class="global-select2 form-select" id="warehouse-select" data-allow-clear="true">
                         <option value="">Pilih Gudang</option>
-                        <option value="1">Gudang Utama</option>
-                        <option value="2">Gudang Cabang A</option>
-                        <option value="3">Gudang Cabang B</option>
+                        @foreach($warehouses as $warehouse)
+                            <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
 
             <!-- Product Information Section -->
             <div class="section-header mt-12">
-                <h5>Informasi Pembelian</h5>
-                <hr>
-                <div class="text-end">
+                <h6>Informasi Pembelian</h6>
+                <hr class="mx-n6">
+                <div class="text-end mb-4">
                     <input type="checkbox" id="includeTax" class="form-check-input me-2">
                     <label for="includeTax" class="form-check-label">Harga Termasuk Pajak</label>
                 </div>
             </div>
 
             <!-- Product Table -->
-            <div class="table-responsive my-4">
+            <div class="table-responsive mx-n5 my-4">
                 <table class="table table-bordered" id="productTable">
                     <thead>
                         <tr>
@@ -117,10 +114,9 @@
                             <td>
                                 <select class="global-select2 form-select product-select" name="product[]" required>
                                     <option value="">Pilih Produk</option>
-                                    <option value="1">ALBUM SVT</option>
-                                    <option value="2">Buku Tulis</option>
-                                    <option value="3">Pensil</option>
-                                    <option value="4">Penghapus</option>
+                                    @foreach($products as $product)
+                                        <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -141,8 +137,9 @@
                             </td>
                             <td>
                                 <select class="global-select2 form-select tax-select" name="tax[]" data-allow-clear="true">
-                                    <option value="PPN">PPN</option>
-                                    <option value="No Tax">Tidak Ada Pajak</option>
+                                    @foreach($taxOptions as $tax)
+                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -160,10 +157,9 @@
                             <td>
                                 <select class="global-select2 form-select product-select" name="product[]">
                                     <option value="">Pilih Produk</option>
-                                    <option value="1">ALBUM SVT</option>
-                                    <option value="2">Buku Tulis</option>
-                                    <option value="3">Pensil</option>
-                                    <option value="4">Penghapus</option>
+                                    @foreach($products as $product)
+                                        <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -184,8 +180,9 @@
                             </td>
                             <td>
                                 <select class="global-select2 form-select tax-select" name="tax[]" data-allow-clear="true">
-                                    <option value="PPN">PPN</option>
-                                    <option value="No Tax">Tidak Ada Pajak</option>
+                                    @foreach($taxOptions as $tax)
+                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -203,10 +200,9 @@
                             <td>
                                 <select class="global-select2 form-select product-select" name="product[]">
                                     <option value="">Pilih Produk</option>
-                                    <option value="1">ALBUM SVT</option>
-                                    <option value="2">Buku Tulis</option>
-                                    <option value="3">Pensil</option>
-                                    <option value="4">Penghapus</option>
+                                    @foreach($products as $product)
+                                        <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -227,8 +223,9 @@
                             </td>
                             <td>
                                 <select class="global-select2 form-select tax-select" name="tax[]" data-allow-clear="true">
-                                    <option value="PPN">PPN</option>
-                                    <option value="No Tax">Tidak Ada Pajak</option>
+                                    @foreach($taxOptions as $tax)
+                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -246,10 +243,9 @@
                             <td>
                                 <select class="global-select2 form-select product-select" name="product[]">
                                     <option value="">Pilih Produk</option>
-                                    <option value="1">ALBUM SVT</option>
-                                    <option value="2">Buku Tulis</option>
-                                    <option value="3">Pensil</option>
-                                    <option value="4">Penghapus</option>
+                                    @foreach($products as $product)
+                                        <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -270,8 +266,9 @@
                             </td>
                             <td>
                                 <select class="global-select2 form-select tax-select" name="tax[]" data-allow-clear="true">
-                                    <option value="PPN">PPN</option>
-                                    <option value="No Tax">Tidak Ada Pajak</option>
+                                    @foreach($taxOptions as $tax)
+                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </td>
                             <td>
@@ -299,8 +296,8 @@
 
             <!-- Additional Information & Summary -->
             <div class="section-header mt-12">
-                <h5>Informasi Tambahan & Ringkasan</h5>
-                <hr>
+                <h6>Informasi Tambahan & Ringkasan</h6>
+                <hr class="mx-n6">
             </div>
 
             <div class="row g-3">
@@ -483,15 +480,24 @@
 
             // Add new product row
             $('#addProductRow').click(function() {
+                const productOptions = `
+                    <option value="">Pilih Produk</option>
+                    @foreach($products as $product)
+                        <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
+                    @endforeach
+                `;
+                
+                const taxOptions = `
+                    @foreach($taxOptions as $tax)
+                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                    @endforeach
+                `;
+
                 const newRow = `
                     <tr>
                         <td>
                             <select class="global-select2 form-select product-select" name="product[]">
-                                <option value="">Pilih Produk</option>
-                                <option value="1">ALBUM SVT</option>
-                                <option value="2">Buku Tulis</option>
-                                <option value="3">Pensil</option>
-                                <option value="4">Penghapus</option>
+                                ${productOptions}
                             </select>
                         </td>
                         <td>
@@ -508,8 +514,7 @@
                         </td>
                         <td>
                             <select class="global-select2 form-select tax-select" name="tax[]" data-allow-clear="true">
-                                <option value="PPN">PPN</option>
-                                <option value="No Tax">Tidak Ada Pajak</option>
+                                ${taxOptions}
                             </select>
                         </td>
                         <td>
@@ -599,10 +604,7 @@
                 $('#estimated-payment').val(formatCurrency(total));
             }
 
-            // Format currency helper
-            function formatCurrency(amount) {
-                return 'Rp ' + amount.toLocaleString('id-ID');
-            }
+            // Currency functions are now available globally
 
             // Initialize currency mask
             function initializeCurrencyMask() {
