@@ -64,6 +64,8 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $user_segment . '/index', 'index')->name('master_data.user.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $user_segment . '/index_data_table', 'index_data_table')->name('master_data.user.index_data_table')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $user_segment . '/add', 'add')->name('master_data.user.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $user_segment . '/edit/{id}', 'edit')->name('master_data.user.edit')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $user_segment . '/detail/{id}', 'detail')->name('master_data.user.detail')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $user_segment . '/export', 'export')->name('master_data.user.export')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $user_segment . '/import', 'import')->name('master_data.user.import')->middleware(EnsureTokenIsValid::class);
     });

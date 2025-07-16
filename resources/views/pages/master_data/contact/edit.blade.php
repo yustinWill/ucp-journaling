@@ -47,10 +47,10 @@
                 <div class="col-md-12">
                     <label class="form-label">Grup Kontak</label>
                     <select class="global-select2 form-select" id="contact-group" multiple data-allow-clear="true">
-                        <option value="vip" @if(str_contains($contact['group'], 'VIP')) selected @endif>VIP Customer</option>
-                        <option value="regular" @if(str_contains($contact['group'], 'Regular')) selected @endif>Regular Customer</option>
-                        <option value="wholesale" @if(str_contains($contact['group'], 'Wholesale')) selected @endif>Wholesale</option>
-                        <option value="retail" @if(str_contains($contact['group'], 'Retail')) selected @endif>Retail</option>
+                        <option value="">Pilih Grup Kontak</option>
+                        @foreach($contact_groups as $group)
+                            <option value="{{ $group['value'] }}" @if(str_contains($contact['group'], $group['label'])) selected @endif>{{ $group['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -176,12 +176,11 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Nama Bank <span style="color: red;">*</span></label>
-                    <select class="form-select" id="bank-name">
+                    <select class="global-select2 form-select" id="bank-name" data-allow-clear="true">
                         <option value="">Pilih Bank</option>
-                        <option value="BCA" @if($contact['bank_name'] == 'Bank Central Asia') selected @endif>Bank Central Asia (BCA)</option>
-                        <option value="BRI" @if($contact['bank_name'] == 'BRI') selected @endif>Bank Rakyat Indonesia (BRI)</option>
-                        <option value="MANDIRI" @if($contact['bank_name'] == 'Mandiri') selected @endif>Bank Mandiri</option>
-                        <option value="BNI" @if($contact['bank_name'] == 'BNI') selected @endif>Bank Negara Indonesia (BNI)</option>
+                        @foreach($banks as $bank)
+                            <option value="{{ $bank['value'] }}" @if($contact['bank_name'] == $bank['label']) selected @endif>{{ $bank['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -221,18 +220,18 @@
                     <label class="form-label">Akun Hutang <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="payable-account" data-allow-clear="true">
                         <option value="">Pilih Akun Hutang</option>
-                        <option value="2-20100" @if($contact['debt_account'] == '(2-20100) Hutang') selected @endif>(2-20100) Hutang</option>
-                        <option value="2-20200">(2-20200) Hutang Jangka Panjang</option>
-                        <option value="2-20300">(2-20300) Hutang Bank</option>
+                        @foreach($payable_accounts as $account)
+                            <option value="{{ $account['value'] }}" @if($contact['debt_account'] == $account['label']) selected @endif>{{ $account['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Akun Piutang <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="receivable-account" data-allow-clear="true">
                         <option value="">Pilih Akun Piutang</option>
-                        <option value="1-20100" @if($contact['receivable_account'] == '(1-20100) Piutang') selected @endif>(1-20100) Piutang</option>
-                        <option value="1-20200">(1-20200) Piutang Jangka Panjang</option>
-                        <option value="1-20300">(1-20300) Piutang Lain-lain</option>
+                        @foreach($receivable_accounts as $account)
+                            <option value="{{ $account['value'] }}" @if($contact['receivable_account'] == $account['label']) selected @endif>{{ $account['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -240,13 +239,11 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
-                    <select class="form-select" id="payment-terms">
+                    <select class="global-select2 form-select" id="payment-terms" data-allow-clear="true">
                         <option value="">Pilih Syarat Pembayaran</option>
-                        <option value="Net 15" @if($contact['payment_terms'] == 'Net 15') selected @endif>Net 15</option>
-                        <option value="Net 30" @if($contact['payment_terms'] == 'Net 30') selected @endif>Net 30</option>
-                        <option value="Net 45" @if($contact['payment_terms'] == 'Net 45') selected @endif>Net 45</option>
-                        <option value="COD" @if($contact['payment_terms'] == 'COD') selected @endif>Cash on Delivery</option>
-                        <option value="Immediate" @if($contact['payment_terms'] == 'Immediate') selected @endif>Immediate</option>
+                        @foreach($payment_terms as $payment_term)
+                            <option value="{{ $payment_term['value'] }}" @if($contact['payment_terms'] == $payment_term['label']) selected @endif>{{ $payment_term['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>

@@ -191,9 +191,6 @@
                 });
             }
 
-            // Initialize global-select2 for already loaded options
-            $('.global-select2').select2();
-
             // Button click events
             $('#btn-add-data').on('click', function() {
                 window.location.href = `{{ route('main_transaction.expense.add') }}`;

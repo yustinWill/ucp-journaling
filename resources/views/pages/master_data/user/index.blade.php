@@ -131,18 +131,6 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tfoot>
-                    <tr>
-                        <th>Nama User</th>
-                        <th>Email User</th>
-                        <th>Phone</th>
-                        <th>Role</th>
-                        <th>Terakhir Login</th>
-                        <th>Password Terakhir Dirubah</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
@@ -198,17 +186,16 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row, meta) {
+                                const detailUrl = "{{ route('master_data.user.detail', ':id') }}".replace(':id', row.id);
+                                const editUrl = "{{ route('master_data.user.edit', ':id') }}".replace(':id', row.id);
                                 return `
                                 <div class="btn-group" role="group" aria-label="Second group">
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
+                                    <a href="${editUrl}" class="btn btn-primary btn-sm waves-effect">
                                         <i class="icon-base ti tabler-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
+                                    </a>
+                                    <a href="${detailUrl}" class="btn btn-primary btn-sm waves-effect">
                                         <i class="icon-base ti tabler-eye"></i>
-                                    </button>
-                                     <button type="button" class="btn btn-primary btn-sm waves-effect">
-                                        <i class="icon-base ti tabler-lock-open-2"></i>
-                                    </button>
+                                    </a>
                                 </div>
                             `;
                             }
@@ -252,6 +239,7 @@
             $('#btn-import-data').on('click', function() {
                 window.location.href = "{{ route('master_data.user.import') }}";
             });
+
         });
     </script>
 @endsection

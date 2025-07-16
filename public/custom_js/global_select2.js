@@ -22,12 +22,16 @@ $(function () {
     if (select2.length) {
         select2.each(function () {
             var $this = $(this);
+            var originalValue = $this.val(); // Preserve original selected value
             $this.wrap('<div class="position-relative"></div>').select2({
                 placeholder: 'Pilih Data',
                 allowClear: true,
                 dropdownParent: $this.parent()
             });
-            $this.val(null).trigger('change');
+            // Only clear if no original value was selected
+            if (!originalValue) {
+                $this.val(null).trigger('change');
+            }
         });
     }
 

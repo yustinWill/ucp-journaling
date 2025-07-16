@@ -53,7 +53,62 @@ class UserController extends Controller
 
     public function add()
     {
-        return view('pages.master_data.user.add', []);
+        $selectData = [
+            'roles' => [
+                ['value' => 'Super Admin', 'label' => 'Super Admin'],
+                ['value' => 'Admin', 'label' => 'Admin'],
+                ['value' => 'Accounting', 'label' => 'Accounting'],
+                ['value' => 'Sales', 'label' => 'Sales'],
+                ['value' => 'Purchase', 'label' => 'Purchase'],
+                ['value' => 'Manager', 'label' => 'Manager'],
+                ['value' => 'Staff', 'label' => 'Staff']
+            ]
+        ];
+        
+        return view('pages.master_data.user.add', $selectData);
+    }
+
+    public function edit($id)
+    {
+        // In a real implementation, you would fetch the user from the database
+        $user = [
+            'id' => $id,
+            'name' => 'User ' . $id,
+            'email' => 'user' . $id . '@example.com',
+            'phone' => '08127213123',
+            'role' => 'Super Admin',
+            'status' => 'ACTIVE'
+        ];
+        
+        $selectData = [
+            'roles' => [
+                ['value' => 'Super Admin', 'label' => 'Super Admin'],
+                ['value' => 'Admin', 'label' => 'Admin'],
+                ['value' => 'Accounting', 'label' => 'Accounting'],
+                ['value' => 'Sales', 'label' => 'Sales'],
+                ['value' => 'Purchase', 'label' => 'Purchase'],
+                ['value' => 'Manager', 'label' => 'Manager'],
+                ['value' => 'Staff', 'label' => 'Staff']
+            ]
+        ];
+        
+        return view('pages.master_data.user.edit', compact('user') + $selectData);
+    }
+
+    public function detail($id)
+    {
+        // In a real implementation, you would fetch the user from the database
+        $user = [
+            'id' => $id,
+            'name' => 'User ' . $id,
+            'email' => 'user' . $id . '@example.com',
+            'phone' => '08127213123',
+            'role' => 'Super Admin',
+            'last_login' => '2025-06-01 12:00:00',
+            'last_password_change' => '2025-06-01 12:00:00',
+            'status' => 'ACTIVE'
+        ];
+        return view('pages.master_data.user.detail', ['user' => $user]);
     }
 
     public function export()

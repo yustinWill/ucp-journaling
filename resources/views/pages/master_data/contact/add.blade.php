@@ -66,9 +66,10 @@
                 <div class="col-md-6">
                     <label class="form-label" for="multicol-country">Jenis Identitas</label>
                     <select class="global-select2 form-select" data-allow-clear="true">
-                        <option value="AK">KTP</option>
-                        <option value="HI">SIM</option>
-                        <option value="PS">Passport</option>
+                        <option value="">Pilih Jenis Identitas</option>
+                        @foreach($identity_types as $identity_type)
+                            <option value="{{ $identity_type['value'] }}">{{ $identity_type['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -86,9 +87,10 @@
                 <div class="col-md-6 pelanggan-additional-form">
                     <label class="form-label">Sales Penanggung Jawab</label>
                     <select class="global-select2 form-select" data-allow-clear="true">
-                        <option value="AK">Sales A</option>
-                        <option value="HI">Sales B</option>
-                        <option value="SC">Sales C</option>
+                        <option value="">Pilih Sales</option>
+                        @foreach($sales_users as $sales_user)
+                            <option value="{{ $sales_user['value'] }}">{{ $sales_user['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -178,28 +180,28 @@
                 <div class="col-md-6">
                     <label class="form-label">Akun Hutang</label>
                     <select class="global-select2 form-select" data-allow-clear="true">
-                        <option value="AK">1 - Asset</option>
-                        <option value="HI">2 - Utang</option>
-                        <option value="MD">3 - Modal</option>
-                        <option value="PD">4 - Pendapatan</option>
-                        <option value="BB">5 - Beban</option>
+                        <option value="">Pilih Akun Hutang</option>
+                        @foreach($payable_accounts as $account)
+                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Akun Piutang</label>
                     <select class="global-select2 form-select" data-allow-clear="true">
-                        <option value="AK">1 - Asset</option>
-                        <option value="HI">2 - Utang</option>
-                        <option value="MD">3 - Modal</option>
-                        <option value="PD">4 - Pendapatan</option>
-                        <option value="BB">5 - Beban</option>
+                        <option value="">Pilih Akun Piutang</option>
+                        @foreach($receivable_accounts as $account)
+                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Syarat Pembayaran</label>
                     <select class="global-select2 form-select" data-allow-clear="true">
-                        <option value="N30">Net 30</option>
-                        <option value="N15">Net 15</option>
+                        <option value="">Pilih Syarat Pembayaran</option>
+                        @foreach($payment_terms as $payment_term)
+                            <option value="{{ $payment_term['value'] }}">{{ $payment_term['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -213,11 +215,10 @@
                             <div class="col-md-6">
                                 <label class="form-label">Nama Bank</label>
                                 <select class="bank-select2 form-select" data-allow-clear="true">
-                                    <option value="BCA">BCA</option>
-                                    <option value="MANDIRI">Mandiri</option>
-                                    <option value="BRI">BRI</option>
-                                    <option value="BNI">BNI</option>
-                                    <option value="MEGA">Mega</option>
+                                    <option value="">Pilih Bank</option>
+                                    @foreach($banks as $bank)
+                                        <option value="{{ $bank['value'] }}">{{ $bank['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -260,11 +261,10 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Nama Produk</label>
                                     <select class="bank-select2 form-select" data-allow-clear="true">
-                                        <option value="A">Produk A</option>
-                                        <option value="B">Produk B</option>
-                                        <option value="C">Produk C</option>
-                                        <option value="D">Produk D</option>
-                                        <option value="E">Produk E</option>
+                                        <option value="">Pilih Produk</option>
+                                        @foreach($products as $product)
+                                            <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="col-md-6">
