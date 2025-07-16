@@ -76,6 +76,12 @@
                         </a>
                     </li>
                     <li>
+                        <a class="dropdown-item" href="{{ route('change_password.index') }}">
+                            <i class="icon-base ti tabler-lock icon-md me-3"></i><span>Change
+                                Password</span>
+                        </a>
+                    </li>
+                    <li>
                         <div class="dropdown-divider my-1 mx-n2"></div>
                     </li>
                     <li>
