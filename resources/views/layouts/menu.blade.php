@@ -14,39 +14,39 @@
 
     <ul class="menu-inner py-1">
         <li class="menu-header small">
-            <span class="menu-header-text" data-i18n="Apps & Pages">Menu A</span>
+            <span class="menu-header-text" data-i18n="Apps & Pages">Dashboard & Laporan</span>
         </li>
         <li class="menu-item">
             <a href="app-email.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-home"></i>
-                <div data-i18n="Email">Beranda</div>
+                <div data-i18n="Email">Beranda - wip</div>
             </a>
         </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-layout-dashboard"></i>
-                <div data-i18n="Chat">Dashboard</div>
+                <div data-i18n="Chat">Dashboard - wip</div>
             </a>
         </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-file-analytics"></i>
-                <div data-i18n="Chat">Laporan</div>
+                <div data-i18n="Chat">Laporan - wip</div>
             </a>
         </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-wallet"></i>
-                <div data-i18n="Chat">Anggaran</div>
+                <div data-i18n="Chat">Anggaran - wip</div>
             </a>
         </li>
         <li class="menu-header small">
-            <span class="menu-header-text" data-i18n="Apps & Pages">Menu B</span>
+            <span class="menu-header-text" data-i18n="Apps & Pages">Transaksi</span>
         </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-bank"></i>
-                <div data-i18n="Chat">Kas & Bank</div>
+                <div data-i18n="Chat">Kas & Bank - wip</div>
             </a>
         </li>
         <li class="menu-item @if (request()->routeIs(['main_transaction.sales.*'])) active @endif">
@@ -74,7 +74,7 @@
             </a>
         </li>
         <li class="menu-header small">
-            <span class="menu-header-text" data-i18n="Apps & Pages">Menu C</span>
+            <span class="menu-header-text" data-i18n="Apps & Pages">Master Data & Operasional</span>
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.contact.*'])) active @endif">
             <a href="{{ route('master_data.contact.index') }}" class="menu-link">
@@ -88,12 +88,12 @@
                 <div data-i18n="Chat">Produk</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.storage.*'])) active @endif">
+        <!-- <li class="menu-item @if (request()->routeIs(['master_data.storage.*'])) active @endif">
             <a href="{{ route('master_data.storage.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-warehouse"></i>
                 <div data-i18n="Chat">Gudang</div>
             </a>
-        </li>
+        </li> -->
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-tools"></i>
@@ -109,13 +109,13 @@
         <li class="menu-item">
             <a href="app-logistics-dashboard.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-clipboard-check"></i>
-                <div data-i18n="Chat">Stock Opname</div>
+                <div data-i18n="Chat">Stock Opname - wip</div>
             </a>
         </li>
         <li class="menu-item">
             <a href="app-ecommerce-dashboard.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-factory"></i>
-                <div data-i18n="Chat">Asset / Inventaris</div>
+                <div data-i18n="Chat">Asset / Inventaris - wip</div>
             </a>
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">
@@ -125,12 +125,12 @@
             </a>
         </li>
         <li class="menu-header small">
-            <span class="menu-header-text" data-i18n="Apps & Pages">Menu D</span>
+            <span class="menu-header-text" data-i18n="Apps & Pages">Sistem & Pengaturan</span>
         </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-list"></i>
-                <div data-i18n="Chat">Daftar Lainnnya</div>
+                <div data-i18n="Chat">Daftar Lainnnya - wip</div>
             </a>
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.user.*'])) active @endif">
@@ -142,7 +142,7 @@
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-settings"></i>
-                <div data-i18n="Chat">Pengaturan</div>
+                <div data-i18n="Chat">Pengaturan - wip</div>
             </a>
         </li>
     </ul>

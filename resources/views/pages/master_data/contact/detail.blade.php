@@ -337,15 +337,12 @@ $(function() {
                 </div>
                 
                 <!-- Transaction Table -->
-                <div class="row mb-3">
-                    <div class="col-md-10">
-                        <h5>List History Transaksi</h5>
-                    </div>
-                    <div class="col-md-2 text-end">
-                        <button type="button" class="btn btn-primary btn-sm">
-                            Tambah Faktur Penjualan
-                        </button>
-                    </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>List History Transaksi</h5>
+                    <button type="button" class="btn btn-primary">
+                        <i class="icon-base ti tabler-plus"></i>
+                        <span class="align-middle">Tambah Faktur Penjualan</span>
+                    </button>
                 </div>
                 
                 <div>
@@ -391,19 +388,15 @@ $(function() {
             const creditMemoUrl = "{{ route('main_transaction.credit_memo.add_with_contact', ':id') }}".replace(':id', contactId);
             const creditMemoContent = `
                 <!-- Add Credit Memo Button -->
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <label class="form-label">Tambah Credit Memo:</label>
-                        <a href="${creditMemoUrl}" class="btn btn-primary">
-                            Tambah Credit Memo
-                        </a>
-                    </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>List History Credit Memo</h5>
+                    <a href="${creditMemoUrl}" class="btn btn-primary">
+                        <i class="icon-base ti tabler-plus"></i>
+                        <span class="align-middle">Tambah Credit Memo</span>
+                    </a>
                 </div>
                 
                 <!-- Credit Memo Table -->
-                <div class="mb-3">
-                    <h5>List History Credit Memo</h5>
-                </div>
                 
                 <div>
                     <table class="table table-bordered">

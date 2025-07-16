@@ -82,21 +82,6 @@
                                             <th>Harga Jual</th>
                                         </tr>
                                     </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th>Kode Produk</th>
-                                            <th>Nama Produk</th>
-                                            <th>Kategori Produk </th>
-                                            <th>Total Stok</th>
-                                            <th>Qty Tersedia</th>
-                                            <th>Batas Minimum</th>
-                                            <th>Unit</th>
-                                            <th>Harga Rata-Rata</th>
-                                            <th>Harga Beli Terakhir</th>
-                                            <th>Harga Beli</th>
-                                            <th>Harga Jual</th>
-                                        </tr>
-                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -115,17 +100,6 @@
                                             <th>Total</th>
                                         </tr>
                                     </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th>Tanggal</th>
-                                            <th>No. Transaksi</th>
-                                            <th>Kontak</th>
-                                            <th>Tgl Jatuh Tempo</th>
-                                            <th>Status</th>
-                                            <th>Jumlah DP</th>
-                                            <th>Total</th>
-                                        </tr>
-                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -148,21 +122,6 @@
                                             <th>Tgl Update Terakhir</th>
                                         </tr>
                                     </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th>Kode Batch</th>
-                                            <th>Nama Produk</th>
-                                            <th>Tanggal Masuk</th>
-                                            <th>Tanggal Kadaluarsa</th>
-                                            <th>Stok Tersisa</th>
-                                            <th>Harga/Unit</th>
-                                            <th>Status</th>
-                                            <th>Sumber Transaksi</th>
-                                            <th>Nomor Transaksi</th>
-                                            <th>Catatan</th>
-                                            <th>Tgl Update Terakhir</th>
-                                        </tr>
-                                    </tfoot>
                                 </table>
                             </div>
                         </div>
