@@ -16,16 +16,10 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Dashboard & Laporan</span>
         </li>
-        <li class="menu-item">
-            <a href="app-email.html" class="menu-link">
+        <li class="menu-item @if (request()->routeIs(['dashboard.*'])) active @endif">
+            <a href="{{ route('dashboard.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-home"></i>
-                <div data-i18n="Email">Beranda - wip</div>
-            </a>
-        </li>
-        <li class="menu-item">
-            <a href="app-chat.html" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-layout-dashboard"></i>
-                <div data-i18n="Chat">Dashboard - wip</div>
+                <div data-i18n="Dashboard">Dashboard</div>
             </a>
         </li>
         <li class="menu-item">

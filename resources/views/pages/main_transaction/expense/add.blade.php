@@ -310,7 +310,7 @@ $(function() {
             placeholder: 'Pilih Akun Biaya',
             allowClear: true,
             ajax: {
-                url: `{{ route('main_transaction.expense.accounts') }}`,
+                url: '{{ route("main_transaction.expense.accounts") }}',
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
@@ -472,7 +472,7 @@ $(function() {
             placeholder: 'Pilih Akun Biaya',
             allowClear: true,
             ajax: {
-                url: `{{ route('main_transaction.expense.accounts') }}`,
+                url: '{{ route("main_transaction.expense.accounts") }}',
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
@@ -589,7 +589,7 @@ $(function() {
 
     // Cancel button handler
     $('#cancel-btn').on('click', function() {
-        window.location.href = '{{ route('main_transaction.expense.index') }}';
+        window.location.href = '{{ route("main_transaction.expense.index") }}';
     });
 });
 </script>

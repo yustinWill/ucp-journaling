@@ -152,7 +152,7 @@
             
             roleTable = new DataTable('#role-table', {
                 ajax: {
-                    url: '{{ route('master_data.role.index_data_table') }}',
+                    url: `{{ route('master_data.role.index_data_table') }}`,
                     data: {
                         // Additional parameters
                     }
