@@ -91,13 +91,13 @@
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-tools"></i>
-                <div data-i18n="Chat">Produksi</div>
+                <div data-i18n="Chat">Produksi - wip</div>
             </a>
         </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-truck"></i>
-                <div data-i18n="Chat">Pemenuhan</div>
+                <div data-i18n="Chat">Pemenuhan - wip</div>
             </a>
         </li>
         <li class="menu-item">

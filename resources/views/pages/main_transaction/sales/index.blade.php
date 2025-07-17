@@ -130,6 +130,7 @@
                                     <th>Status</th>
                                     <th>Uang Muka</th>
                                     <th>Total</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -188,6 +189,7 @@
                                     <th>No</th>
                                     <th>Customer</th>
                                     <th>Status</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -249,6 +251,7 @@
                                     <th>Status</th>
                                     <th>Sisa Tagihan</th>
                                     <th>Total</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -279,12 +282,7 @@
                     },
                     columns: [
                         { data: 'date' },
-                        { 
-                            data: 'reference_no',
-                            render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
-                            }
-                        },
+                        { data: 'reference_no' },
                         { 
                             data: 'customer',
                             render: function(data, type, row) {
@@ -297,20 +295,14 @@
                             render: function(data, type, row) {
                                 let badgeClass = '';
                                 switch (data) {
-                                    case 'Belum Dibayar':
+                                    case 'Belum Ditagih':
                                         badgeClass = 'bg-label-secondary';
                                         break;
-                                    case 'Menunggu Pembayaran':
+                                    case 'Dikirim Sebagian':
                                         badgeClass = 'bg-label-warning';
                                         break;
-                                    case 'Telat Bayar':
-                                        badgeClass = 'bg-label-danger';
-                                        break;
-                                    case 'Dibayar':
+                                    case 'Selesai':
                                         badgeClass = 'bg-label-success';
-                                        break;
-                                    case 'Dibayar Sebagian':
-                                        badgeClass = 'bg-label-info';
                                         break;
                                     default:
                                         badgeClass = 'bg-label-primary';
@@ -336,6 +328,23 @@
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
                                 }
                                 return data ?? '';
+                            }
+                        },
+                        { 
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                return `
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                            <i class="icon-base ti tabler-eye"></i>
+                                        </button>
+                                    </div>
+                                `;
                             }
                         }
                     ],
@@ -373,12 +382,7 @@
                     },
                     columns: [
                         { data: 'date' },
-                        { 
-                            data: 'reference_no',
-                            render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
-                            }
-                        },
+                        { data: 'reference_no' },
                         { 
                             data: 'customer',
                             render: function(data, type, row) {
@@ -390,6 +394,23 @@
                             render: function(data, type, row) {
                                 let badgeClass = data === 'Belum Ditagih' ? 'bg-label-warning' : 'bg-label-success';
                                 return `<span class="badge ${badgeClass}">${data}</span>`;
+                            }
+                        },
+                        { 
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                return `
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                            <i class="icon-base ti tabler-eye"></i>
+                                        </button>
+                                    </div>
+                                `;
                             }
                         }
                     ],
@@ -427,12 +448,7 @@
                     },
                     columns: [
                         { data: 'date' },
-                        { 
-                            data: 'reference_no',
-                            render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
-                            }
-                        },
+                        { data: 'reference_no' },
                         { 
                             data: 'customer',
                             render: function(data, type, row) {
@@ -484,6 +500,23 @@
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
                                 }
                                 return data ?? '';
+                            }
+                        },
+                        { 
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                return `
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                            <i class="icon-base ti tabler-eye"></i>
+                                        </button>
+                                    </div>
+                                `;
                             }
                         }
                     ],
@@ -622,5 +655,16 @@
                 window.location.href = "{{ route('main_transaction.sales.export') }}?type=faktur";
             });
         });
+        
+        // Action button functions
+        function viewDetail(id) {
+            // TODO: Implement view detail functionality
+            console.log('View detail for ID:', id);
+        }
+        
+        function editRecord(id) {
+            // TODO: Implement edit record functionality
+            console.log('Edit record for ID:', id);
+        }
     </script>
 @endsection

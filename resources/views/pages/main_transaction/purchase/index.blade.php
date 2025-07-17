@@ -130,6 +130,7 @@
                                     <th>Status</th>
                                     <th>Jumlah DP</th>
                                     <th>Total</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -187,6 +188,7 @@
                                     <th>No</th>
                                     <th>Supplier</th>
                                     <th>Status</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -250,6 +252,7 @@
                                     <th>Status</th>
                                     <th>Sisa Tagihan</th>
                                     <th>Total</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                         </table>
@@ -280,12 +283,7 @@
                     },
                     columns: [
                         { data: 'date' },
-                        { 
-                            data: 'reference_no',
-                            render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
-                            }
-                        },
+                        { data: 'reference_no' },
                         { 
                             data: 'supplier',
                             render: function(data, type, row) {
@@ -338,6 +336,23 @@
                                 }
                                 return data ?? '';
                             }
+                        },
+                        { 
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                return `
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                            <i class="icon-base ti tabler-eye"></i>
+                                        </button>
+                                    </div>
+                                `;
+                            }
                         }
                     ],
                     scrollX: true,
@@ -374,12 +389,7 @@
                     },
                     columns: [
                         { data: 'date' },
-                        { 
-                            data: 'reference_no',
-                            render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
-                            }
-                        },
+                        { data: 'reference_no' },
                         { 
                             data: 'supplier',
                             render: function(data, type, row) {
@@ -391,6 +401,23 @@
                             render: function(data, type, row) {
                                 let badgeClass = data === 'Belum Ditagih' ? 'bg-label-warning' : 'bg-label-success';
                                 return `<span class="badge ${badgeClass}">${data}</span>`;
+                            }
+                        },
+                        { 
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                return `
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                            <i class="icon-base ti tabler-eye"></i>
+                                        </button>
+                                    </div>
+                                `;
                             }
                         }
                     ],
@@ -428,12 +455,7 @@
                     },
                     columns: [
                         { data: 'date' },
-                        { 
-                            data: 'reference_no',
-                            render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
-                            }
-                        },
+                        { data: 'reference_no' },
                         { 
                             data: 'supplier',
                             render: function(data, type, row) {
@@ -485,6 +507,23 @@
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
                                 }
                                 return data ?? '';
+                            }
+                        },
+                        { 
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                return `
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </button>
+                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                            <i class="icon-base ti tabler-eye"></i>
+                                        </button>
+                                    </div>
+                                `;
                             }
                         }
                     ],
