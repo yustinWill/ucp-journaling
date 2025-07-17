@@ -9,6 +9,7 @@ use App\Http\Controllers\MasterData\StorageController;
 use App\Http\Controllers\MasterData\ProductController;
 use App\Http\Controllers\MasterData\CoaController;
 use App\Http\Controllers\MasterData\UserController;
+use App\Http\Controllers\MasterData\RoleController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
@@ -16,8 +17,9 @@ $storage_segment = '/gudang';
 $product_segment = '/product';
 $coa_segment = '/coa';
 $user_segment = '/user';
+$role_segment = '/role';
 
-Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment) {
+Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table')->middleware(EnsureTokenIsValid::class);
@@ -68,5 +70,20 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $user_segment . '/detail/{id}', 'detail')->name('master_data.user.detail')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $user_segment . '/export', 'export')->name('master_data.user.export')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $user_segment . '/import', 'import')->name('master_data.user.import')->middleware(EnsureTokenIsValid::class);
+    });
+
+    Route::controller(RoleController::class)->group(function () use ($base_segment, $role_segment) {
+        Route::get($base_segment . $role_segment . '/index', 'index')->name('master_data.role.index')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $role_segment . '/index_data_table', 'index_data_table')->name('master_data.role.index_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $role_segment . '/add', 'add')->name('master_data.role.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $role_segment . '/edit/{id}', 'edit')->name('master_data.role.edit')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $role_segment . '/detail/{id}', 'detail')->name('master_data.role.detail')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $role_segment . '/export', 'export')->name('master_data.role.export')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $role_segment . '/import', 'import')->name('master_data.role.import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $role_segment . '/permissions/{id}', 'getRolePermissions')->name('master_data.role.permissions')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $role_segment . '/users/{id}', 'getUsersByRole')->name('master_data.role.users')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $role_segment . '/store', 'store')->name('master_data.role.store')->middleware(EnsureTokenIsValid::class);
+        Route::put($base_segment . $role_segment . '/update/{id}', 'update')->name('master_data.role.update')->middleware(EnsureTokenIsValid::class);
+        Route::delete($base_segment . $role_segment . '/delete/{id}', 'destroy')->name('master_data.role.destroy')->middleware(EnsureTokenIsValid::class);
     });
 });

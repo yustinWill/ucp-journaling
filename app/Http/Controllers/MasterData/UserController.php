@@ -14,6 +14,15 @@ class UserController extends Controller
 
     public function index_data_table()
     {
+        // Mock roles data (no DB connection)
+        $roles = [
+            "Super Admin",
+            "Admin", 
+            "Accounting",
+            "Sales",
+            "Purchase"
+        ];
+
         $data = [
             "data" => [
                 [
@@ -21,7 +30,7 @@ class UserController extends Controller
                     "name" => "User 1",
                     "email" => "email@mail.com",
                     "phone" => "08127213123",
-                    "role" => "Suoper Admin",
+                    "role" => $roles[0],
                     "last_login" => "2025-06-01 12:00:00",
                     "last_password_change" => "2025-06-01 12:00:00",
                     "status" => "ACTIVE",
@@ -31,7 +40,7 @@ class UserController extends Controller
                     "name" => "User 2",
                     "email" => "email@mail.com",
                     "phone" => "08127213123",
-                    "role" => "Admin",
+                    "role" => $roles[1],
                     "last_login" => "2025-06-01 12:00:00",
                     "last_password_change" => "2025-06-01 12:00:00",
                     "status" => "ACTIVE",
@@ -41,7 +50,7 @@ class UserController extends Controller
                     "name" => "User 3",
                     "email" => "email@mail.com",
                     "phone" => "08127213123",
-                    "role" => "Accounting",
+                    "role" => $roles[2],
                     "last_login" => "2025-06-01 12:00:00",
                     "last_password_change" => "2025-06-01 12:00:00",
                     "status" => "ACTIVE",
@@ -54,15 +63,7 @@ class UserController extends Controller
     public function add()
     {
         $selectData = [
-            'roles' => [
-                ['value' => 'Super Admin', 'label' => 'Super Admin'],
-                ['value' => 'Admin', 'label' => 'Admin'],
-                ['value' => 'Accounting', 'label' => 'Accounting'],
-                ['value' => 'Sales', 'label' => 'Sales'],
-                ['value' => 'Purchase', 'label' => 'Purchase'],
-                ['value' => 'Manager', 'label' => 'Manager'],
-                ['value' => 'Staff', 'label' => 'Staff']
-            ]
+            'roles' => $this->getMockRoleSelectData()
         ];
         
         return view('pages.master_data.user.add', $selectData);
@@ -70,26 +71,18 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        // In a real implementation, you would fetch the user from the database
+        // Mock data (no DB connection)
         $user = [
             'id' => $id,
             'name' => 'User ' . $id,
             'email' => 'user' . $id . '@example.com',
             'phone' => '08127213123',
-            'role' => 'Super Admin',
+            'role' => 1, // Mock role ID
             'status' => 'ACTIVE'
         ];
         
         $selectData = [
-            'roles' => [
-                ['value' => 'Super Admin', 'label' => 'Super Admin'],
-                ['value' => 'Admin', 'label' => 'Admin'],
-                ['value' => 'Accounting', 'label' => 'Accounting'],
-                ['value' => 'Sales', 'label' => 'Sales'],
-                ['value' => 'Purchase', 'label' => 'Purchase'],
-                ['value' => 'Manager', 'label' => 'Manager'],
-                ['value' => 'Staff', 'label' => 'Staff']
-            ]
+            'roles' => $this->getMockRoleSelectData()
         ];
         
         return view('pages.master_data.user.edit', compact('user') + $selectData);
@@ -97,13 +90,13 @@ class UserController extends Controller
 
     public function detail($id)
     {
-        // In a real implementation, you would fetch the user from the database
+        // Mock data (no DB connection)
         $user = [
             'id' => $id,
             'name' => 'User ' . $id,
             'email' => 'user' . $id . '@example.com',
             'phone' => '08127213123',
-            'role' => 'Super Admin',
+            'role' => 'Super Admin', // Mock role name
             'last_login' => '2025-06-01 12:00:00',
             'last_password_change' => '2025-06-01 12:00:00',
             'status' => 'ACTIVE'
@@ -128,5 +121,19 @@ class UserController extends Controller
     public function import()
     {
         return view('pages.master_data.user.import', []);
+    }
+
+    /**
+     * Get mock role select data (no DB connection)
+     */
+    private function getMockRoleSelectData()
+    {
+        return [
+            ['value' => 1, 'label' => 'Super Admin'],
+            ['value' => 2, 'label' => 'Admin'],
+            ['value' => 3, 'label' => 'Accounting'],
+            ['value' => 4, 'label' => 'Sales'],
+            ['value' => 5, 'label' => 'Purchase']
+        ];
     }
 }
