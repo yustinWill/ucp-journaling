@@ -100,10 +100,10 @@
                 <div data-i18n="Chat">Pemenuhan - wip</div>
             </a>
         </li>
-        <li class="menu-item">
-            <a href="app-logistics-dashboard.html" class="menu-link">
+        <li class="menu-item @if (request()->routeIs(['master_data.stock_opname.*'])) active @endif">
+            <a href="{{ route('master_data.stock_opname.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-clipboard-check"></i>
-                <div data-i18n="Chat">Stock Opname - wip</div>
+                <div data-i18n="Chat">Stock Opname</div>
             </a>
         </li>
         <li class="menu-item">

@@ -132,17 +132,6 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tfoot>
-                    <tr>
-                        <th>Nama Kontak</th>
-                        <th>Nama Perusahaan</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Group</th>
-                        <th>Tipe</th>
-                        <th>Aksi</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>

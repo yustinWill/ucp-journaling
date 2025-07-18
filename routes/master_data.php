@@ -10,6 +10,7 @@ use App\Http\Controllers\MasterData\ProductController;
 use App\Http\Controllers\MasterData\CoaController;
 use App\Http\Controllers\MasterData\UserController;
 use App\Http\Controllers\MasterData\RoleController;
+use App\Http\Controllers\MasterData\StockOpnameController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
@@ -18,8 +19,9 @@ $product_segment = '/product';
 $coa_segment = '/coa';
 $user_segment = '/user';
 $role_segment = '/role';
+$stock_opname_segment = '/stock_opname';
 
-Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment) {
+Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table')->middleware(EnsureTokenIsValid::class);
@@ -85,5 +87,25 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::post($base_segment . $role_segment . '/store', 'store')->name('master_data.role.store')->middleware(EnsureTokenIsValid::class);
         Route::put($base_segment . $role_segment . '/update/{id}', 'update')->name('master_data.role.update')->middleware(EnsureTokenIsValid::class);
         Route::delete($base_segment . $role_segment . '/delete/{id}', 'destroy')->name('master_data.role.destroy')->middleware(EnsureTokenIsValid::class);
+    });
+
+    Route::controller(StockOpnameController::class)->group(function () use ($base_segment, $stock_opname_segment) {
+        Route::get($base_segment . $stock_opname_segment . '/index', 'index')->name('master_data.stock_opname.index')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_opname_segment . '/index_data_table', 'index_data_table')->name('master_data.stock_opname.index_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_opname_segment . '/add', 'add')->name('master_data.stock_opname.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_opname_segment . '/edit/{id}', 'edit')->name('master_data.stock_opname.edit')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_opname_segment . '/detail/{id}', 'detail')->name('master_data.stock_opname.detail')->middleware(EnsureTokenIsValid::class);
+        
+        // Import routes
+        Route::get($base_segment . $stock_opname_segment . '/import', 'import')->name('master_data.stock_opname.import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_opname_segment . '/download-template', 'downloadTemplate')->name('master_data.stock_opname.download_template')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $stock_opname_segment . '/validate-import', 'validateImport')->name('master_data.stock_opname.validate_import')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $stock_opname_segment . '/process-import', 'processImport')->name('master_data.stock_opname.process_import')->middleware(EnsureTokenIsValid::class);
+        
+        // Export routes
+        Route::get($base_segment . $stock_opname_segment . '/export', 'export')->name('master_data.stock_opname.export')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $stock_opname_segment . '/process-export', 'processExport')->name('master_data.stock_opname.process_export')->middleware(EnsureTokenIsValid::class);
+        
+        Route::post($base_segment . $stock_opname_segment . '/create_adjustment/{id}', 'createAdjustment')->name('master_data.stock_opname.create_adjustment')->middleware(EnsureTokenIsValid::class);
     });
 });
