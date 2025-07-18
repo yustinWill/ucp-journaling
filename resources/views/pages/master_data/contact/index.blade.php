@@ -81,19 +81,19 @@
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Group:</label>
                                 <select class="global-select2 form-select" data-allow-clear="true">
-                                    <option value="AK">Group A</option>
-                                    <option value="HI">Group B</option>
-                                    <option value="HI">Group C</option>
-                                    <option value="CA">Group D</option>
+                                    <option value="">Semua Group</option>
+                                    @foreach($groupFilters as $group)
+                                        <option value="{{ $group['value'] }}">{{ $group['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Tipe:</label>
                                 <select class="global-select2 form-select" data-allow-clear="true">
-                                    <option value="AK">Pelanggan</option>
-                                    <option value="HI">Supplier</option>
-                                    <option value="HI">Karyawan</option>
-                                    <option value="CA">Lainnya</option>
+                                    <option value="">Semua Tipe</option>
+                                    @foreach($typeFilters as $type)
+                                        <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>

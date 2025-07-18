@@ -214,7 +214,7 @@
                         <div class="row g-6">
                             <div class="col-md-6">
                                 <label class="form-label">Nama Bank</label>
-                                <select class="bank-select2 form-select" data-allow-clear="true">
+                                <select class="global-select2 form-select" data-allow-clear="true">
                                     <option value="">Pilih Bank</option>
                                     @foreach($banks as $bank)
                                         <option value="{{ $bank['value'] }}">{{ $bank['label'] }}</option>
@@ -260,7 +260,7 @@
                             <div class="row g-6">
                                 <div class="col-md-6">
                                     <label class="form-label">Nama Produk</label>
-                                    <select class="bank-select2 form-select" data-allow-clear="true">
+                                    <select class="global-select2 form-select" data-allow-clear="true">
                                         <option value="">Pilih Produk</option>
                                         @foreach($products as $product)
                                             <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
@@ -301,14 +301,20 @@
     <script>
         $(function() {
             initCleaveCurrency(document);
+            
+            // Initialize select2 for repeater elements
+            function initRepeaterSelect2(container) {
+                $(container).find('.global-select2').select2({
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
+            
             // Info Bank repeater
             $('.form-repeater-bank').repeater({
                 show: function() {
                     $(this).slideDown();
-                    $(this).find('.bank-select2').select2({
-                        allowClear: true,
-                        width: '100%'
-                    });
+                    initRepeaterSelect2(this);
                 },
                 hide: function(e) {
                     confirm('Are you sure you want to delete this element?') && $(this).slideUp(e);
@@ -319,10 +325,7 @@
             $('.form-repeater-produk').repeater({
                 show: function() {
                     $(this).slideDown();
-                    $(this).find('.bank-select2').select2({
-                        allowClear: true,
-                        width: '100%'
-                    });
+                    initRepeaterSelect2(this);
                     initCleaveCurrency(this);
                 },
                 hide: function(e) {
@@ -330,11 +333,6 @@
                 }
             });
 
-            // Initialize select2 for all global-select2 and bank-select2
-            $('.global-select2, .bank-select2').select2({
-                allowClear: true,
-                width: '100%'
-            });
 
             // SweetAlert for submit
             $('#submit-btn').click(function(e) {

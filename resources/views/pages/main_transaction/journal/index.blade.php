@@ -23,7 +23,7 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Dibuat Oleh:</label>
-                                <select class="global-select2 form-select" data-allow-clear="true">
+                                <select class="global-select2 form-select">
                                     <option value="">Semua User</option>
                                     @foreach($createdByUsers as $user)
                                         <option value="{{ $user['value'] }}">{{ $user['label'] }}</option>

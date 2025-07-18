@@ -78,20 +78,20 @@
                         <div class="row g-3">
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Status:</label>
-                                <select class="form-select" id="role-status-filter">
+                                <select class="global-select2 form-select" id="role-status-filter" data-allow-clear="true">
                                     <option value="">Semua Status</option>
-                                    <option value="active">Aktif</option>
-                                    <option value="inactive">Tidak Aktif</option>
+                                    @foreach($statusFilters as $filter)
+                                        <option value="{{ $filter['value'] }}">{{ $filter['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Jumlah User:</label>
-                                <select class="form-select" id="role-user-filter">
+                                <select class="global-select2 form-select" id="role-user-filter" data-allow-clear="true">
                                     <option value="">Semua</option>
-                                    <option value="0">Tanpa User</option>
-                                    <option value="1-5">1-5 User</option>
-                                    <option value="6-10">6-10 User</option>
-                                    <option value="10+">10+ User</option>
+                                    @foreach($userFilters as $filter)
+                                        <option value="{{ $filter['value'] }}">{{ $filter['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
@@ -143,6 +143,7 @@
 @section('js_script')
 <script>
     $(function() {
+        
         let roleTable;
         
         function initRoleTable() {

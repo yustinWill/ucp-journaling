@@ -9,7 +9,8 @@ class ContactController extends Controller
 {
     public function index()
     {
-        return view('pages.master_data.contact.index', []);
+        $selectData = $this->getIndexSelectData();
+        return view('pages.master_data.contact.index', $selectData);
     }
 
     public function index_data_table()
@@ -355,5 +356,23 @@ class ContactController extends Controller
         ];
 
         return response()->json($data);
+    }
+
+    private function getIndexSelectData()
+    {
+        return [
+            'groupFilters' => [
+                ['value' => 'group_a', 'label' => 'Group A'],
+                ['value' => 'group_b', 'label' => 'Group B'],
+                ['value' => 'group_c', 'label' => 'Group C'],
+                ['value' => 'group_d', 'label' => 'Group D'],
+            ],
+            'typeFilters' => [
+                ['value' => 'pelanggan', 'label' => 'Pelanggan'],
+                ['value' => 'supplier', 'label' => 'Supplier'],
+                ['value' => 'karyawan', 'label' => 'Karyawan'],
+                ['value' => 'lainnya', 'label' => 'Lainnya'],
+            ]
+        ];
     }
 }

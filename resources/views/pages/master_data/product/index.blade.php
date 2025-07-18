@@ -96,7 +96,7 @@
                                 <div class="row g-3">
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Kategori:</label>
-                                        <select class="form-select" id="products-category-filter">
+                                        <select class="global-select2 form-select" id="products-category-filter">
                                             <option value="">Semua Kategori</option>
                                             @foreach($productCategories as $category)
                                                 <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
@@ -105,7 +105,7 @@
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Status Stok:</label>
-                                        <select class="form-select" id="products-stock-filter">
+                                        <select class="global-select2 form-select" id="products-stock-filter">
                                             <option value="">Semua Status</option>
                                             @foreach($stockStatuses as $status)
                                                 <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -187,7 +187,7 @@
                                 <div class="row g-3">
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Status:</label>
-                                        <select class="form-select" id="warehouse-status-filter">
+                                        <select class="global-select2 form-select" id="warehouse-status-filter">
                                             <option value="">Semua Status</option>
                                             @foreach($warehouseStatuses as $status)
                                                 <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -196,7 +196,7 @@
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Lokasi:</label>
-                                        <select class="form-select" id="warehouse-location-filter">
+                                        <select class="global-select2 form-select" id="warehouse-location-filter">
                                             <option value="">Semua Lokasi</option>
                                             @foreach($warehouseLocations as $location)
                                                 <option value="{{ $location['value'] }}">{{ $location['label'] }}</option>

@@ -147,7 +147,7 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
-                                <select class="form-select" id="pengiriman-status-filter">
+                                <select class="global-select2 form-select" id="pengiriman-status-filter">
                                     <option value="">Semua Status</option>
                                     @foreach($pengirimanStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -206,7 +206,7 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
-                                <select class="form-select" id="faktur-status-filter">
+                                <select class="global-select2 form-select" id="faktur-status-filter">
                                     <option value="">Semua Status</option>
                                     @foreach($fakturStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>

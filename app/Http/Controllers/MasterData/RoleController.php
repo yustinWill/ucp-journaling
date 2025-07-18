@@ -10,7 +10,8 @@ class RoleController extends Controller
 {
     public function index()
     {
-        return view('pages.master_data.role.index', []);
+        $selectData = $this->getIndexSelectData();
+        return view('pages.master_data.role.index', $selectData);
     }
 
     public function index_data_table()
@@ -162,12 +163,14 @@ class RoleController extends Controller
             ["no" => 6, "value" => "Tanggal Dibuat"],
             ["no" => 7, "value" => "Tanggal Diubah"],
         ];
-        return view('pages.master_data.role.export', ['data' => $data]);
+        $selectData = $this->getExportSelectData();
+        return view('pages.master_data.role.export', ['data' => $data] + $selectData);
     }
 
     public function import()
     {
-        return view('pages.master_data.role.import', []);
+        $selectData = $this->getImportSelectData();
+        return view('pages.master_data.role.import', $selectData);
     }
 
     public function getRolePermissions($id)
@@ -251,6 +254,54 @@ class RoleController extends Controller
                 ['value' => 'write', 'label' => 'Write'],
                 ['value' => 'delete', 'label' => 'Delete'],
                 ['value' => 'approval', 'label' => 'Approval'],
+            ]
+        ];
+    }
+
+    private function getIndexSelectData()
+    {
+        return [
+            'statusFilters' => [
+                ['value' => 'active', 'label' => 'Aktif'],
+                ['value' => 'inactive', 'label' => 'Tidak Aktif'],
+            ],
+            'userFilters' => [
+                ['value' => '0', 'label' => 'Tanpa User'],
+                ['value' => '1-5', 'label' => '1-5 User'],
+                ['value' => '6-10', 'label' => '6-10 User'],
+                ['value' => '10+', 'label' => '10+ User'],
+            ]
+        ];
+    }
+
+    private function getExportSelectData()
+    {
+        return [
+            'exportFormats' => [
+                ['value' => 'excel', 'label' => 'Excel (.xlsx)'],
+                ['value' => 'csv', 'label' => 'CSV (.csv)'],
+                ['value' => 'pdf', 'label' => 'PDF (.pdf)'],
+            ],
+            'statusFilters' => [
+                ['value' => 'all', 'label' => 'All Roles'],
+                ['value' => 'active', 'label' => 'Active Roles Only'],
+                ['value' => 'inactive', 'label' => 'Inactive Roles Only'],
+            ]
+        ];
+    }
+
+    private function getImportSelectData()
+    {
+        return [
+            'importModes' => [
+                ['value' => 'create_only', 'label' => 'Create New Only'],
+                ['value' => 'update_only', 'label' => 'Update Existing Only'],
+                ['value' => 'create_update', 'label' => 'Create New & Update Existing'],
+            ],
+            'duplicateHandlings' => [
+                ['value' => 'skip', 'label' => 'Skip Duplicates'],
+                ['value' => 'overwrite', 'label' => 'Overwrite Duplicates'],
+                ['value' => 'append', 'label' => 'Append with Suffix'],
             ]
         ];
     }

@@ -23,18 +23,18 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Import Mode</label>
-                                <select class="form-select" id="importMode">
-                                    <option value="create_only">Create New Only</option>
-                                    <option value="update_only">Update Existing Only</option>
-                                    <option value="create_update">Create New & Update Existing</option>
+                                <select class="global-select2 form-select" id="importMode" data-allow-clear="true">
+                                    @foreach($importModes as $mode)
+                                        <option value="{{ $mode['value'] }}">{{ $mode['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Duplicate Handling</label>
-                                <select class="form-select" id="duplicateHandling">
-                                    <option value="skip">Skip Duplicates</option>
-                                    <option value="overwrite">Overwrite Duplicates</option>
-                                    <option value="append">Append with Suffix</option>
+                                <select class="global-select2 form-select" id="duplicateHandling" data-allow-clear="true">
+                                    @foreach($duplicateHandlings as $handling)
+                                        <option value="{{ $handling['value'] }}">{{ $handling['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -163,6 +163,7 @@
 @section('js_script')
 <script>
     $(function() {
+        
         // Import button handler
         $('#importBtn').click(function() {
             const file = $('#importFile')[0].files[0];

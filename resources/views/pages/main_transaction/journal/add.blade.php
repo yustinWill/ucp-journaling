@@ -36,7 +36,7 @@
                                 <div class="row">
                                     <div class="col-md-3">
                                         <label class="form-label">Kode Akun <span style="color: red;">*</span></label>
-                                        <select class="select2 form-select select2-coa-debit" name="debit_coa"
+                                        <select class="global-select2 form-select select2-coa-debit" name="debit_coa"
                                             data-allow-clear="true">
                                             <option value="">Select</option>
                                             {{-- @foreach ($coa_list as $row)
@@ -90,7 +90,7 @@
                                 <div class="row">
                                     <div class="col-md-3">
                                         <label class="form-label">Kode Akun <span style="color: red;">*</span></label>
-                                        <select class="select2 form-select select2-coa-credit" name="credit_coa"
+                                        <select class="global-select2 form-select select2-coa-credit" name="credit_coa"
                                             data-allow-clear="true">
                                             <option value="">Select</option>
                                             {{-- @foreach ($coa_list as $row)

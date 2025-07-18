@@ -15,18 +15,18 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Export Format</label>
-                                <select class="form-select" id="exportFormat">
-                                    <option value="excel">Excel (.xlsx)</option>
-                                    <option value="csv">CSV (.csv)</option>
-                                    <option value="pdf">PDF (.pdf)</option>
+                                <select class="global-select2 form-select" id="exportFormat" data-allow-clear="true">
+                                    @foreach($exportFormats as $format)
+                                        <option value="{{ $format['value'] }}">{{ $format['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Status Filter</label>
-                                <select class="form-select" id="statusFilter">
-                                    <option value="all">All Roles</option>
-                                    <option value="active">Active Roles Only</option>
-                                    <option value="inactive">Inactive Roles Only</option>
+                                <select class="global-select2 form-select" id="statusFilter" data-allow-clear="true">
+                                    @foreach($statusFilters as $filter)
+                                        <option value="{{ $filter['value'] }}">{{ $filter['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -136,6 +136,7 @@
 @section('js_script')
 <script>
     $(function() {
+        
         $('#exportBtn').click(function() {
             const format = $('#exportFormat').val();
             const statusFilter = $('#statusFilter').val();

@@ -641,7 +641,7 @@
             const row = `
                 <tr class="bundle-component-row" data-id="${bundleComponentCounter}">
                     <td>
-                        <select class="form-select component-product" data-id="${bundleComponentCounter}">
+                        <select class="global-select2 form-select component-product" data-id="${bundleComponentCounter}">
                             <option value="">Pilih Produk</option>
                             @foreach($products as $product)
                                 <option value="{{ $product['value'] }}" data-unit="{{ $product['unit'] ?? 'pcs' }}" data-price="{{ $product['price'] ?? 0 }}">{{ $product['label'] }}</option>
@@ -729,7 +729,7 @@
             const row = `
                 <tr class="bundle-account-row" data-id="${bundleAccountCounter}">
                     <td>
-                        <select class="form-select account-select" data-id="${bundleAccountCounter}">
+                        <select class="global-select2 form-select account-select" data-id="${bundleAccountCounter}">
                             <option value="">Pilih Akun</option>
                             @foreach($accounts as $account)
                                 <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>

@@ -50,7 +50,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Jenis Transaksi <span style="color: red;">*</span></label>
-                    <select class="form-select" id="transaction-type">
+                    <select class="global-select2 form-select" id="transaction-type">
                         @foreach($transactionTypes as $type)
                             <option value="{{ $type['value'] }}" @if($type['value'] == 'pengeluaran-credit-memo') selected @endif>{{ $type['label'] }}</option>
                         @endforeach
