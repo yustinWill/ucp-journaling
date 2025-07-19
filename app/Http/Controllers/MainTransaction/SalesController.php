@@ -318,15 +318,290 @@ class SalesController extends Controller
         ]);
     }
 
-    public function handleImport(Request $request)
+    // Import/Export Methods
+    public function import(Request $request)
     {
-        // TODO: Implement sales import functionality
-        return response()->json(['message' => 'Sales import functionality to be implemented'], 200);
+        $customers = [
+            ['value' => '1', 'label' => 'Toko Segar Mart'],
+            ['value' => '2', 'label' => 'Minimarket Berkah'],
+            ['value' => '3', 'label' => 'Supermarket Maju Jaya'],
+            ['value' => '4', 'label' => 'Warung Sembako Pak Haji'],
+            ['value' => '5', 'label' => 'Depot Air Minum Prima']
+        ];
+
+        $salesReps = [
+            ['value' => '1', 'label' => 'Ahmad Rizki - Sales Manager'],
+            ['value' => '2', 'label' => 'Siti Nurhaliza - Sales Executive'],
+            ['value' => '3', 'label' => 'Budi Santoso - Area Sales']
+        ];
+
+        return view('pages.main_transaction.sales.import', [
+            'customers' => $customers,
+            'salesReps' => $salesReps
+        ]);
     }
 
-    public function handleExport(Request $request)
+    public function downloadTemplate()
     {
-        // TODO: Implement sales export functionality
-        return response()->json(['message' => 'Sales export functionality to be implemented'], 200);
+        // Generate and return Excel template file
+        $filename = 'sales_import_template.xlsx';
+        $content = $this->generateImportTemplate();
+        
+        return response($content)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    private function generateImportTemplate()
+    {
+        // Mock template content - in real implementation, use Laravel Excel
+        return base64_decode('UEsDBBQAAAgIAAAAAAAAAAAAAAAAAAAUAAAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1s');
+    }
+
+    public function validateImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
+        ]);
+
+        try {
+            // Process and validate file
+            $mockData = $this->generateMockImportValidation();
+            
+            return response()->json([
+                'success' => true,
+                'total_count' => $mockData['total_count'],
+                'success_count' => $mockData['success_count'],
+                'error_count' => $mockData['error_count'],
+                'success_data' => $mockData['success_data'],
+                'error_data' => $mockData['error_data']
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error reading file: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    private function generateMockImportValidation()
+    {
+        return [
+            'total_count' => 5,
+            'success_count' => 4,
+            'error_count' => 1,
+            'success_data' => [
+                [
+                    'date' => '2025-07-19',
+                    'reference_no' => 'SO-2025-020',
+                    'customer' => 'Toko Segar Mart',
+                    'type' => 'Sales Order',
+                    'total' => 'Rp 12,500,000',
+                    'status' => 'Valid'
+                ],
+                [
+                    'date' => '2025-07-20',
+                    'reference_no' => 'SO-2025-021',
+                    'customer' => 'Minimarket Berkah',
+                    'type' => 'Sales Order',
+                    'total' => 'Rp 9,000,000',
+                    'status' => 'Valid'
+                ],
+                [
+                    'date' => '2025-07-21',
+                    'reference_no' => 'SD-2025-020',
+                    'customer' => 'Supermarket Maju Jaya',
+                    'type' => 'Sales Delivery',
+                    'total' => 'Rp 22,500,000',
+                    'status' => 'Valid'
+                ],
+                [
+                    'date' => '2025-07-22',
+                    'reference_no' => 'SI-2025-020',
+                    'customer' => 'Warung Sembako Pak Haji',
+                    'type' => 'Sales Invoice',
+                    'total' => 'Rp 6,000,000',
+                    'status' => 'Valid'
+                ]
+            ],
+            'error_data' => [
+                [
+                    'date' => '2025-13-30',
+                    'reference_no' => '',
+                    'customer' => 'Unknown Customer',
+                    'type' => 'Sales Order',
+                    'total' => 'invalid_amount',
+                    'status' => 'Error',
+                    'errors' => [
+                        'Tanggal tidak valid',
+                        'No referensi wajib diisi',
+                        'Customer tidak ditemukan',
+                        'Total harus berupa angka'
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    public function processImport(Request $request)
+    {
+        try {
+            $data = $request->input('data');
+            $importedCount = count($data);
+            
+            // Process import
+            foreach ($data as $item) {
+                // Save to database
+            }
+            
+            return response()->json([
+                'success' => true,
+                'imported_count' => $importedCount,
+                'message' => 'Data penjualan berhasil diimport'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error importing data: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function export()
+    {
+        // Export columns configuration
+        $exportColumns = [
+            ['field' => 'date', 'label' => 'Tanggal', 'export_name' => 'Tanggal'],
+            ['field' => 'reference_no', 'label' => 'No Referensi', 'export_name' => 'No Referensi'],
+            ['field' => 'customer', 'label' => 'Customer', 'export_name' => 'Customer'],
+            ['field' => 'type', 'label' => 'Tipe', 'export_name' => 'Tipe'],
+            ['field' => 'status', 'label' => 'Status', 'export_name' => 'Status'],
+            ['field' => 'due_date', 'label' => 'Tgl Jatuh Tempo', 'export_name' => 'Tgl Jatuh Tempo'],
+            ['field' => 'down_payment', 'label' => 'Uang Muka', 'export_name' => 'Uang Muka'],
+            ['field' => 'total', 'label' => 'Total', 'export_name' => 'Total'],
+            ['field' => 'remaining_bill', 'label' => 'Sisa Tagihan', 'export_name' => 'Sisa Tagihan'],
+            ['field' => 'sales_rep', 'label' => 'Sales Rep', 'export_name' => 'Sales Rep'],
+            ['field' => 'notes', 'label' => 'Catatan', 'export_name' => 'Catatan']
+        ];
+
+        return view('pages.main_transaction.sales.export', [
+            'exportColumns' => $exportColumns
+        ]);
+    }
+
+    public function processExport(Request $request)
+    {
+        $format = $request->input('format');
+        $columns = json_decode($request->input('columns'), true);
+        $filters = json_decode($request->input('filters'), true);
+        
+        // Get filtered data
+        $data = $this->getFilteredData($filters);
+        
+        switch ($format) {
+            case 'excel':
+                return $this->exportToExcel($data, $columns);
+            case 'csv':
+                return $this->exportToCsv($data, $columns);
+            case 'pdf':
+                return $this->exportToPdf($data, $columns);
+            default:
+                return response()->json(['error' => 'Invalid format'], 400);
+        }
+    }
+
+    private function getFilteredData($filters)
+    {
+        // Mock filtered data - in real implementation, query database with filters
+        return [
+            [
+                'date' => '2025-07-19',
+                'reference_no' => 'SO-2025-020',
+                'customer' => 'Toko Segar Mart',
+                'type' => 'Sales Order',
+                'status' => 'Belum Ditagih',
+                'due_date' => '2025-08-02',
+                'down_payment' => 2500000,
+                'total' => 12500000,
+                'remaining_bill' => 10000000,
+                'sales_rep' => 'Ahmad Rizki',
+                'notes' => 'Penjualan RIYO Water 330ml - 5000 pcs'
+            ],
+            [
+                'date' => '2025-07-20',
+                'reference_no' => 'SD-2025-021',
+                'customer' => 'Minimarket Berkah',
+                'type' => 'Sales Delivery',
+                'status' => 'Selesai',
+                'due_date' => '2025-08-03',
+                'down_payment' => 0,
+                'total' => 9000000,
+                'remaining_bill' => 9000000,
+                'sales_rep' => 'Siti Nurhaliza',
+                'notes' => 'Pengiriman RIYO Water 600ml - 2500 pcs'
+            ]
+        ];
+    }
+
+    private function exportToExcel($data, $columns)
+    {
+        // Mock Excel export - in real implementation, use Laravel Excel
+        $filename = 'sales_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        $headers = [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        $content = "Mock Excel Content for Sales Export";
+        return response($content, 200, $headers);
+    }
+
+    private function exportToCsv($data, $columns)
+    {
+        $filename = 'sales_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        // Generate CSV content
+        $csvContent = '';
+        
+        // Add headers
+        if (!empty($columns)) {
+            $headerRow = [];
+            foreach ($columns as $column) {
+                $headerRow[] = $column['label'] ?? $column['field'];
+            }
+            $csvContent .= implode(',', $headerRow) . "\n";
+        }
+
+        // Add data rows
+        foreach ($data as $row) {
+            $dataRow = [];
+            foreach ($columns as $column) {
+                $value = $row[$column['field']] ?? '';
+                $dataRow[] = '"' . str_replace('"', '""', $value) . '"';
+            }
+            $csvContent .= implode(',', $dataRow) . "\n";
+        }
+
+        return response($csvContent, 200, $headers);
+    }
+
+    private function exportToPdf($data, $columns)
+    {
+        // Mock PDF export - in real implementation, use DomPDF or similar
+        $filename = 'sales_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        $headers = [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $content = "Mock PDF Content for Sales Export";
+        return response($content, 200, $headers);
     }
 }

@@ -85,7 +85,7 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" id="pesanan-status-filter" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="pesanan-status-filter" data-allow-clear="false">
                                     <option value="">Semua Status</option>
                                     @foreach($pesananStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -104,15 +104,15 @@
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
-                                    <button type="button" id="btn-import-pesanan"
+                                    <a href="{{ route('main_transaction.sales.import') }}?type=pesanan"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
-                                    <button type="button" id="btn-export-pesanan"
+                                            class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+                                    <a href="{{ route('main_transaction.sales.export') }}?type=pesanan"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</button>
-                                    <button type="button" id="btn-add-pesanan"
+                                            class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                                    <a href="{{ route('main_transaction.sales.add.so') }}"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                                 </div>
                             </div>
                         </div>
@@ -147,7 +147,7 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" id="pengiriman-status-filter">
+                                <select class="global-select2 form-select" id="pengiriman-status-filter" data-allow-clear="false">
                                     <option value="">Semua Status</option>
                                     @foreach($pengirimanStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -166,15 +166,15 @@
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
-                                    <button type="button" id="btn-import-pengiriman"
+                                    <a href="{{ route('main_transaction.sales.import') }}?type=pengiriman"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
-                                    <button type="button" id="btn-export-pengiriman"
+                                            class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+                                    <a href="{{ route('main_transaction.sales.export') }}?type=pengiriman"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</button>
-                                    <button type="button" id="btn-add-pengiriman"
+                                            class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                                    <a href="{{ route('main_transaction.sales.add.sd') }}"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                                 </div>
                             </div>
                         </div>
@@ -206,7 +206,7 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" id="faktur-status-filter">
+                                <select class="global-select2 form-select" id="faktur-status-filter" data-allow-clear="false">
                                     <option value="">Semua Status</option>
                                     @foreach($fakturStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -225,15 +225,15 @@
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
-                                    <button type="button" id="btn-import-faktur"
+                                    <a href="{{ route('main_transaction.sales.import') }}?type=faktur"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
-                                    <button type="button" id="btn-export-faktur"
+                                            class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+                                    <a href="{{ route('main_transaction.sales.export') }}?type=faktur"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</button>
-                                    <button type="button" id="btn-add-faktur"
+                                            class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                                    <a href="{{ route('main_transaction.sales.add.si') }}"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                                 </div>
                             </div>
                         </div>
@@ -336,13 +336,13 @@
                             searchable: false,
                             render: function(data, type, row, meta) {
                                 return `
-                                    <div class="btn-group" role="group">
-                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
-                                            <i class="icon-base ti tabler-edit"></i>
-                                        </button>
-                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                    <div class="d-flex gap-2">
+                                        <a href="/main_transaction/sales/detail/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
                                             <i class="icon-base ti tabler-eye"></i>
-                                        </button>
+                                        </a>
+                                        <a href="/main_transaction/sales/edit/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </a>
                                     </div>
                                 `;
                             }
@@ -402,13 +402,13 @@
                             searchable: false,
                             render: function(data, type, row, meta) {
                                 return `
-                                    <div class="btn-group" role="group">
-                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
-                                            <i class="icon-base ti tabler-edit"></i>
-                                        </button>
-                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                    <div class="d-flex gap-2">
+                                        <a href="/main_transaction/sales/detail/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
                                             <i class="icon-base ti tabler-eye"></i>
-                                        </button>
+                                        </a>
+                                        <a href="/main_transaction/sales/edit/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </a>
                                     </div>
                                 `;
                             }
@@ -508,13 +508,13 @@
                             searchable: false,
                             render: function(data, type, row, meta) {
                                 return `
-                                    <div class="btn-group" role="group">
-                                        <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
-                                            <i class="icon-base ti tabler-edit"></i>
-                                        </button>
-                                        <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                                    <div class="d-flex gap-2">
+                                        <a href="/main_transaction/sales/detail/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
                                             <i class="icon-base ti tabler-eye"></i>
-                                        </button>
+                                        </a>
+                                        <a href="/main_transaction/sales/edit/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
+                                            <i class="icon-base ti tabler-edit"></i>
+                                        </a>
                                     </div>
                                 `;
                             }
@@ -555,116 +555,9 @@
                 }
             });
             
-            // Button click events
-            // Button click events - separated by sales type
-            $('#btn-add-pesanan').on('click', function() {
-                window.location.href = "{{ route('main_transaction.sales.add.so') }}";
-            });
-            
-            $('#btn-add-pengiriman').on('click', function() {
-                window.location.href = "{{ route('main_transaction.sales.add.sd') }}";
-            });
-            
-            $('#btn-add-faktur').on('click', function() {
-                window.location.href = "{{ route('main_transaction.sales.add.si') }}";
-            });
-            
-            // Import button events - with type parameter
-            $('#btn-import-pesanan').on('click', function() {
-                // Create file input for import
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = '.xlsx,.xls,.csv';
-                fileInput.onchange = function(e) {
-                    const formData = new FormData();
-                    formData.append('file', e.target.files[0]);
-                    formData.append('type', 'pesanan');
-                    
-                    // TODO: Implement actual import functionality
-                    console.log('Import Sales Order file:', e.target.files[0].name);
-                    // fetch('{{ route("main_transaction.sales.import") }}', {
-                    //     method: 'POST',
-                    //     body: formData,
-                    //     headers: {
-                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    //     }
-                    // });
-                };
-                fileInput.click();
-            });
-            
-            $('#btn-import-pengiriman').on('click', function() {
-                // Create file input for import
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = '.xlsx,.xls,.csv';
-                fileInput.onchange = function(e) {
-                    const formData = new FormData();
-                    formData.append('file', e.target.files[0]);
-                    formData.append('type', 'pengiriman');
-                    
-                    // TODO: Implement actual import functionality
-                    console.log('Import Sales Delivery file:', e.target.files[0].name);
-                    // fetch('{{ route("main_transaction.sales.import") }}', {
-                    //     method: 'POST',
-                    //     body: formData,
-                    //     headers: {
-                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    //     }
-                    // });
-                };
-                fileInput.click();
-            });
-            
-            $('#btn-import-faktur').on('click', function() {
-                // Create file input for import
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = '.xlsx,.xls,.csv';
-                fileInput.onchange = function(e) {
-                    const formData = new FormData();
-                    formData.append('file', e.target.files[0]);
-                    formData.append('type', 'faktur');
-                    
-                    // TODO: Implement actual import functionality
-                    console.log('Import Sales Invoice file:', e.target.files[0].name);
-                    // fetch('{{ route("main_transaction.sales.import") }}', {
-                    //     method: 'POST',
-                    //     body: formData,
-                    //     headers: {
-                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    //     }
-                    // });
-                };
-                fileInput.click();
-            });
-            
-            // Export button events - with type parameter
-            $('#btn-export-pesanan').on('click', function() {
-                // Handle export for Sales Order
-                window.location.href = "{{ route('main_transaction.sales.export') }}?type=pesanan";
-            });
-            
-            $('#btn-export-pengiriman').on('click', function() {
-                // Handle export for Sales Delivery
-                window.location.href = "{{ route('main_transaction.sales.export') }}?type=pengiriman";
-            });
-            
-            $('#btn-export-faktur').on('click', function() {
-                // Handle export for Sales Invoice
-                window.location.href = "{{ route('main_transaction.sales.export') }}?type=faktur";
-            });
+            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
         });
         
-        // Action button functions
-        function viewDetail(id) {
-            // TODO: Implement view detail functionality
-            console.log('View detail for ID:', id);
-        }
-        
-        function editRecord(id) {
-            // TODO: Implement edit record functionality
-            console.log('Edit record for ID:', id);
-        }
+        // Action buttons now use direct <a> elements with href - no need for JavaScript functions
     </script>
 @endsection

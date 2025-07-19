@@ -40,8 +40,12 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $purchase_segment . '/add_pi', 'purchaseInvoiceAdd')->name('main_transaction.purchase.add.pi')->middleware(EnsureTokenIsValid::class);
         
         // Import/Export routes
-        Route::post($base_segment . $purchase_segment . '/import', 'handleImport')->name('main_transaction.purchase.import')->middleware(EnsureTokenIsValid::class);
-        Route::get($base_segment . $purchase_segment . '/export', 'handleExport')->name('main_transaction.purchase.export')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $purchase_segment . '/import', 'import')->name('main_transaction.purchase.import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $purchase_segment . '/download_template', 'downloadTemplate')->name('main_transaction.purchase.download_template')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $purchase_segment . '/validate_import', 'validateImport')->name('main_transaction.purchase.validate_import')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $purchase_segment . '/process_import', 'processImport')->name('main_transaction.purchase.process_import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $purchase_segment . '/export', 'export')->name('main_transaction.purchase.export')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $purchase_segment . '/process_export', 'processExport')->name('main_transaction.purchase.process_export')->middleware(EnsureTokenIsValid::class);
     });
 
     Route::controller(SalesController::class)->group(function () use ($base_segment, $sales_segment) {
@@ -58,8 +62,12 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $sales_segment . '/add_si', 'salesInvoiceAdd')->name('main_transaction.sales.add.si')->middleware(EnsureTokenIsValid::class);
         
         // Import/Export routes
-        Route::post($base_segment . $sales_segment . '/import', 'handleImport')->name('main_transaction.sales.import')->middleware(EnsureTokenIsValid::class);
-        Route::get($base_segment . $sales_segment . '/export', 'handleExport')->name('main_transaction.sales.export')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $sales_segment . '/import', 'import')->name('main_transaction.sales.import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $sales_segment . '/download_template', 'downloadTemplate')->name('main_transaction.sales.download_template')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $sales_segment . '/validate_import', 'validateImport')->name('main_transaction.sales.validate_import')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $sales_segment . '/process_import', 'processImport')->name('main_transaction.sales.process_import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $sales_segment . '/export', 'export')->name('main_transaction.sales.export')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $sales_segment . '/process_export', 'processExport')->name('main_transaction.sales.process_export')->middleware(EnsureTokenIsValid::class);
     });
 
     Route::controller(CreditMemoController::class)->group(function () use ($base_segment, $credit_memo_segment) {

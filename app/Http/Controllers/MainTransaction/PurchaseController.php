@@ -309,77 +309,268 @@ class PurchaseController extends Controller
         ]);
     }
 
-    public function handleImport(Request $request)
+    // Import/Export Methods
+    public function import(Request $request)
     {
-        $type = $request->get('type', 'pesanan');
+        $suppliers = [
+            ['value' => '1', 'label' => 'CV Plastik Prima'],
+            ['value' => '2', 'label' => 'PT Grafika Mandiri'],
+            ['value' => '3', 'label' => 'CV Kemasan Sejahtera'],
+            ['value' => '4', 'label' => 'PT Supplier Bahan Kimia'],
+            ['value' => '5', 'label' => 'PT Mesin Produksi Indonesia']
+        ];
+
+        $warehouses = [
+            ['value' => '1', 'label' => 'Gudang Bahan Baku'],
+            ['value' => '2', 'label' => 'Gudang Produksi'],
+            ['value' => '3', 'label' => 'Gudang Finished Goods']
+        ];
+
+        return view('pages.main_transaction.purchase.import', [
+            'suppliers' => $suppliers,
+            'warehouses' => $warehouses
+        ]);
+    }
+
+    public function downloadTemplate(Request $request)
+    {
+        // Generate Excel template for purchase import
+        $headers = [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="template_purchase.xlsx"',
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        // Mock template content - in real implementation, use Laravel Excel
+        $content = base64_decode('UEsDBBQAAAgIAAAAAAAAAAAAAAAAAAAUAAAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1s');
         
-        switch ($type) {
-            case 'pesanan':
-                // Handle Purchase Order import
-                return $this->importPurchaseOrder($request);
-            case 'pengiriman':
-                // Handle Purchase Delivery import
-                return $this->importPurchaseDelivery($request);
-            case 'faktur':
-                // Handle Purchase Invoice import
-                return $this->importPurchaseInvoice($request);
+        return response($content, 200, $headers);
+    }
+
+    public function validateImport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
+        ]);
+
+        // Mock validation response
+        $mockData = [
+            'total' => 5,
+            'valid_count' => 4,
+            'error_count' => 1,
+            'valid_data' => [
+                [
+                    'row' => 2,
+                    'date' => '2025-07-19',
+                    'reference_no' => 'PO-2025-020',
+                    'supplier' => 'CV Plastik Prima',
+                    'type' => 'Purchase Order',
+                    'total' => 25000000,
+                    'status' => 'Valid'
+                ],
+                [
+                    'row' => 3,
+                    'date' => '2025-07-20',
+                    'reference_no' => 'PO-2025-021',
+                    'supplier' => 'PT Grafika Mandiri',
+                    'type' => 'Purchase Order',
+                    'total' => 15000000,
+                    'status' => 'Valid'
+                ],
+                [
+                    'row' => 4,
+                    'date' => '2025-07-21',
+                    'reference_no' => 'PD-2025-020',
+                    'supplier' => 'CV Kemasan Sejahtera',
+                    'type' => 'Purchase Delivery',
+                    'total' => 18000000,
+                    'status' => 'Valid'
+                ],
+                [
+                    'row' => 5,
+                    'date' => '2025-07-22',
+                    'reference_no' => 'PI-2025-020',
+                    'supplier' => 'PT Supplier Bahan Kimia',
+                    'type' => 'Purchase Invoice',
+                    'total' => 12000000,
+                    'status' => 'Valid'
+                ]
+            ],
+            'error_data' => [
+                [
+                    'row' => 6,
+                    'data' => [
+                        'date' => '2025-13-30',
+                        'reference_no' => '',
+                        'supplier' => 'Unknown Supplier',
+                        'total' => 'invalid_amount'
+                    ],
+                    'errors' => [
+                        'Tanggal tidak valid',
+                        'No referensi wajib diisi',
+                        'Supplier tidak ditemukan',
+                        'Total harus berupa angka'
+                    ]
+                ]
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $mockData
+        ]);
+    }
+
+    public function processImport(Request $request)
+    {
+        $data = $request->json('data');
+        
+        // Mock import processing
+        $importedCount = count($data);
+        
+        // Simulate processing time
+        sleep(1);
+
+        return response()->json([
+            'success' => true,
+            'imported_count' => $importedCount,
+            'message' => 'Data pembelian berhasil diimpor'
+        ]);
+    }
+
+    public function export(Request $request)
+    {
+        $suppliers = [
+            ['value' => '1', 'label' => 'CV Plastik Prima'],
+            ['value' => '2', 'label' => 'PT Grafika Mandiri'],
+            ['value' => '3', 'label' => 'CV Kemasan Sejahtera'],
+            ['value' => '4', 'label' => 'PT Supplier Bahan Kimia'],
+            ['value' => '5', 'label' => 'PT Mesin Produksi Indonesia']
+        ];
+
+        $warehouses = [
+            ['value' => '1', 'label' => 'Gudang Bahan Baku'],
+            ['value' => '2', 'label' => 'Gudang Produksi'],
+            ['value' => '3', 'label' => 'Gudang Finished Goods']
+        ];
+
+        return view('pages.main_transaction.purchase.export', [
+            'suppliers' => $suppliers,
+            'warehouses' => $warehouses
+        ]);
+    }
+
+    public function processExport(Request $request)
+    {
+        $format = $request->input('export_format', 'excel');
+        $filters = $request->only(['purchase_type', 'status', 'start_date', 'end_date', 'supplier', 'warehouse']);
+        $columns = $request->input('columns', []);
+        $columnNames = $request->input('column_names', []);
+
+        // Mock export data based on filters
+        $exportData = $this->getFilteredExportData($filters);
+        
+        // Generate filename
+        $timestamp = now()->format('Y-m-d_H-i-s');
+        $filename = "purchase_export_{$timestamp}";
+
+        switch ($format) {
+            case 'excel':
+                return $this->generateExcelExport($exportData, $columns, $columnNames, $filename);
+            case 'csv':
+                return $this->generateCsvExport($exportData, $columns, $columnNames, $filename);
+            case 'pdf':
+                return $this->generatePdfExport($exportData, $columns, $columnNames, $filename);
             default:
-                return response()->json(['error' => 'Invalid import type'], 400);
+                return redirect()->back()->with('error', 'Format export tidak valid');
         }
     }
 
-    public function handleExport(Request $request)
+    private function getFilteredExportData($filters)
     {
-        $type = $request->get('type', 'pesanan');
+        // Mock filtered data - in real implementation, query database with filters
+        return [
+            [
+                'date' => '2025-07-19',
+                'reference_no' => 'PO-2025-020',
+                'supplier' => 'CV Plastik Prima',
+                'type' => 'Purchase Order',
+                'status' => 'Belum Dikirim',
+                'due_date' => '2025-08-02',
+                'down_payment' => 5000000,
+                'total' => 25000000,
+                'remaining_bill' => 20000000,
+                'notes' => 'Pembelian botol PET 330ml'
+            ],
+            [
+                'date' => '2025-07-20',
+                'reference_no' => 'PD-2025-021',
+                'supplier' => 'PT Grafika Mandiri',
+                'type' => 'Purchase Delivery',
+                'status' => 'Diterima',
+                'due_date' => '2025-08-03',
+                'down_payment' => 0,
+                'total' => 15000000,
+                'remaining_bill' => 15000000,
+                'notes' => 'Label kemasan RIYO Water'
+            ]
+        ];
+    }
+
+    private function generateExcelExport($data, $columns, $columnNames, $filename)
+    {
+        // Mock Excel export - in real implementation, use Laravel Excel
+        $headers = [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => "attachment; filename=\"{$filename}.xlsx\"",
+            'Cache-Control' => 'max-age=0',
+        ];
+
+        $content = "Mock Excel Content for Purchase Export";
+        return response($content, 200, $headers);
+    }
+
+    private function generateCsvExport($data, $columns, $columnNames, $filename)
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}.csv\"",
+        ];
+
+        // Generate CSV content
+        $csvContent = '';
         
-        switch ($type) {
-            case 'pesanan':
-                // Handle Purchase Order export
-                return $this->exportPurchaseOrder($request);
-            case 'pengiriman':
-                // Handle Purchase Delivery export
-                return $this->exportPurchaseDelivery($request);
-            case 'faktur':
-                // Handle Purchase Invoice export
-                return $this->exportPurchaseInvoice($request);
-            default:
-                return response()->json(['error' => 'Invalid export type'], 400);
+        // Add headers
+        if (!empty($columns)) {
+            $headerRow = [];
+            foreach ($columns as $column) {
+                $headerRow[] = $columnNames[$column] ?? $column;
+            }
+            $csvContent .= implode(',', $headerRow) . "\n";
         }
+
+        // Add data rows
+        foreach ($data as $row) {
+            $dataRow = [];
+            foreach ($columns as $column) {
+                $value = $row[$column] ?? '';
+                $dataRow[] = '"' . str_replace('"', '""', $value) . '"';
+            }
+            $csvContent .= implode(',', $dataRow) . "\n";
+        }
+
+        return response($csvContent, 200, $headers);
     }
 
-    private function importPurchaseOrder(Request $request)
+    private function generatePdfExport($data, $columns, $columnNames, $filename)
     {
-        // TODO: Implement Purchase Order import logic
-        return response()->json(['message' => 'Purchase Order import functionality will be implemented']);
-    }
+        // Mock PDF export - in real implementation, use DomPDF or similar
+        $headers = [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => "attachment; filename=\"{$filename}.pdf\"",
+        ];
 
-    private function importPurchaseDelivery(Request $request)
-    {
-        // TODO: Implement Purchase Delivery import logic
-        return response()->json(['message' => 'Purchase Delivery import functionality will be implemented']);
-    }
-
-    private function importPurchaseInvoice(Request $request)
-    {
-        // TODO: Implement Purchase Invoice import logic
-        return response()->json(['message' => 'Purchase Invoice import functionality will be implemented']);
-    }
-
-    private function exportPurchaseOrder(Request $request)
-    {
-        // TODO: Implement Purchase Order export logic
-        return response()->json(['message' => 'Purchase Order export functionality will be implemented']);
-    }
-
-    private function exportPurchaseDelivery(Request $request)
-    {
-        // TODO: Implement Purchase Delivery export logic
-        return response()->json(['message' => 'Purchase Delivery export functionality will be implemented']);
-    }
-
-    private function exportPurchaseInvoice(Request $request)
-    {
-        // TODO: Implement Purchase Invoice export logic
-        return response()->json(['message' => 'Purchase Invoice export functionality will be implemented']);
+        $content = "Mock PDF Content for Purchase Export";
+        return response($content, 200, $headers);
     }
 }
