@@ -14,18 +14,49 @@
                 <!-- Action Panel -->
                 <div class="col-md-4">
                     <div class="text-end">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('master_data.stock_opname.edit', $stockOpname['id']) }}" class="btn btn-primary btn-sm">
-                                <i class="icon-base ti tabler-edit me-1"></i>
-                                Edit
-                            </a>
-                            @if($stockOpname['status'] === 'adjustment_pending')
-                                <button type="button" class="btn btn-success btn-sm" id="create-adjustment-btn">
-                                    <i class="icon-base ti tabler-adjustments me-1"></i>
-                                    Buat Stok Adjustment
+                        @php
+                            $totalActions = 1; // Edit always present
+                            if($stockOpname['status'] === 'ADJUSTMENT_PENDING') {
+                                $totalActions++; // Add adjustment action
+                            }
+                        @endphp
+                        
+                        @if($totalActions < 3)
+                            <!-- Show buttons directly when less than 3 actions -->
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{{ route('master_data.stock_opname.edit', $stockOpname['id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                    <i class="icon-base ti tabler-edit me-2"></i>
+                                    Edit
+                                </a>
+                                @if($stockOpname['status'] === 'ADJUSTMENT_PENDING')
+                                    <button type="button" class="btn btn-success btn-md waves-effect waves-light" id="create-adjustment-btn">
+                                        <i class="icon-base ti tabler-adjustments me-2"></i>
+                                        Buat Stok Adjustment
+                                    </button>
+                                @endif
+                            </div>
+                        @else
+                            <!-- Show dropdown for 3 or more actions -->
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Aksi
                                 </button>
-                            @endif
-                        </div>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('master_data.stock_opname.edit', $stockOpname['id']) }}">
+                                            <i class="icon-base ti tabler-edit me-2"></i>Edit
+                                        </a>
+                                    </li>
+                                    @if($stockOpname['status'] === 'ADJUSTMENT_PENDING')
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);" id="create-adjustment-btn">
+                                                <i class="icon-base ti tabler-adjustments me-2"></i>Buat Stok Adjustment
+                                            </a>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -137,39 +168,25 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @foreach($productList as $product)
                                         <tr>
-                                            <td>AIR-330</td>
-                                            <td>RIYO Water 330ml</td>
-                                            <td>pcs</td>
-                                            <td class="text-end">1,500</td>
-                                            <td class="text-end">1,502</td>
+                                            <td>{{ $product['code'] }}</td>
+                                            <td>{{ $product['name'] }}</td>
+                                            <td>{{ $product['unit'] }}</td>
+                                            <td class="text-end">{{ number_format($product['system_stock'], 0, ',', '.') }}</td>
+                                            <td class="text-end">{{ number_format($product['physical_qty'], 0, ',', '.') }}</td>
                                             <td class="text-end">
-                                                <span class="text-success">+2</span>
+                                                @if($product['variance'] > 0)
+                                                    <span class="text-success">+{{ $product['variance'] }}</span>
+                                                @elseif($product['variance'] < 0)
+                                                    <span class="text-danger">{{ $product['variance'] }}</span>
+                                                @else
+                                                    <span class="text-muted">0</span>
+                                                @endif
                                             </td>
-                                            <td>Ada penambahan dari produksi</td>
+                                            <td>{{ $product['notes'] ?: '-' }}</td>
                                         </tr>
-                                        <tr>
-                                            <td>AIR-600</td>
-                                            <td>RIYO Water 600ml</td>
-                                            <td>pcs</td>
-                                            <td class="text-end">800</td>
-                                            <td class="text-end">800</td>
-                                            <td class="text-end">
-                                                <span class="text-muted">0</span>
-                                            </td>
-                                            <td>Sesuai dengan sistem</td>
-                                        </tr>
-                                        <tr>
-                                            <td>AIR-1500</td>
-                                            <td>RIYO Water 1500ml</td>
-                                            <td>pcs</td>
-                                            <td class="text-end">400</td>
-                                            <td class="text-end">400</td>
-                                            <td class="text-end">
-                                                <span class="text-muted">0</span>
-                                            </td>
-                                            <td>-</td>
-                                        </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -283,52 +300,79 @@ $(function() {
                 <span class="badge bg-info">{{ $stockOpname['status'] }}</span>
             </div>
             
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-marker bg-primary"></div>
-                    <div class="timeline-content">
-                        <h6>Stock Opname Dibuat</h6>
-                        <p>{{ date('d/m/Y H:i', strtotime($stockOpname['created_at'])) }}</p>
-                        <small class="text-muted">Oleh: {{ $stockOpname['pic_name'] }}</small>
+            <div class="activity-feed">
+                <div class="feed-item">
+                    <div class="feed-icon bg-label-primary">
+                        <i class="icon-base ti tabler-clipboard-check"></i>
+                    </div>
+                    <div class="feed-content">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0">Stock Opname Dibuat</h6>
+                            <small class="text-muted">{{ $stockOpname['created_at'] }}</small>
+                        </div>
+                        <p class="text-muted mb-1">Opname nomor {{ $stockOpname['opname_number'] }} berhasil dibuat</p>
+                        <small class="text-primary">Oleh: {{ $stockOpname['pic_name'] }}</small>
                     </div>
                 </div>
                 
-                <div class="timeline-item">
-                    <div class="timeline-marker bg-warning"></div>
-                    <div class="timeline-content">
-                        <h6>Proses Perhitungan</h6>
-                        <p>{{ date('d/m/Y H:i', strtotime($stockOpname['updated_at'])) }}</p>
-                        <small class="text-muted">Status: Sedang Dikerjakan</small>
+                <div class="feed-item">
+                    <div class="feed-icon bg-label-info">
+                        <i class="icon-base ti tabler-calculator"></i>
+                    </div>
+                    <div class="feed-content">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0">Perhitungan Stok Selesai</h6>
+                            <small class="text-muted">{{ $stockOpname['updated_at'] }}</small>
+                        </div>
+                        <p class="text-muted mb-1">Hasil perhitungan: {{ $stockOpname['variant_products'] ?? $stockOpname['total_products'] }} varian produk</p>
+                        <small class="text-info">Selisih: {{ $stockOpname['variance_qty'] > 0 ? '+' . $stockOpname['variance_qty'] : $stockOpname['variance_qty'] }} qty</small>
                     </div>
                 </div>
                 
-                <div class="timeline-item">
-                    <div class="timeline-marker bg-info"></div>
-                    <div class="timeline-content">
-                        <h6>Perhitungan Selesai</h6>
-                        <p>{{ date('d/m/Y H:i', strtotime($stockOpname['updated_at'])) }}</p>
-                        <small class="text-muted">Ditemukan selisih: {{ $stockOpname['variance_qty'] > 0 ? '+' . $stockOpname['variance_qty'] : $stockOpname['variance_qty'] }} qty</small>
+                @if($stockOpname['status'] === 'ADJUSTMENT_PENDING')
+                <div class="feed-item">
+                    <div class="feed-icon bg-label-warning">
+                        <i class="icon-base ti tabler-hourglass"></i>
                     </div>
-                </div>
-                
-                @if($stockOpname['status'] === 'adjustment_pending')
-                <div class="timeline-item">
-                    <div class="timeline-marker bg-warning"></div>
-                    <div class="timeline-content">
-                        <h6>Menunggu Adjustment</h6>
-                        <p>{{ date('d/m/Y H:i', strtotime($stockOpname['updated_at'])) }}</p>
-                        <small class="text-muted">Status: Menunggu dibuat stock adjustment</small>
+                    <div class="feed-content">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0">Menunggu Adjustment</h6>
+                            <small class="text-muted">{{ $stockOpname['updated_at'] }}</small>
+                        </div>
+                        <p class="text-muted mb-1">Stock opname selesai, menunggu dibuat stock adjustment</p>
+                        <small class="text-warning">Status: Menunggu Adjustment</small>
                     </div>
                 </div>
                 @endif
                 
                 @if($stockOpname['adjustment_number'])
-                <div class="timeline-item">
-                    <div class="timeline-marker bg-success"></div>
-                    <div class="timeline-content">
-                        <h6>Stock Adjustment Dibuat</h6>
-                        <p>{{ date('d/m/Y H:i') }}</p>
-                        <small class="text-muted">Nomor: {{ $stockOpname['adjustment_number'] }}</small>
+                <div class="feed-item">
+                    <div class="feed-icon bg-label-success">
+                        <i class="icon-base ti tabler-adjustments"></i>
+                    </div>
+                    <div class="feed-content">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0">Stock Adjustment Dibuat</h6>
+                            <small class="text-muted">{{ date('Y-m-d H:i') }}</small>
+                        </div>
+                        <p class="text-muted mb-1">Stock adjustment berhasil dibuat dari hasil opname</p>
+                        <small class="text-success">Nomor: {{ $stockOpname['adjustment_number'] }}</small>
+                    </div>
+                </div>
+                @endif
+                
+                @if($stockOpname['status'] === 'COMPLETED')
+                <div class="feed-item">
+                    <div class="feed-icon bg-label-success">
+                        <i class="icon-base ti tabler-circle-check"></i>
+                    </div>
+                    <div class="feed-content">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0">Stock Opname Selesai</h6>
+                            <small class="text-muted">{{ $stockOpname['updated_at'] }}</small>
+                        </div>
+                        <p class="text-muted mb-1">Proses stock opname telah selesai dan adjustment diterapkan</p>
+                        <small class="text-success">Status: Selesai</small>
                     </div>
                 </div>
                 @endif
@@ -431,45 +475,70 @@ $(function() {
     border-color: #f44336;
 }
 
-.timeline {
+.activity-feed {
     position: relative;
-    padding-left: 30px;
+    padding-left: 0;
 }
 
-.timeline-item {
+.feed-item {
+    display: flex;
     position: relative;
-    padding-bottom: 20px;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
-.timeline-item:not(:last-child)::before {
+.feed-item:not(:last-child)::after {
     content: '';
     position: absolute;
-    left: -25px;
-    top: 20px;
+    left: 27px;
+    top: 54px;
     width: 2px;
     height: calc(100% - 10px);
-    background-color: #dee2e6;
+    background-color: #e3ebf0;
+    z-index: 1;
 }
 
-.timeline-marker {
-    position: absolute;
-    left: -30px;
-    top: 5px;
-    width: 10px;
-    height: 10px;
+.feed-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 2px;
+    flex-shrink: 0;
+    margin-right: 1rem;
+    position: relative;
+    z-index: 2;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.timeline-content h6 {
-    margin-bottom: 5px;
+.feed-icon i {
+    font-size: 20px;
+    color: #fff;
+}
+
+.feed-content {
+    flex: 1;
+    min-width: 0;
+    padding-top: 0.25rem;
+}
+
+.feed-content h6 {
+    margin-bottom: 0.25rem;
     font-weight: 600;
+    font-size: 0.875rem;
 }
 
-.timeline-content p {
-    margin-bottom: 5px;
-    color: #6c757d;
+.feed-content p {
+    margin-bottom: 0.25rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+}
+
+.feed-content small {
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 </style>
 @endsection

@@ -50,12 +50,19 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="status-select" data-allow-clear="false">
+                    <select class="global-select2 form-select" id="status-select" data-allow-clear="false" 
+                            @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) disabled @endif>
                         <option value="">Pilih Status</option>
                         @foreach($statusOptions as $status)
                             <option value="{{ $status['value'] }}" @if(($stockOpname['status'] ?? '') == $status['value']) selected @endif>{{ $status['label'] }}</option>
                         @endforeach
                     </select>
+                    @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed']))
+                        <small class="form-text text-warning">
+                            <i class="icon-base ti tabler-info-circle me-1"></i>
+                            Status tidak dapat diubah setelah adjustment dibuat
+                        </small>
+                    @endif
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kategori Produk Filter</label>
@@ -87,10 +94,17 @@
                 <div class="col-md-12">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="mb-0">Produk untuk Stock Opname</h6>
-                        <button type="button" class="btn btn-md btn-primary waves-effect waves-light" id="load-products-btn">
-                            <i class="icon-base ti tabler-refresh me-2"></i>
-                            Muat Produk dari Gudang
-                        </button>
+                        @if(!in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed']))
+                            <button type="button" class="btn btn-md btn-primary waves-effect waves-light" id="load-products-btn">
+                                <i class="icon-base ti tabler-refresh me-2"></i>
+                                Muat Produk dari Gudang
+                            </button>
+                        @else
+                            <span class="badge bg-label-warning">
+                                <i class="icon-base ti tabler-lock me-1"></i>
+                                Terkunci - Adjustment sudah dibuat
+                            </span>
+                        @endif
                     </div>
                     
                     <div class="mx-n5">
@@ -127,7 +141,8 @@
                                         <input type="number" class="form-control form-control-sm physical-qty" 
                                                data-product-id="1" 
                                                data-system-stock="1500"
-                                               value="1502" min="0">
+                                               value="1502" min="0"
+                                               @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) readonly @endif>
                                     </td>
                                     <td class="text-end variance-display">
                                         <span class="text-success">+2</span>
@@ -136,7 +151,8 @@
                                         <input type="text" class="form-control form-control-sm notes" 
                                                data-product-id="1" 
                                                value="Ada penambahan dari produksi"
-                                               placeholder="Catatan">
+                                               placeholder="Catatan"
+                                               @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) readonly @endif>
                                     </td>
                                 </tr>
                                 <tr data-product-id="2">
@@ -153,7 +169,8 @@
                                         <input type="number" class="form-control form-control-sm physical-qty" 
                                                data-product-id="2" 
                                                data-system-stock="800"
-                                               value="800" min="0">
+                                               value="800" min="0"
+                                               @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) readonly @endif>
                                     </td>
                                     <td class="text-end variance-display">
                                         <span class="text-muted">0</span>
@@ -162,7 +179,8 @@
                                         <input type="text" class="form-control form-control-sm notes" 
                                                data-product-id="2" 
                                                value="Sesuai dengan sistem"
-                                               placeholder="Catatan">
+                                               placeholder="Catatan"
+                                               @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) readonly @endif>
                                     </td>
                                 </tr>
                                 <tr data-product-id="3">
@@ -179,7 +197,8 @@
                                         <input type="number" class="form-control form-control-sm physical-qty" 
                                                data-product-id="3" 
                                                data-system-stock="400"
-                                               value="400" min="0">
+                                               value="400" min="0"
+                                               @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) readonly @endif>
                                     </td>
                                     <td class="text-end variance-display">
                                         <span class="text-muted">0</span>
@@ -188,7 +207,8 @@
                                         <input type="text" class="form-control form-control-sm notes" 
                                                data-product-id="3" 
                                                value=""
-                                               placeholder="Catatan">
+                                               placeholder="Catatan"
+                                               @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) readonly @endif>
                                     </td>
                                 </tr>
                             </tbody>
@@ -241,7 +261,14 @@
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <button type="button" class="btn btn-label-danger me-3" id="cancel-btn">Batalkan</button>
-                <button type="button" class="btn btn-success" id="submit-btn">Update Stock Opname</button>
+                @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed']))
+                    <button type="button" class="btn btn-secondary" disabled>
+                        <i class="icon-base ti tabler-lock me-2"></i>
+                        Terkunci - Adjustment Sudah Dibuat
+                    </button>
+                @else
+                    <button type="button" class="btn btn-success" id="submit-btn">Update Stock Opname</button>
+                @endif
             </div>
         </form>
     </div>
@@ -444,6 +471,21 @@ $(function() {
     // Submit form
     $('#submit-btn').on('click', function(e) {
         e.preventDefault();
+        
+        // Check if adjustment is already created
+        const currentStatus = @json($stockOpname['status'] ?? '');
+        if (currentStatus === 'adjustment_created' || currentStatus === 'completed') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Tidak Dapat Diubah',
+                text: 'Stock opname tidak dapat diubah karena adjustment sudah dibuat.',
+                customClass: {
+                    confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+            });
+            return;
+        }
         
         if (!validateForm()) {
             Swal.fire({

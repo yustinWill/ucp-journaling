@@ -25,7 +25,7 @@
                                 <li><b>Isi Template</b>
                                     <ul>
                                         <li>Buka file template yang telah diunduh.</li>
-                                        <li>Masukkan data sesuai format kolom: Nomor SO, Tanggal, Gudang, PIC, Status, Deskripsi.</li>
+                                        <li>Masukkan data sesuai format kolom: Nomor SO, Tanggal, Gudang, PIC, Varian Produk, Sistem QTY, Fisik QTY, Status, Deskripsi.</li>
                                         <li>Pastikan nomor stock opname unik dan tanggal dalam format YYYY-MM-DD.</li>
                                         <li>Pilih gudang dan PIC yang valid sesuai dengan data master.</li>
                                     </ul>
@@ -144,6 +144,9 @@
                                     <th>Tanggal</th>
                                     <th>Gudang</th>
                                     <th>PIC</th>
+                                    <th>Varian Produk</th>
+                                    <th>Sistem QTY</th>
+                                    <th>Fisik QTY</th>
                                     <th>Status</th>
                                     <th>Deskripsi</th>
                                 </tr>
@@ -164,6 +167,9 @@
                                     <th>Tanggal</th>
                                     <th>Gudang</th>
                                     <th>PIC</th>
+                                    <th>Varian Produk</th>
+                                    <th>Sistem QTY</th>
+                                    <th>Fisik QTY</th>
                                     <th>Status</th>
                                     <th>Deskripsi</th>
                                     <th>Error Message</th>
@@ -281,6 +287,9 @@ $(function() {
                 { data: 'opname_date' },
                 { data: 'warehouse_name' },
                 { data: 'pic_name' },
+                { data: 'variant_products' },
+                { data: 'system_qty' },
+                { data: 'physical_qty' },
                 { data: 'status' },
                 { data: 'description' }
             ],
@@ -307,6 +316,9 @@ $(function() {
                 { data: 'opname_date' },
                 { data: 'warehouse_name' },
                 { data: 'pic_name' },
+                { data: 'variant_products' },
+                { data: 'system_qty' },
+                { data: 'physical_qty' },
                 { data: 'status' },
                 { data: 'description' },
                 { 

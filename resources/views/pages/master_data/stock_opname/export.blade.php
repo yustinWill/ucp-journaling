@@ -88,10 +88,10 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th style="width: 20%;">Urutan Kolom</th>
-                            <th style="width: 30%;">Nama Kolom</th>
-                            <th style="width: 20%;">Sembunyikan Kolom?</th>
-                            <th style="width: 30%;">Nama Field</th>
+                            <th style="width: 15%;">Urutan Kolom</th>
+                            <th style="width: 25%;">Nama Kolom</th>
+                            <th style="width: 15%;">Sembunyikan Kolom?</th>
+                            <th style="width: 25%;">Nama Field</th>
                         </tr>
                     </thead>
                     <tbody id="column-config-tbody">

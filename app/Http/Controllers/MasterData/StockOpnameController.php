@@ -9,31 +9,29 @@ class StockOpnameController extends Controller
 {
     public function index()
     {
-        // Status options for stock opname with adjustment workflow
+        // Status options for stock opname with adjustment workflow (restricted to 4 valid statuses)
         $stockOpnameStatuses = [
-            ['value' => 'draft', 'label' => 'Draft'],
-            ['value' => 'in_progress', 'label' => 'Sedang Dikerjakan'],
-            ['value' => 'completed', 'label' => 'Selesai'],
-            ['value' => 'adjustment_pending', 'label' => 'Menunggu Adjustment'],
-            ['value' => 'adjustment_created', 'label' => 'Adjustment Dibuat'],
-            ['value' => 'cancelled', 'label' => 'Dibatalkan']
+            ['value' => 'ADJUSTMENT_PENDING', 'label' => 'ADJUSTMENT_PENDING - Menunggu Adjustment'],
+            ['value' => 'ADJUSTMENT_CREATED', 'label' => 'ADJUSTMENT_CREATED - Adjustment Dibuat'],
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
+            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dihapus']
         ];
 
         // Warehouse locations for RIYO Water
         $warehouseLocations = [
-            ['value' => 'GDG-001', 'label' => 'Gudang Utama Pusat'],
-            ['value' => 'GDG-002', 'label' => 'Gudang Produksi'],
-            ['value' => 'GDG-003', 'label' => 'Gudang Bahan Baku'],
-            ['value' => 'GDG-004', 'label' => 'Gudang Finished Goods']
+            ['value' => 'GDG-001', 'label' => 'GDG-001 - Gudang Utama Pusat'],
+            ['value' => 'GDG-002', 'label' => 'GDG-002 - Gudang Produksi'],
+            ['value' => 'GDG-003', 'label' => 'GDG-003 - Gudang Bahan Baku'],
+            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods']
         ];
 
         // Product categories for RIYO Water
         $productCategories = [
-            ['value' => 'finished_goods', 'label' => 'Produk Jadi'],
-            ['value' => 'raw_materials', 'label' => 'Bahan Baku'],
-            ['value' => 'packaging', 'label' => 'Kemasan'],
-            ['value' => 'chemicals', 'label' => 'Bahan Kimia'],
-            ['value' => 'machinery', 'label' => 'Peralatan']
+            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
+            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
+            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
+            ['value' => 'CHEMICALS', 'label' => 'CHEMICALS - Bahan Kimia'],
+            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
         ];
 
         return view('pages.master_data.stock_opname.index', [
@@ -52,78 +50,102 @@ class StockOpnameController extends Controller
                     "opname_number" => "SO-2025-001",
                     "opname_date" => "2025-01-15",
                     "warehouse_name" => "Gudang Utama Pusat",
+                    "warehouse_id" => "GDG-001",
                     "pic_name" => "Yustinus Komunal",
-                    "total_products" => 45,
-                    "counted_products" => 45,
+                    "pic_id" => "USR-001",
+                    "variant_products" => 3,
+                    "system_qty" => 2700,
+                    "physical_qty" => 2702,
                     "variance_qty" => 2,
-                    "variance_value" => 125000,
-                    "status" => "adjustment_pending",
-                    "adjustment_number" => null
+                    "variance_value" => 66000,
+                    "status" => "ADJUSTMENT_PENDING",
+                    "adjustment_number" => null,
+                    "description" => "Stock opname bulanan - Produk RIYO Water semua varian"
                 ],
                 [
                     "id" => 2,
                     "opname_number" => "SO-2025-002",
                     "opname_date" => "2025-01-16",
                     "warehouse_name" => "Gudang Produksi",
+                    "warehouse_id" => "GDG-002",
                     "pic_name" => "Ririn Safitri",
-                    "total_products" => 28,
-                    "counted_products" => 20,
+                    "pic_id" => "USR-002",
+                    "variant_products" => 2,
+                    "system_qty" => 1200,
+                    "physical_qty" => 1200,
                     "variance_qty" => 0,
                     "variance_value" => 0,
-                    "status" => "in_progress",
-                    "adjustment_number" => null
+                    "status" => "IN_PROGRESS",
+                    "adjustment_number" => null,
+                    "description" => "Stock opname work in process - Botol dan kemasan"
                 ],
                 [
                     "id" => 3,
                     "opname_number" => "SO-2025-003",
                     "opname_date" => "2025-01-17",
                     "warehouse_name" => "Gudang Bahan Baku",
+                    "warehouse_id" => "GDG-003",
                     "pic_name" => "Hartono Wijaya",
-                    "total_products" => 62,
-                    "counted_products" => 0,
+                    "pic_id" => "USR-003",
+                    "variant_products" => 4,
+                    "system_qty" => 850,
+                    "physical_qty" => 0,
                     "variance_qty" => 0,
                     "variance_value" => 0,
-                    "status" => "draft",
-                    "adjustment_number" => null
+                    "status" => "DRAFT",
+                    "adjustment_number" => null,
+                    "description" => "Stock opname bahan baku - Air mineral, botol PET, label"
                 ],
                 [
                     "id" => 4,
                     "opname_number" => "SO-2025-004",
                     "opname_date" => "2025-01-18",
                     "warehouse_name" => "Gudang Finished Goods",
+                    "warehouse_id" => "GDG-004",
                     "pic_name" => "Sari Indah",
-                    "total_products" => 15,
-                    "counted_products" => 15,
-                    "variance_qty" => -3,
-                    "variance_value" => -45000,
-                    "status" => "adjustment_created",
-                    "adjustment_number" => "SA-2025-001"
+                    "pic_id" => "USR-004",
+                    "variant_products" => 3,
+                    "system_qty" => 2850,
+                    "physical_qty" => 2700,
+                    "variance_qty" => -150,
+                    "variance_value" => -495000,
+                    "status" => "ADJUSTMENT_CREATED",
+                    "adjustment_number" => "SA-2025-001",
+                    "description" => "Stock opname produk jadi - RIYO Water 330ml, 600ml, 1.5L"
                 ],
                 [
                     "id" => 5,
                     "opname_number" => "SO-2025-005",
                     "opname_date" => "2025-01-19",
                     "warehouse_name" => "Gudang Utama Pusat",
+                    "warehouse_id" => "GDG-001",
                     "pic_name" => "Budi Santoso",
-                    "total_products" => 38,
-                    "counted_products" => 15,
+                    "pic_id" => "USR-005",
+                    "variant_products" => 5,
+                    "system_qty" => 3200,
+                    "physical_qty" => 3200,
                     "variance_qty" => 0,
                     "variance_value" => 0,
-                    "status" => "in_progress",
-                    "adjustment_number" => null
+                    "status" => "IN_PROGRESS",
+                    "adjustment_number" => null,
+                    "description" => "Stock opname gabungan - Finished goods dan spare parts"
                 ],
                 [
                     "id" => 6,
                     "opname_number" => "SO-2025-006",
                     "opname_date" => "2025-01-20",
                     "warehouse_name" => "Gudang Produksi",
+                    "warehouse_id" => "GDG-002",
                     "pic_name" => "Ani Suhartini",
-                    "total_products" => 32,
-                    "counted_products" => 32,
-                    "variance_qty" => 1,
-                    "variance_value" => 15000,
-                    "status" => "completed",
-                    "adjustment_number" => null
+                    "pic_id" => "USR-006",
+                    "variant_products" => 6,
+                    "system_qty" => 1800,
+                    "physical_qty" => 1825,
+                    "variance_qty" => 25,
+                    "variance_value" => 75000,
+                    "status" => "COMPLETED",
+                    "adjustment_number" => null,
+                    "description" => "Stock opname mesin produksi - Spare parts dan consumables"
                 ]
             ]
         ];
@@ -134,36 +156,36 @@ class StockOpnameController extends Controller
     {
         // Warehouses for RIYO Water
         $warehouses = [
-            ['value' => 'GDG-001', 'label' => 'Gudang Utama Pusat'],
-            ['value' => 'GDG-002', 'label' => 'Gudang Produksi'],
-            ['value' => 'GDG-003', 'label' => 'Gudang Bahan Baku'],
-            ['value' => 'GDG-004', 'label' => 'Gudang Finished Goods']
+            ['value' => 'GDG-001', 'label' => 'GDG-001 - Gudang Utama Pusat'],
+            ['value' => 'GDG-002', 'label' => 'GDG-002 - Gudang Produksi'],
+            ['value' => 'GDG-003', 'label' => 'GDG-003 - Gudang Bahan Baku'],
+            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods']
         ];
 
         // PIC options
         $picOptions = [
-            ['value' => 'yustinus', 'label' => 'Yustinus Komunal'],
-            ['value' => 'ririn', 'label' => 'Ririn Safitri'],
-            ['value' => 'hartono', 'label' => 'Hartono Wijaya'],
-            ['value' => 'sari', 'label' => 'Sari Indah'],
-            ['value' => 'budi', 'label' => 'Budi Santoso'],
-            ['value' => 'ani', 'label' => 'Ani Suhartini']
+            ['value' => 'USR-001', 'label' => 'USR-001 - Yustinus Komunal'],
+            ['value' => 'USR-002', 'label' => 'USR-002 - Ririn Safitri'],
+            ['value' => 'USR-003', 'label' => 'USR-003 - Hartono Wijaya'],
+            ['value' => 'USR-004', 'label' => 'USR-004 - Sari Indah'],
+            ['value' => 'USR-005', 'label' => 'USR-005 - Budi Santoso'],
+            ['value' => 'USR-006', 'label' => 'USR-006 - Ani Suhartini']
         ];
 
         // Product categories for filtering
         $productCategories = [
-            ['value' => 'finished_goods', 'label' => 'Produk Jadi'],
-            ['value' => 'raw_materials', 'label' => 'Bahan Baku'],
-            ['value' => 'packaging', 'label' => 'Kemasan'],
-            ['value' => 'chemicals', 'label' => 'Bahan Kimia'],
-            ['value' => 'machinery', 'label' => 'Peralatan']
+            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
+            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
+            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
+            ['value' => 'CHEMICALS', 'label' => 'CHEMICALS - Bahan Kimia'],
+            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
         ];
 
         // Status options
         $statusOptions = [
-            ['value' => 'draft', 'label' => 'Draft'],
-            ['value' => 'in_progress', 'label' => 'Sedang Dikerjakan'],
-            ['value' => 'completed', 'label' => 'Selesai']
+            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
+            ['value' => 'IN_PROGRESS', 'label' => 'IN_PROGRESS - Sedang Dikerjakan'],
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai']
         ];
 
         return view('pages.master_data.stock_opname.add', [
@@ -184,44 +206,44 @@ class StockOpnameController extends Controller
             'warehouse_code' => 'GDG-001',
             'pic_name' => 'yustinus',
             'description' => 'Stock opname rutin bulanan untuk gudang utama pusat',
-            'status' => 'adjustment_pending'
+            'status' => 'ADJUSTMENT_PENDING'
         ];
 
         // Warehouses for RIYO Water
         $warehouses = [
-            ['value' => 'GDG-001', 'label' => 'Gudang Utama Pusat'],
-            ['value' => 'GDG-002', 'label' => 'Gudang Produksi'],
-            ['value' => 'GDG-003', 'label' => 'Gudang Bahan Baku'],
-            ['value' => 'GDG-004', 'label' => 'Gudang Finished Goods']
+            ['value' => 'GDG-001', 'label' => 'GDG-001 - Gudang Utama Pusat'],
+            ['value' => 'GDG-002', 'label' => 'GDG-002 - Gudang Produksi'],
+            ['value' => 'GDG-003', 'label' => 'GDG-003 - Gudang Bahan Baku'],
+            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods']
         ];
 
         // PIC options
         $picOptions = [
-            ['value' => 'yustinus', 'label' => 'Yustinus Komunal'],
-            ['value' => 'ririn', 'label' => 'Ririn Safitri'],
-            ['value' => 'hartono', 'label' => 'Hartono Wijaya'],
-            ['value' => 'sari', 'label' => 'Sari Indah'],
-            ['value' => 'budi', 'label' => 'Budi Santoso'],
-            ['value' => 'ani', 'label' => 'Ani Suhartini']
+            ['value' => 'USR-001', 'label' => 'USR-001 - Yustinus Komunal'],
+            ['value' => 'USR-002', 'label' => 'USR-002 - Ririn Safitri'],
+            ['value' => 'USR-003', 'label' => 'USR-003 - Hartono Wijaya'],
+            ['value' => 'USR-004', 'label' => 'USR-004 - Sari Indah'],
+            ['value' => 'USR-005', 'label' => 'USR-005 - Budi Santoso'],
+            ['value' => 'USR-006', 'label' => 'USR-006 - Ani Suhartini']
         ];
 
         // Product categories for filtering
         $productCategories = [
-            ['value' => 'finished_goods', 'label' => 'Produk Jadi'],
-            ['value' => 'raw_materials', 'label' => 'Bahan Baku'],
-            ['value' => 'packaging', 'label' => 'Kemasan'],
-            ['value' => 'chemicals', 'label' => 'Bahan Kimia'],
-            ['value' => 'machinery', 'label' => 'Peralatan']
+            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
+            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
+            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
+            ['value' => 'CHEMICALS', 'label' => 'CHEMICALS - Bahan Kimia'],
+            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
         ];
 
         // Status options
         $statusOptions = [
-            ['value' => 'draft', 'label' => 'Draft'],
-            ['value' => 'in_progress', 'label' => 'Sedang Dikerjakan'],
-            ['value' => 'completed', 'label' => 'Selesai'],
-            ['value' => 'adjustment_pending', 'label' => 'Menunggu Adjustment'],
-            ['value' => 'adjustment_created', 'label' => 'Adjustment Dibuat'],
-            ['value' => 'cancelled', 'label' => 'Dibatalkan']
+            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
+            ['value' => 'IN_PROGRESS', 'label' => 'IN_PROGRESS - Sedang Dikerjakan'],
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
+            ['value' => 'ADJUSTMENT_PENDING', 'label' => 'ADJUSTMENT_PENDING - Menunggu Adjustment'],
+            ['value' => 'ADJUSTMENT_CREATED', 'label' => 'ADJUSTMENT_CREATED - Adjustment Dibuat'],
+            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
         ];
 
         // Mock existing products for this stock opname
@@ -282,18 +304,53 @@ class StockOpnameController extends Controller
             'warehouse_code' => 'GDG-001',
             'pic_name' => 'Yustinus Komunal',
             'description' => 'Stock opname rutin bulanan untuk gudang utama pusat',
-            'total_products' => 45,
-            'counted_products' => 45,
+            'variant_products' => 3,
+            'total_products' => 3,  // Total product count for backwards compatibility
+            'counted_products' => 3, // Products that have been counted
+            'system_qty' => 2700,
+            'physical_qty' => 2702,
             'variance_qty' => 2,
             'variance_value' => 125000,
-            'status' => 'adjustment_pending',
+            'status' => 'ADJUSTMENT_PENDING',
             'adjustment_number' => null,
             'created_at' => '2025-01-15 08:00:00',
             'updated_at' => '2025-01-15 16:30:00'
         ];
 
+        // Mock product list data for this stock opname
+        $productList = [
+            [
+                'code' => 'AIR-330',
+                'name' => 'RIYO Water 330ml',
+                'unit' => 'pcs',
+                'system_stock' => 1500,
+                'physical_qty' => 1502,
+                'variance' => 2,
+                'notes' => 'Ada penambahan dari produksi'
+            ],
+            [
+                'code' => 'AIR-600',
+                'name' => 'RIYO Water 600ml',
+                'unit' => 'pcs',
+                'system_stock' => 800,
+                'physical_qty' => 800,
+                'variance' => 0,
+                'notes' => 'Sesuai dengan sistem'
+            ],
+            [
+                'code' => 'AIR-1500',
+                'name' => 'RIYO Water 1500ml',
+                'unit' => 'pcs',
+                'system_stock' => 400,
+                'physical_qty' => 400,
+                'variance' => 0,
+                'notes' => '-'
+            ]
+        ];
+
         return view('pages.master_data.stock_opname.detail', [
-            'stockOpname' => $stockOpname
+            'stockOpname' => $stockOpname,
+            'productList' => $productList
         ]);
     }
 
@@ -305,8 +362,9 @@ class StockOpnameController extends Controller
             ['field' => 'opname_date', 'label' => 'Tanggal Opname', 'export_name' => 'Tanggal Opname'],
             ['field' => 'warehouse_name', 'label' => 'Nama Gudang', 'export_name' => 'Nama Gudang'],
             ['field' => 'pic_name', 'label' => 'Penanggung Jawab', 'export_name' => 'Penanggung Jawab'],
-            ['field' => 'total_products', 'label' => 'Total Produk', 'export_name' => 'Total Produk'],
-            ['field' => 'counted_products', 'label' => 'Produk Terhitung', 'export_name' => 'Produk Terhitung'],
+            ['field' => 'variant_products', 'label' => 'Varian Produk', 'export_name' => 'Varian Produk'],
+            ['field' => 'system_qty', 'label' => 'Sistem QTY', 'export_name' => 'Sistem QTY'],
+            ['field' => 'physical_qty', 'label' => 'Fisik QTY', 'export_name' => 'Fisik QTY'],
             ['field' => 'variance_qty', 'label' => 'Selisih Qty', 'export_name' => 'Selisih Qty'],
             ['field' => 'variance_value', 'label' => 'Selisih Nilai', 'export_name' => 'Selisih Nilai'],
             ['field' => 'status', 'label' => 'Status', 'export_name' => 'Status'],
@@ -316,20 +374,18 @@ class StockOpnameController extends Controller
 
         // Warehouses for filter
         $warehouses = [
-            ['value' => 'GDG-001', 'label' => 'Gudang Utama Pusat'],
-            ['value' => 'GDG-002', 'label' => 'Gudang Produksi'],
-            ['value' => 'GDG-003', 'label' => 'Gudang Bahan Baku'],
-            ['value' => 'GDG-004', 'label' => 'Gudang Finished Goods']
+            ['value' => 'GDG-001', 'label' => 'GDG-001 - Gudang Utama Pusat'],
+            ['value' => 'GDG-002', 'label' => 'GDG-002 - Gudang Produksi'],
+            ['value' => 'GDG-003', 'label' => 'GDG-003 - Gudang Bahan Baku'],
+            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods']
         ];
 
-        // Status options for filter
+        // Status options for filter (restricted to 4 valid statuses)
         $statusOptions = [
-            ['value' => 'draft', 'label' => 'Draft'],
-            ['value' => 'in_progress', 'label' => 'Sedang Dikerjakan'],
-            ['value' => 'completed', 'label' => 'Selesai'],
-            ['value' => 'adjustment_pending', 'label' => 'Menunggu Adjustment'],
-            ['value' => 'adjustment_created', 'label' => 'Adjustment Dibuat'],
-            ['value' => 'cancelled', 'label' => 'Dibatalkan']
+            ['value' => 'ADJUSTMENT_PENDING', 'label' => 'ADJUSTMENT_PENDING - Menunggu Adjustment'],
+            ['value' => 'ADJUSTMENT_CREATED', 'label' => 'ADJUSTMENT_CREATED - Adjustment Dibuat'],
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
+            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dihapus']
         ];
 
         return view('pages.master_data.stock_opname.export', [
@@ -352,8 +408,9 @@ class StockOpnameController extends Controller
                 'opname_date' => '2025-01-15',
                 'warehouse_name' => 'Gudang Utama Pusat',
                 'pic_name' => 'Yustinus Komunal',
-                'total_products' => 45,
-                'counted_products' => 45,
+                'variant_products' => 3,
+                'system_qty' => 2700,
+                'physical_qty' => 2702,
                 'variance_qty' => 2,
                 'variance_value' => 125000,
                 'status' => 'Menunggu Adjustment',
@@ -365,8 +422,9 @@ class StockOpnameController extends Controller
                 'opname_date' => '2025-01-16',
                 'warehouse_name' => 'Gudang Produksi',
                 'pic_name' => 'Ririn Safitri',
-                'total_products' => 28,
-                'counted_products' => 20,
+                'variant_products' => 2,
+                'system_qty' => 1200,
+                'physical_qty' => 1200,
                 'variance_qty' => 0,
                 'variance_value' => 0,
                 'status' => 'Sedang Dikerjakan',
@@ -378,8 +436,9 @@ class StockOpnameController extends Controller
                 'opname_date' => '2025-01-17',
                 'warehouse_name' => 'Gudang Bahan Baku',
                 'pic_name' => 'Hartono Wijaya',
-                'total_products' => 62,
-                'counted_products' => 0,
+                'variant_products' => 4,
+                'system_qty' => 850,
+                'physical_qty' => 0,
                 'variance_qty' => 0,
                 'variance_value' => 0,
                 'status' => 'Draft',

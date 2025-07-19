@@ -132,9 +132,10 @@
                             <th>Tanggal</th>
                             <th>Gudang</th>
                             <th>PIC</th>
-                            <th>Total Produk</th>
-                            <th>Terhitung</th>
-                            <th>Selisih Qty</th>
+                            <th>Varian Produk</th>
+                            <th>Sistem QTY</th>
+                            <th>Fisik QTY</th>
+                            <th>Selisih QTY</th>
                             <th>Selisih Nilai</th>
                             <th>Status</th>
                             <th>Aksi</th>
@@ -161,8 +162,9 @@ $(function() {
                 { data: 'opname_date' },
                 { data: 'warehouse_name' },
                 { data: 'pic_name' },
-                { data: 'total_products' },
-                { data: 'counted_products' },
+                { data: 'variant_products' },
+                { data: 'system_qty' },
+                { data: 'physical_qty' },
                 { data: 'variance_qty' },
                 { data: 'variance_value' },
                 { data: 'status' },
@@ -172,11 +174,11 @@ $(function() {
                 {
                     targets: 1,
                     render: function(data, type, full, meta) {
-                        return new Date(data).toLocaleDateString('id-ID');
+                        return data; // Display YYYY-MM-DD format directly
                     }
                 },
                 {
-                    targets: 6,
+                    targets: 7,
                     render: function(data, type, full, meta) {
                         if (data > 0) {
                             return `<span class="text-success">+${data}</span>`;
@@ -187,7 +189,7 @@ $(function() {
                     }
                 },
                 {
-                    targets: 7,
+                    targets: 8,
                     render: function(data, type, full, meta) {
                         const formatted = new Intl.NumberFormat('id-ID', {
                             style: 'currency',
@@ -203,17 +205,48 @@ $(function() {
                     }
                 },
                 {
-                    targets: 8,
+                    targets: 2,
                     render: function(data, type, full, meta) {
-                        const statusMap = {
-                            'draft': '<span class="badge bg-secondary">Draft</span>',
-                            'in_progress': '<span class="badge bg-warning">Sedang Dikerjakan</span>',
-                            'completed': '<span class="badge bg-success">Selesai</span>',
-                            'adjustment_pending': '<span class="badge bg-info">Menunggu Adjustment</span>',
-                            'adjustment_created': '<span class="badge bg-primary">Adjustment Dibuat</span>',
-                            'cancelled': '<span class="badge bg-danger">Dibatalkan</span>'
+                        const warehouseDetailUrl = "{{ route('master_data.storage.detail') }}?warehouse_id=" + full.warehouse_id;
+                        return `<a href="${warehouseDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                    }
+                },
+                {
+                    targets: 3,
+                    render: function(data, type, full, meta) {
+                        const userDetailUrl = "{{ route('master_data.user.detail', ':id') }}".replace(':id', full.pic_id);
+                        return `<a href="${userDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                    }
+                },
+                {
+                    targets: 9,
+                    render: function(data, type, full, meta) {
+                        let badgeClass = '';
+                        switch (data) {
+                            case 'ADJUSTMENT_PENDING':
+                                badgeClass = 'bg-label-info';
+                                break;
+                            case 'ADJUSTMENT_CREATED':
+                                badgeClass = 'bg-label-primary';
+                                break;
+                            case 'COMPLETED':
+                                badgeClass = 'bg-label-success';
+                                break;
+                            case 'CANCELLED':
+                                badgeClass = 'bg-label-danger';
+                                break;
+                            default:
+                                badgeClass = 'bg-label-secondary';
+                        }
+                        
+                        const statusLabels = {
+                            'ADJUSTMENT_PENDING': 'Menunggu Adjustment',
+                            'ADJUSTMENT_CREATED': 'Adjustment Dibuat',
+                            'COMPLETED': 'Selesai',
+                            'CANCELLED': 'Dihapus'
                         };
-                        return statusMap[data] || data;
+                        
+                        return `<span class="badge ${badgeClass}">${statusLabels[data] || data}</span>`;
                     }
                 },
                 {
@@ -224,25 +257,15 @@ $(function() {
                         const editUrl = "{{ route('master_data.stock_opname.edit', ':id') }}".replace(':id', row.id);
                         const detailUrl = "{{ route('master_data.stock_opname.detail', ':id') }}".replace(':id', row.id);
                         
-                        let buttons = `
-                        <div class="btn-group" role="group" aria-label="Action buttons">
-                            <a href="${editUrl}" class="btn btn-primary btn-sm waves-effect">
+                        // Only show Detail and Edit buttons (removed Buat Adjustment from table)
+                        let buttons = `<div class="d-flex gap-2">
+                            <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                <i class="icon-base ti tabler-eye"></i>
+                            </a>
+                            <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                 <i class="icon-base ti tabler-edit"></i>
                             </a>
-                            <a href="${detailUrl}" class="btn btn-primary btn-sm waves-effect">
-                                <i class="icon-base ti tabler-eye"></i>
-                            </a>`;
-                        
-                        // Show adjustment button only for adjustment_pending status
-                        if (row.status === 'adjustment_pending') {
-                            buttons += `
-                            <button class="btn btn-success btn-sm waves-effect" onclick="createAdjustment(${row.id})" title="Buat Stok Adjustment">
-                                <i class="icon-base ti tabler-adjustments"></i>
-                            </button>`;
-                        }
-                        
-                        buttons += `</div>`;
-                        
+                        </div>`;
                         return buttons;
                     }
                 }
@@ -313,7 +336,7 @@ $(function() {
                                 },
                                 buttonsStyling: false
                             }).then(() => {
-                                stockOpnameTable.draw();
+                                dt_adv_filter.draw();
                             });
                         } else {
                             Swal.fire({
