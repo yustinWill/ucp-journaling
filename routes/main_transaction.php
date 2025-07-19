@@ -9,6 +9,7 @@ use App\Http\Controllers\MainTransaction\PurchaseController;
 use App\Http\Controllers\MainTransaction\SalesController;
 use App\Http\Controllers\MainTransaction\CreditMemoController;
 use App\Http\Controllers\MainTransaction\ExpenseController;
+use App\Http\Controllers\MainTransaction\StockAdjustmentController;
 
 $base_segment = '/main_transaction';
 $journal_segment = '/jurnal';
@@ -16,8 +17,9 @@ $purchase_segment = '/pembelian';
 $sales_segment = '/penjualan';
 $credit_memo_segment = '/credit_memo';
 $expense_segment = '/pengeluaran';
+$stock_adjustment_segment = '/stock_adjustment';
 
-Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $sales_segment, $credit_memo_segment, $expense_segment) {
+Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $sales_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment . $journal_segment . '/index', 'index')->name('main_transaction.jurnal.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $journal_segment . '/index_data_table', 'index_data_table')->name('main_transaction.jurnal.index_data_table')->middleware(EnsureTokenIsValid::class);
@@ -83,5 +85,19 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $expense_segment . '/payment_terms', 'paymentTerms')->name('main_transaction.expense.payment_terms')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $expense_segment . '/export', 'export')->name('main_transaction.expense.export')->middleware(EnsureTokenIsValid::class);
         Route::post($base_segment . $expense_segment . '/import', 'import')->name('main_transaction.expense.import')->middleware(EnsureTokenIsValid::class);
+    });
+
+    Route::controller(StockAdjustmentController::class)->group(function () use ($base_segment, $stock_adjustment_segment) {
+        Route::get($base_segment . $stock_adjustment_segment . '/index', 'index')->name('main_transaction.stock_adjustment.index')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_adjustment_segment . '/index_data_table', 'index_data_table')->name('main_transaction.stock_adjustment.index_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_adjustment_segment . '/add', 'add')->name('main_transaction.stock_adjustment.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_adjustment_segment . '/edit/{id}', 'edit')->name('main_transaction.stock_adjustment.edit')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_adjustment_segment . '/detail/{id}', 'detail')->name('main_transaction.stock_adjustment.detail')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_adjustment_segment . '/export', 'export')->name('main_transaction.stock_adjustment.export')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $stock_adjustment_segment . '/process_export', 'processExport')->name('main_transaction.stock_adjustment.process_export')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_adjustment_segment . '/import', 'import')->name('main_transaction.stock_adjustment.import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $stock_adjustment_segment . '/download_template', 'downloadTemplate')->name('main_transaction.stock_adjustment.download_template')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $stock_adjustment_segment . '/validate_import', 'validateImport')->name('main_transaction.stock_adjustment.validate_import')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $stock_adjustment_segment . '/process_import', 'processImport')->name('main_transaction.stock_adjustment.process_import')->middleware(EnsureTokenIsValid::class);
     });
 });

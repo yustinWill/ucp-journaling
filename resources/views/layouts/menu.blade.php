@@ -67,6 +67,12 @@
                 <div data-i18n="Chat">Pengeluaran</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.stock_adjustment.*'])) active @endif">
+            <a href="{{ route('main_transaction.stock_adjustment.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-adjustments"></i>
+                <div data-i18n="Chat">Stock Adjustment</div>
+            </a>
+        </li>
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Master Data & Operasional</span>
         </li>
