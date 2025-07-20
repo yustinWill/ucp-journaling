@@ -4,139 +4,125 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Add New Role</h5>
+        <h4 class="card-header">Tambah Role</h4>
         <form class="card-body" id="roleForm">
             <!-- Role Information Section -->
             <div class="section-header mt-12">
-                <h6>Role Information</h6>
+                <h6>Informasi Role</h6>
                 <hr class="mx-n6">
             </div>
             
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Role Name <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="role-name" placeholder="Enter role name" maxlength="100" />
-                    <small class="form-text text-muted">Maximum 100 characters</small>
+                    <label class="form-label">Nama Role <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="role-name" placeholder="Masukkan nama role" maxlength="100" />
+                    <small class="form-text text-muted">Maksimal 100 karakter</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
-                    <div class="demo-inline-spacing">
-                        <label class="switch switch-primary">
-                            <input type="checkbox" class="switch-input" id="role-status" checked>
-                            <span class="switch-toggle-slider">
-                                <span class="switch-on">
-                                    <i class="icon-base ti tabler-check"></i>
-                                </span>
-                                <span class="switch-off">
-                                    <i class="icon-base ti tabler-x"></i>
-                                </span>
-                            </span>
-                            <span class="switch-label">Active</span>
-                        </label>
-                    </div>
+                    <select class="global-select2 form-select" id="role-status" data-allow-clear="false">
+                        <option value="ACTIVE" selected>ACTIVE - Aktif</option>
+                        <option value="INACTIVE">INACTIVE - Tidak Aktif</option>
+                    </select>
                 </div>
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <label class="form-label">Description</label>
-                    <textarea class="form-control" id="role-description" rows="3" placeholder="Enter role description" maxlength="500"></textarea>
-                    <small class="form-text text-muted">Maximum 500 characters</small>
+                <div class="col-md-6">
+                    <label class="form-label">Deskripsi</label>
+                    <textarea class="form-control" id="role-description" rows="3" placeholder="Masukkan deskripsi role" maxlength="500"></textarea>
+                    <small class="form-text text-muted">Maksimal 500 karakter</small>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for alignment -->
                 </div>
             </div>
 
             <!-- Permissions Section -->
             <div class="section-header mt-12">
-                <h6>Permissions</h6>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Hak Akses Modul</h6>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">Pilih Semua</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">Hapus Semua</button>
+                    </div>
+                </div>
                 <hr class="mx-n6">
             </div>
             
-            <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">Module Permissions</h6>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">Select All</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">Deselect All</button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div id="permissions-container">
-                                @foreach($modules as $module)
-                                <div class="module-permissions mb-4">
-                                    <h6 class="mb-3">
-                                        <i class="icon-base ti tabler-folder me-2"></i>
-                                        {{ $module['name'] }}
-                                    </h6>
-                                    <div class="row g-3">
-                                        @foreach($permission_types as $type)
-                                        <div class="col-md-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input permission-checkbox" 
-                                                       type="checkbox" 
-                                                       id="permission-{{ $module['id'] }}-{{ $type['value'] }}" 
-                                                       data-module="{{ $module['id'] }}" 
-                                                       data-type="{{ $type['value'] }}" 
-                                                       value="{{ $module['id'] }}-{{ $type['value'] }}">
-                                                <label class="form-check-label" for="permission-{{ $module['id'] }}-{{ $type['value'] }}">
-                                                    <i class="icon-base ti tabler-{{ $type['value'] == 'read' ? 'eye' : ($type['value'] == 'write' ? 'edit' : ($type['value'] == 'delete' ? 'trash' : 'check')) }} me-1"></i>
-                                                    {{ $type['label'] }}
-                                                </label>
-                                            </div>
-                                        </div>
-                                        @endforeach
+            <div class="mb-4">
+                <div class="mx-n6">
+                    <div id="permissions-container" style="padding: 1.5rem;">
+                        @foreach($modules as $module)
+                        <div class="module-permissions mb-4">
+                            <h6 class="mb-3">
+                                <i class="icon-base ti tabler-folder me-2"></i>
+                                {{ $module['name'] }}
+                            </h6>
+                            <div class="row g-3">
+                                @foreach($permission_types as $type)
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input permission-checkbox" 
+                                               type="checkbox" 
+                                               id="permission-{{ $module['id'] }}-{{ $type['value'] }}" 
+                                               data-module="{{ $module['id'] }}" 
+                                               data-type="{{ $type['value'] }}" 
+                                               value="{{ $module['id'] }}-{{ $type['value'] }}">
+                                        <label class="form-check-label" for="permission-{{ $module['id'] }}-{{ $type['value'] }}">
+                                            <i class="icon-base ti tabler-{{ $type['value'] == 'read' ? 'eye' : ($type['value'] == 'write' ? 'edit' : ($type['value'] == 'delete' ? 'trash' : 'check')) }} me-1"></i>
+                                            {{ $type['label'] }}
+                                        </label>
                                     </div>
-                                    <hr class="my-3">
                                 </div>
                                 @endforeach
                             </div>
+                            @if(!$loop->last)
+                                <hr class="my-3">
+                            @endif
                         </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
 
             <!-- Permission Summary -->
+            <div class="section-header mt-12">
+                <h6>Ringkasan Hak Akses</h6>
+                <hr class="mx-n6">
+            </div>
+            
             <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <div class="card bg-light">
-                        <div class="card-body">
-                            <h6 class="card-title">Permission Summary</h6>
-                            <div class="row g-3">
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <h4 class="mb-0 text-success" id="read-count">0</h4>
-                                        <small class="text-muted">Read</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <h4 class="mb-0 text-primary" id="write-count">0</h4>
-                                        <small class="text-muted">Write</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <h4 class="mb-0 text-danger" id="delete-count">0</h4>
-                                        <small class="text-muted">Delete</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <h4 class="mb-0 text-warning" id="approval-count">0</h4>
-                                        <small class="text-muted">Approval</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                        <h4 class="mb-0 text-success" id="read-count">0</h4>
+                        <small class="text-muted">Hak Baca</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                        <h4 class="mb-0 text-primary" id="write-count">0</h4>
+                        <small class="text-muted">Hak Tulis</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                        <h4 class="mb-0 text-danger" id="delete-count">0</h4>
+                        <small class="text-muted">Hak Hapus</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                        <h4 class="mb-0 text-warning" id="approval-count">0</h4>
+                        <small class="text-muted">Hak Persetujuan</small>
                     </div>
                 </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
-                <button type="button" class="btn btn-label-danger me-3" id="cancel-btn">Cancel</button>
-                <button type="button" class="btn btn-success" id="submit-btn">Save Role</button>
+                <button type="button" class="btn btn-label-danger me-3" id="cancel-btn">Batal</button>
+                <button type="button" class="btn btn-success" id="submit-btn">Simpan Role</button>
             </div>
         </form>
     </div>
@@ -225,8 +211,8 @@
                 isValid = false;
                 Swal.fire({
                     icon: 'error',
-                    title: 'Validation Error',
-                    text: 'Please select at least one permission for this role.',
+                    title: 'Kesalahan Validasi',
+                    text: 'Silakan pilih setidaknya satu hak akses untuk role ini.',
                     customClass: {
                         confirmButton: 'btn btn-primary'
                     },
@@ -249,7 +235,7 @@
             const formData = {
                 name: $('#role-name').val(),
                 description: $('#role-description').val(),
-                is_active: $('#role-status').is(':checked'),
+                status: $('#role-status').val(),
                 permissions: []
             };
             
@@ -262,12 +248,12 @@
             });
             
             Swal.fire({
-                title: 'Save Role?',
-                text: 'Are you sure you want to create this role?',
+                title: 'Simpan Role?',
+                text: 'Apakah Anda yakin ingin membuat role ini?',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Yes, Save!',
-                cancelButtonText: 'Cancel',
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'btn btn-success',
                     cancelButton: 'btn btn-secondary'
@@ -280,8 +266,8 @@
                     
                     Swal.fire({
                         icon: 'success',
-                        title: 'Success!',
-                        text: 'Role has been created successfully.',
+                        title: 'Berhasil!',
+                        text: 'Role berhasil dibuat.',
                         customClass: {
                             confirmButton: 'btn btn-success'
                         },
@@ -298,12 +284,12 @@
             e.preventDefault();
             
             Swal.fire({
-                title: 'Cancel Changes?',
-                text: 'All unsaved changes will be lost!',
+                title: 'Batalkan Perubahan?',
+                text: 'Semua perubahan yang belum disimpan akan hilang!',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Yes, Cancel!',
-                cancelButtonText: 'No, Continue',
+                confirmButtonText: 'Ya, Batalkan!',
+                cancelButtonText: 'Tidak, Lanjutkan',
                 customClass: {
                     confirmButton: 'btn btn-danger',
                     cancelButton: 'btn btn-secondary'
@@ -323,14 +309,14 @@
             const remaining = maxLength - currentLength;
             
             if (remaining < 50) {
-                $(this).next('.form-text').html(`${remaining} characters remaining`);
+                $(this).next('.form-text').html(`${remaining} karakter tersisa`);
                 if (remaining < 0) {
                     $(this).addClass('is-invalid');
                 } else {
                     $(this).removeClass('is-invalid');
                 }
             } else {
-                $(this).next('.form-text').html('Maximum 500 characters');
+                $(this).next('.form-text').html('Maksimal 500 karakter');
                 $(this).removeClass('is-invalid');
             }
         });

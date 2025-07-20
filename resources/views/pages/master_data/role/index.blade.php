@@ -68,8 +68,9 @@
     </div>
 
     <!-- Main Content Card -->
-    <div class="card mt-6">
-        <h5 class="card-header">Role Management</h5>
+    <div class="mt-6">
+        <div class="card">
+        <h4 class="card-header">Kelola Role</h4>
         <div class="card-body">
             <!-- Advanced Search Form -->
             <form class="dt_adv_search" method="GET">
@@ -125,16 +126,17 @@
             <table id="role-table" class="table table-bordered">
                 <thead>
                     <tr>
+                        <th>Dibuat</th>
                         <th>Nama Role</th>
                         <th>Deskripsi</th>
                         <th>Users</th>
                         <th>Permissions</th>
                         <th>Status</th>
-                        <th>Dibuat</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
             </table>
+        </div>
         </div>
     </div>
 
@@ -160,9 +162,15 @@
                 },
                 columns: [
                     { 
+                        data: 'created_at',
+                        responsivePriority: 2
+                    },
+                    { 
                         data: 'name',
+                        responsivePriority: 3,
                         render: function(data, type, row) {
-                            return `<a href="#" class="text-primary">${data}</a>`;
+                            const detailUrl = '{{ route("master_data.role.detail", ":id") }}'.replace(':id', row.id);
+                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                         }
                     },
                     { data: 'description' },
@@ -181,34 +189,19 @@
                     { 
                         data: 'status',
                         render: function(data, type, row) {
-                            let badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
-                            let statusText = data === 'ACTIVE' ? 'Aktif' : 'Tidak Aktif';
-                            return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                            let badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                            return `<span class="badge ${badgeClass}">${data}</span>`;
                         }
                     },
-                    { data: 'created_at' },
                     {
                         data: null,
                         orderable: false,
                         searchable: false,
+                        width: '120px',
+                        responsivePriority: 1,
                         render: function(data, type, row, meta) {
                             const editUrl = '{{ route("master_data.role.edit", ":id") }}'.replace(':id', row.id);
                             const detailUrl = '{{ route("master_data.role.detail", ":id") }}'.replace(':id', row.id);
-                            
-                            let deleteButton = '';
-                            if (row.user_count == 0) {
-                                deleteButton = `
-                                    <button class="btn btn-danger btn-sm waves-effect" onclick="deleteRole(${row.id})" title="Delete">
-                                        <i class="icon-base ti tabler-trash"></i>
-                                    </button>
-                                `;
-                            } else {
-                                deleteButton = `
-                                    <button class="btn btn-secondary btn-sm waves-effect" disabled title="Cannot delete - has ${row.user_count} user(s)">
-                                        <i class="icon-base ti tabler-trash"></i>
-                                    </button>
-                                `;
-                            }
                             
                             return `
                             <div class="d-flex gap-2">
@@ -218,7 +211,6 @@
                                 <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                     <i class="icon-base ti tabler-edit"></i>
                                 </a>
-                                ${deleteButton}
                             </div>
                             `;
                         }
@@ -239,7 +231,8 @@
                     }
                 },
                 scrollX: true,
-                responsive: true
+                responsive: true,
+                orderCellsTop: true
             });
         }
         
@@ -262,73 +255,5 @@
             }
         });
     });
-
-    // Delete role function
-    function deleteRole(id) {
-        Swal.fire({
-            title: 'Hapus Role?',
-            text: "Tindakan ini tidak dapat dikembalikan!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Hapus!',
-            cancelButtonText: 'Batal',
-            customClass: {
-                confirmButton: 'btn btn-danger',
-                cancelButton: 'btn btn-secondary'
-            },
-            buttonsStyling: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Send DELETE request to server
-                fetch(`{{ route('master_data.role.destroy', ':id') }}`.replace(':id', id), {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json',
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error === 'role_has_users') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Tidak Dapat Menghapus Role',
-                            text: data.message,
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
-                            buttonsStyling: false
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: data.message,
-                            customClass: {
-                                confirmButton: 'btn btn-success'
-                            },
-                            buttonsStyling: false
-                        }).then(() => {
-                            // Reload the table
-                            if (roleTable) {
-                                roleTable.ajax.reload();
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error!',
-                        text: 'Terjadi kesalahan saat menghapus role.',
-                        customClass: {
-                            confirmButton: 'btn btn-primary'
-                        },
-                        buttonsStyling: false
-                    });
-                });
-            }
-        });
-    }
 </script>
 @endsection

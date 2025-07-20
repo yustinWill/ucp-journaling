@@ -101,7 +101,37 @@ class RoleController extends Controller
             'user_count' => 3,
             'permissions_count' => 8,
             'created_at' => '2025-01-01 10:00:00',
-            'updated_at' => '2025-01-01 10:00:00'
+            'updated_at' => '2025-01-01 10:00:00',
+            'audit_logs' => [
+                [
+                    'created_at' => '2025-01-20 15:45:12',
+                    'user_id' => 'USR-002',
+                    'user_name' => 'Finance Manager',
+                    'action_type' => 'UPDATE',
+                    'description' => 'Updated role permissions for Contact Management module'
+                ],
+                [
+                    'created_at' => '2025-01-19 14:30:45',
+                    'user_id' => 'USR-001',
+                    'user_name' => 'System Administrator',
+                    'action_type' => 'UPDATE',
+                    'description' => 'Modified role description and status'
+                ],
+                [
+                    'created_at' => '2025-01-18 09:15:23',
+                    'user_id' => 'USR-003',
+                    'user_name' => 'HR Manager',
+                    'action_type' => 'ASSIGN',
+                    'description' => 'Assigned role to 2 new users'
+                ],
+                [
+                    'created_at' => '2025-01-17 16:22:11',
+                    'user_id' => 'USR-001',
+                    'user_name' => 'System Administrator',
+                    'action_type' => 'CREATE',
+                    'description' => 'Role created with initial permission setup'
+                ]
+            ]
         ];
 
         $selectData = $this->getSelectData();
@@ -262,14 +292,14 @@ class RoleController extends Controller
     {
         return [
             'statusFilters' => [
-                ['value' => 'active', 'label' => 'Aktif'],
-                ['value' => 'inactive', 'label' => 'Tidak Aktif'],
+                ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+                ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
             ],
             'userFilters' => [
-                ['value' => '0', 'label' => 'Tanpa User'],
-                ['value' => '1-5', 'label' => '1-5 User'],
-                ['value' => '6-10', 'label' => '6-10 User'],
-                ['value' => '10+', 'label' => '10+ User'],
+                ['value' => '0', 'label' => '0 - Tanpa User'],
+                ['value' => '1-5', 'label' => '1-5 - Satu hingga Lima User'],
+                ['value' => '6-10', 'label' => '6-10 - Enam hingga Sepuluh User'],
+                ['value' => '10+', 'label' => '10+ - Lebih dari Sepuluh User'],
             ]
         ];
     }
