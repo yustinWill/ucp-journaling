@@ -29,6 +29,7 @@ class JournalController extends Controller
                     "date" => "2025-07-01",
                     "reference_no" => "JE-2025-001",
                     "notes" => "Penjualan RIYO Water 330ml - CV Berkah Sentosa",
+                    "tags" => ["PENJUALAN", "KEUANGAN"],
                     "amount" => 12500000,
                     "created_by" => "Yustinus Komunal",
                     "created_at" => "2025-07-01 08:30:00",
@@ -38,6 +39,7 @@ class JournalController extends Controller
                     "date" => "2025-07-02",
                     "reference_no" => "JE-2025-002",
                     "notes" => "Pembelian bahan baku plastik untuk kemasan",
+                    "tags" => ["PEMBELIAN", "OPERASIONAL"],
                     "amount" => 25000000,
                     "created_by" => "Ahmad Rizki",
                     "created_at" => "2025-07-02 09:15:00",
@@ -47,6 +49,7 @@ class JournalController extends Controller
                     "date" => "2025-07-03",
                     "reference_no" => "JE-2025-003",
                     "notes" => "Pembayaran gaji karyawan produksi bulan Juli",
+                    "tags" => ["OPERASIONAL"],
                     "amount" => 85000000,
                     "created_by" => "Siti Nurhaliza",
                     "created_at" => "2025-07-03 14:20:00",
@@ -56,6 +59,7 @@ class JournalController extends Controller
                     "date" => "2025-07-04",
                     "reference_no" => "JE-2025-004",
                     "notes" => "Biaya maintenance mesin produksi dan quality control",
+                    "tags" => ["OPERASIONAL", "INVESTASI"],
                     "amount" => 15500000,
                     "created_by" => "Ahmad Rizki",
                     "created_at" => "2025-07-04 11:45:00",
@@ -65,6 +69,7 @@ class JournalController extends Controller
                     "date" => "2025-07-05",
                     "reference_no" => "JE-2025-005",
                     "notes" => "Penerimaan pembayaran dari Supermarket Maju Jaya",
+                    "tags" => ["PENJUALAN", "KEUANGAN"],
                     "amount" => 22500000,
                     "created_by" => "Yustinus Komunal",
                     "created_at" => "2025-07-05 16:10:00",
@@ -87,7 +92,21 @@ class JournalController extends Controller
             ['code' => '6001', 'name' => 'Biaya Operasional', 'label' => '6001 - Biaya Operasional']
         ];
 
-        return view('pages.main_transaction.journal.add', compact('accounts'));
+        // Sample tags loaded from master data with dynamic colors
+        $availableTags = [
+            ['code' => 'PENJUALAN', 'name' => 'Transaksi Penjualan', 'label' => 'PENJUALAN - Transaksi Penjualan', 'color' => 'success'],
+            ['code' => 'PEMBELIAN', 'name' => 'Transaksi Pembelian', 'label' => 'PEMBELIAN - Transaksi Pembelian', 'color' => 'info'],
+            ['code' => 'OPERASIONAL', 'name' => 'Biaya Operasional', 'label' => 'OPERASIONAL - Biaya Operasional', 'color' => 'warning'],
+            ['code' => 'INVESTASI', 'name' => 'Investasi & Aset', 'label' => 'INVESTASI - Investasi & Aset', 'color' => 'primary'],
+            ['code' => 'KEUANGAN', 'name' => 'Transaksi Keuangan', 'label' => 'KEUANGAN - Transaksi Keuangan', 'color' => 'secondary'],
+            ['code' => 'PAJAK', 'name' => 'Transaksi Pajak', 'label' => 'PAJAK - Transaksi Pajak', 'color' => 'danger'],
+            ['code' => 'KOREKSI', 'name' => 'Koreksi & Penyesuaian', 'label' => 'KOREKSI - Koreksi & Penyesuaian', 'color' => 'dark']
+        ];
+
+        // Permission check for adding new tags (mock from user session/role)
+        $canAddTags = true; // Mock: In real app, check user permissions
+
+        return view('pages.main_transaction.journal.add', compact('accounts', 'availableTags', 'canAddTags'));
     }
 
     public function import()
@@ -122,6 +141,10 @@ class JournalController extends Controller
             'total_amount' => 'Rp 15,500,000',
             'description' => 'Penerimaan kas dari penjualan produk air mineral RIYO periode Januari 2025. Transaksi ini mencatat penerimaan pembayaran dari distributor untuk pembelian 3,000 botol air mineral.',
             'memo' => 'Verifikasi pembayaran telah dilakukan oleh tim finance. Dokumen pendukung tersimpan di folder digital Q1-2025.',
+            'tags' => [
+                ['code' => 'PENJUALAN', 'name' => 'Transaksi Penjualan', 'color' => 'success'],
+                ['code' => 'KEUANGAN', 'name' => 'Transaksi Keuangan', 'color' => 'secondary']
+            ],
             'total_debit' => 'Rp 15,500,000',
             'total_credit' => 'Rp 15,500,000',
             'difference' => 'Rp 0',
@@ -180,6 +203,7 @@ class JournalController extends Controller
             'total_amount' => 'Rp 15,500,000',
             'description' => 'Penerimaan kas dari penjualan produk air mineral RIYO periode Januari 2025. Transaksi ini mencatat penerimaan pembayaran dari distributor untuk pembelian 3,000 botol air mineral.',
             'memo' => 'Verifikasi pembayaran telah dilakukan oleh tim finance. Dokumen pendukung tersimpan di folder digital Q1-2025.',
+            'tags' => ['PENJUALAN', 'KEUANGAN'], // Keep as codes for form selection
             'total_debit' => 'Rp 15,500,000',
             'total_credit' => 'Rp 15,500,000',
             'difference' => 'Rp 0',
@@ -214,6 +238,20 @@ class JournalController extends Controller
             ['code' => '6001', 'name' => 'Biaya Operasional', 'label' => '6001 - Biaya Operasional']
         ];
 
-        return view('pages.main_transaction.journal.edit', compact('journal', 'accounts'));
+        // Sample tags loaded from master data with dynamic colors
+        $availableTags = [
+            ['code' => 'PENJUALAN', 'name' => 'Transaksi Penjualan', 'label' => 'PENJUALAN - Transaksi Penjualan', 'color' => 'success'],
+            ['code' => 'PEMBELIAN', 'name' => 'Transaksi Pembelian', 'label' => 'PEMBELIAN - Transaksi Pembelian', 'color' => 'info'],
+            ['code' => 'OPERASIONAL', 'name' => 'Biaya Operasional', 'label' => 'OPERASIONAL - Biaya Operasional', 'color' => 'warning'],
+            ['code' => 'INVESTASI', 'name' => 'Investasi & Aset', 'label' => 'INVESTASI - Investasi & Aset', 'color' => 'primary'],
+            ['code' => 'KEUANGAN', 'name' => 'Transaksi Keuangan', 'label' => 'KEUANGAN - Transaksi Keuangan', 'color' => 'secondary'],
+            ['code' => 'PAJAK', 'name' => 'Transaksi Pajak', 'label' => 'PAJAK - Transaksi Pajak', 'color' => 'danger'],
+            ['code' => 'KOREKSI', 'name' => 'Koreksi & Penyesuaian', 'label' => 'KOREKSI - Koreksi & Penyesuaian', 'color' => 'dark']
+        ];
+
+        // Permission check for adding new tags (mock from user session/role)
+        $canAddTags = true; // Mock: In real app, check user permissions
+
+        return view('pages.main_transaction.journal.edit', compact('journal', 'accounts', 'availableTags', 'canAddTags'));
     }
 }

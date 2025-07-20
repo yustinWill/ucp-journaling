@@ -52,6 +52,28 @@
                 </div>
             </div>
             
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="tags-select" multiple data-allow-clear="false">
+                            @foreach($availableTags as $tag)
+                                <option value="{{ $tag['code'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags)
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi</small>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for alignment -->
+                </div>
+            </div>
+            
             <!-- Journal Entries Section -->
             <div class="section-header mt-12 mb-4">
                 <div class="d-flex justify-content-between align-items-center">
@@ -348,6 +370,30 @@
                 });
             });
         }
+        
+        // Add new tag button functionality
+        $('#add-new-tag').click(function(e) {
+            e.preventDefault();
+            
+            Swal.fire({
+                title: 'Tambah Tag Baru',
+                html: 'Anda akan diarahkan ke halaman tambah tag baru.<br><br><strong>Catatan:</strong> Setelah menambah tag baru, halaman ini perlu di-reload untuk menampilkan tag yang baru ditambahkan.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Lanjutkan',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                    cancelButton: 'btn btn-label-secondary'
+                },
+                buttonsStyling: false
+            }).then(function(result) {
+                if (result.value) {
+                    // Open add tag page in new tab
+                    window.open('{{ route("master_data.tag.add") }}', '_blank');
+                }
+            });
+        });
         
         // Add initial entry
         addJournalEntry();

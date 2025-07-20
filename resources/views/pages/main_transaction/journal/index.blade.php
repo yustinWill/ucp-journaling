@@ -115,6 +115,7 @@
                         <th>Tanggal Jurnal</th>
                         <th>No Referensi</th>
                         <th>Notes</th>
+                        <th>Tags</th>
                         <th>Amount</th>
                         <th>Diinput Oleh</th>
                         <th>Diinput Pada</th>
@@ -144,6 +145,9 @@
                         },
                         {
                             data: 'notes'
+                        },
+                        {
+                            data: 'tags'
                         },
                         {
                             data: 'amount'
@@ -176,6 +180,29 @@
                                     </a>
                                 </div>
                             `;
+                            }
+                        },
+                        {
+                            targets: [3], // Tags column
+                            orderable: false,
+                            render: function(data, type, row) {
+                                if (data && Array.isArray(data) && data.length > 0) {
+                                    return data.map(tag => {
+                                        // Map tag code to color (would come from backend in real app)
+                                        const tagColors = {
+                                            'PENJUALAN': 'success',
+                                            'PEMBELIAN': 'info', 
+                                            'OPERASIONAL': 'warning',
+                                            'INVESTASI': 'primary',
+                                            'KEUANGAN': 'secondary',
+                                            'PAJAK': 'danger',
+                                            'KOREKSI': 'dark'
+                                        };
+                                        const color = tagColors[tag] || 'primary';
+                                        return `<span class="badge bg-label-${color} me-1">${tag}</span>`;
+                                    }).join('');
+                                }
+                                return '<span class="text-muted">-</span>';
                             }
                         },
                         {

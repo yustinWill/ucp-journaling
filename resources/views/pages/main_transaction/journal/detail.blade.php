@@ -133,6 +133,24 @@
                         </div>
                     </div>
                     
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Tag</label>
+                            <div class="form-control-plaintext">
+                                @if(isset($journal['tags']) && count($journal['tags']) > 0)
+                                    @foreach($journal['tags'] as $tag)
+                                        <span class="badge bg-label-{{ $tag['color'] }} me-1">{{ $tag['code'] }}</span>
+                                    @endforeach
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Empty column for alignment -->
+                        </div>
+                    </div>
+                    
                     
                     <!-- Journal Summary -->
                     <div class="section-header mt-12">

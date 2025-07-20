@@ -11,6 +11,7 @@ use App\Http\Controllers\MasterData\CoaController;
 use App\Http\Controllers\MasterData\UserController;
 use App\Http\Controllers\MasterData\RoleController;
 use App\Http\Controllers\MasterData\StockOpnameController;
+use App\Http\Controllers\MasterData\TagController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
@@ -20,8 +21,9 @@ $coa_segment = '/coa';
 $user_segment = '/user';
 $role_segment = '/role';
 $stock_opname_segment = '/stock_opname';
+$tag_segment = '/tag';
 
-Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment) {
+Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table')->middleware(EnsureTokenIsValid::class);
@@ -111,5 +113,13 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::post($base_segment . $stock_opname_segment . '/process-export', 'processExport')->name('master_data.stock_opname.process_export')->middleware(EnsureTokenIsValid::class);
         
         Route::post($base_segment . $stock_opname_segment . '/create_adjustment/{id}', 'createAdjustment')->name('master_data.stock_opname.create_adjustment')->middleware(EnsureTokenIsValid::class);
+    });
+
+    Route::controller(TagController::class)->group(function () use ($base_segment, $tag_segment) {
+        Route::get($base_segment . $tag_segment . '/index', 'index')->name('master_data.tag.index')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $tag_segment . '/index_data_table', 'index_data_table')->name('master_data.tag.index_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $tag_segment . '/add', 'add')->name('master_data.tag.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $tag_segment . '/edit/{id}', 'edit')->name('master_data.tag.edit')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $tag_segment . '/detail/{id}', 'detail')->name('master_data.tag.detail')->middleware(EnsureTokenIsValid::class);
     });
 });

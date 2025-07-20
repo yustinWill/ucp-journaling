@@ -145,6 +145,12 @@
                 <div data-i18n="Roles">Role Management</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['master_data.tag.*'])) active @endif">
+            <a href="{{ route('master_data.tag.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-tags"></i>
+                <div data-i18n="Tags">Tag Management</div>
+            </a>
+        </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-settings"></i>
