@@ -76,7 +76,18 @@ class JournalController extends Controller
 
     public function add()
     {
-        return view('pages.main_transaction.journal.add', []);
+        // Sample accounts for select options with code-name format
+        $accounts = [
+            ['code' => '1101', 'name' => 'Kas', 'label' => '1101 - Kas'],
+            ['code' => '1102', 'name' => 'Bank BCA', 'label' => '1102 - Bank BCA'],
+            ['code' => '1201', 'name' => 'Piutang Dagang', 'label' => '1201 - Piutang Dagang'],
+            ['code' => '1301', 'name' => 'Persediaan Barang Dagang', 'label' => '1301 - Persediaan Barang Dagang'],
+            ['code' => '4001', 'name' => 'Penjualan Barang Dagang', 'label' => '4001 - Penjualan Barang Dagang'],
+            ['code' => '5001', 'name' => 'Pembelian Barang Dagang', 'label' => '5001 - Pembelian Barang Dagang'],
+            ['code' => '6001', 'name' => 'Biaya Operasional', 'label' => '6001 - Biaya Operasional']
+        ];
+
+        return view('pages.main_transaction.journal.add', compact('accounts'));
     }
 
     public function import()
@@ -107,9 +118,10 @@ class JournalController extends Controller
             'id' => $id,
             'reference_no' => 'JU-2025-001',
             'journal_date' => '2025-01-20',
-            'status' => 'POSTED',
+            'status' => 'ACTIVE',
             'total_amount' => 'Rp 15,500,000',
             'description' => 'Penerimaan kas dari penjualan produk air mineral RIYO periode Januari 2025. Transaksi ini mencatat penerimaan pembayaran dari distributor untuk pembelian 3,000 botol air mineral.',
+            'memo' => 'Verifikasi pembayaran telah dilakukan oleh tim finance. Dokumen pendukung tersimpan di folder digital Q1-2025.',
             'total_debit' => 'Rp 15,500,000',
             'total_credit' => 'Rp 15,500,000',
             'difference' => 'Rp 0',
@@ -164,9 +176,10 @@ class JournalController extends Controller
             'id' => $id,
             'reference_no' => 'JU-2025-001',
             'journal_date' => '2025-01-20',
-            'status' => 'POSTED',
+            'status' => 'ACTIVE',
             'total_amount' => 'Rp 15,500,000',
             'description' => 'Penerimaan kas dari penjualan produk air mineral RIYO periode Januari 2025. Transaksi ini mencatat penerimaan pembayaran dari distributor untuk pembelian 3,000 botol air mineral.',
+            'memo' => 'Verifikasi pembayaran telah dilakukan oleh tim finance. Dokumen pendukung tersimpan di folder digital Q1-2025.',
             'total_debit' => 'Rp 15,500,000',
             'total_credit' => 'Rp 15,500,000',
             'difference' => 'Rp 0',

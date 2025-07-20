@@ -16,8 +16,8 @@
                     <div class="text-end">
                         @php
                             $totalActions = 1; // Edit always present
-                            if($journal['status'] === 'DRAFT') {
-                                $totalActions++; // Add post action for draft journals
+                            if($journal['status'] === 'ACTIVE') {
+                                $totalActions++; // Add conditional actions for active journals
                             }
                         @endphp
                         
@@ -28,12 +28,6 @@
                                     <i class="icon-base ti tabler-edit me-2"></i>
                                     Edit
                                 </a>
-                                @if($journal['status'] === 'DRAFT')
-                                    <button type="button" class="btn btn-success btn-md waves-effect waves-light" id="post-journal-btn">
-                                        <i class="icon-base ti tabler-check me-2"></i>
-                                        Post Jurnal
-                                    </button>
-                                @endif
                             </div>
                         @else
                             <!-- Show dropdown for 3 or more actions -->
@@ -47,13 +41,6 @@
                                             <i class="icon-base ti tabler-edit me-2"></i>Edit
                                         </a>
                                     </li>
-                                    @if($journal['status'] === 'DRAFT')
-                                        <li>
-                                            <a class="dropdown-item" href="javascript:void(0);" id="post-journal-btn">
-                                                <i class="icon-base ti tabler-check me-2"></i>Post Jurnal
-                                            </a>
-                                        </li>
-                                    @endif
                                 </ul>
                             </div>
                         @endif
@@ -126,10 +113,26 @@
                     
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <input type="text" class="form-control" value="{{ $journal['status'] === 'ACTIVE' ? 'ACTIVE - Active' : 'INACTIVE - Inactive' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Total Amount</label>
+                            <input type="text" class="form-control text-end" value="{{ $journal['total_amount'] }}" disabled />
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
                             <label class="form-label">Deskripsi</label>
                             <textarea class="form-control" rows="3" disabled>{{ $journal['description'] }}</textarea>
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
+                            <textarea class="form-control" rows="3" disabled>{{ $journal['memo'] }}</textarea>
+                        </div>
                     </div>
+                    
                     
                     <!-- Journal Summary -->
                     <div class="section-header mt-12">

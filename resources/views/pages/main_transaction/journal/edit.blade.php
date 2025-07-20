@@ -15,27 +15,26 @@
             <!-- Row 1: Basic Information -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">No Referensi <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="reference-no" value="{{ $journal['reference_no'] ?? 'JU-2025-001' }}" readonly />
+                    <label class="form-label">Status</label>
+                    <select class="global-select2 form-select" id="status-select" data-allow-clear="false">
+                        <option value="ACTIVE" {{ ($journal['status'] ?? 'ACTIVE') === 'ACTIVE' ? 'selected' : '' }}>ACTIVE - Active</option>
+                        <option value="INACTIVE" {{ ($journal['status'] ?? 'ACTIVE') === 'INACTIVE' ? 'selected' : '' }}>INACTIVE - Inactive</option>
+                    </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Tanggal Jurnal <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control global-single-date-picker" id="journal-date" value="{{ $journal['journal_date'] ?? '2025-01-20' }}" />
+                    <label class="form-label">Total Amount</label>
+                    <input type="text" class="form-control text-end curr-mask" id="total-amount" value="{{ $journal['total_amount'] }}" disabled />
                 </div>
             </div>
             
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Status</label>
-                    <select class="global-select2 form-select" id="status-select" data-allow-clear="false">
-                        <option value="DRAFT" {{ ($journal['status'] ?? 'POSTED') === 'DRAFT' ? 'selected' : '' }}>DRAFT - Draft</option>
-                        <option value="POSTED" {{ ($journal['status'] ?? 'POSTED') === 'POSTED' ? 'selected' : '' }}>POSTED - Posted</option>
-                        <option value="CANCELLED" {{ ($journal['status'] ?? 'POSTED') === 'CANCELLED' ? 'selected' : '' }}>CANCELLED - Cancelled</option>
-                    </select>
+                    <label class="form-label">No Referensi <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="reference-no" value="{{ $journal['reference_no'] ?? 'JU-2025-001' }}" disabled />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Total Amount</label>
-                    <input type="text" class="form-control text-end" id="total-amount" value="{{ $journal['total_amount'] ?? 'Rp 15,500,000' }}" disabled />
+                    <label class="form-label">Tanggal Jurnal <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control global-single-date-picker" id="journal-date" value="{{ $journal['journal_date'] }}" />
                 </div>
             </div>
             
@@ -45,7 +44,13 @@
                     <textarea class="form-control" id="description" rows="3" placeholder="Masukkan deskripsi jurnal..." maxlength="1000">{{ $journal['description'] ?? 'Penerimaan kas dari penjualan produk air mineral RIYO periode Januari 2025. Transaksi ini mencatat penerimaan pembayaran dari distributor untuk pembelian 3,000 botol air mineral.' }}</textarea>
                     <small class="form-text text-muted">Maksimal 1000 karakter</small>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
+                    <textarea class="form-control" id="memo" rows="3" placeholder="Catatan internal untuk tim keuangan..." maxlength="500">{{ $journal['memo'] ?? 'Verifikasi pembayaran telah dilakukan oleh tim finance. Dokumen pendukung tersimpan di folder digital Q1-2025.' }}</textarea>
+                    <small class="form-text text-muted">Maksimal 500 karakter - Hanya untuk keperluan internal</small>
+                </div>
             </div>
+            
             
             <!-- Journal Entries Section -->
             <div class="section-header mt-12 mb-4">
@@ -84,10 +89,10 @@
                                     <input type="text" class="form-control entry-description" data-id="{{ $entry['id'] }}" value="{{ $entry['description'] }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control curr-mask debit-amount" data-id="{{ $entry['id'] }}" value="{{ $entry['debit_amount'] }}" dir="rtl">
+                                    <input type="text" class="form-control curr-mask debit-amount text-end" data-id="{{ $entry['id'] }}" value="{{ $entry['debit_amount'] }}">
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control curr-mask credit-amount" data-id="{{ $entry['id'] }}" value="{{ $entry['credit_amount'] }}" dir="rtl">
+                                    <input type="text" class="form-control curr-mask credit-amount text-end" data-id="{{ $entry['id'] }}" value="{{ $entry['credit_amount'] }}">
                                 </td>
                                 <td>
                                     <button class="btn btn-sm btn-danger remove-entry" type="button" data-id="{{ $entry['id'] }}">
@@ -162,10 +167,10 @@
                         <input type="text" class="form-control entry-description" data-id="${entryCounter}">
                     </td>
                     <td>
-                        <input type="text" class="form-control curr-mask debit-amount" data-id="${entryCounter}" dir="rtl">
+                        <input type="text" class="form-control curr-mask debit-amount text-end" data-id="${entryCounter}">
                     </td>
                     <td>
-                        <input type="text" class="form-control curr-mask credit-amount" data-id="${entryCounter}" dir="rtl">
+                        <input type="text" class="form-control curr-mask credit-amount text-end" data-id="${entryCounter}">
                     </td>
                     <td>
                         <button class="btn btn-sm btn-danger remove-entry" type="button" data-id="${entryCounter}">
@@ -189,7 +194,9 @@
                         numeralThousandsGroupStyle: 'thousand',
                         prefix: 'Rp ',
                         noImmediatePrefix: false,
-                        rawValueTrimPrefix: true
+                        rawValueTrimPrefix: true,
+                        numeralPositiveOnly: true,
+                        stripLeadingZeroes: true
                     });
                 });
             }
@@ -337,7 +344,9 @@
                     numeralThousandsGroupStyle: 'thousand',
                     prefix: 'Rp ',
                     noImmediatePrefix: false,
-                    rawValueTrimPrefix: true
+                    rawValueTrimPrefix: true,
+                    numeralPositiveOnly: true,
+                    stripLeadingZeroes: true
                 });
             });
         }
