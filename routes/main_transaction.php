@@ -12,7 +12,7 @@ use App\Http\Controllers\MainTransaction\ExpenseController;
 use App\Http\Controllers\MainTransaction\StockAdjustmentController;
 
 $base_segment = '/main_transaction';
-$journal_segment = '/jurnal';
+$journal_segment = '/journal';
 $purchase_segment = '/pembelian';
 $sales_segment = '/penjualan';
 $credit_memo_segment = '/credit_memo';
@@ -21,9 +21,13 @@ $stock_adjustment_segment = '/stock_adjustment';
 
 Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $sales_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
-        Route::get($base_segment . $journal_segment . '/index', 'index')->name('main_transaction.jurnal.index')->middleware(EnsureTokenIsValid::class);
-        Route::get($base_segment . $journal_segment . '/index_data_table', 'index_data_table')->name('main_transaction.jurnal.index_data_table')->middleware(EnsureTokenIsValid::class);
-        Route::get($base_segment . $journal_segment . '/add', 'add')->name('main_transaction.jurnal.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $journal_segment . '/index', 'index')->name('main_transaction.journal.index')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $journal_segment . '/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $journal_segment . '/add', 'add')->name('main_transaction.journal.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $journal_segment . '/import', 'import')->name('main_transaction.journal.import')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $journal_segment . '/export', 'export')->name('main_transaction.journal.export')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $journal_segment . '/detail/{id}', 'detail')->name('main_transaction.journal.detail')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $journal_segment . '/edit/{id}', 'edit')->name('main_transaction.journal.edit')->middleware(EnsureTokenIsValid::class);
     });
 
     Route::controller(PurchaseController::class)->group(function () use ($base_segment, $purchase_segment) {

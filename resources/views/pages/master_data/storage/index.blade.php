@@ -13,9 +13,9 @@
                             <span class="avatar-initial rounded bg-label-primary"><i
                                     class="icon-base ti tabler-box icon-28px"></i></span>
                         </div>
-                        <h4 class="mb-0">10,000 Total Produk</h4>
+                        <h4 class="mb-0">8</h4>
                     </div>
-                    <p class="mb-1">Stok Tersedia</p>
+                    <p class="mb-1">Total Gudang Aktif</p>
                 </div>
             </div>
         </div>
@@ -27,9 +27,9 @@
                             <span class="avatar-initial rounded bg-label-primary"><i
                                     class="icon-base ti tabler-package-import icon-28px"></i></span>
                         </div>
-                        <h4 class="mb-0">5 Total Produk</h4>
+                        <h4 class="mb-0">2</h4>
                     </div>
-                    <p class="mb-1">Stok Segera Habis</p>
+                    <p class="mb-1">Gudang Maintenance</p>
                 </div>
             </div>
         </div>
@@ -41,9 +41,9 @@
                             <span class="avatar-initial rounded bg-label-primary"><i
                                     class="icon-base ti tabler-box-off icon-28px"></i></span>
                         </div>
-                        <h4 class="mb-0">30 Total Produk</h4>
+                        <h4 class="mb-0">1,247,890</h4>
                     </div>
-                    <p class="mb-1">Stok Habis</p>
+                    <p class="mb-1">Total Kapasitas (Unit)</p>
                 </div>
             </div>
         </div>
@@ -55,9 +55,9 @@
                             <span class="avatar-initial rounded bg-label-primary"><i
                                     class="icon-base ti tabler-building-warehouse icon-28px"></i></span>
                         </div>
-                        <h4 class="mb-0">11,000 Total Produk</h4>
+                        <h4 class="mb-0">982,456</h4>
                     </div>
-                    <p class="mb-1">Gudang</p>
+                    <p class="mb-1">Stok Saat Ini (Unit)</p>
                 </div>
             </div>
         </div>
@@ -84,7 +84,7 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" data-allow-clear="true">
+                                <select class="global-select2 form-select" data-allow-clear="false">
                                     <option value="">Semua Status</option>
                                     @foreach($storageStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -109,15 +109,15 @@
             <div class="mt-4">
                 <div class="d-flex justify-content-end">
                     <div class="d-flex gap-2">
-                        <button type="button" id="btn-import-data"
+                        <a href="{{ route('master_data.storage.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
-                        <button type="button" id="btn-export-data"
+                                class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+                        <a href="{{ route('master_data.storage.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</button>
-                        <button type="button" id="btn-add-data"
+                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                        <a href="{{ route('master_data.storage.add') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                     </div>
                 </div>
             </div>
@@ -173,9 +173,9 @@
                             targets: -2,
                             render: function(data, type, full, meta) {
                                 if (data == 'ACTIVE') {
-                                    return `<span class="badge bg-success">${data}</span>`;
+                                    return `<span class="badge bg-label-success">${data}</span>`;
                                 } else {
-                                    return `<span class="badge bg-danger">${data}</span>`;
+                                    return `<span class="badge bg-label-danger">${data}</span>`;
                                 }
                             }
                         },
@@ -184,14 +184,16 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row, meta) {
+                                const detailUrl = `{{ route('master_data.storage.detail', ':id') }}`.replace(':id', row.id);
+                                const editUrl = `{{ route('master_data.storage.edit', ':id') }}`.replace(':id', row.id);
                                 return `
-                                <div class="btn-group" role="group" aria-label="Second group">
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect btn-detail-data">
+                                <div class="d-flex gap-2">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
-                                    </button>
+                                    </a>
+                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                        <i class="icon-base ti tabler-edit"></i>
+                                    </a>
                                 </div>
                             `;
                             }
@@ -223,22 +225,7 @@
                 });
             }
 
-            //Main button click event
-            $('#btn-add-data').on('click', function() {
-                window.location.href = "{{ route('master_data.storage.add') }}";
-            });
-
-            $('#btn-export-data').on('click', function() {
-                window.location.href = "{{ route('master_data.storage.export') }}";
-            });
-
-            $('#btn-import-data').on('click', function() {
-                window.location.href = "{{ route('master_data.storage.import') }}";
-            });
-
-            $(document).on('click', '.btn-detail-data', function() {
-                window.location.href = "{{ route('master_data.storage.detail') }}";
-            });
+            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
         });
     </script>
 @endsection

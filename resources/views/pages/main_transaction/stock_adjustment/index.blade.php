@@ -107,9 +107,9 @@
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
-                                    <button type="button" id="btn-add-waiting"
+                                    <a href="{{ route('main_transaction.stock_adjustment.add') }}"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                                 </div>
                             </div>
                         </div>
@@ -163,9 +163,9 @@
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
-                                    <button type="button" id="btn-add-approval"
+                                    <a href="{{ route('main_transaction.stock_adjustment.add') }}"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                                 </div>
                             </div>
                         </div>
@@ -220,15 +220,15 @@
                         <div class="mt-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
-                                    <button type="button" id="btn-import-finished"
+                                    <a href="{{ route('main_transaction.stock_adjustment.import') }}"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
-                                    <button type="button" id="btn-export-finished"
+                                            class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+                                    <a href="{{ route('main_transaction.stock_adjustment.export') }}"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</button>
-                                    <button type="button" id="btn-add-finished"
+                                            class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                                    <a href="{{ route('main_transaction.stock_adjustment.add') }}"
                                         class="btn btn-md btn-primary waves-effect waves-light"><span
-                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                            class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                                 </div>
                             </div>
                         </div>
@@ -348,14 +348,17 @@ $(function() {
                     orderable: false,
                     searchable: false,
                     render: function(data, type, row, meta) {
+                        const editUrl = `{{ route('main_transaction.stock_adjustment.edit', ':id') }}`.replace(':id', row.id);
+                        const detailUrl = `{{ route('main_transaction.stock_adjustment.detail', ':id') }}`.replace(':id', row.id);
+                        
                         return `
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
-                                    <i class="icon-base ti tabler-edit"></i>
-                                </button>
-                                <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                            <div class="d-flex gap-2">
+                                <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                     <i class="icon-base ti tabler-eye"></i>
-                                </button>
+                                </a>
+                                <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <i class="icon-base ti tabler-edit"></i>
+                                </a>
                             </div>
                         `;
                     }
@@ -476,14 +479,17 @@ $(function() {
                     orderable: false,
                     searchable: false,
                     render: function(data, type, row, meta) {
+                        const editUrl = `{{ route('main_transaction.stock_adjustment.edit', ':id') }}`.replace(':id', row.id);
+                        const detailUrl = `{{ route('main_transaction.stock_adjustment.detail', ':id') }}`.replace(':id', row.id);
+                        
                         return `
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-primary btn-sm waves-effect" onclick="editRecord(${row.id})">
-                                    <i class="icon-base ti tabler-edit"></i>
-                                </button>
-                                <button class="btn btn-primary btn-sm waves-effect" onclick="viewDetail(${row.id})">
+                            <div class="d-flex gap-2">
+                                <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                     <i class="icon-base ti tabler-eye"></i>
-                                </button>
+                                </a>
+                                <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <i class="icon-base ti tabler-edit"></i>
+                                </a>
                             </div>
                         `;
                     }

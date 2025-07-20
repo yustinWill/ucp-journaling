@@ -13,9 +13,9 @@
                             <span class="avatar-initial rounded bg-label-primary"><i
                                     class="icon-base ti tabler-file-invoice icon-28px"></i></span>
                         </div>
-                        <h4 class="mb-0">Rp 100,000,000</h4>
+                        <h4 class="mb-0">1,247</h4>
                     </div>
-                    <p class="mb-1">Piutang Belum Dibayar</p>
+                    <p class="mb-1">Total Customer Aktif</p>
                 </div>
             </div>
         </div>
@@ -27,9 +27,9 @@
                             <span class="avatar-initial rounded bg-label-primary"><i
                                     class="icon-base ti tabler-calendar-exclamation icon-28px"></i></span>
                         </div>
-                        <h4 class="mb-0">Rp 25,000,000</h4>
+                        <h4 class="mb-0">89</h4>
                     </div>
-                    <p class="mb-1">Piutang Jatuh Tempo</p>
+                    <p class="mb-1">Supplier Aktif</p>
                 </div>
             </div>
         </div>
@@ -41,9 +41,9 @@
                             <span class="avatar-initial rounded bg-label-primary"><i
                                     class="icon-base ti tabler-clipboard-list icon-28px"></i></span>
                         </div>
-                        <h4 class="mb-0">Rp 5,000,000</h4>
+                        <h4 class="mb-0">47</h4>
                     </div>
-                    <p class="mb-1">Kredit Memo</p>
+                    <p class="mb-1">Kontak Baru Bulan Ini</p>
                 </div>
             </div>
         </div>
@@ -80,7 +80,7 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Group:</label>
-                                <select class="global-select2 form-select" data-allow-clear="true">
+                                <select class="global-select2 form-select" data-allow-clear="false">
                                     <option value="">Semua Group</option>
                                     @foreach($groupFilters as $group)
                                         <option value="{{ $group['value'] }}">{{ $group['label'] }}</option>
@@ -89,7 +89,7 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Tipe:</label>
-                                <select class="global-select2 form-select" data-allow-clear="true">
+                                <select class="global-select2 form-select" data-allow-clear="false">
                                     <option value="">Semua Tipe</option>
                                     @foreach($typeFilters as $type)
                                         <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>
@@ -105,15 +105,15 @@
             <div class="mt-4">
                 <div class="d-flex justify-content-end">
                     <div class="d-flex gap-2">
-                        <button type="button" id="btn-import-data"
+                        <a href="{{ route('master_data.contact.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
-                        <button type="button" id="btn-export-data"
+                                class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+                        <a href="{{ route('master_data.contact.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</button>
-                        <button type="button" id="btn-add-data"
+                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                        <a href="{{ route('master_data.contact.add') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                     </div>
                 </div>
             </div>
@@ -176,13 +176,13 @@
                             targets: 5,
                             render: function(data, type, full, meta) {
                                 if (data == 'Pelanggan') {
-                                    return `<span class="badge bg-success">${data}</span>`;
+                                    return `<span class="badge bg-label-success">${data}</span>`;
                                 } else if (data == 'Supplier') {
-                                    return `<span class="badge bg-warning">${data}</span>`;
+                                    return `<span class="badge bg-label-warning">${data}</span>`;
                                 } else if (data == 'Karyawan') {
-                                    return `<span class="badge bg-info">${data}</span>`;
+                                    return `<span class="badge bg-label-info">${data}</span>`;
                                 } else {
-                                    return `<span class="badge bg-secondary">${data}</span>`;
+                                    return `<span class="badge bg-label-secondary">${data}</span>`;
                                 }
                             }
                         },
@@ -194,12 +194,12 @@
                                 const detailUrl = "{{ route('master_data.contact.detail', ':id') }}".replace(':id', row.id);
                                 const editUrl = "{{ route('master_data.contact.edit', ':id') }}".replace(':id', row.id);
                                 return `
-                                <div class="btn-group" role="group" aria-label="Second group">
-                                    <a href="${editUrl}" class="btn btn-primary btn-sm waves-effect">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                    <a href="${detailUrl}" class="btn btn-primary btn-sm waves-effect">
+                                <div class="d-flex gap-2">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
+                                    </a>
+                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                        <i class="icon-base ti tabler-edit"></i>
                                     </a>
                                 </div>
                             `;
@@ -232,18 +232,7 @@
                 });
             }
 
-            //Main button click event
-            $('#btn-add-data').on('click', function() {
-                window.location.href = "{{ route('master_data.contact.add') }}";
-            });
-
-            $('#btn-export-data').on('click', function() {
-                window.location.href = "{{ route('master_data.contact.export') }}";
-            });
-
-            $('#btn-import-data').on('click', function() {
-                window.location.href = "{{ route('master_data.contact.import') }}";
-            });
+            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
         });
     </script>
 @endsection

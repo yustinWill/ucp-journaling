@@ -11,19 +11,19 @@ class ExpenseController extends Controller
     {
         // Get options for filter dropdowns in the list page
         $categories = [
-            ['value' => 'Operasional', 'label' => 'Operasional'],
-            ['value' => 'Marketing', 'label' => 'Marketing'],
-            ['value' => 'Administrasi', 'label' => 'Administrasi'],
-            ['value' => 'IT', 'label' => 'IT & Technology'],
-            ['value' => 'HRD', 'label' => 'Human Resources']
+            ['value' => 'EXP-001', 'label' => 'EXP-001 - Operasional Produksi'],
+            ['value' => 'EXP-002', 'label' => 'EXP-002 - Marketing & Promosi'],
+            ['value' => 'EXP-003', 'label' => 'EXP-003 - Administrasi & Umum'],
+            ['value' => 'EXP-004', 'label' => 'EXP-004 - Maintenance & Repair'],
+            ['value' => 'EXP-005', 'label' => 'EXP-005 - Distribusi & Logistik']
         ];
 
         $statuses = [
-            ['value' => 'Draft', 'label' => 'Draft'],
-            ['value' => 'Diajukan', 'label' => 'Diajukan'],
-            ['value' => 'Disetujui', 'label' => 'Disetujui'],
-            ['value' => 'Dibayar', 'label' => 'Dibayar'],
-            ['value' => 'Ditolak', 'label' => 'Ditolak']
+            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
+            ['value' => 'SUBMITTED', 'label' => 'SUBMITTED - Diajukan'],
+            ['value' => 'APPROVED', 'label' => 'APPROVED - Disetujui'],
+            ['value' => 'PAID', 'label' => 'PAID - Dibayar'],
+            ['value' => 'REJECTED', 'label' => 'REJECTED - Ditolak']
         ];
 
         return view('pages.main_transaction.expense.index', [
@@ -38,99 +38,75 @@ class ExpenseController extends Controller
             "data" => [
                 [
                     "id" => 1,
-                    "date" => "2025-07-10",
+                    "date" => "2025-07-15",
                     "reference_no" => "EXP-2025-001",
-                    "description" => "Biaya ATK Kantor",
-                    "category" => "Operasional", 
-                    "supplier" => "Toko Gramedia",
+                    "description" => "Pembelian bahan baku plastik untuk kemasan RIYO Water 330ml",
+                    "category" => "Operasional Produksi", 
+                    "supplier" => "PT. Plastik Prima Indonesia",
                     "status" => "Dibayar",
-                    "amount" => 750000,
-                    "created_by" => "Admin",
-                    "created_at" => "2025-07-10 09:30:00"
+                    "amount" => 25000000,
+                    "created_by" => "Ahmad Rizki",
+                    "created_at" => "2025-07-15 09:30:00"
                 ],
                 [
                     "id" => 2,
-                    "date" => "2025-07-09",
+                    "date" => "2025-07-14",
                     "reference_no" => "EXP-2025-002",
-                    "description" => "Biaya Iklan Facebook Ads",
-                    "category" => "Marketing",
-                    "supplier" => "Meta Platforms",
+                    "description" => "Biaya promosi dan iklan RIYO Water di media sosial",
+                    "category" => "Marketing & Promosi",
+                    "supplier" => "Digital Marketing Agency",
                     "status" => "Disetujui",
-                    "amount" => 2500000,
-                    "created_by" => "Marketing",
-                    "created_at" => "2025-07-09 14:15:00"
+                    "amount" => 8500000,
+                    "created_by" => "Siti Nurhaliza",
+                    "created_at" => "2025-07-14 14:15:00"
                 ],
                 [
                     "id" => 3,
-                    "date" => "2025-07-08",
+                    "date" => "2025-07-13",
                     "reference_no" => "EXP-2025-003",
-                    "description" => "Biaya Listrik Kantor",
-                    "category" => "Operasional",
-                    "supplier" => "PLN",
+                    "description" => "Biaya listrik dan air untuk fasilitas produksi",
+                    "category" => "Operasional Produksi",
+                    "supplier" => "PLN & PDAM",
                     "status" => "Dibayar",
-                    "amount" => 1200000,
-                    "created_by" => "Admin",
-                    "created_at" => "2025-07-08 16:45:00"
+                    "amount" => 12000000,
+                    "created_by" => "Yustinus Komunal",
+                    "created_at" => "2025-07-13 16:45:00"
                 ],
                 [
                     "id" => 4,
-                    "date" => "2025-07-07",
+                    "date" => "2025-07-12",
                     "reference_no" => "EXP-2025-004",
-                    "description" => "Biaya Hosting Website",
-                    "category" => "Administrasi",
-                    "supplier" => "AWS Indonesia",
+                    "description" => "Maintenance mesin filling dan quality control equipment",
+                    "category" => "Maintenance & Repair",
+                    "supplier" => "PT. Teknisi Ahli Mesin",
                     "status" => "Diajukan",
-                    "amount" => 850000,
-                    "created_by" => "IT Support",
-                    "created_at" => "2025-07-07 11:20:00"
+                    "amount" => 15500000,
+                    "created_by" => "Budi Santoso",
+                    "created_at" => "2025-07-12 11:20:00"
                 ],
                 [
                     "id" => 5,
-                    "date" => "2025-07-06",
+                    "date" => "2025-07-11",
                     "reference_no" => "EXP-2025-005",
-                    "description" => "Biaya Transport Karyawan",
-                    "category" => "Operasional",
-                    "supplier" => null,
+                    "description" => "Biaya transportasi distribusi ke wilayah Jabodetabek",
+                    "category" => "Distribusi & Logistik",
+                    "supplier" => "CV. Ekspedisi Maju",
                     "status" => "Draft",
-                    "amount" => 500000,
-                    "created_by" => "HRD",
-                    "created_at" => "2025-07-06 08:30:00"
+                    "amount" => 6500000,
+                    "created_by" => "Ahmad Rizki",
+                    "created_at" => "2025-07-11 08:30:00"
                 ],
                 [
                     "id" => 6,
-                    "date" => "2025-07-05",
+                    "date" => "2025-07-10",
                     "reference_no" => "EXP-2025-006",
-                    "description" => "Biaya Cetak Brosur",
-                    "category" => "Marketing",
-                    "supplier" => "Digital Printing Sukses",
+                    "description" => "Gaji karyawan produksi dan quality assurance",
+                    "category" => "Administrasi & Umum",
+                    "supplier" => null,
                     "status" => "Ditolak",
-                    "amount" => 350000,
-                    "created_by" => "Marketing",
-                    "created_at" => "2025-07-05 13:10:00"
-                ],
-                [
-                    "id" => 7,
-                    "date" => "2025-07-04",
-                    "reference_no" => "EXP-2025-007",
-                    "description" => "Biaya Konsultasi Hukum",
-                    "category" => "Administrasi",
-                    "supplier" => "Law Firm Partners",
-                    "status" => "Dibayar",
-                    "amount" => 3500000,
-                    "created_by" => "Legal",
-                    "created_at" => "2025-07-04 10:00:00"
-                ],
-                [
-                    "id" => 8,
-                    "date" => "2025-07-03",
-                    "reference_no" => "EXP-2025-008",
-                    "description" => "Biaya Maintenance AC",
-                    "category" => "Operasional",
-                    "supplier" => "Teknik Sejahtera",
-                    "status" => "Dibayar",
-                    "amount" => 650000,
-                    "created_by" => "Admin",
-                    "created_at" => "2025-07-03 15:30:00"
+                    "amount" => 85000000,
+                    "created_by" => "Siti Nurhaliza",
+                    "created_at" => "2025-07-10 13:10:00"
                 ]
             ]
         ];
@@ -181,17 +157,27 @@ class ExpenseController extends Controller
         ]);
     }
 
-    public function export()
+    public function import()
     {
-        // TODO: Implement export functionality
-        return redirect()->back()->with('success', 'Export functionality will be implemented');
+        return view('pages.main_transaction.expense.import', []);
     }
 
-    public function import(Request $request)
+    public function export()
     {
-        // TODO: Implement import functionality
-        // $request will be used for file upload validation and processing
-        return redirect()->back()->with('success', 'Import functionality will be implemented');
+        $exportColumns = [
+            ['field' => 'date', 'label' => 'Tanggal', 'export_name' => 'Tanggal'],
+            ['field' => 'reference_no', 'label' => 'No Referensi', 'export_name' => 'No Referensi'],
+            ['field' => 'description', 'label' => 'Keterangan', 'export_name' => 'Keterangan'],
+            ['field' => 'category', 'label' => 'Kategori', 'export_name' => 'Kategori'],
+            ['field' => 'supplier', 'label' => 'Supplier/Vendor', 'export_name' => 'Supplier/Vendor'],
+            ['field' => 'status', 'label' => 'Status', 'export_name' => 'Status'],
+            ['field' => 'amount', 'label' => 'Nominal', 'export_name' => 'Nominal'],
+            ['field' => 'created_by', 'label' => 'Dibuat Oleh', 'export_name' => 'Dibuat Oleh']
+        ];
+
+        return view('pages.main_transaction.expense.export', [
+            'exportColumns' => $exportColumns
+        ]);
     }
 
     public function edit($id)

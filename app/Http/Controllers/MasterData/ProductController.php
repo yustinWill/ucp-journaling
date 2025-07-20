@@ -262,4 +262,37 @@ class ProductController extends Controller
     {
         return view('pages.master_data.product.import', []);
     }
+
+    public function detail($id)
+    {
+        // Sample product data for the detail view
+        $product = [
+            'id' => $id,
+            'product_name' => 'Air Mineral RIYO 600ml',
+            'product_code' => 'PROD-2025-001',
+            'unit' => 'botol',
+            'category' => 'Minuman',
+            'description' => 'Air mineral premium dengan kualitas terbaik, dikemas dalam botol 600ml yang praktis untuk konsumsi sehari-hari.',
+            'product_type' => 'Single',
+            'purchase_price' => 'Rp 2,500',
+            'purchase_account' => '[5001] - Pembelian Barang Dagang',
+            'purchase_tax' => '[PPN11] - PPN 11%',
+            'selling_price' => 'Rp 4,000',
+            'sales_account' => '[4001] - Penjualan Barang Dagang',
+            'sales_tax' => '[PPN11] - PPN 11%',
+            'minimum_stock' => '100',
+            'inventory_account' => '[1301] - Persediaan Barang Dagang',
+            'track_quantity' => true,
+            'track_batch' => false,
+            'image' => null
+        ];
+
+        return view('pages.master_data.product.detail', compact('product'));
+    }
+
+    public function edit($id)
+    {
+        // TODO: Implement edit functionality
+        return view('pages.master_data.product.edit', ['id' => $id]);
+    }
 }

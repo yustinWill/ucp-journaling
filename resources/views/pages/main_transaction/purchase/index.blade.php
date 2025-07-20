@@ -344,10 +344,10 @@
                             render: function(data, type, row, meta) {
                                 return `
                                     <div class="d-flex gap-2">
-                                        <a href="/main_transaction/purchase/detail/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
+                                        <a href="/main_transaction/purchase/detail/${row.id}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                             <i class="icon-base ti tabler-eye"></i>
                                         </a>
-                                        <a href="/main_transaction/purchase/edit/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
+                                        <a href="/main_transaction/purchase/edit/${row.id}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                             <i class="icon-base ti tabler-edit"></i>
                                         </a>
                                     </div>
@@ -410,10 +410,10 @@
                             render: function(data, type, row, meta) {
                                 return `
                                     <div class="d-flex gap-2">
-                                        <a href="/main_transaction/purchase/detail/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
+                                        <a href="/main_transaction/purchase/detail/${row.id}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                             <i class="icon-base ti tabler-eye"></i>
                                         </a>
-                                        <a href="/main_transaction/purchase/edit/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
+                                        <a href="/main_transaction/purchase/edit/${row.id}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                             <i class="icon-base ti tabler-edit"></i>
                                         </a>
                                     </div>
@@ -516,10 +516,10 @@
                             render: function(data, type, row, meta) {
                                 return `
                                     <div class="d-flex gap-2">
-                                        <a href="/main_transaction/purchase/detail/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
+                                        <a href="/main_transaction/purchase/detail/${row.id}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                             <i class="icon-base ti tabler-eye"></i>
                                         </a>
-                                        <a href="/main_transaction/purchase/edit/${row.id}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
+                                        <a href="/main_transaction/purchase/edit/${row.id}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                             <i class="icon-base ti tabler-edit"></i>
                                         </a>
                                     </div>

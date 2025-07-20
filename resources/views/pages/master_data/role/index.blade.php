@@ -14,9 +14,9 @@
                                 <i class="icon-base ti tabler-shield icon-28px"></i>
                             </span>
                         </div>
-                        <h4 class="mb-0">5 Total Role</h4>
+                        <h4 class="mb-0">8</h4>
                     </div>
-                    <p class="mb-1">Role Terdaftar</p>
+                    <p class="mb-1">Total Role Departemen</p>
                 </div>
             </div>
         </div>
@@ -29,9 +29,9 @@
                                 <i class="icon-base ti tabler-shield-check icon-28px"></i>
                             </span>
                         </div>
-                        <h4 class="mb-0">4 Role Aktif</h4>
+                        <h4 class="mb-0">7</h4>
                     </div>
-                    <p class="mb-1">Status Aktif</p>
+                    <p class="mb-1">Role Aktif</p>
                 </div>
             </div>
         </div>
@@ -44,9 +44,9 @@
                                 <i class="icon-base ti tabler-users icon-28px"></i>
                             </span>
                         </div>
-                        <h4 class="mb-0">10 Total User</h4>
+                        <h4 class="mb-0">28</h4>
                     </div>
-                    <p class="mb-1">User Terdaftar</p>
+                    <p class="mb-1">Karyawan Terdaftar</p>
                 </div>
             </div>
         </div>
@@ -59,9 +59,9 @@
                                 <i class="icon-base ti tabler-key icon-28px"></i>
                             </span>
                         </div>
-                        <h4 class="mb-0">36 Permission</h4>
+                        <h4 class="mb-0">45</h4>
                     </div>
-                    <p class="mb-1">Total Permission</p>
+                    <p class="mb-1">Total Hak Akses</p>
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@
                         <div class="row g-3">
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" id="role-status-filter" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="role-status-filter" data-allow-clear="false">
                                     <option value="">Semua Status</option>
                                     @foreach($statusFilters as $filter)
                                         <option value="{{ $filter['value'] }}">{{ $filter['label'] }}</option>
@@ -87,7 +87,7 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Jumlah User:</label>
-                                <select class="global-select2 form-select" id="role-user-filter" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="role-user-filter" data-allow-clear="false">
                                     <option value="">Semua</option>
                                     @foreach($userFilters as $filter)
                                         <option value="{{ $filter['value'] }}">{{ $filter['label'] }}</option>
@@ -107,15 +107,15 @@
             <div class="mt-4">
                 <div class="d-flex justify-content-end">
                     <div class="d-flex gap-2">
-                        <button type="button" id="btn-import-role" class="btn btn-md btn-primary waves-effect waves-light">
+                        <a href="{{ route('master_data.role.import') }}" class="btn btn-md btn-primary waves-effect waves-light">
                             <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
-                        </button>
-                        <button type="button" id="btn-export-role" class="btn btn-md btn-primary waves-effect waves-light">
+                        </a>
+                        <a href="{{ route('master_data.role.export') }}" class="btn btn-md btn-primary waves-effect waves-light">
                             <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
-                        </button>
-                        <button type="button" id="btn-add-role" class="btn btn-md btn-primary waves-effect waves-light">
+                        </a>
+                        <a href="{{ route('master_data.role.add') }}" class="btn btn-md btn-primary waves-effect waves-light">
                             <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -169,19 +169,19 @@
                     { 
                         data: 'user_count',
                         render: function(data, type, row) {
-                            return `<span class="badge bg-primary">${data} users</span>`;
+                            return `<span class="badge bg-label-primary">${data} users</span>`;
                         }
                     },
                     { 
                         data: 'permissions_count',
                         render: function(data, type, row) {
-                            return `<span class="badge bg-info">${data} permissions</span>`;
+                            return `<span class="badge bg-label-info">${data} permissions</span>`;
                         }
                     },
                     { 
                         data: 'status',
                         render: function(data, type, row) {
-                            let badgeClass = data === 'ACTIVE' ? 'bg-success' : 'bg-danger';
+                            let badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
                             let statusText = data === 'ACTIVE' ? 'Aktif' : 'Tidak Aktif';
                             return `<span class="badge ${badgeClass}">${statusText}</span>`;
                         }
@@ -211,12 +211,12 @@
                             }
                             
                             return `
-                            <div class="btn-group" role="group">
-                                <a href="${editUrl}" class="btn btn-primary btn-sm waves-effect">
-                                    <i class="icon-base ti tabler-edit"></i>
-                                </a>
-                                <a href="${detailUrl}" class="btn btn-primary btn-sm waves-effect">
+                            <div class="d-flex gap-2">
+                                <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                     <i class="icon-base ti tabler-eye"></i>
+                                </a>
+                                <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <i class="icon-base ti tabler-edit"></i>
                                 </a>
                                 ${deleteButton}
                             </div>
@@ -246,18 +246,7 @@
         // Initialize table
         initRoleTable();
         
-        // Button click events
-        $('#btn-add-role').on('click', function() {
-            window.location.href = "{{ route('master_data.role.add') }}";
-        });
-        
-        $('#btn-export-role').on('click', function() {
-            window.location.href = "{{ route('master_data.role.export') }}";
-        });
-        
-        $('#btn-import-role').on('click', function() {
-            window.location.href = "{{ route('master_data.role.import') }}";
-        });
+        // Navigation buttons now use direct <a> elements with href - no JavaScript needed
         
         // Search functionality
         $('#role-search').on('keyup', function() {

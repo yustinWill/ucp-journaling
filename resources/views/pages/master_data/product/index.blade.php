@@ -270,7 +270,8 @@
                         { 
                             data: 'product_name',
                             render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
+                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`.replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
                         },
                         { data: 'product_code' },
@@ -351,14 +352,16 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row, meta) {
+                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`.replace(':id', row.id);
+                                const editUrl = `{{ route('master_data.product.edit', ':id') }}`.replace(':id', row.id);
                                 return `
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
+                                <div class="d-flex gap-2">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
-                                    </button>
+                                    </a>
+                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                        <i class="icon-base ti tabler-edit"></i>
+                                    </a>
                                 </div>
                                 `;
                             }
@@ -418,14 +421,16 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row, meta) {
+                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`.replace(':id', row.id);
+                                const editUrl = `{{ route('master_data.product.edit', ':id') }}`.replace(':id', row.id);
                                 return `
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
+                                <div class="d-flex gap-2">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
-                                    </button>
+                                    </a>
+                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                        <i class="icon-base ti tabler-edit"></i>
+                                    </a>
                                 </div>
                                 `;
                             }

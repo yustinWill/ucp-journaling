@@ -102,7 +102,7 @@
             <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Transaksi Terbaru</h5>
-                    <a href="{{ route('main_transaction.jurnal.index') }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ route('main_transaction.journal.index') }}" class="btn btn-sm btn-outline-primary">
                         <i class="icon-base ti tabler-eye me-1"></i>
                         Lihat Semua
                     </a>
@@ -183,7 +183,7 @@
                             <i class="icon-base ti tabler-plus me-2"></i>
                             Catat Biaya
                         </a>
-                        <a href="{{ route('main_transaction.jurnal.add') }}" class="btn btn-secondary">
+                        <a href="{{ route('main_transaction.journal.add') }}" class="btn btn-secondary">
                             <i class="icon-base ti tabler-plus me-2"></i>
                             Jurnal Entry
                         </a>

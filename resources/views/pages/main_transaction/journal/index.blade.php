@@ -3,8 +3,55 @@
     List Jurnal
 @stop
 @section('content')
+    <!-- Summary Cards -->
+    <div class="row">
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-primary"><i
+                                    class="icon-base ti tabler-receipt icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">152</h4>
+                    </div>
+                    <p class="mb-1">Total Jurnal Bulan Ini</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-success"><i
+                                    class="icon-base ti tabler-cash icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">Rp 85,500,000</h4>
+                    </div>
+                    <p class="mb-1">Total Debit Bulan Ini</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-info h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-info"><i
+                                    class="icon-base ti tabler-coins icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">Rp 85,500,000</h4>
+                    </div>
+                    <p class="mb-1">Total Kredit Bulan Ini</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Main Content Card -->
-    <div class="card">
+    <div class="mt-6">
+        <div class="card">
         <h5 class="card-header">List Jurnal</h5>
         <div class="card-body">
             <!-- Advanced Search Form -->
@@ -23,7 +70,7 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Dibuat Oleh:</label>
-                                <select class="global-select2 form-select">
+                                <select class="global-select2 form-select" data-allow-clear="false">
                                     <option value="">Semua User</option>
                                     @foreach($createdByUsers as $user)
                                         <option value="{{ $user['value'] }}">{{ $user['label'] }}</option>
@@ -46,9 +93,15 @@
             <div class="mt-4">
                 <div class="d-flex justify-content-end">
                     <div class="d-flex gap-2">
-                        <button type="button" id="btn-add-data"
+                        <a href="{{ route('main_transaction.journal.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+                        <a href="{{ route('main_transaction.journal.export') }}"
+                            class="btn btn-md btn-primary waves-effect waves-light"><span
+                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                        <a href="{{ route('main_transaction.journal.add') }}"
+                            class="btn btn-md btn-primary waves-effect waves-light"><span
+                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                     </div>
                 </div>
             </div>
@@ -70,6 +123,7 @@
                 </thead>
             </table>
         </div>
+        </div>
     </div>
 @stop
 @section('js_script')
@@ -81,7 +135,7 @@
 
             if (main_table) {
                 dt_adv_filter = new DataTable(main_table, {
-                    ajax: `{{ route('main_transaction.jurnal.index_data_table') }}`,
+                    ajax: `{{ route('main_transaction.journal.index_data_table') }}`,
                     columns: [{
                             data: 'date'
                         },
@@ -109,14 +163,17 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row, meta) {
+                                const editUrl = `{{ route('main_transaction.journal.edit', ':id') }}`.replace(':id', row.id);
+                                const detailUrl = `{{ route('main_transaction.journal.detail', ':id') }}`.replace(':id', row.id);
+                                
                                 return `
-                                <div class="btn-group" role="group" aria-label="Second group">
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-primary btn-sm waves-effect">
+                                <div class="d-flex gap-2">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
-                                    </button>
+                                    </a>
+                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                        <i class="icon-base ti tabler-edit"></i>
+                                    </a>
                                 </div>
                             `;
                             }
@@ -158,10 +215,7 @@
                 });
             }
 
-            //Main button click event
-            $('#btn-add-data').on('click', function() {
-                window.location.href = "{{ route('main_transaction.jurnal.add') }}";
-            });
+            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
         });
     </script>
 @endsection

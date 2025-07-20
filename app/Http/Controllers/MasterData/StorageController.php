@@ -10,15 +10,16 @@ class StorageController extends Controller
     public function index()
     {
         $storageStatuses = [
-            ['value' => 'ACTIVE', 'label' => 'Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'Inaktif']
+            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
+            ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Maintenance']
         ];
 
         $picUsers = [
-            ['value' => '1', 'label' => 'William'],
-            ['value' => '2', 'label' => 'Winona'],
-            ['value' => '3', 'label' => 'Akbar'],
-            ['value' => '4', 'label' => 'Tono']
+            ['value' => 'USR-001', 'label' => 'USR-001 - Yustinus Komunal (Warehouse Manager)'],
+            ['value' => 'USR-002', 'label' => 'USR-002 - Ahmad Rizki (Staff Gudang)'],
+            ['value' => 'USR-003', 'label' => 'USR-003 - Siti Nurhaliza (Quality Control)'],
+            ['value' => 'USR-004', 'label' => 'USR-004 - Budi Santoso (Supervisor Produksi)']
         ];
 
         return view('pages.master_data.storage.index', [
@@ -33,43 +34,43 @@ class StorageController extends Controller
             "data" => [
                 [
                     "id" => 1,
-                    "storage_code" => "STG01",
-                    "storage_name" => "Main Storage",
-                    "pic_names" => "William, Handoko, Winona",
-                    "address" => "Jalan Kemanggisan Raya No. 10, Jakarta",
+                    "storage_code" => "GDG-001",
+                    "storage_name" => "Gudang Utama Produksi",
+                    "pic_names" => "Yustinus Komunal, Ahmad Rizki",
+                    "address" => "Jl. Raya Ciomas No. 15, Bogor Barat",
                     "status" => "ACTIVE"
                 ],
                 [
                     "id" => 2,
-                    "storage_code" => "STG02",
-                    "storage_name" => "Storage - A",
-                    "pic_names" => "Vanessa, Jonathan",
-                    "address" => "Jalan Kemanggisan Raya No. 11, Jakarta",
+                    "storage_code" => "GDG-002",
+                    "storage_name" => "Gudang Raw Material",
+                    "pic_names" => "Siti Nurhaliza, Budi Santoso",
+                    "address" => "Jl. Raya Ciomas No. 17, Bogor Barat",
                     "status" => "ACTIVE"
                 ],
                 [
                     "id" => 3,
-                    "storage_code" => "STG03",
-                    "storage_name" => "Storage - B",
-                    "pic_names" => "Vanessa, Jonathan",
-                    "address" => "Jalan Kemanggisan Raya No. 12, Jakarta",
+                    "storage_code" => "GDG-003",
+                    "storage_name" => "Gudang Produk Jadi",
+                    "pic_names" => "Ahmad Rizki",
+                    "address" => "Jl. Raya Ciomas No. 19, Bogor Barat",
                     "status" => "ACTIVE"
                 ],
                 [
                     "id" => 4,
-                    "storage_code" => "STG04",
-                    "storage_name" => "Storage - C",
-                    "pic_names" => "Hartono",
-                    "address" => "Jalan Kemanggisan Raya No. 13, Jakarta",
+                    "storage_code" => "GDG-004",
+                    "storage_name" => "Gudang Kemasan & Label",
+                    "pic_names" => "Siti Nurhaliza",
+                    "address" => "Jl. Raya Ciomas No. 21, Bogor Barat",
                     "status" => "ACTIVE"
                 ],
                 [
                     "id" => 5,
-                    "storage_code" => "STG05",
-                    "storage_name" => "Storage - D",
-                    "pic_names" => "Akbar",
-                    "address" => "Jalan Kemanggisan Raya No. 14, Jakarta",
-                    "status" => "ACTIVE"
+                    "storage_code" => "GDG-005",
+                    "storage_name" => "Gudang Quality Control",
+                    "pic_names" => "Siti Nurhaliza, Dewi Kartika",
+                    "address" => "Jl. Raya Ciomas No. 23, Bogor Barat",
+                    "status" => "MAINTENANCE"
                 ],
             ]
         ];

@@ -3,8 +3,55 @@
     List Pengeluaran
 @stop
 @section('content')
+    <!-- Summary Cards -->
+    <div class="row">
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-warning"><i
+                                    class="icon-base ti tabler-receipt-off icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">Rp 125,500,000</h4>
+                    </div>
+                    <p class="mb-1">Total Pengeluaran Bulan Ini</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-info h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-info"><i
+                                    class="icon-base ti tabler-clock-pause icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">23</h4>
+                    </div>
+                    <p class="mb-1">Menunggu Persetujuan</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-success"><i
+                                    class="icon-base ti tabler-check icon-28px"></i></span>
+                        </div>
+                        <h4 class="mb-0">187</h4>
+                    </div>
+                    <p class="mb-1">Telah Dibayar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Main Content Card -->
-    <div class="card">
+    <div class="mt-6">
+        <div class="card">
         <h5 class="card-header">List Pengeluaran</h5>
         <div class="card-body">
             <!-- Advanced Search Form -->
@@ -23,7 +70,7 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Kategori:</label>
-                                <select class="global-select2 form-select" id="category-filter" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="category-filter" data-allow-clear="false">
                                     <option value="">Semua Kategori</option>
                                     @foreach($expenseCategories as $category)
                                         <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
@@ -32,7 +79,7 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="status-filter" data-allow-clear="false">
                                     <option value="">Semua Status</option>
                                     @foreach($expenseStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -50,18 +97,18 @@
             <div class="mt-4">
                 <div class="d-flex justify-content-end">
                     <div class="d-flex gap-2">
-                        <button type="button" id="btn-import-data"
+                        <a href="{{ route('main_transaction.expense.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light">
                             <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
-                        </button>
-                        <button type="button" id="btn-export-data"
+                        </a>
+                        <a href="{{ route('main_transaction.expense.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light">
                             <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
-                        </button>
-                        <button type="button" id="btn-add-data"
+                        </a>
+                        <a href="{{ route('main_transaction.expense.add') }}"
                             class="btn btn-md btn-primary waves-effect waves-light">
                             <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -84,6 +131,7 @@
                     </tr>
                 </thead>
             </table>
+        </div>
         </div>
     </div>
 @stop
@@ -159,12 +207,12 @@
                                 const detailUrl = `{{ route('main_transaction.expense.detail', ':id') }}`.replace(':id', row.id);
                                 const editUrl = `{{ route('main_transaction.expense.edit', ':id') }}`.replace(':id', row.id);
                                 return `
-                                <div class="btn-group" role="group" aria-label="Second group">
-                                    <a href="${editUrl}" class="btn btn-primary btn-sm waves-effect">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                    <a href="${detailUrl}" class="btn btn-primary btn-sm waves-effect">
+                                <div class="d-flex gap-2">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
+                                    </a>
+                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                        <i class="icon-base ti tabler-edit"></i>
                                     </a>
                                 </div>
                                 `;
@@ -191,36 +239,7 @@
                 });
             }
 
-            // Button click events
-            $('#btn-add-data').on('click', function() {
-                window.location.href = `{{ route('main_transaction.expense.add') }}`;
-            });
-
-            $('#btn-export-data').on('click', function() {
-                window.location.href = `{{ route('main_transaction.expense.export') }}`;
-            });
-
-            $('#btn-import-data').on('click', function() {
-                // Create file input for import
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = '.xlsx,.xls,.csv';
-                fileInput.onchange = function(e) {
-                    const formData = new FormData();
-                    formData.append('file', e.target.files[0]);
-                    
-                    // TODO: Implement actual import functionality
-                    console.log('Import Expense file:', e.target.files[0].name);
-                    // fetch('{{ route("main_transaction.expense.import") }}', {
-                    //     method: 'POST',
-                    //     body: formData,
-                    //     headers: {
-                    //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    //     }
-                    // });
-                };
-                fileInput.click();
-            });
+            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
         });
     </script>
 @endsection

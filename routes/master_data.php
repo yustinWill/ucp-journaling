@@ -52,6 +52,8 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $product_segment . '/index_data_table', 'index_data_table')->name('master_data.product.index_data_table')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $product_segment . '/index_warehouse_data_table', 'index_warehouse_data_table')->name('master_data.product.index_warehouse_data_table')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $product_segment . '/add', 'add')->name('master_data.product.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $product_segment . '/detail/{id}', 'detail')->name('master_data.product.detail')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $product_segment . '/edit/{id}', 'edit')->name('master_data.product.edit')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $product_segment . '/export', 'export')->name('master_data.product.export')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $product_segment . '/import', 'import')->name('master_data.product.import')->middleware(EnsureTokenIsValid::class);
     });
@@ -60,6 +62,8 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $coa_segment . '/index', 'index')->name('master_data.coa.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $coa_segment . '/index_data_table', 'index_data_table')->name('master_data.coa.index_data_table')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $coa_segment . '/add', 'add')->name('master_data.coa.add')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $coa_segment . '/detail/{id}', 'detail')->name('master_data.coa.detail')->middleware(EnsureTokenIsValid::class);
+        Route::get($base_segment . $coa_segment . '/edit/{id}', 'edit')->name('master_data.coa.edit')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $coa_segment . '/export', 'export')->name('master_data.coa.export')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $coa_segment . '/import', 'import')->name('master_data.coa.import')->middleware(EnsureTokenIsValid::class);
     });

@@ -55,8 +55,8 @@
                 <div data-i18n="Chat">Pembelian</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.jurnal.*'])) active @endif">
-            <a href="{{ route('main_transaction.jurnal.index') }}" class="menu-link">
+        <li class="menu-item @if (request()->routeIs(['main_transaction.journal.*'])) active @endif">
+            <a href="{{ route('main_transaction.journal.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-receipt-2"></i>
                 <div data-i18n="Chat">Jurnal</div>
             </a>

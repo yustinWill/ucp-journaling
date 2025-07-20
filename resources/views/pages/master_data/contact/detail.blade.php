@@ -56,13 +56,22 @@
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
                         <a class="list-group-item list-group-item-action waves-effect active" id="profil-list-item"
                             data-bs-toggle="list" href="#horizontal-profil" aria-selected="true" role="tab"
-                            tabindex="-1"><b>Profil</b></a>
+                            tabindex="-1">
+                            <i class="icon-base ti tabler-user me-2"></i>
+                            <b>Profil</b>
+                        </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="transaksi-list-item"
                             data-bs-toggle="list" href="#horizontal-transaksi" aria-selected="false" role="tab"
-                            tabindex="-1"><b>Transaksi</b></a>
+                            tabindex="-1">
+                            <i class="icon-base ti tabler-receipt-2 me-2"></i>
+                            <b>Transaksi</b>
+                        </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="credit-memo-list-item"
                             data-bs-toggle="list" href="#horizontal-credit-memo" aria-selected="false" role="tab"
-                            tabindex="-1"><b>Credit Memo</b></a>
+                            tabindex="-1">
+                            <i class="icon-base ti tabler-file-dollar me-2"></i>
+                            <b>Credit Memo</b>
+                        </a>
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <div class="tab-pane fade show active" id="horizontal-profil" role="tabpanel"
@@ -345,7 +354,7 @@ $(function() {
                     </button>
                 </div>
                 
-                <div>
+                <div class="mx-n6">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -398,7 +407,7 @@ $(function() {
                 
                 <!-- Credit Memo Table -->
                 
-                <div>
+                <div class="mx-n6">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
