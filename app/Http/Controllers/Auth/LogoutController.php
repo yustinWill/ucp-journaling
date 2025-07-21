@@ -3,23 +3,20 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Domains\User\Actions\AuthenticateUserAction;
+use App\Exceptions\AppException;
+use App\Enums\SuccessCodes;
 
 class LogoutController extends Controller
 {
-    /**
-     * Log out the user from application.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function logout(Request $request)
+    public function logout(AuthenticateUserAction $authenticateUserAction)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('login')
-            ->withSuccess('Anda berhasil logout, sampai jumpa lagi');
+        try {
+            $authenticateUserAction->logout();
+            return redirect()->route('login')->withSuccess(SuccessCodes::LOGOUT_SUCCESS->message());
+        } catch (AppException $e) {
+            return redirect()->back()
+                ->withErrors(['error' => $e->getMessage()]);
+        }
     }
 }

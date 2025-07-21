@@ -119,6 +119,7 @@ Route::middleware([EnsureTokenIsValid::class])->group(function () use ($base_seg
         Route::get($base_segment . $tag_segment . '/index', 'index')->name('master_data.tag.index')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $tag_segment . '/index_data_table', 'index_data_table')->name('master_data.tag.index_data_table')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $tag_segment . '/add', 'add')->name('master_data.tag.add')->middleware(EnsureTokenIsValid::class);
+        Route::post($base_segment . $tag_segment . '/save', 'save')->name('master_data.tag.save')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $tag_segment . '/edit/{id}', 'edit')->name('master_data.tag.edit')->middleware(EnsureTokenIsValid::class);
         Route::get($base_segment . $tag_segment . '/detail/{id}', 'detail')->name('master_data.tag.detail')->middleware(EnsureTokenIsValid::class);
     });

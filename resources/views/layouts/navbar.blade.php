@@ -60,8 +60,8 @@
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-0">John Doe</h6>
-                                    <small class="text-body-secondary">Admin</small>
+                                    <h6 class="mb-0">{{ Auth::user()->name }}</h6>
+                                    <small class="text-body-secondary">{{ Auth::user()->role->name }}</small>
                                 </div>
                             </div>
                         </a>
@@ -85,10 +85,12 @@
                         <div class="dropdown-divider my-1 mx-n2"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="javascript:void(0);">
-                            <i class="icon-base ti tabler-power icon-md me-3"></i><span>Log
-                                Out</span>
-                        </a>
+                        <form action="{{ route('logout') }}" method="POST" class="d-block">
+                            @csrf
+                            <button type="submit" class="dropdown-item">
+                                <i class="icon-base ti tabler-power icon-md me-3"></i><span>Log Out</span>
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </li>
