@@ -15,7 +15,7 @@ class TagService
             'name' => $data['name'],
             'code' => $data['code'],
             'status' => $data['status'],
-            'f_tsag_color_id' => $data['f_tag_color_id'],
+            'f_tag_color_id' => $data['f_tag_color_id'],
             'description' => $data['description'] ?? null,
             'memo' => $data['memo'] ?? null,
             'created_at' => now(),

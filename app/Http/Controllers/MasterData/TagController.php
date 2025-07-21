@@ -2,16 +2,25 @@
 
 namespace App\Http\Controllers\MasterData;
 
+//Main
 use App\Http\Controllers\Controller;
-use App\Domains\Tag\Services\TagColorService;
 use Illuminate\Http\Request;
-use App\Domains\Tag\Actions\CreateTagAction;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
+//Actions
+use App\Domains\Tag\Actions\CreateTagAction;
+
+//Services
+use App\Domains\Tag\Services\TagColorService;
+
+//Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
-use App\Helpers\ValidationHelper;
+
 
 class TagController extends Controller
 {
@@ -142,7 +151,7 @@ class TagController extends Controller
 
             return response()->json([
                 'message' => SuccessCodes::CREATE_TAG_SUCCESS->message()
-            ], SuccessCodes::CREATE_TAG_SUCCESS->code());
+            ], SuccessCodes::CREATE_TAG_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => ValidationHelper::formatErrors($e->errors()),
@@ -152,8 +161,9 @@ class TagController extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
                 'error' => $e->getCodeValue(),
-            ], 500);
+            ], $e->getCode());
         } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
