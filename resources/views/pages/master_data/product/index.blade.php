@@ -123,7 +123,17 @@
                     <hr class="my-6 mx-n6" />
                     <!-- Action Buttons -->
                     <div class="mt-4">
-                        <div class="d-flex justify-content-end">
+                        <div class="d-flex justify-content-between">
+                            <!-- Column Toggle -->
+                            <div class="d-flex align-items-center">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                    <label class="form-check-label" for="toggleTagColumn">
+                                        <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
+                                    </label>
+                                </div>
+                            </div>
+                            
                             <div class="d-flex gap-2">
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-md btn-primary dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown">
@@ -159,6 +169,7 @@
                                 <th>Nama Produk</th>
                                 <th>Kode Produk</th>
                                 <th>Kategori</th>
+                                <th>Tag</th>
                                 <th>Total Stok</th>
                                 <th>Qty Tersedia</th>
                                 <th>Batas Minimum</th>
@@ -277,19 +288,19 @@
                         },
                         { data: 'product_code', responsivePriority: 4 },
                         { data: 'category', responsivePriority: 5 },
-                        { 
-                            data: 'total_stock',
-                            className: 'text-end',
+                        {
+                            data: 'tags',
                             responsivePriority: 6,
                             render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? '0';
+                                if (!data || data.length === 0) return '-';
+                                return data.map(tag => {
+                                    const colorClass = `bg-label-${tag.color}`;
+                                    return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
+                                }).join('');
                             }
                         },
                         { 
-                            data: 'available_qty',
+                            data: 'total_stock',
                             className: 'text-end',
                             responsivePriority: 7,
                             render: function(data, type, row) {
@@ -300,7 +311,7 @@
                             }
                         },
                         { 
-                            data: 'minimum',
+                            data: 'available_qty',
                             className: 'text-end',
                             responsivePriority: 8,
                             render: function(data, type, row) {
@@ -310,20 +321,20 @@
                                 return data ?? '0';
                             }
                         },
-                        { data: 'unit', responsivePriority: 9 },
                         { 
-                            data: 'average_price',
+                            data: 'minimum',
                             className: 'text-end',
-                            responsivePriority: 10,
+                            responsivePriority: 9,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
-                                    return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
+                                    return parseFloat(data).toLocaleString('id-ID');
                                 }
-                                return data ?? 'Rp 0';
+                                return data ?? '0';
                             }
                         },
+                        { data: 'unit', responsivePriority: 10 },
                         { 
-                            data: 'last_purchase_price',
+                            data: 'average_price',
                             className: 'text-end',
                             responsivePriority: 11,
                             render: function(data, type, row) {
@@ -334,7 +345,7 @@
                             }
                         },
                         { 
-                            data: 'purchase_price',
+                            data: 'last_purchase_price',
                             className: 'text-end',
                             responsivePriority: 12,
                             render: function(data, type, row) {
@@ -345,9 +356,20 @@
                             }
                         },
                         { 
-                            data: 'selling_price',
+                            data: 'purchase_price',
                             className: 'text-end',
                             responsivePriority: 13,
+                            render: function(data, type, row) {
+                                if (type === 'display' && data != null && !isNaN(data)) {
+                                    return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
+                                }
+                                return data ?? 'Rp 0';
+                            }
+                        },
+                        { 
+                            data: 'selling_price',
+                            className: 'text-end',
+                            responsivePriority: 14,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -422,8 +444,7 @@
                         { 
                             data: 'status',
                             render: function(data, type, row) {
-                                let badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
-                                return `<span class="badge ${badgeClass}">${data}</span>`;
+                                return data; // Plain text for status
                             }
                         },
                         {
@@ -535,6 +556,20 @@
                     warehouseTable.draw();
                 }
             });
+            
+            // Tag Column Toggle Functionality (Products Table Only)
+            $('#toggleTagColumn').on('change', function() {
+                if (productsTable) {
+                    const tagColumn = productsTable.column(3); // Tag column index (0-based)
+                    tagColumn.visible(this.checked);
+                }
+            });
+
+            // Initialize tag column visibility based on checkbox state
+            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
+            if (productsTable) {
+                productsTable.column(3).visible(initialTagVisibility);
+            }
         });
     </script>
 @endsection

@@ -53,6 +53,10 @@ class StockOpnameController extends Controller
                     "warehouse_id" => "GDG-001",
                     "pic_name" => "Yustinus Komunal",
                     "pic_id" => "USR-001",
+                    "tags" => [
+                        ["name" => "ROUTINE", "color" => "primary"],
+                        ["name" => "MONTHLY", "color" => "info"]
+                    ],
                     "variant_products" => 3,
                     "system_qty" => 2700,
                     "physical_qty" => 2702,
@@ -70,6 +74,9 @@ class StockOpnameController extends Controller
                     "warehouse_id" => "GDG-002",
                     "pic_name" => "Ririn Safitri",
                     "pic_id" => "USR-002",
+                    "tags" => [
+                        ["name" => "ROUTINE", "color" => "primary"]
+                    ],
                     "variant_products" => 2,
                     "system_qty" => 1200,
                     "physical_qty" => 1200,
@@ -87,6 +94,9 @@ class StockOpnameController extends Controller
                     "warehouse_id" => "GDG-003",
                     "pic_name" => "Hartono Wijaya",
                     "pic_id" => "USR-003",
+                    "tags" => [
+                        ["name" => "INVESTIGATION", "color" => "warning"]
+                    ],
                     "variant_products" => 4,
                     "system_qty" => 850,
                     "physical_qty" => 0,
@@ -104,6 +114,10 @@ class StockOpnameController extends Controller
                     "warehouse_id" => "GDG-004",
                     "pic_name" => "Sari Indah",
                     "pic_id" => "USR-004",
+                    "tags" => [
+                        ["name" => "AUDIT", "color" => "danger"],
+                        ["name" => "INVESTIGATION", "color" => "warning"]
+                    ],
                     "variant_products" => 3,
                     "system_qty" => 2850,
                     "physical_qty" => 2700,
@@ -121,6 +135,9 @@ class StockOpnameController extends Controller
                     "warehouse_id" => "GDG-001",
                     "pic_name" => "Budi Santoso",
                     "pic_id" => "USR-005",
+                    "tags" => [
+                        ["name" => "ANNUAL", "color" => "success"]
+                    ],
                     "variant_products" => 5,
                     "system_qty" => 3200,
                     "physical_qty" => 3200,
@@ -138,6 +155,7 @@ class StockOpnameController extends Controller
                     "warehouse_id" => "GDG-002",
                     "pic_name" => "Ani Suhartini",
                     "pic_id" => "USR-006",
+                    "tags" => [],
                     "variant_products" => 6,
                     "system_qty" => 1800,
                     "physical_qty" => 1825,

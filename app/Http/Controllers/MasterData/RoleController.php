@@ -25,6 +25,10 @@ class RoleController extends Controller
                     "description" => "Full system access with all permissions",
                     "user_count" => 1,
                     "permissions_count" => 12,
+                    "tags" => [
+                        ["name" => "SYSTEM", "color" => "danger"],
+                        ["name" => "MANAGEMENT", "color" => "primary"]
+                    ],
                     "status" => "ACTIVE",
                     "created_at" => "2025-01-01 10:00:00",
                 ],
@@ -34,6 +38,9 @@ class RoleController extends Controller
                     "description" => "Administrative access with limited permissions",
                     "user_count" => 3,
                     "permissions_count" => 8,
+                    "tags" => [
+                        ["name" => "MANAGEMENT", "color" => "primary"]
+                    ],
                     "status" => "ACTIVE",
                     "created_at" => "2025-01-01 10:00:00",
                 ],
@@ -43,6 +50,9 @@ class RoleController extends Controller
                     "description" => "Financial and accounting module access",
                     "user_count" => 2,
                     "permissions_count" => 6,
+                    "tags" => [
+                        ["name" => "OPERATIONAL", "color" => "success"]
+                    ],
                     "status" => "ACTIVE",
                     "created_at" => "2025-01-01 10:00:00",
                 ],
@@ -52,6 +62,10 @@ class RoleController extends Controller
                     "description" => "Sales and customer management access",
                     "user_count" => 4,
                     "permissions_count" => 4,
+                    "tags" => [
+                        ["name" => "OPERATIONAL", "color" => "success"],
+                        ["name" => "SUPPORT", "color" => "info"]
+                    ],
                     "status" => "ACTIVE",
                     "created_at" => "2025-01-01 10:00:00",
                 ],
@@ -61,6 +75,9 @@ class RoleController extends Controller
                     "description" => "Purchase and supplier management access",
                     "user_count" => 0,
                     "permissions_count" => 4,
+                    "tags" => [
+                        ["name" => "CUSTOM", "color" => "warning"]
+                    ],
                     "status" => "INACTIVE",
                     "created_at" => "2025-01-01 10:00:00",
                 ],

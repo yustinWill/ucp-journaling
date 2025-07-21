@@ -25,6 +25,10 @@ class ContactController extends Controller
                     "phone" => "0812-3456-7890",
                     "email" => "ahmad.wijaya@warungs.com",
                     "group_text" => "Customer Warung",
+                    "tags" => [
+                        ["name" => "CUSTOMER", "color" => "success"],
+                        ["name" => "VIP", "color" => "warning"]
+                    ],
                 ],
                 [
                     "id" => 2,
@@ -34,6 +38,9 @@ class ContactController extends Controller
                     "phone" => "0857-1234-5678",
                     "email" => "siti.rahma@berkahj.com",
                     "group_text" => "Customer Retail",
+                    "tags" => [
+                        ["name" => "CUSTOMER", "color" => "success"]
+                    ],
                 ],
                 [
                     "id" => 3,
@@ -43,6 +50,10 @@ class ContactController extends Controller
                     "phone" => "021-8765-4321",
                     "email" => "budi.santoso@plastikprima.co.id",
                     "group_text" => "Supplier Kemasan",
+                    "tags" => [
+                        ["name" => "SUPPLIER", "color" => "info"],
+                        ["name" => "PRIORITY", "color" => "primary"]
+                    ],
                 ],
                 [
                     "id" => 4,
@@ -52,6 +63,9 @@ class ContactController extends Controller
                     "phone" => "0274-987-6543",
                     "email" => "maria.susanti@teknisiahli.com",
                     "group_text" => "Supplier Maintenance",
+                    "tags" => [
+                        ["name" => "SUPPLIER", "color" => "info"]
+                    ],
                 ],
                 [
                     "id" => 5,
@@ -61,6 +75,9 @@ class ContactController extends Controller
                     "phone" => "0813-2468-1357",
                     "email" => "rahmat.hidayat@ekspedisimaju.id",
                     "group_text" => "Supplier Logistik",
+                    "tags" => [
+                        ["name" => "SUPPLIER", "color" => "info"]
+                    ],
                 ],
                 [
                     "id" => 6,
@@ -70,6 +87,9 @@ class ContactController extends Controller
                     "phone" => "0896-5432-1098",
                     "email" => "dewi.kartika@riyowater.com",
                     "group_text" => "Quality Control",
+                    "tags" => [
+                        ["name" => "INTERNAL", "color" => "secondary"]
+                    ],
                 ],
             ]
         ];

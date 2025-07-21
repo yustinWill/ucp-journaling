@@ -179,10 +179,10 @@
                                 
                                 return `
                                 <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
                                     </a>
-                                    <a href="${editUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
+                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-base ti tabler-edit"></i>
                                     </a>
                                 </div>
@@ -213,15 +213,14 @@
                         {
                             targets: [5], // Status column
                             render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
-                                return `<span class="badge ${badgeClass}">${data}</span>`;
+                                return data; // Plain text for status
                             }
                         },
                         {
                             targets: [6], // Usage count column
                             className: 'text-center',
                             render: function(data, type, row) {
-                                return `<span class="badge bg-label-info">${data}</span>`;
+                                return data; // Plain text for count
                             }
                         }
                     ],

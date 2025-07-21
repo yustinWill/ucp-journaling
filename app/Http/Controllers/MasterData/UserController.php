@@ -32,6 +32,10 @@ class UserController extends Controller
                     "email" => "yustinus.komunal@riyowater.com",
                     "phone" => "081234567890",
                     "role" => "Manager Produksi",
+                    "tags" => [
+                        ["name" => "MANAGEMENT", "color" => "primary"],
+                        ["name" => "SUPERVISOR", "color" => "warning"]
+                    ],
                     "last_login" => "2025-01-20 08:30:00",
                     "status" => "ACTIVE",
                 ],
@@ -42,6 +46,9 @@ class UserController extends Controller
                     "email" => "ririn.safitri@riyowater.com",
                     "phone" => "081234567891",
                     "role" => "Staff Keuangan",
+                    "tags" => [
+                        ["name" => "STAFF", "color" => "info"]
+                    ],
                     "last_login" => "2025-01-20 09:15:00",
                     "status" => "ACTIVE",
                 ],
@@ -52,6 +59,10 @@ class UserController extends Controller
                     "email" => "ahmad.setyo@riyowater.com",
                     "phone" => "081234567892",
                     "role" => "Supervisor QC",
+                    "tags" => [
+                        ["name" => "SUPERVISOR", "color" => "warning"],
+                        ["name" => "OPERATOR", "color" => "success"]
+                    ],
                     "last_login" => "2025-01-19 16:45:00",
                     "status" => "ACTIVE",
                 ],
@@ -62,6 +73,9 @@ class UserController extends Controller
                     "email" => "siti.nurhaliza@riyowater.com",
                     "phone" => "081234567893",
                     "role" => "Admin Gudang",
+                    "tags" => [
+                        ["name" => "ADMIN", "color" => "secondary"]
+                    ],
                     "last_login" => "2025-01-18 14:20:00",
                     "status" => "INACTIVE",
                 ],

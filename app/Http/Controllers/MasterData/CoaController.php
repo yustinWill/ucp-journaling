@@ -18,38 +18,86 @@ class CoaController extends Controller
             "data" => [
                 [
                     "id" => 1,
-                    "coa_code" => "1",
-                    "coa_name" => "Asset",
+                    "coa_code" => "1-10000",
+                    "coa_name" => "Kas dan Bank",
                     "level" => "1",
                     "type" => "Header",
-                    "note" => "-",
+                    "tags" => [
+                        ["name" => "AKTIVA", "color" => "success"]
+                    ],
+                    "note" => "Akun untuk kas dan bank RIYO Water",
                     "status" => "ACTIVE",
                 ],
                 [
-                    "id" => 1,
-                    "coa_code" => "1.1",
+                    "id" => 2,
+                    "coa_code" => "1-10100",
                     "coa_name" => "Kas Besar",
                     "level" => "2",
                     "type" => "Detail",
-                    "note" => "-",
+                    "tags" => [
+                        ["name" => "AKTIVA", "color" => "success"]
+                    ],
+                    "note" => "Kas besar RIYO Water",
                     "status" => "ACTIVE",
                 ],
                 [
-                    "id" => 1,
-                    "coa_code" => "1.2",
-                    "coa_name" => "Kas Besar",
+                    "id" => 3,
+                    "coa_code" => "1-10200",
+                    "coa_name" => "Bank BCA",
                     "level" => "2",
                     "type" => "Detail",
-                    "note" => "-",
+                    "tags" => [
+                        ["name" => "AKTIVA", "color" => "success"]
+                    ],
+                    "note" => "Rekening operasional RIYO Water di BCA",
                     "status" => "ACTIVE",
                 ],
                 [
-                    "id" => 1,
-                    "coa_code" => "1.3",
-                    "coa_name" => "Piutang",
+                    "id" => 4,
+                    "coa_code" => "1-20100",
+                    "coa_name" => "Piutang Dagang",
                     "level" => "2",
                     "type" => "Detail",
-                    "note" => "-",
+                    "tags" => [
+                        ["name" => "AKTIVA", "color" => "success"]
+                    ],
+                    "note" => "Piutang dari penjualan RIYO Water",
+                    "status" => "ACTIVE",
+                ],
+                [
+                    "id" => 5,
+                    "coa_code" => "2-20100",
+                    "coa_name" => "Hutang Dagang",
+                    "level" => "2",
+                    "type" => "Detail",
+                    "tags" => [
+                        ["name" => "KEWAJIBAN", "color" => "danger"]
+                    ],
+                    "note" => "Hutang kepada supplier RIYO Water",
+                    "status" => "ACTIVE",
+                ],
+                [
+                    "id" => 6,
+                    "coa_code" => "4-40100",
+                    "coa_name" => "Penjualan RIYO Water",
+                    "level" => "2",
+                    "type" => "Detail",
+                    "tags" => [
+                        ["name" => "PENDAPATAN", "color" => "info"]
+                    ],
+                    "note" => "Pendapatan dari penjualan produk RIYO Water",
+                    "status" => "ACTIVE",
+                ],
+                [
+                    "id" => 7,
+                    "coa_code" => "5-50100",
+                    "coa_name" => "Beban Produksi",
+                    "level" => "2",
+                    "type" => "Detail",
+                    "tags" => [
+                        ["name" => "BEBAN", "color" => "warning"]
+                    ],
+                    "note" => "Biaya produksi RIYO Water",
                     "status" => "ACTIVE",
                 ],
             ]

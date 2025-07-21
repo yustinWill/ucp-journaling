@@ -103,7 +103,17 @@
             <hr class="my-6 mx-n6" />
             <!-- Action Buttons -->
             <div class="mt-4">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-between">
+                    <!-- Column Toggle -->
+                    <div class="d-flex align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                            <label class="form-check-label" for="toggleTagColumn">
+                                <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div class="d-flex gap-2">
                         <a href="{{ route('master_data.contact.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -128,6 +138,7 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Group</th>
+                        <th>Tag</th>
                         <th>Tipe</th>
                         <th>Aksi</th>
                     </tr>
@@ -160,19 +171,30 @@
                         },
                         {
                             data: 'email',
-                            responsivePriority: 6
-                        },
-                        {
-                            data: 'phone',
-                            responsivePriority: 5
-                        },
-                        {
-                            data: 'group_text',
                             responsivePriority: 7
                         },
                         {
-                            data: 'type',
+                            data: 'phone',
+                            responsivePriority: 6
+                        },
+                        {
+                            data: 'group_text',
                             responsivePriority: 8
+                        },
+                        {
+                            data: 'tags',
+                            responsivePriority: 5,
+                            render: function(data, type, row) {
+                                if (!data || data.length === 0) return '-';
+                                return data.map(tag => {
+                                    const colorClass = `bg-label-${tag.color}`;
+                                    return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
+                                }).join('');
+                            }
+                        },
+                        {
+                            data: 'type',
+                            responsivePriority: 9
                         },
                         {
                             data: null,
@@ -182,17 +204,9 @@
                     ],
                     columnDefs: [{
                             orderable: false,
-                            targets: 5,
+                            targets: 6, // Type column (updated index due to added tag column)
                             render: function(data, type, full, meta) {
-                                if (data == 'Pelanggan') {
-                                    return `<span class="badge bg-label-success">${data}</span>`;
-                                } else if (data == 'Supplier') {
-                                    return `<span class="badge bg-label-warning">${data}</span>`;
-                                } else if (data == 'Karyawan') {
-                                    return `<span class="badge bg-label-info">${data}</span>`;
-                                } else {
-                                    return `<span class="badge bg-label-secondary">${data}</span>`;
-                                }
+                                return data; // Plain text for type
                             }
                         },
                         {
@@ -241,7 +255,16 @@
                 });
             }
 
-            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
+            // Tag Column Toggle Functionality
+            $('#toggleTagColumn').on('change', function() {
+                const tagColumn = dt_adv_filter.column(5); // Tag column index (0-based)
+                tagColumn.visible(this.checked);
+            });
+
+            // Initialize tag column visibility based on checkbox state
+            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
+            dt_adv_filter.column(5).visible(initialTagVisibility);
+
         });
     </script>
 @endsection

@@ -101,7 +101,17 @@
             <hr class="my-6 mx-n6" />
             <!-- Action Buttons -->
             <div class="mt-4">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-between">
+                    <!-- Column Toggle -->
+                    <div class="d-flex align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                            <label class="form-check-label" for="toggleTagColumn">
+                                <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div class="d-flex gap-2">
                         <a href="{{ route('master_data.coa.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -125,6 +135,7 @@
                         <th>Nama COA</th>
                         <th>Level</th>
                         <th>Jenis</th>
+                        <th>Tag</th>
                         <th>Note</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -165,12 +176,23 @@
                             responsivePriority: 5
                         },
                         {
+                            data: 'tags',
+                            responsivePriority: 6,
+                            render: function(data, type, row) {
+                                if (!data || data.length === 0) return '-';
+                                return data.map(tag => {
+                                    const colorClass = `bg-label-${tag.color}`;
+                                    return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
+                                }).join('');
+                            }
+                        },
+                        {
                             data: 'note',
-                            responsivePriority: 7
+                            responsivePriority: 8
                         },
                         {
                             data: 'status',
-                            responsivePriority: 6
+                            responsivePriority: 7
                         },
                         {
                             data: null,
@@ -180,13 +202,9 @@
                     ],
                     columnDefs: [{
                             orderable: false,
-                            targets: -2,
+                            targets: -2, // Status column (second to last)
                             render: function(data, type, full, meta) {
-                                if (data == 'ACTIVE') {
-                                    return `<span class="badge bg-label-success">${data}</span>`;
-                                } else {
-                                    return `<span class="badge bg-label-danger">${data}</span>`;
-                                }
+                                return data; // Plain text for status
                             }
                         },
                         {
@@ -235,7 +253,16 @@
                 });
             }
 
-            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
+            // Tag Column Toggle Functionality
+            $('#toggleTagColumn').on('change', function() {
+                const tagColumn = dt_adv_filter.column(4); // Tag column index (0-based)
+                tagColumn.visible(this.checked);
+            });
+
+            // Initialize tag column visibility based on checkbox state
+            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
+            dt_adv_filter.column(4).visible(initialTagVisibility);
+
         });
     </script>
 @endsection

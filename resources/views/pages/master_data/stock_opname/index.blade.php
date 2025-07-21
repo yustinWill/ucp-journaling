@@ -107,7 +107,17 @@
 
                 <!-- Action Buttons -->
                 <div class="mt-4">
-                    <div class="d-flex justify-content-end">
+                    <div class="d-flex justify-content-between">
+                        <!-- Column Toggle -->
+                        <div class="d-flex align-items-center">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <label class="form-check-label" for="toggleTagColumn">
+                                    <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
+                                </label>
+                            </div>
+                        </div>
+                        
                         <div class="d-flex gap-2">
                             <button type="button" id="btn-export" class="btn btn-md btn-primary waves-effect waves-light">
                                 <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
@@ -132,6 +142,7 @@
                             <th>Tanggal</th>
                             <th>Gudang</th>
                             <th>PIC</th>
+                            <th>Tag</th>
                             <th>Varian Produk</th>
                             <th>Sistem QTY</th>
                             <th>Fisik QTY</th>
@@ -183,12 +194,23 @@ $(function() {
                         return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                     }
                 },
-                { data: 'variant_products', responsivePriority: 6 },
-                { data: 'system_qty', responsivePriority: 7 },
-                { data: 'physical_qty', responsivePriority: 8 },
-                { data: 'variance_qty', responsivePriority: 9 },
-                { data: 'variance_value', responsivePriority: 10 },
-                { data: 'status', responsivePriority: 11 },
+                {
+                    data: 'tags',
+                    responsivePriority: 6,
+                    render: function(data, type, row) {
+                        if (!data || data.length === 0) return '-';
+                        return data.map(tag => {
+                            const colorClass = `bg-label-${tag.color}`;
+                            return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
+                        }).join('');
+                    }
+                },
+                { data: 'variant_products', responsivePriority: 7 },
+                { data: 'system_qty', responsivePriority: 8 },
+                { data: 'physical_qty', responsivePriority: 9 },
+                { data: 'variance_qty', responsivePriority: 10 },
+                { data: 'variance_value', responsivePriority: 11 },
+                { data: 'status', responsivePriority: 12 },
                 { data: null, responsivePriority: 1, width: '120px' }
             ],
             columnDefs: [
@@ -226,21 +248,21 @@ $(function() {
                     }
                 },
                 {
-                    targets: 2,
+                    targets: 2, // Warehouse column
                     render: function(data, type, full, meta) {
                         const warehouseDetailUrl = "{{ route('master_data.storage.detail') }}?warehouse_id=" + full.warehouse_id;
                         return `<a href="${warehouseDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
                     }
                 },
                 {
-                    targets: 3,
+                    targets: 3, // PIC column
                     render: function(data, type, full, meta) {
                         const userDetailUrl = "{{ route('master_data.user.detail', ':id') }}".replace(':id', full.pic_id);
                         return `<a href="${userDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
                     }
                 },
                 {
-                    targets: 9,
+                    targets: 10, // Status column (updated index due to added tag column)
                     render: function(data, type, full, meta) {
                         let badgeClass = '';
                         switch (data) {
@@ -386,6 +408,16 @@ $(function() {
             }
         });
     };
+    
+    // Tag Column Toggle Functionality
+    $('#toggleTagColumn').on('change', function() {
+        const tagColumn = dt_adv_filter.column(4); // Tag column index (0-based)
+        tagColumn.visible(this.checked);
+    });
+
+    // Initialize tag column visibility based on checkbox state
+    const initialTagVisibility = $('#toggleTagColumn').is(':checked');
+    dt_adv_filter.column(4).visible(initialTagVisibility);
 });
 </script>
 @endsection

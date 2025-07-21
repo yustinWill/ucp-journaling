@@ -102,7 +102,17 @@
             <hr class="my-6 mx-n6" />
             <!-- Action Buttons -->
             <div class="mt-4">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-between">
+                    <!-- Column Toggle -->
+                    <div class="d-flex align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                            <label class="form-check-label" for="toggleTagColumn">
+                                <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div class="d-flex gap-2">
                         <a href="{{ route('master_data.user.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -127,6 +137,7 @@
                         <th>Email User</th>
                         <th>Phone</th>
                         <th>Role</th>
+                        <th>Tag</th>
                         <th>Terakhir Login</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -164,19 +175,30 @@
                         },
                         {
                             data: 'phone',
-                            responsivePriority: 6
+                            responsivePriority: 7
                         },
                         {
                             data: 'role',
                             responsivePriority: 5
                         },
                         {
+                            data: 'tags',
+                            responsivePriority: 6,
+                            render: function(data, type, row) {
+                                if (!data || data.length === 0) return '-';
+                                return data.map(tag => {
+                                    const colorClass = `bg-label-${tag.color}`;
+                                    return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
+                                }).join('');
+                            }
+                        },
+                        {
                             data: 'last_login',
-                            responsivePriority: 7
+                            responsivePriority: 8
                         },
                         {
                             data: 'status',
-                            responsivePriority: 8
+                            responsivePriority: 9
                         },
                         {
                             data: null,
@@ -194,10 +216,10 @@
                                 const editUrl = "{{ route('master_data.user.edit', ':id') }}".replace(':id', row.id);
                                 return `
                                 <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
+                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
                                     </a>
-                                    <a href="${editUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
+                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-base ti tabler-edit"></i>
                                     </a>
                                 </div>
@@ -253,7 +275,15 @@
                 });
             }
 
-            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
+            // Tag Column Toggle Functionality
+            $('#toggleTagColumn').on('change', function() {
+                const tagColumn = dt_adv_filter.column(5); // Tag column index (0-based)
+                tagColumn.visible(this.checked);
+            });
+
+            // Initialize tag column visibility based on checkbox state
+            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
+            dt_adv_filter.column(5).visible(initialTagVisibility);
 
         });
     </script>
