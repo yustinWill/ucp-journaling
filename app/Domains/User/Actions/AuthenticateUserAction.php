@@ -6,14 +6,20 @@ use Illuminate\Support\Facades\Auth;
 use App\Exceptions\AppException;
 use App\Enums\ErrorCodes;
 
-class LoginUserAction
+class AuthenticateUserAction
 {
-    public function execute($req)
+    public function login($req)
     {
         if (Auth::attempt($req)) {
             return true;
         } else {
             throw new AppException(ErrorCodes::INVALID_LOGIN_CREDENTIALS);
         }
+    }
+
+    public function logout()
+    {
+        Auth::logout();
+        return true;
     }
 }

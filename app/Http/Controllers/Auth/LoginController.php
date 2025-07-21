@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Validation\ValidationException;
 use App\Exceptions\AppException;
 
-use App\Domains\User\Actions\LoginUserAction;
+use App\Domains\User\Actions\AuthenticateUserAction;
 
 class LoginController extends Controller
 {
@@ -16,7 +16,7 @@ class LoginController extends Controller
         return view('pages.public.login', []);
     }
 
-    public function authenticate(Request $req, LoginUserAction $loginUserAction)
+    public function authenticate(Request $req, AuthenticateUserAction $authenticateUserAction)
     {
         try {
             $credentials = $req->validate([
@@ -24,9 +24,8 @@ class LoginController extends Controller
                 'password' => ['required', 'string'],
             ]);
 
-            $loginUserAction->execute($credentials);
-
-            return redirect()->route('home.view')->withSuccess('OK');
+            $authenticateUserAction->login($credentials);
+            return redirect()->route('home.view');
         } catch (ValidationException $e) {
             return redirect()->back()
                 ->withErrors(['error' => $e->getMessage()]);

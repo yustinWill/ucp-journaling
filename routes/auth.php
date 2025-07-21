@@ -6,9 +6,8 @@ use App\Http\Controllers\Auth\ChangePasswordController;
 use Illuminate\Support\Facades\Route;
 
 Route::controller(LoginController::class)->group(function () {
-    Route::get('/', 'login');
-    Route::get('/login', 'login')->name('login');
-    Route::post('/authenticate', 'authenticate')->name('authenticate');
+    Route::get('/', 'login')->name('login');
+    Route::post('/login', 'authenticate')->name('authenticate');
 });
 
 Route::controller(LogoutController::class)->group(function () {
