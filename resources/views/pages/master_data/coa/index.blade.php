@@ -65,7 +65,7 @@
 
     <!-- Main Content Card -->
     <div class="card mt-6">
-        <h5 class="card-header">List COA</h5>
+        <h4 class="card-header">List COA</h4>
         <div class="card-body">
             <!-- Advanced Search Form -->
             <form class="dt_adv_search" method="GET">
@@ -130,17 +130,6 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tfoot>
-                    <tr>
-                        <th>Kode COA</th>
-                        <th>Nama COA</th>
-                        <th>Level</th>
-                        <th>Jenis</th>
-                        <th>Note</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </tfoot>
             </table>
         </div>
     </div>
@@ -156,29 +145,37 @@
                 dt_adv_filter = new DataTable(main_table, {
                     ajax: `{{ route('master_data.coa.index_data_table') }}`,
                     columns: [{
-                            data: 'coa_code'
+                            data: 'coa_code',
+                            responsivePriority: 3
                         },
                         {
                             data: 'coa_name',
+                            responsivePriority: 2,
                             render: function(data, type, row) {
                                 const detailUrl = `{{ route('master_data.coa.detail', ':id') }}`.replace(':id', row.id);
                                 return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
                         },
                         {
-                            data: 'level'
+                            data: 'level',
+                            responsivePriority: 4
                         },
                         {
-                            data: 'type'
+                            data: 'type',
+                            responsivePriority: 5
                         },
                         {
-                            data: 'note'
+                            data: 'note',
+                            responsivePriority: 7
                         },
                         {
-                            data: 'status'
+                            data: 'status',
+                            responsivePriority: 6
                         },
                         {
-                            data: null
+                            data: null,
+                            responsivePriority: 1,
+                            width: '120px'
                         }
                     ],
                     columnDefs: [{

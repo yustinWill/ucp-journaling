@@ -145,6 +145,11 @@
                             data-bs-toggle="list" href="#horizontal-history" aria-selected="false" role="tab">
                             <b>Riwayat</b>
                         </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
+                            data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Audit Log</b>
+                        </a>
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <!-- Products Tab -->
@@ -203,6 +208,56 @@
                         <div class="tab-pane fade" id="horizontal-history" role="tabpanel">
                             <div id="history-content">
                                 <!-- Content will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Audit Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Log Audit Stock Opname</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table id="audit-log-table" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal & Waktu</th>
+                                            <th>Pengguna</th>
+                                            <th>Aksi</th>
+                                            <th>Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(isset($stockOpname['audit_logs']))
+                                            @foreach($stockOpname['audit_logs'] as $log)
+                                                <tr>
+                                                    <td>{{ $log['created_at'] }}</td>
+                                                    <td><a href="{{ route('master_data.user.detail', ['id' => $log['user_id']]) }}" class="text-primary fw-semibold">{{ $log['user_name'] }}</a></td>
+                                                    <td><span class="badge bg-label-{{ $log['action_type'] === 'CREATE' ? 'success' : ($log['action_type'] === 'UPDATE' ? 'warning' : 'info') }}">{{ $log['action_type'] }}</span></td>
+                                                    <td>{{ $log['description'] }}</td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td>2025-01-21 14:30:00</td>
+                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-001']) }}" class="text-primary fw-semibold">Warehouse Manager</a></td>
+                                                <td><span class="badge bg-label-success">COMPLETED</span></td>
+                                                <td>Stock opname selesai dilakukan dengan status adjustment pending untuk produk RIYO Water</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2025-01-21 10:15:00</td>
+                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-002']) }}" class="text-primary fw-semibold">Stock Controller</a></td>
+                                                <td><span class="badge bg-label-info">UPDATE</span></td>
+                                                <td>Update hasil counting fisik produk air mineral kemasan 600ml dan 1500ml</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2025-01-21 08:00:00</td>
+                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-003']) }}" class="text-primary fw-semibold">Admin Gudang</a></td>
+                                                <td><span class="badge bg-label-warning">CREATE</span></td>
+                                                <td>Stock opname dibuat untuk gudang utama RIYO Water periode Januari 2025</td>
+                                            </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -442,6 +497,16 @@ $(function() {
                 });
             }
         });
+    });
+    
+    // Initialize DataTable for audit log
+    $('#audit-log-table').DataTable({
+        responsive: true,
+        orderCellsTop: true,
+        searching: false,
+        paging: false,
+        info: false,
+        order: [[0, 'desc']] // Sort by date descending
     });
 });
 </script>

@@ -4,18 +4,21 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Edit Kontak</h5>
+        <h4 class="card-header">Edit Kontak</h4>
         <form class="card-body" id="contactEditForm">
             <!-- Section 1: Info Kontak -->
             <div class="section-header mt-12">
-                <h5>Info Kontak</h5>
-                <hr>
+                <h6>Info Kontak</h6>
+                <hr class="mx-n6">
             </div>
             
             <div class="row g-3 mb-4">
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label class="form-label">Nama Kontak <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" id="contact-name" value="{{ $contact['contact_name'] }}" placeholder="Masukkan Nama Kontak" />
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for layout balance -->
                 </div>
             </div>
             
@@ -44,21 +47,24 @@
             </div>
             
             <div class="row g-3 mb-4">
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <label class="form-label">Grup Kontak</label>
-                    <select class="global-select2 form-select" id="contact-group" multiple data-allow-clear="true">
+                    <select class="global-select2 form-select" id="contact-group" multiple data-allow-clear="false">
                         <option value="">Pilih Grup Kontak</option>
                         @foreach($contact_groups as $group)
                             <option value="{{ $group['value'] }}" @if(str_contains($contact['group'], $group['label'])) selected @endif>{{ $group['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
+                <div class="col-md-6">
+                    <!-- Empty column for layout balance -->
+                </div>
             </div>
             
             <!-- Section 2: Info Umum -->
             <div class="section-header mt-12">
-                <h5>Info Umum</h5>
-                <hr>
+                <h6>Info Umum</h6>
+                <hr class="mx-n6">
             </div>
             
             <div class="row g-3 mb-3">
@@ -89,8 +95,8 @@
             
             <!-- Section 3: Info Perusahaan -->
             <div class="section-header mt-12">
-                <h5>Info Perusahaan</h5>
-                <hr>
+                <h6>Info Perusahaan</h6>
+                <hr class="mx-n6">
             </div>
             
             <div class="row g-3 mb-3">
@@ -169,14 +175,14 @@
             
             <!-- Section 4: Info Bank -->
             <div class="section-header mt-12">
-                <h5>Info Bank</h5>
-                <hr>
+                <h6>Info Bank</h6>
+                <hr class="mx-n6">
             </div>
             
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Nama Bank <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="bank-name" data-allow-clear="true">
+                    <select class="global-select2 form-select" id="bank-name" data-allow-clear="false">
                         <option value="">Pilih Bank</option>
                         @foreach($banks as $bank)
                             <option value="{{ $bank['value'] }}" @if($contact['bank_name'] == $bank['label']) selected @endif>{{ $bank['label'] }}</option>
@@ -211,14 +217,14 @@
             
             <!-- Section 5: Pemetaan Akun -->
             <div class="section-header mt-12">
-                <h5>Pemetaan Akun</h5>
-                <hr>
+                <h6>Pemetaan Akun</h6>
+                <hr class="mx-n6">
             </div>
             
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Akun Hutang <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="payable-account" data-allow-clear="true">
+                    <select class="global-select2 form-select" id="payable-account" data-allow-clear="false">
                         <option value="">Pilih Akun Hutang</option>
                         @foreach($payable_accounts as $account)
                             <option value="{{ $account['value'] }}" @if($contact['debt_account'] == $account['label']) selected @endif>{{ $account['label'] }}</option>
@@ -227,7 +233,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Akun Piutang <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="receivable-account" data-allow-clear="true">
+                    <select class="global-select2 form-select" id="receivable-account" data-allow-clear="false">
                         <option value="">Pilih Akun Piutang</option>
                         @foreach($receivable_accounts as $account)
                             <option value="{{ $account['value'] }}" @if($contact['receivable_account'] == $account['label']) selected @endif>{{ $account['label'] }}</option>
@@ -239,12 +245,34 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="payment-terms" data-allow-clear="true">
+                    <select class="global-select2 form-select" id="payment-terms" data-allow-clear="false">
                         <option value="">Pilih Syarat Pembayaran</option>
                         @foreach($payment_terms as $payment_term)
                             <option value="{{ $payment_term['value'] }}" @if($contact['payment_terms'] == $payment_term['label']) selected @endif>{{ $payment_term['label'] }}</option>
                         @endforeach
                     </select>
+                </div>
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="contact-tags" multiple data-allow-clear="false">
+                            @foreach($tags as $tag)
+                                <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}" @if(isset($contact['tags']) && in_array($tag['value'], $contact['tags'])) selected @endif>{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags)
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-contact-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi kontak</small>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for alignment -->
                 </div>
             </div>
             
@@ -257,34 +285,6 @@
     </div>
 @endsection
 
-@section('css_script')
-<style>
-    .section-header h5 {
-        margin-bottom: 0;
-        font-weight: 600;
-    }
-    
-    .form-check-inline {
-        margin-right: 1rem;
-    }
-    
-    .contact-type-fields {
-        display: none;
-    }
-    
-    .contact-type-fields.show {
-        display: block;
-    }
-    
-    .is-invalid {
-        border-color: #dc3545;
-    }
-    
-    .form-text.text-muted {
-        font-size: 0.875rem;
-    }
-</style>
-@endsection
 
 @section('js_script')
     <script>

@@ -150,22 +150,33 @@
                 dt_adv_filter = new DataTable(main_table, {
                     ajax: `{{ route('master_data.storage.index_data_table') }}`,
                     columns: [{
-                            data: 'storage_code'
+                            data: 'storage_code',
+                            responsivePriority: 3
                         },
                         {
-                            data: 'storage_name'
+                            data: 'storage_name',
+                            responsivePriority: 2,
+                            render: function(data, type, row) {
+                                const detailUrl = `{{ route('master_data.storage.detail', ':id') }}`.replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
                         },
                         {
-                            data: 'pic_names'
+                            data: 'pic_names',
+                            responsivePriority: 4
                         },
                         {
-                            data: 'address'
+                            data: 'address',
+                            responsivePriority: 6
                         },
                         {
-                            data: 'status'
+                            data: 'status',
+                            responsivePriority: 5
                         },
                         {
-                            data: null
+                            data: null,
+                            responsivePriority: 1,
+                            width: '120px'
                         }
                     ],
                     columnDefs: [{

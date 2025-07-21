@@ -65,7 +65,7 @@
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label" for="multicol-country">Jenis Identitas</label>
-                    <select class="global-select2 form-select" data-allow-clear="true">
+                    <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Jenis Identitas</option>
                         @foreach($identity_types as $identity_type)
                             <option value="{{ $identity_type['value'] }}">{{ $identity_type['label'] }}</option>
@@ -86,7 +86,7 @@
                 </div>
                 <div class="col-md-6 pelanggan-additional-form">
                     <label class="form-label">Sales Penanggung Jawab</label>
-                    <select class="global-select2 form-select" data-allow-clear="true">
+                    <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Sales</option>
                         @foreach($sales_users as $sales_user)
                             <option value="{{ $sales_user['value'] }}">{{ $sales_user['label'] }}</option>
@@ -179,7 +179,7 @@
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label">Akun Hutang</label>
-                    <select class="global-select2 form-select" data-allow-clear="true">
+                    <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Akun Hutang</option>
                         @foreach($payable_accounts as $account)
                             <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
@@ -188,7 +188,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Akun Piutang</label>
-                    <select class="global-select2 form-select" data-allow-clear="true">
+                    <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Akun Piutang</option>
                         @foreach($receivable_accounts as $account)
                             <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
@@ -197,12 +197,34 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Syarat Pembayaran</label>
-                    <select class="global-select2 form-select" data-allow-clear="true">
+                    <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Syarat Pembayaran</option>
                         @foreach($payment_terms as $payment_term)
                             <option value="{{ $payment_term['value'] }}">{{ $payment_term['label'] }}</option>
                         @endforeach
                     </select>
+                </div>
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="contact-tags" multiple data-allow-clear="false">
+                            @foreach($tags as $tag)
+                                <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags)
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-contact-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi kontak</small>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for alignment -->
                 </div>
             </div>
 
@@ -214,7 +236,7 @@
                         <div class="row g-6">
                             <div class="col-md-6">
                                 <label class="form-label">Nama Bank</label>
-                                <select class="global-select2 form-select" data-allow-clear="true">
+                                <select class="global-select2 form-select" data-allow-clear="false">
                                     <option value="">Pilih Bank</option>
                                     @foreach($banks as $bank)
                                         <option value="{{ $bank['value'] }}">{{ $bank['label'] }}</option>
@@ -260,7 +282,7 @@
                             <div class="row g-6">
                                 <div class="col-md-6">
                                     <label class="form-label">Nama Produk</label>
-                                    <select class="global-select2 form-select" data-allow-clear="true">
+                                    <select class="global-select2 form-select" data-allow-clear="false">
                                         <option value="">Pilih Produk</option>
                                         @foreach($products as $product)
                                             <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>

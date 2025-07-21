@@ -257,6 +257,35 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Additional Fields Section -->
+            <div class="section-header mt-12">
+                <h6>Informasi Tambahan</h6>
+                <hr class="mx-n6">
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="opname-tags" multiple data-allow-clear="false" @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) disabled @endif>
+                            @foreach($tags as $tag)
+                                <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}" @if(isset($stockOpname['tags']) && in_array($tag['value'], $stockOpname['tags'])) selected @endif>{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags && !in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed']))
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-opname-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi stock opname</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Memo (Internal)</label>
+                    <textarea class="form-control" id="opname-memo" rows="2" placeholder="Catatan internal untuk stock opname ini" @if(in_array($stockOpname['status'] ?? '', ['adjustment_created', 'completed'])) readonly @endif>{{ $stockOpname['memo'] ?? '' }}</textarea>
+                </div>
+            </div>
 
             <!-- Action Buttons -->
             <div class="pt-6 text-end">

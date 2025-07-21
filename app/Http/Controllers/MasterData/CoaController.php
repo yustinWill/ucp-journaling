@@ -59,7 +59,21 @@ class CoaController extends Controller
 
     public function add()
     {
-        return view('pages.master_data.coa.add', []);
+        $tags = [
+            ['value' => 'AKTIVA', 'label' => 'AKTIVA - Aktiva', 'color' => 'success'],
+            ['value' => 'KEWAJIBAN', 'label' => 'KEWAJIBAN - Kewajiban', 'color' => 'danger'],
+            ['value' => 'MODAL', 'label' => 'MODAL - Modal', 'color' => 'primary'],
+            ['value' => 'PENDAPATAN', 'label' => 'PENDAPATAN - Pendapatan', 'color' => 'info'],
+            ['value' => 'BEBAN', 'label' => 'BEBAN - Beban', 'color' => 'warning']
+        ];
+
+        // Permission check for adding new tags
+        $canAddTags = true; // Mock permission check
+
+        return view('pages.master_data.coa.add', [
+            'tags' => $tags,
+            'canAddTags' => $canAddTags
+        ]);
     }
 
     public function export()

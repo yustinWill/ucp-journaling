@@ -188,11 +188,24 @@ class StockOpnameController extends Controller
             ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai']
         ];
 
+        $tags = [
+            ['value' => 'ROUTINE', 'label' => 'ROUTINE - Opname Rutin', 'color' => 'primary'],
+            ['value' => 'AUDIT', 'label' => 'AUDIT - Audit Stok', 'color' => 'danger'],
+            ['value' => 'MONTHLY', 'label' => 'MONTHLY - Bulanan', 'color' => 'info'],
+            ['value' => 'ANNUAL', 'label' => 'ANNUAL - Tahunan', 'color' => 'success'],
+            ['value' => 'INVESTIGATION', 'label' => 'INVESTIGATION - Investigasi', 'color' => 'warning']
+        ];
+
+        // Permission check for adding new tags
+        $canAddTags = true; // Mock permission check
+
         return view('pages.master_data.stock_opname.add', [
             'warehouses' => $warehouses,
             'picOptions' => $picOptions,
             'productCategories' => $productCategories,
-            'statusOptions' => $statusOptions
+            'statusOptions' => $statusOptions,
+            'tags' => $tags,
+            'canAddTags' => $canAddTags
         ]);
     }
 
@@ -283,13 +296,26 @@ class StockOpnameController extends Controller
             ]
         ];
 
+        $tags = [
+            ['value' => 'ROUTINE', 'label' => 'ROUTINE - Opname Rutin', 'color' => 'primary'],
+            ['value' => 'AUDIT', 'label' => 'AUDIT - Audit Stok', 'color' => 'danger'],
+            ['value' => 'MONTHLY', 'label' => 'MONTHLY - Bulanan', 'color' => 'info'],
+            ['value' => 'ANNUAL', 'label' => 'ANNUAL - Tahunan', 'color' => 'success'],
+            ['value' => 'INVESTIGATION', 'label' => 'INVESTIGATION - Investigasi', 'color' => 'warning']
+        ];
+
+        // Permission check for adding new tags
+        $canAddTags = true; // Mock permission check
+
         return view('pages.master_data.stock_opname.edit', [
             'stockOpname' => $stockOpname,
             'warehouses' => $warehouses,
             'picOptions' => $picOptions,
             'productCategories' => $productCategories,
             'statusOptions' => $statusOptions,
-            'stockOpnameProducts' => $stockOpnameProducts
+            'stockOpnameProducts' => $stockOpnameProducts,
+            'tags' => $tags,
+            'canAddTags' => $canAddTags
         ]);
     }
 

@@ -96,7 +96,7 @@
                                 <div class="row g-3">
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Kategori:</label>
-                                        <select class="global-select2 form-select" id="products-category-filter">
+                                        <select class="global-select2 form-select" id="products-category-filter" data-allow-clear="false">
                                             <option value="">Semua Kategori</option>
                                             @foreach($productCategories as $category)
                                                 <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
@@ -105,7 +105,7 @@
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Status Stok:</label>
-                                        <select class="global-select2 form-select" id="products-stock-filter">
+                                        <select class="global-select2 form-select" id="products-stock-filter" data-allow-clear="false">
                                             <option value="">Semua Status</option>
                                             @foreach($stockStatuses as $status)
                                                 <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -187,7 +187,7 @@
                                 <div class="row g-3">
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Status:</label>
-                                        <select class="global-select2 form-select" id="warehouse-status-filter">
+                                        <select class="global-select2 form-select" id="warehouse-status-filter" data-allow-clear="false">
                                             <option value="">Semua Status</option>
                                             @foreach($warehouseStatuses as $status)
                                                 <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -196,7 +196,7 @@
                                     </div>
                                     <div class="col-12 col-sm-6 col-lg-4">
                                         <label class="form-label">Lokasi:</label>
-                                        <select class="global-select2 form-select" id="warehouse-location-filter">
+                                        <select class="global-select2 form-select" id="warehouse-location-filter" data-allow-clear="false">
                                             <option value="">Semua Lokasi</option>
                                             @foreach($warehouseLocations as $location)
                                                 <option value="{{ $location['value'] }}">{{ $location['label'] }}</option>
@@ -269,16 +269,18 @@
                     columns: [
                         { 
                             data: 'product_name',
+                            responsivePriority: 3,
                             render: function(data, type, row) {
                                 const detailUrl = `{{ route('master_data.product.detail', ':id') }}`.replace(':id', row.id);
                                 return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
                         },
-                        { data: 'product_code' },
-                        { data: 'category' },
+                        { data: 'product_code', responsivePriority: 4 },
+                        { data: 'category', responsivePriority: 5 },
                         { 
                             data: 'total_stock',
                             className: 'text-end',
+                            responsivePriority: 6,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return parseFloat(data).toLocaleString('id-ID');
@@ -289,6 +291,7 @@
                         { 
                             data: 'available_qty',
                             className: 'text-end',
+                            responsivePriority: 7,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return parseFloat(data).toLocaleString('id-ID');
@@ -299,6 +302,7 @@
                         { 
                             data: 'minimum',
                             className: 'text-end',
+                            responsivePriority: 8,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return parseFloat(data).toLocaleString('id-ID');
@@ -306,10 +310,11 @@
                                 return data ?? '0';
                             }
                         },
-                        { data: 'unit' },
+                        { data: 'unit', responsivePriority: 9 },
                         { 
                             data: 'average_price',
                             className: 'text-end',
+                            responsivePriority: 10,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -320,6 +325,7 @@
                         { 
                             data: 'last_purchase_price',
                             className: 'text-end',
+                            responsivePriority: 11,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -330,6 +336,7 @@
                         { 
                             data: 'purchase_price',
                             className: 'text-end',
+                            responsivePriority: 12,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -340,6 +347,7 @@
                         { 
                             data: 'selling_price',
                             className: 'text-end',
+                            responsivePriority: 13,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -351,6 +359,8 @@
                             data: null,
                             orderable: false,
                             searchable: false,
+                            responsivePriority: 1,
+                            width: '120px',
                             render: function(data, type, row, meta) {
                                 const detailUrl = `{{ route('master_data.product.detail', ':id') }}`.replace(':id', row.id);
                                 const editUrl = `{{ route('master_data.product.edit', ':id') }}`.replace(':id', row.id);
@@ -412,7 +422,7 @@
                         { 
                             data: 'status',
                             render: function(data, type, row) {
-                                let badgeClass = data === 'ACTIVE' ? 'bg-success' : 'bg-danger';
+                                let badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-danger';
                                 return `<span class="badge ${badgeClass}">${data}</span>`;
                             }
                         },

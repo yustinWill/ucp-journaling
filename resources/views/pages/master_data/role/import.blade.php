@@ -23,7 +23,7 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Import Mode</label>
-                                <select class="global-select2 form-select" id="importMode" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="importMode" data-allow-clear="false">
                                     @foreach($importModes as $mode)
                                         <option value="{{ $mode['value'] }}">{{ $mode['label'] }}</option>
                                     @endforeach
@@ -31,7 +31,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Duplicate Handling</label>
-                                <select class="global-select2 form-select" id="duplicateHandling" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="duplicateHandling" data-allow-clear="false">
                                     @foreach($duplicateHandlings as $handling)
                                         <option value="{{ $handling['value'] }}">{{ $handling['label'] }}</option>
                                     @endforeach

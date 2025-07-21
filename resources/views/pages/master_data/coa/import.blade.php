@@ -1,10 +1,10 @@
 @extends('layouts.default')
 @section('page_title')
-    Impor Kontak
+    Impor COA
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Impor Kontak</h5>
+        <h4 class="card-header">Impor COA</h4>
         <form class="card-body">
             <div class="row gy-3 mt-0">
                 <div class="col-md-12">

@@ -258,6 +258,17 @@ class RoleController extends Controller
 
     private function getSelectData()
     {
+        $tags = [
+            ['value' => 'SYSTEM', 'label' => 'SYSTEM - System Role', 'color' => 'danger'],
+            ['value' => 'MANAGEMENT', 'label' => 'MANAGEMENT - Manajemen', 'color' => 'primary'],
+            ['value' => 'OPERATIONAL', 'label' => 'OPERATIONAL - Operasional', 'color' => 'success'],
+            ['value' => 'SUPPORT', 'label' => 'SUPPORT - Support', 'color' => 'info'],
+            ['value' => 'CUSTOM', 'label' => 'CUSTOM - Kustom', 'color' => 'warning']
+        ];
+
+        // Permission check for adding new tags
+        $canAddTags = true; // Mock permission check
+
         return [
             'modules' => [
                 ['id' => 1, 'name' => 'User Management', 'slug' => 'user'],
@@ -292,7 +303,9 @@ class RoleController extends Controller
                 ['value' => 'write', 'label' => 'Write'],
                 ['value' => 'delete', 'label' => 'Delete'],
                 ['value' => 'approval', 'label' => 'Approval'],
-            ]
+            ],
+            'tags' => $tags,
+            'canAddTags' => $canAddTags
         ];
     }
 

@@ -125,7 +125,15 @@ class ContactController extends Controller
                 ['value' => 'prod_c', 'label' => 'Produk C'],
                 ['value' => 'prod_d', 'label' => 'Produk D'],
                 ['value' => 'prod_e', 'label' => 'Produk E']
-            ]
+            ],
+            'tags' => [
+                ['value' => 'CUSTOMER', 'label' => 'CUSTOMER - Customer', 'color' => 'success'],
+                ['value' => 'SUPPLIER', 'label' => 'SUPPLIER - Supplier', 'color' => 'info'],
+                ['value' => 'INTERNAL', 'label' => 'INTERNAL - Internal', 'color' => 'secondary'],
+                ['value' => 'VIP', 'label' => 'VIP - VIP Customer', 'color' => 'warning'],
+                ['value' => 'PRIORITY', 'label' => 'PRIORITY - Priority Contact', 'color' => 'primary']
+            ],
+            'canAddTags' => true // Mock permission check
         ];
         
         return view('pages.master_data.contact.add', $selectData);
@@ -193,7 +201,15 @@ class ContactController extends Controller
                 ['value' => 'Net 60', 'label' => 'Net 60'],
                 ['value' => 'COD', 'label' => 'Cash on Delivery'],
                 ['value' => 'Immediate', 'label' => 'Immediate']
-            ]
+            ],
+            'tags' => [
+                ['value' => 'CUSTOMER', 'label' => 'CUSTOMER - Customer', 'color' => 'success'],
+                ['value' => 'SUPPLIER', 'label' => 'SUPPLIER - Supplier', 'color' => 'info'],
+                ['value' => 'INTERNAL', 'label' => 'INTERNAL - Internal', 'color' => 'secondary'],
+                ['value' => 'VIP', 'label' => 'VIP - VIP Customer', 'color' => 'warning'],
+                ['value' => 'PRIORITY', 'label' => 'PRIORITY - Priority Contact', 'color' => 'primary']
+            ],
+            'canAddTags' => true // Mock permission check
         ];
 
         return view('pages.master_data.contact.edit', compact('contact') + $selectData);

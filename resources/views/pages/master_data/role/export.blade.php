@@ -15,7 +15,7 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Export Format</label>
-                                <select class="global-select2 form-select" id="exportFormat" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="exportFormat" data-allow-clear="false">
                                     @foreach($exportFormats as $format)
                                         <option value="{{ $format['value'] }}">{{ $format['label'] }}</option>
                                     @endforeach
@@ -23,7 +23,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Status Filter</label>
-                                <select class="global-select2 form-select" id="statusFilter" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="statusFilter" data-allow-clear="false">
                                     @foreach($statusFilters as $filter)
                                         <option value="{{ $filter['value'] }}">{{ $filter['label'] }}</option>
                                     @endforeach

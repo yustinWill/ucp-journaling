@@ -72,8 +72,21 @@ class UserController extends Controller
 
     public function add()
     {
+        $tags = [
+            ['value' => 'MANAGEMENT', 'label' => 'MANAGEMENT - Manajemen', 'color' => 'primary'],
+            ['value' => 'STAFF', 'label' => 'STAFF - Staff', 'color' => 'info'],
+            ['value' => 'SUPERVISOR', 'label' => 'SUPERVISOR - Supervisor', 'color' => 'warning'],
+            ['value' => 'ADMIN', 'label' => 'ADMIN - Administrator', 'color' => 'secondary'],
+            ['value' => 'OPERATOR', 'label' => 'OPERATOR - Operator', 'color' => 'success']
+        ];
+
+        // Permission check for adding new tags
+        $canAddTags = true; // Mock permission check
+
         $selectData = [
-            'roles' => $this->getMockRoleSelectData()
+            'roles' => $this->getMockRoleSelectData(),
+            'tags' => $tags,
+            'canAddTags' => $canAddTags
         ];
         
         return view('pages.master_data.user.add', $selectData);
@@ -110,9 +123,22 @@ class UserController extends Controller
         ];
         
         $user = $userData[$id] ?? $userData[1];
+
+        $tags = [
+            ['value' => 'MANAGEMENT', 'label' => 'MANAGEMENT - Manajemen', 'color' => 'primary'],
+            ['value' => 'STAFF', 'label' => 'STAFF - Staff', 'color' => 'info'],
+            ['value' => 'SUPERVISOR', 'label' => 'SUPERVISOR - Supervisor', 'color' => 'warning'],
+            ['value' => 'ADMIN', 'label' => 'ADMIN - Administrator', 'color' => 'secondary'],
+            ['value' => 'OPERATOR', 'label' => 'OPERATOR - Operator', 'color' => 'success']
+        ];
+
+        // Permission check for adding new tags
+        $canAddTags = true; // Mock permission check
         
         $selectData = [
-            'roles' => $this->getMockRoleSelectData()
+            'roles' => $this->getMockRoleSelectData(),
+            'tags' => $tags,
+            'canAddTags' => $canAddTags
         ];
         
         return view('pages.master_data.user.edit', compact('user') + $selectData);

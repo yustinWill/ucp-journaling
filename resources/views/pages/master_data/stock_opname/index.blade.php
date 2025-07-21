@@ -158,17 +158,38 @@ $(function() {
         dt_adv_filter = new DataTable(stockOpnameTable, {
             ajax: `{{ route('master_data.stock_opname.index_data_table') }}`,
             columns: [
-                { data: 'opname_number' },
-                { data: 'opname_date' },
-                { data: 'warehouse_name' },
-                { data: 'pic_name' },
-                { data: 'variant_products' },
-                { data: 'system_qty' },
-                { data: 'physical_qty' },
-                { data: 'variance_qty' },
-                { data: 'variance_value' },
-                { data: 'status' },
-                { data: null }
+                { 
+                    data: 'opname_number',
+                    responsivePriority: 3,
+                    render: function(data, type, row) {
+                        const detailUrl = `{{ route('master_data.stock_opname.detail', ':id') }}`.replace(':id', row.id);
+                        return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                    }
+                },
+                { data: 'opname_date', responsivePriority: 2 },
+                { 
+                    data: 'warehouse_name',
+                    responsivePriority: 4,
+                    render: function(data, type, row) {
+                        const detailUrl = `{{ route('master_data.storage.detail', ':id') }}`.replace(':id', row.warehouse_id);
+                        return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                    }
+                },
+                { 
+                    data: 'pic_name',
+                    responsivePriority: 5,
+                    render: function(data, type, row) {
+                        const detailUrl = `{{ route('master_data.user.detail', ':id') }}`.replace(':id', row.pic_id);
+                        return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                    }
+                },
+                { data: 'variant_products', responsivePriority: 6 },
+                { data: 'system_qty', responsivePriority: 7 },
+                { data: 'physical_qty', responsivePriority: 8 },
+                { data: 'variance_qty', responsivePriority: 9 },
+                { data: 'variance_value', responsivePriority: 10 },
+                { data: 'status', responsivePriority: 11 },
+                { data: null, responsivePriority: 1, width: '120px' }
             ],
             columnDefs: [
                 {

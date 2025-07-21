@@ -147,28 +147,40 @@
                 dt_adv_filter = new DataTable(main_table, {
                     ajax: `{{ route('master_data.user.index_data_table') }}`,
                     columns: [{
-                            data: 'created_at'
+                            data: 'created_at',
+                            responsivePriority: 2
                         },
                         {
-                            data: 'name'
+                            data: 'name',
+                            responsivePriority: 3,
+                            render: function(data, type, row) {
+                                const detailUrl = `{{ route('master_data.user.detail', ':id') }}`.replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
                         },
                         {
-                            data: 'email'
+                            data: 'email',
+                            responsivePriority: 4
                         },
                         {
-                            data: 'phone'
+                            data: 'phone',
+                            responsivePriority: 6
                         },
                         {
-                            data: 'role'
+                            data: 'role',
+                            responsivePriority: 5
                         },
                         {
-                            data: 'last_login'
+                            data: 'last_login',
+                            responsivePriority: 7
                         },
                         {
-                            data: 'status'
+                            data: 'status',
+                            responsivePriority: 8
                         },
                         {
-                            data: null
+                            data: null,
+                            responsivePriority: 1
                         }
                     ],
                     columnDefs: [{

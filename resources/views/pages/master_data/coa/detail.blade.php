@@ -13,11 +13,6 @@
                     <i class="icon-base ti tabler-edit me-2"></i>
                     Edit COA
                 </a>
-                <a href="{{ route('master_data.coa.index') }}"
-                    class="btn btn-md btn-secondary waves-effect waves-light">
-                    <i class="icon-base ti tabler-arrow-left me-2"></i>
-                    Kembali
-                </a>
             </div>
         </div>
     </div>
@@ -327,35 +322,27 @@
                                 <th>Tanggal & Waktu</th>
                                 <th>Pengguna</th>
                                 <th>Aksi</th>
-                                <th>Field yang Diubah</th>
-                                <th>Nilai Lama</th>
-                                <th>Nilai Baru</th>
+                                <th>Deskripsi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>2025-01-20 10:30:15</td>
-                                <td>Admin User</td>
+                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-001']) }}" class="text-primary fw-semibold">Admin User</a></td>
                                 <td><span class="badge bg-label-warning">UPDATE</span></td>
-                                <td>Nama COA</td>
-                                <td>Kas Kecil</td>
-                                <td>Kas</td>
+                                <td>Mengubah nama COA dari "Kas Kecil" menjadi "Kas"</td>
                             </tr>
                             <tr>
                                 <td>2025-01-15 14:22:40</td>
-                                <td>Finance Manager</td>
+                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-002']) }}" class="text-primary fw-semibold">Finance Manager</a></td>
                                 <td><span class="badge bg-label-info">UPDATE</span></td>
-                                <td>Deskripsi</td>
-                                <td>Akun kas perusahaan</td>
-                                <td>Akun kas untuk mencatat semua transaksi kas masuk dan keluar perusahaan.</td>
+                                <td>Memperbarui deskripsi COA dengan detail yang lebih lengkap</td>
                             </tr>
                             <tr>
                                 <td>2025-01-10 09:15:25</td>
-                                <td>System Admin</td>
+                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-003']) }}" class="text-primary fw-semibold">System Admin</a></td>
                                 <td><span class="badge bg-label-success">CREATE</span></td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>COA baru dibuat</td>
+                                <td>COA kas dibuat untuk pencatatan transaksi kas masuk dan keluar</td>
                             </tr>
                         </tbody>
                     </table>
@@ -394,19 +381,12 @@
         });
 
         $('#audit-log-table').DataTable({
-            scrollX: true,
             responsive: true,
             orderCellsTop: true,
-            order: [[0, 'desc']], // Sort by date descending
-            pageLength: 10,
-            language: {
-                paginate: {
-                    next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                    previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                    first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                    last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                }
-            }
+            searching: false,
+            paging: false,
+            info: false,
+            order: [[0, 'desc']] // Sort by date descending
         });
         
         // Search functionality

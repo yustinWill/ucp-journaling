@@ -147,28 +147,37 @@
                 dt_adv_filter = new DataTable(main_table, {
                     ajax: `{{ route('master_data.contact.index_data_table') }}`,
                     columns: [{
-                            data: 'contact_name'
-                        },
-
-                        {
-                            data: 'company_name'
-                        },
-
-                        {
-                            data: 'email'
+                            data: 'contact_name',
+                            responsivePriority: 3,
+                            render: function(data, type, row) {
+                                const detailUrl = "{{ route('master_data.contact.detail', ':id') }}".replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
                         },
                         {
-                            data: 'phone'
-                        },
-
-                        {
-                            data: 'group_text'
+                            data: 'company_name',
+                            responsivePriority: 4
                         },
                         {
-                            data: 'type'
+                            data: 'email',
+                            responsivePriority: 6
                         },
                         {
-                            data: null
+                            data: 'phone',
+                            responsivePriority: 5
+                        },
+                        {
+                            data: 'group_text',
+                            responsivePriority: 7
+                        },
+                        {
+                            data: 'type',
+                            responsivePriority: 8
+                        },
+                        {
+                            data: null,
+                            responsivePriority: 1,
+                            width: '120px'
                         }
                     ],
                     columnDefs: [{

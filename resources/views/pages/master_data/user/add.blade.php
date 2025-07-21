@@ -80,6 +80,34 @@
                 </div>
             </div>
 
+            <!-- Informasi Tambahan Section -->
+            <div class="section-header mt-12">
+                <h6>Informasi Tambahan</h6>
+                <hr class="mx-n6">
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="user-tags" multiple data-allow-clear="false">
+                            @foreach($tags as $tag)
+                                <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags)
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-user-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi user</small>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for alignment -->
+                </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <button type="button" class="btn btn-label-danger me-3" id="cancel-btn">Batalkan</button>

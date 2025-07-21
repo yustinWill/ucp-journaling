@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah Produk Baru</h5>
+        <h4 class="card-header">Tambah Produk Baru</h4>
         <form class="card-body" id="productForm">
             <!-- Info Produk Section -->
             <div class="section-header mt-12">
@@ -22,7 +22,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Unit <span style="color: red;">*</span></label>
-                            <select class="global-select2 form-select" id="unit-select" data-allow-clear="true">
+                            <select class="global-select2 form-select" id="unit-select" data-allow-clear="false">
                                 <option value="">Pilih Unit</option>
                                 @foreach($units as $unit)
                                     <option value="{{ $unit['value'] }}">{{ $unit['label'] }}</option>
@@ -37,7 +37,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Kategori Produk</label>
-                            <select class="global-select2 form-select" id="category-select" data-allow-clear="true">
+                            <select class="global-select2 form-select" id="category-select" data-allow-clear="false">
                                 <option value="">Pilih Kategori</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
@@ -46,10 +46,13 @@
                         </div>
                     </div>
                     <div class="row g-3 mb-4">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <label class="form-label">Deskripsi</label>
                             <textarea class="form-control" id="product-description" rows="3" placeholder="Deskripsi detail produk..." maxlength="1000"></textarea>
                             <small class="form-text text-muted">Maksimal 1000 karakter</small>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Empty column for layout balance -->
                         </div>
                     </div>
                 </div>
@@ -116,27 +119,32 @@
                     
                     <div id="purchase-fields" style="display: none;">
                         <div class="row g-3 mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
-                                <input type="text" class="form-control curr-mask" id="purchase-price" placeholder="Rp 0" dir="rtl" />
+                                <input type="text" class="form-control curr-mask text-end" id="purchase-price" placeholder="Rp 0" />
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label">Akun Pembelian <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="purchase-account" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="purchase-account" data-allow-clear="false">
                                     <option value="">Pilih Akun</option>
                                     @foreach($accounts as $account)
                                         <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
                                 <label class="form-label">Pajak Pembelian <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="purchase-tax" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="purchase-tax" data-allow-clear="false">
                                     <option value="">Pilih Pajak</option>
                                     @foreach($taxes as $tax)
                                         <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Empty column for layout balance -->
                             </div>
                         </div>
                     </div>
@@ -155,11 +163,11 @@
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
-                                <input type="text" class="form-control curr-mask" id="sales-price" placeholder="Rp 0" dir="rtl" />
+                                <input type="text" class="form-control curr-mask" id="sales-price" placeholder="Rp 0" class="text-end" />
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Akun Penjualan <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="sales-account" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="sales-account" data-allow-clear="false">
                                     <option value="">Pilih Akun</option>
                                     @foreach($accounts as $account)
                                         <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
@@ -168,7 +176,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Pajak Penjualan <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="sales-tax" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="sales-tax" data-allow-clear="false">
                                     <option value="">Pilih Pajak</option>
                                     @foreach($taxes as $tax)
                                         <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
@@ -196,7 +204,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Akun Persediaan Default <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="inventory-account" data-allow-clear="true">
+                                <select class="global-select2 form-select" id="inventory-account" data-allow-clear="false">
                                     <option value="">Pilih Akun</option>
                                     @foreach($accounts as $account)
                                         <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
@@ -263,11 +271,11 @@
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-4">
                                         <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
-                                        <input type="text" class="form-control curr-mask" id="bundle-purchase-price" placeholder="Rp 0" dir="rtl" />
+                                        <input type="text" class="form-control curr-mask" id="bundle-purchase-price" placeholder="Rp 0" class="text-end" />
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Akun Pembelian <span style="color: red;">*</span></label>
-                                        <select class="global-select2 form-select" id="bundle-purchase-account" data-allow-clear="true">
+                                        <select class="global-select2 form-select" id="bundle-purchase-account" data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
                                             @foreach($accounts as $account)
                                                 <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
@@ -276,7 +284,7 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Pajak Pembelian <span style="color: red;">*</span></label>
-                                        <select class="global-select2 form-select" id="bundle-purchase-tax" data-allow-clear="true">
+                                        <select class="global-select2 form-select" id="bundle-purchase-tax" data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
                                             @foreach($taxes as $tax)
                                                 <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
@@ -300,11 +308,11 @@
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-4">
                                         <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
-                                        <input type="text" class="form-control curr-mask" id="bundle-sales-price" placeholder="Rp 0" dir="rtl" />
+                                        <input type="text" class="form-control curr-mask" id="bundle-sales-price" placeholder="Rp 0" class="text-end" />
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Akun Penjualan <span style="color: red;">*</span></label>
-                                        <select class="global-select2 form-select" id="bundle-sales-account" data-allow-clear="true">
+                                        <select class="global-select2 form-select" id="bundle-sales-account" data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
                                             @foreach($accounts as $account)
                                                 <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
@@ -313,7 +321,7 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Pajak Penjualan <span style="color: red;">*</span></label>
-                                        <select class="global-select2 form-select" id="bundle-sales-tax" data-allow-clear="true">
+                                        <select class="global-select2 form-select" id="bundle-sales-tax" data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
                                             @foreach($taxes as $tax)
                                                 <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
@@ -341,7 +349,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Akun Persediaan Default <span style="color: red;">*</span></label>
-                                        <select class="global-select2 form-select" id="bundle-inventory-account" data-allow-clear="true">
+                                        <select class="global-select2 form-select" id="bundle-inventory-account" data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
                                             @foreach($accounts as $account)
                                                 <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
@@ -444,6 +452,35 @@
                 </div>
             </div>
             
+            <!-- Additional Fields Section -->
+            <div class="section-header mt-12">
+                <h6>Informasi Tambahan</h6>
+                <hr class="mx-n6">
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="product-tags" multiple data-allow-clear="false">
+                            @foreach($tags as $tag)
+                                <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags)
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-product-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi produk</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Memo (Internal)</label>
+                    <textarea class="form-control" id="product-memo" rows="2" placeholder="Catatan internal untuk produk ini"></textarea>
+                </div>
+            </div>
+            
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <button type="button" class="btn btn-label-danger me-3" id="cancel-btn">Batalkan</button>
@@ -453,37 +490,6 @@
     </div>
 @endsection
 
-@section('css_script')
-<style>
-    .section-header h6 {
-        margin-bottom: 0;
-        font-weight: 600;
-    }
-    
-    .curr-mask {
-        text-align: right;
-    }
-    
-    .image-upload-area {
-        cursor: pointer;
-        border-radius: 8px;
-        transition: border-color 0.3s;
-    }
-    
-    .image-upload-area:hover {
-        border-color: #666;
-    }
-    
-    .form-text.text-muted {
-        font-size: 0.875rem;
-    }
-    
-    .bundle-component-row .form-select,
-    .bundle-component-row .form-control {
-        height: 38px;
-    }
-</style>
-@endsection
 
 @section('js_script')
 <script>
@@ -737,7 +743,7 @@
                         </select>
                     </td>
                     <td>
-                        <input type="text" class="form-control curr-mask account-cost" data-id="${bundleAccountCounter}" placeholder="Rp-" dir="rtl">
+                        <input type="text" class="form-control curr-mask account-cost" data-id="${bundleAccountCounter}" placeholder="Rp-" class="text-end">
                     </td>
                     <td>
                         <button type="button" class="btn btn-sm btn-danger remove-account" data-id="${bundleAccountCounter}">

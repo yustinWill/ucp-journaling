@@ -71,6 +71,34 @@
                 </div>
             </div>
 
+            <!-- Informasi Tambahan Section -->
+            <div class="section-header mt-12">
+                <h6>Informasi Tambahan</h6>
+                <hr class="mx-n6">
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="role-tags" multiple data-allow-clear="false">
+                            @foreach($tags as $tag)
+                                <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}" @if(isset($role['tags']) && in_array($tag['value'], $role['tags'])) selected @endif>{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags)
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-role-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi role</small>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for alignment -->
+                </div>
+            </div>
+
             <!-- Permissions Section -->
             <div class="section-header mt-12">
                 <div class="d-flex justify-content-between align-items-center">
@@ -141,34 +169,6 @@
     </div>
 @endsection
 
-@section('css_script')
-<style>
-    .section-header h6 {
-        margin-bottom: 0;
-        font-weight: 600;
-    }
-    
-    .module-permissions {
-        border: 1px solid #e9ecef;
-        border-radius: 0.375rem;
-        padding: 1rem;
-        background-color: #f8f9fa;
-    }
-    
-    .permission-checkbox:checked {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-    
-    .form-check-label {
-        font-weight: 500;
-    }
-    
-    .form-text.text-muted {
-        font-size: 0.875rem;
-    }
-</style>
-@endsection
 
 @section('js_script')
 <script>

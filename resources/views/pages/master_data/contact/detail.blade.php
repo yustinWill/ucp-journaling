@@ -72,6 +72,12 @@
                             <i class="icon-base ti tabler-file-dollar me-2"></i>
                             <b>Credit Memo</b>
                         </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
+                            data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab"
+                            tabindex="-1">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Audit Log</b>
+                        </a>
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <div class="tab-pane fade show active" id="horizontal-profil" role="tabpanel"
@@ -100,6 +106,57 @@
                                         <span class="visually-hidden">Loading...</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Audit Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel"
+                            aria-labelledby="audit-log-list-item">
+                            <div class="section-header mt-6">
+                                <h6>Log Audit Kontak</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table id="audit-log-table" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal & Waktu</th>
+                                            <th>Pengguna</th>
+                                            <th>Aksi</th>
+                                            <th>Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(isset($contact['audit_logs']))
+                                            @foreach($contact['audit_logs'] as $log)
+                                                <tr>
+                                                    <td>{{ $log['created_at'] }}</td>
+                                                    <td><a href="{{ route('master_data.user.detail', ['id' => $log['user_id']]) }}" class="text-primary fw-semibold">{{ $log['user_name'] }}</a></td>
+                                                    <td><span class="badge bg-label-{{ $log['action_type'] === 'CREATE' ? 'success' : ($log['action_type'] === 'UPDATE' ? 'warning' : 'info') }}">{{ $log['action_type'] }}</span></td>
+                                                    <td>{{ $log['description'] }}</td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td>2025-01-21 16:20:00</td>
+                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-001']) }}" class="text-primary fw-semibold">Admin System</a></td>
+                                                <td><span class="badge bg-label-warning">UPDATE</span></td>
+                                                <td>Memperbarui informasi kontak dan data bank untuk RIYO Water distributor</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2025-01-20 14:15:30</td>
+                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-002']) }}" class="text-primary fw-semibold">Finance Manager</a></td>
+                                                <td><span class="badge bg-label-info">UPDATE</span></td>
+                                                <td>Update alamat penagihan dan syarat pembayaran kontak supplier</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2025-01-18 09:45:15</td>
+                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-003']) }}" class="text-primary fw-semibold">Sales Manager</a></td>
+                                                <td><span class="badge bg-label-success">CREATE</span></td>
+                                                <td>Kontak baru dibuat untuk distributor RIYO Water regional Jakarta</td>
+                                            </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -442,6 +499,16 @@ $(function() {
             $('#credit-memo-content').html('<div class="alert alert-danger">Error loading credit memo data</div>');
         });
     }
+    
+    // Initialize DataTable for audit log
+    $('#audit-log-table').DataTable({
+        responsive: true,
+        orderCellsTop: true,
+        searching: false,
+        paging: false,
+        info: false,
+        order: [[0, 'desc']] // Sort by date descending
+    });
 });
 </script>
 @endsection

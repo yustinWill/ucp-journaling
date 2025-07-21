@@ -231,12 +231,25 @@ class ProductController extends Controller
             ['value' => '4', 'label' => 'Buku Tulis 38 Lembar', 'unit' => 'pcs', 'price' => 6000]
         ];
 
+        $tags = [
+            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Barang Jadi', 'color' => 'success'],
+            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku', 'color' => 'info'],
+            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan', 'color' => 'warning'],
+            ['value' => 'CONSUMABLES', 'label' => 'CONSUMABLES - Habis Pakai', 'color' => 'secondary'],
+            ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan', 'color' => 'danger']
+        ];
+
+        // Permission check for adding new tags
+        $canAddTags = true; // Mock permission check
+
         return view('pages.master_data.product.add', [
             'units' => $units,
             'categories' => $categories,
             'accounts' => $accounts,
             'taxes' => $taxes,
-            'products' => $products
+            'products' => $products,
+            'tags' => $tags,
+            'canAddTags' => $canAddTags
         ]);
     }
 

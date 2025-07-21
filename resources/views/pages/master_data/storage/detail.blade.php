@@ -4,8 +4,33 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Detail Gudang</h5>
-        <form class="card-body">
+        <div class="card-body">
+            <!-- Header Section -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h4 class="mb-3">Detail Gudang</h4>
+                </div>
+                
+                <!-- Action Panel -->
+                <div class="col-md-4">
+                    <div class="text-end">
+                        @php
+                            $totalActions = 1; // Edit always present
+                        @endphp
+                        
+                        @if($totalActions < 3)
+                            <!-- Show buttons directly when less than 3 actions -->
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{{ route('master_data.storage.edit', 1) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                    <i class="icon-base ti tabler-edit me-2"></i>Edit
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Storage Title -->
             <h2>Gudang Utama</h2>
             <span>
                 <h6>Data di bawah berdasarkan tanggal 2025-07-07 14:35:21</h6>
@@ -31,20 +56,9 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Status Gudang</label>
-                    <div class="demo-inline-spacing">
-                        <label class="switch switch-primary">
-                            <input type="checkbox" class="switch-input" checked="" disabled>
-                            <span class="switch-toggle-slider">
-                                <span class="switch-on">
-                                    <i class="icon-base ti tabler-check"></i>
-                                </span>
-                                <span class="switch-off">
-                                    <i class="icon-base ti tabler-x"></i>
-                                </span>
-                            </span>
-                            <span class="switch-label">Aktif</span>
-                        </label>
+                    <label class="form-label">Status</label>
+                    <div class="form-control-plaintext">
+                        <span class="badge bg-label-success">ACTIVE</span>
                     </div>
                 </div>
             </div>
@@ -53,14 +67,25 @@
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
                         <a class="list-group-item list-group-item-action waves-effect active" id="home-list-item"
-                            data-bs-toggle="list" href="#horizontal-daftar-produk" aria-selected="false" role="tab"
-                            tabindex="-1"><b>Daftar Produk</b></a>
+                            data-bs-toggle="list" href="#horizontal-daftar-produk" aria-selected="true" role="tab">
+                            <i class="icon-base ti tabler-package me-2"></i>
+                            <b>Daftar Produk</b>
+                        </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="profile-list-item"
-                            data-bs-toggle="list" href="#horizontal-daftar-transaksi" aria-selected="false" role="tab"
-                            tabindex="-1"><b>Daftar Transaksi</b></a>
+                            data-bs-toggle="list" href="#horizontal-daftar-transaksi" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-receipt-2 me-2"></i>
+                            <b>Daftar Transaksi</b>
+                        </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="messages-list-item"
-                            data-bs-toggle="list" href="#horizontal-daftar-batch" aria-selected="false" role="tab"
-                            tabindex="-1"><b>Daftar Batch</b></a>
+                            data-bs-toggle="list" href="#horizontal-daftar-batch" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-stack me-2"></i>
+                            <b>Daftar Batch</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="audit-list-item"
+                            data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Audit Log</b>
+                        </a>
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <div class="tab-pane fade show active" id="horizontal-daftar-produk" role="tabpanel"
@@ -122,6 +147,39 @@
                                             <th>Tgl Update Terakhir</th>
                                         </tr>
                                     </thead>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Audit Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Log Audit Gudang</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table id="audit-log-table" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal & Waktu</th>
+                                            <th>Pengguna</th>
+                                            <th>Aksi</th>
+                                            <th>Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2025-01-21 14:30:00</td>
+                                            <td><a href="#" class="text-primary fw-semibold">Admin Gudang</a></td>
+                                            <td><span class="badge bg-label-info">UPDATE</span></td>
+                                            <td>Update status gudang dan penanggung jawab untuk RIYO Water</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2025-01-20 10:15:30</td>
+                                            <td><a href="#" class="text-primary fw-semibold">System Administrator</a></td>
+                                            <td><span class="badge bg-label-success">CREATE</span></td>
+                                            <td>Gudang utama dibuat untuk operasional RIYO Water</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -354,6 +412,16 @@
                     orderCellsTop: true
                 });
             }
+            
+            // Initialize DataTable for audit log
+            $('#audit-log-table').DataTable({
+                responsive: true,
+                orderCellsTop: true,
+                searching: false,
+                paging: false,
+                info: false,
+                order: [[0, 'desc']] // Sort by date descending
+            });
         });
     </script>
 @endsection

@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Ekspor Kontak</h5>
+        <h4 class="card-header">Ekspor Gudang</h4>
         <form class="card-body form-repeater">
             <h6>1. Pilih Jenis Format</h6>
             <div class="row gy-3 mt-0">
