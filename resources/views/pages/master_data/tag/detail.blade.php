@@ -56,7 +56,7 @@
             <!-- Tag Title -->
             <h2>{{ $tag['code'] }} - {{ $tag['name'] }}</h2>
             <span>
-                <h6>Data tag berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
+                <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
             </span>
             <hr class="my-6 mx-n6" />
 
@@ -260,7 +260,7 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batalkan',
+                cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'btn btn-danger',
                     cancelButton: 'btn btn-label-secondary'

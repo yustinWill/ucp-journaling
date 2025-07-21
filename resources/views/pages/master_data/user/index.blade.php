@@ -65,7 +65,7 @@
 
     <!-- Main Content Card -->
     <div class="card mt-6">
-        <h5 class="card-header">List User</h5>
+        <h4 class="card-header">Kelola User</h4>
         <div class="card-body">
             <!-- Advanced Search Form -->
             <form class="dt_adv_search" method="GET">
@@ -90,8 +90,9 @@
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Status:</label>
                                 <select class="global-select2 form-select" data-allow-clear="false">
-                                    <option value="AK">Active</option>
-                                    <option value="HI">Inactive</option>
+                                    <option value="">Semua Status</option>
+                                    <option value="ACTIVE">ACTIVE - Aktif</option>
+                                    <option value="INACTIVE">INACTIVE - Tidak Aktif</option>
                                 </select>
                             </div>
                         </div>
@@ -121,12 +122,12 @@
             <table id="main-table" class="table table-bordered">
                 <thead>
                     <tr>
+                        <th>Tanggal Dibuat</th>
                         <th>Nama User</th>
                         <th>Email User</th>
                         <th>Phone</th>
                         <th>Role</th>
                         <th>Terakhir Login</th>
-                        <th>Password Terakhir Dirubah</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -146,6 +147,9 @@
                 dt_adv_filter = new DataTable(main_table, {
                     ajax: `{{ route('master_data.user.index_data_table') }}`,
                     columns: [{
+                            data: 'created_at'
+                        },
+                        {
                             data: 'name'
                         },
                         {
@@ -161,9 +165,6 @@
                             data: 'last_login'
                         },
                         {
-                            data: 'last_password_change'
-                        },
-                        {
                             data: 'status'
                         },
                         {
@@ -171,33 +172,46 @@
                         }
                     ],
                     columnDefs: [{
-                            orderable: false,
-                            targets: -2,
-                            render: function(data, type, full, meta) {
-                                if (data == 'ACTIVE') {
-                                    return `<span class="badge bg-label-success">${data}</span>`;
-                                } else {
-                                    return `<span class="badge bg-label-danger">${data}</span>`;
-                                }
-                            }
-                        },
-                        {
-                            targets: -1,
+                            targets: -1, // Action column (last column)
                             orderable: false,
                             searchable: false,
+                            width: '120px',
+                            responsivePriority: 1,
                             render: function(data, type, row, meta) {
                                 const detailUrl = "{{ route('master_data.user.detail', ':id') }}".replace(':id', row.id);
                                 const editUrl = "{{ route('master_data.user.edit', ':id') }}".replace(':id', row.id);
                                 return `
                                 <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                    <a href="${detailUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
                                     </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <a href="${editUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-base ti tabler-edit"></i>
                                     </a>
                                 </div>
                             `;
+                            }
+                        },
+                        {
+                            targets: [0], // Date column (first column)
+                            responsivePriority: 2,
+                            render: function(data, type, row) {
+                                return data; // Keep original date format
+                            }
+                        },
+                        {
+                            targets: [1], // Name column - make clickable
+                            responsivePriority: 3,
+                            render: function(data, type, row) {
+                                const detailUrl = "{{ route('master_data.user.detail', ':id') }}".replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
+                        },
+                        {
+                            targets: [6], // Status column
+                            render: function(data, type, row) {
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                return `<span class="badge ${badgeClass}">${data}</span>`;
                             }
                         }
                     ],

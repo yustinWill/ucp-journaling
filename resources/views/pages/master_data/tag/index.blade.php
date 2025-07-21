@@ -54,7 +54,7 @@
     <!-- Main Content Card -->
     <div class="mt-6">
         <div class="card">
-        <h5 class="card-header">List Tag</h5>
+        <h4 class="card-header">Kelola Tag</h4>
         <div class="card-body">
             <!-- Advanced Search Form -->
             <form class="dt_adv_search" method="GET">
@@ -179,10 +179,10 @@
                                 
                                 return `
                                 <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                    <a href="${detailUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
                                     </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <a href="${editUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-base ti tabler-edit"></i>
                                     </a>
                                 </div>

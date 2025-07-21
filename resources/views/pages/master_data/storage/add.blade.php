@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah Gudang Baru</h5>
+        <h4 class="card-header">Tambah Gudang</h4>
         <form class="card-body form-repeater">
             <h6>1. Data Gudang</h6>
             <div class="row g-6">

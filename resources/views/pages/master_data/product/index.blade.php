@@ -87,7 +87,7 @@
         <!-- Products Tab -->
         <div class="tab-pane fade show active" id="products-tab" role="tabpanel">
             <div class="card">
-                <h5 class="card-header">Barang & Jasa</h5>
+                <h4 class="card-header">Kelola Produk</h4>
                 <div class="card-body">
                     <!-- Advanced Search Form -->
                     <form class="dt_adv_search" method="GET">
@@ -178,7 +178,7 @@
         <!-- Warehouse Tab -->
         <div class="tab-pane fade" id="warehouse-tab" role="tabpanel">
             <div class="card">
-                <h5 class="card-header">Gudang</h5>
+                <h4 class="card-header">Kelola Gudang</h4>
                 <div class="card-body">
                     <!-- Advanced Search Form -->
                     <form class="dt_adv_search" method="GET">

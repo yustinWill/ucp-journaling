@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Edit User</h5>
+        <h4 class="card-header">Edit User</h4>
         <form class="card-body" id="userEditForm">
             <!-- Data User Section -->
             <div class="section-header mt-12">
@@ -27,7 +27,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Role <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="user-role" data-allow-clear="true">
+                    <select class="global-select2 form-select" id="user-role" data-allow-clear="false">
                         <option value="">Pilih Role</option>
                         @foreach($roles as $role)
                             <option value="{{ $role['value'] }}" @if(($user['role'] ?? '') == $role['value']) selected @endif>{{ $role['label'] }}</option>
@@ -167,7 +167,7 @@
             if (!validateForm()) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Validasi Gagal',
+                    title: 'Kesalahan Validasi',
                     text: 'Mohon lengkapi semua field yang wajib diisi dengan benar.',
                     customClass: {
                         confirmButton: 'btn btn-primary'
@@ -178,11 +178,11 @@
             }
             
             Swal.fire({
-                title: 'Simpan Perubahan?',
-                text: 'Data user akan diperbarui!',
+                title: 'Perbarui User?',
+                text: 'Apakah Anda yakin ingin memperbarui user ini?',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Ya, Simpan!',
+                confirmButtonText: 'Ya, Perbarui!',
                 cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'btn btn-success',
@@ -195,7 +195,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil!',
-                        text: 'Data user berhasil diperbarui.',
+                        text: 'User berhasil diperbarui.',
                         customClass: {
                             confirmButton: 'btn btn-success'
                         },
@@ -218,7 +218,7 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Batalkan!',
-                cancelButtonText: 'Tidak',
+                cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'btn btn-danger',
                     cancelButton: 'btn btn-label-secondary'

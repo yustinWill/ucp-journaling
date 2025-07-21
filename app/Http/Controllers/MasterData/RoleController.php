@@ -102,34 +102,42 @@ class RoleController extends Controller
             'permissions_count' => 8,
             'created_at' => '2025-01-01 10:00:00',
             'updated_at' => '2025-01-01 10:00:00',
+            // CRITICAL: Audit logs MUST be sorted by latest date first (as per Form Standards Rule #21)
             'audit_logs' => [
+                [
+                    'created_at' => '2025-01-21 10:30:00', // Most recent
+                    'user_id' => 'USR-001',
+                    'user_name' => 'System Administrator',
+                    'action_type' => 'UPDATE',
+                    'description' => 'Updated role permissions for RIYO Water Production module'
+                ],
                 [
                     'created_at' => '2025-01-20 15:45:12',
                     'user_id' => 'USR-002',
-                    'user_name' => 'Finance Manager',
+                    'user_name' => 'Manager Produksi',
                     'action_type' => 'UPDATE',
-                    'description' => 'Updated role permissions for Contact Management module'
+                    'description' => 'Modified role permissions for Contact Management access'
                 ],
                 [
                     'created_at' => '2025-01-19 14:30:45',
                     'user_id' => 'USR-001',
                     'user_name' => 'System Administrator',
                     'action_type' => 'UPDATE',
-                    'description' => 'Modified role description and status'
+                    'description' => 'Updated role description and user assignment limits'
                 ],
                 [
                     'created_at' => '2025-01-18 09:15:23',
                     'user_id' => 'USR-003',
-                    'user_name' => 'HR Manager',
+                    'user_name' => 'Staff Keuangan',
                     'action_type' => 'ASSIGN',
-                    'description' => 'Assigned role to 2 new users'
+                    'description' => 'Assigned role to 2 new RIYO Water employees'
                 ],
                 [
-                    'created_at' => '2025-01-17 16:22:11',
+                    'created_at' => '2025-01-17 16:22:11', // Oldest
                     'user_id' => 'USR-001',
                     'user_name' => 'System Administrator',
                     'action_type' => 'CREATE',
-                    'description' => 'Role created with initial permission setup'
+                    'description' => 'Role created with initial permission setup for RIYO Water operations'
                 ]
             ]
         ];

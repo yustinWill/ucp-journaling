@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Edit Tag</h5>
+        <h4 class="card-header">Edit Tag</h4>
         <form class="card-body" id="tagEditForm">
             <!-- Info Tag Section -->
             <div class="section-header mt-12">
@@ -141,7 +141,7 @@
             if (!isValid) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Validasi Gagal',
+                    title: 'Kesalahan Validasi',
                     text: errorMessage,
                     customClass: {
                         confirmButton: 'btn btn-primary'
@@ -152,7 +152,7 @@
             }
             
             Swal.fire({
-                title: 'Simpan Perubahan?',
+                title: 'Perbarui Tag?',
                 text: 'Cek kembali data yang sudah diubah!',
                 icon: 'warning',
                 showCancelButton: true,
@@ -190,7 +190,7 @@
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Batalkan!',
-                cancelButtonText: 'Tidak',
+                cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'btn btn-danger',
                     cancelButton: 'btn btn-label-secondary'

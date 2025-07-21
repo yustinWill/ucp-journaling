@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah Tag Baru</h5>
+        <h4 class="card-header">Tambah Tag</h4>
         <form class="card-body" id="tagAddForm">
             <!-- Info Tag Section -->
             <div class="section-header mt-12">
@@ -124,7 +124,7 @@
             if (!isValid) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Validasi Gagal',
+                    title: 'Kesalahan Validasi',
                     text: errorMessage,
                     customClass: {
                         confirmButton: 'btn btn-primary'
@@ -135,7 +135,7 @@
             }
             
             Swal.fire({
-                title: 'Simpan Data?',
+                title: 'Simpan Tag?',
                 text: 'Cek kembali data yang sudah diisi!',
                 icon: 'warning',
                 showCancelButton: true,
@@ -168,12 +168,12 @@
             e.preventDefault();
             
             Swal.fire({
-                title: 'Batalkan Input?',
+                title: 'Batalkan Perubahan?',
                 text: 'Data yang sudah diisi akan hilang!',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Batalkan!',
-                cancelButtonText: 'Tidak',
+                cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'btn btn-danger',
                     cancelButton: 'btn btn-label-secondary'

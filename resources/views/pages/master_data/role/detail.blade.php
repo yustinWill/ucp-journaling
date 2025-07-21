@@ -67,12 +67,11 @@
             
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Nama Role</label>
-                    <input type="text" class="form-control" value="{{ $role['name'] }}" disabled />
-                </div>
-                <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <input type="text" class="form-control" value="{{ $role['is_active'] ? 'Aktif' : 'Tidak Aktif' }}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for layout balance -->
                 </div>
             </div>
 

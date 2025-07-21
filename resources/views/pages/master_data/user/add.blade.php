@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah User Baru</h5>
+        <h4 class="card-header">Tambah User</h4>
         <form class="card-body" id="userForm">
             <!-- Data User Section -->
             <div class="section-header mt-12">
@@ -27,7 +27,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Role <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" data-allow-clear="true">
+                    <select class="global-select2 form-select" id="user-role" data-allow-clear="false">
                         <option value="">Pilih Role</option>
                         @foreach($roles as $role)
                             <option value="{{ $role['value'] }}">{{ $role['label'] }}</option>
@@ -150,7 +150,7 @@
             if (!validateForm()) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Validasi Gagal',
+                    title: 'Kesalahan Validasi',
                     text: 'Mohon lengkapi semua field yang wajib diisi dengan benar.',
                     customClass: {
                         confirmButton: 'btn btn-primary'
@@ -196,12 +196,12 @@
             e.preventDefault();
             
             Swal.fire({
-                title: 'Batalkan Pembuatan?',
+                title: 'Batalkan Perubahan?',
                 text: 'Data yang sudah diisi akan hilang!',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Batalkan!',
-                cancelButtonText: 'Tidak',
+                cancelButtonText: 'Batal',
                 customClass: {
                     confirmButton: 'btn btn-danger',
                     cancelButton: 'btn btn-label-secondary'

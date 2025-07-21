@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah Stock Opname Baru</h5>
+        <h4 class="card-header">Tambah Stock Opname</h4>
         <form class="card-body" id="stockOpnameForm">
             <!-- Informasi Dasar Section -->
             <div class="section-header mt-12">

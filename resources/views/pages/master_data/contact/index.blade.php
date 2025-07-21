@@ -51,7 +51,7 @@
 
     <!-- Main Content Card -->
     <div class="card mt-6">
-        <h5 class="card-header">List Kontak</h5>
+        <h4 class="card-header">Kelola Kontak</h4>
         <div class="card-body">
             <!-- Advanced Search Form -->
             <form class="dt_adv_search" method="GET">
