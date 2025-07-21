@@ -129,18 +129,17 @@ class TagController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'code' => 'required|string|max:1|unique:m_tags,code',
+                'code' => 'required|string|max:255|unique:m_tags,code',
                 'status' => [
                     'required',
                     Rule::in(array_column($this->availableStatus, 'value'))
                 ],
                 'f_tag_color_id' => 'required|exists:m_tag_colors,id',
-                'description' => 'nullable|string|max:1',
+                'description' => 'nullable|string|max:255',
             ]);
 
-            dd($validated);
+            app(CreateTagAction::class)->execute($validated);
 
-            // app(CreateTagAction::class)->execute($validated);
             return response()->json([
                 'message' => SuccessCodes::CREATE_TAG_SUCCESS->message()
             ], SuccessCodes::CREATE_TAG_SUCCESS->code());
