@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+
+use App\Domains\User\Actions\LoginUserAction;
 
 class LoginController extends Controller
 {
@@ -12,8 +16,23 @@ class LoginController extends Controller
         return view('pages.public.login', []);
     }
 
-    public function authenticate(Request $req)
+    public function authenticate(Request $req, LoginUserAction $loginUserAction)
     {
-        return redirect()->route('home.view')->withSuccess('OK');
+        try {
+            $credentials = $req->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string'],
+            ]);
+
+            $loginUserAction->execute($credentials);
+
+            return redirect()->route('home.view')->withSuccess('OK');
+        } catch (ValidationException $e) {
+            return redirect()->back()
+                ->withErrors(['error' => $e->getMessage()]);
+        } catch (AppException $e) {
+            return redirect()->back()
+                ->withErrors(['error' => $e->getMessage()]);
+        }
     }
 }
