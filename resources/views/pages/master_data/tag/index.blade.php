@@ -50,82 +50,82 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Main Content Card -->
     <div class="mt-6">
         <div class="card">
-        <h4 class="card-header">Kelola Tag</h4>
-        <div class="card-body">
-            <!-- Advanced Search Form -->
-            <form class="dt_adv_search" method="GET">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="row g-3">
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <label class="form-label">Kode Tag:</label>
-                                <input type="text" class="form-control dt-input" data-column="1"
-                                    placeholder="Cari berdasarkan kode tag" data-column-index="1" />
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <label class="form-label">Nama Tag:</label>
-                                <input type="text" class="form-control dt-input" data-column="2"
-                                    placeholder="Cari berdasarkan nama tag" data-column-index="2" />
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <label class="form-label">Warna:</label>
-                                <select class="global-select2 form-select" data-allow-clear="false">
-                                    <option value="">Semua Warna</option>
-                                    @foreach($availableColors as $color)
-                                        <option value="{{ $color->code }}">{{ $color->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" data-allow-clear="false">
-                                    <option value="">Semua Status</option>
-                                    @foreach($availableStatus as $status)
-                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
-                                    @endforeach
-                                </select>
+            <h4 class="card-header">Kelola Tag</h4>
+            <div class="card-body">
+                <!-- Advanced Search Form -->
+                <form class="dt_adv_search" method="GET">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row g-3">
+                                <div class="col-12 col-sm-6 col-lg-3">
+                                    <label class="form-label">Kode Tag:</label>
+                                    <input type="text" class="form-control dt-input" data-column="1"
+                                        placeholder="Cari berdasarkan kode tag" data-column-index="1" />
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-3">
+                                    <label class="form-label">Nama Tag:</label>
+                                    <input type="text" class="form-control dt-input" data-column="2"
+                                        placeholder="Cari berdasarkan nama tag" data-column-index="2" />
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-3">
+                                    <label class="form-label">Warna:</label>
+                                    <select class="global-select2 form-select" data-allow-clear="true">
+                                        <option value="">Semua Warna</option>
+                                        @foreach ($availableColors as $color)
+                                            <option value="{{ $color->id }}">{{ $color->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-3">
+                                    <label class="form-label">Status:</label>
+                                    <select class="global-select2 form-select" data-allow-clear="true">
+                                        <option value="">Semua Status</option>
+                                        @foreach ($availableStatus as $status)
+                                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </form>
-            
-            <hr class="my-6 mx-n6" />
-            
-            <!-- Action Buttons -->
-            <div class="mt-4">
-                <div class="d-flex justify-content-end">
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('master_data.tag.add') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                </form>
+
+                <hr class="my-6 mx-n6" />
+
+                <!-- Action Buttons -->
+                <div class="mt-4">
+                    <div class="d-flex justify-content-end">
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('master_data.tag.add') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light"><span
+                                    class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Data Table -->
-        <div class="card-datatable">
-            <table id="main-table" class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Tanggal Dibuat</th>
-                        <th>Kode</th>
-                        <th>Nama Tag</th>
-                        <th>Warna</th>
-                        <th>Deskripsi</th>
-                        <th>Status</th>
-                        <th>Penggunaan</th>
-                        <th>Dibuat Oleh</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
+
+            <!-- Data Table -->
+            <div class="card-datatable">
+                <table id="main-table" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Tanggal Dibuat</th>
+                            <th>Kode</th>
+                            <th>Nama Tag</th>
+                            <th>Warna</th>
+                            <th>Deskripsi</th>
+                            <th>Status</th>
+                            <th>Penggunaan</th>
+                            <th>Dibuat Oleh</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 @stop
@@ -140,17 +140,42 @@
                 dt_adv_filter = new DataTable(main_table, {
                     processing: true,
                     serverSide: true,
-                    ajax: `{{ route('master_data.tag.index_data_table') }}`,
-                    columns: [
-                        { data: 'created_at' },
-                        { data: 'code' },
-                        { data: 'name' },
-                        { data: 'tag_color' },
-                        { data: 'description' },
-                        { data: 'status' },
-                        { data: 'usage_count' },
-                        { data: 'created_by' },
-                        { data: 'id' }
+                    ajax: {
+                        url: `{{ route('master_data.tag.index_data_table') }}`,
+                        data: function(d) {
+                            d.status = $('select.form-select').eq(1).val();
+                            d.f_tag_color_id = $('select.form-select').eq(0).val();
+                            d.name = $('input[data-column="2"]').val();
+                            d.code = $('input[data-column="1"]').val();
+                        }
+                    },
+                    columns: [{
+                            data: 'created_at'
+                        },
+                        {
+                            data: 'code'
+                        },
+                        {
+                            data: 'name'
+                        },
+                        {
+                            data: 'tag_color'
+                        },
+                        {
+                            data: 'description'
+                        },
+                        {
+                            data: 'status'
+                        },
+                        {
+                            data: 'usage_count'
+                        },
+                        {
+                            data: 'created_by'
+                        },
+                        {
+                            data: 'id'
+                        }
                     ],
                     columnDefs: [{
                             targets: -1, // Action column (last column)
@@ -159,9 +184,11 @@
                             width: '120px',
                             responsivePriority: 1,
                             render: function(data, type, row, meta) {
-                                const editUrl = `{{ route('master_data.tag.edit', ':id') }}`.replace(':id', row.id);
-                                const detailUrl = `{{ route('master_data.tag.detail', ':id') }}`.replace(':id', row.id);
-                                
+                                const editUrl = `{{ route('master_data.tag.edit', ':id') }}`
+                                    .replace(':id', row.id);
+                                const detailUrl = `{{ route('master_data.tag.detail', ':id') }}`
+                                    .replace(':id', row.id);
+
                                 return `
                                 <div class="d-flex gap-2">
                                     <a href="${detailUrl}" class="btn btn-md btn-primary waves-effect waves-light" title="Detail">
@@ -185,15 +212,15 @@
                             targets: [1], // Code column - make clickable
                             responsivePriority: 3,
                             render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.tag.detail', ':id') }}`.replace(':id', row.id);
+                                const detailUrl = `{{ route('master_data.tag.detail', ':id') }}`
+                                    .replace(':id', row.id);
                                 return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
                         },
                         {
                             targets: [3], // Color column
                             render: function(data, type, row) {
-                                console.log(data)
-                                if (!data) return '-';
+                                if (!data) return '';
                                 const parts = data.split('|');
                                 const preview = parts[0]?.trim().toLowerCase() || 'secondary';
                                 const label = parts[1]?.trim() || preview;
@@ -203,7 +230,8 @@
                         {
                             targets: [5], // Status column
                             render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
+                                    'bg-label-secondary';
                                 return `<span class="badge ${badgeClass}">${data}</span>`;
                             }
                         },
@@ -240,6 +268,16 @@
                     orderCellsTop: true
                 });
             }
+
+            // Text input filter
+            $('.dt-input').on('keyup change', function() {
+                dt_adv_filter.ajax.reload();
+            });
+
+            // Dropdown filters
+            $('.global-select2').on('change', function() {
+                dt_adv_filter.ajax.reload();
+            });
         });
     </script>
 @endsection

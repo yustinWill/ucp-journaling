@@ -73,6 +73,13 @@ class TagService
             $query->where('t.status', $status);
         }
 
+        if ($code = request()->input('code')) {
+            $query->where('t.code', $code);
+        }
+          if ($name = request()->input('name')) {
+            $query->where('t.name', $name);
+        }
+
         // Filter by tag color
         if ($colorId = request()->input('f_tag_color_id')) {
             $query->where('t.f_tag_color_id', $colorId);
@@ -85,7 +92,9 @@ class TagService
 
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
-        $recordsFiltered = $query->count();
+        $filteredQuery = clone $query;
+        $recordsFiltered = $filteredQuery->count();
+        $query->orderBy('name', 'ASC');
         $data = $query->get();
 
         return [
