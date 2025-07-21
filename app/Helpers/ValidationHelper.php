@@ -9,6 +9,6 @@ class ValidationHelper
      */
     public static function formatErrors(array $errors): string
     {
-        return collect($errors)->flatten()->join("\n");
+        return collect($errors)->flatten()->implode('<br>');
     }
 }

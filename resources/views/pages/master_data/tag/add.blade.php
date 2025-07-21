@@ -186,7 +186,7 @@
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Gagal menyimpan',
-                                    text: res?.message || 'Terjadi kesalahan saat menyimpan data.',
+                                    html: res?.message || 'Terjadi kesalahan saat menyimpan data.',
                                     customClass: {
                                         confirmButton: 'btn btn-primary'
                                     },

@@ -17,6 +17,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('preview');
             $table->timestamps();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->foreign('created_by')->references('id')->on('users');
+            $table->foreign('updated_by')->references('id')->on('users');
         });
 
         Schema::create('m_tags', function (Blueprint $table) {
@@ -30,9 +34,11 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('memo')->nullable();
             $table->timestamps();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->foreign('created_by')->references('id')->on('users');
+            $table->foreign('updated_by')->references('id')->on('users');
         });
-
-        
     }
 
     /**
@@ -40,7 +46,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-         Schema::dropIfExists('m_tag_colors');
+        Schema::dropIfExists('m_tag_colors');
         Schema::dropIfExists('m_tags');
     }
 };
