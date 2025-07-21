@@ -30,7 +30,7 @@ return new class extends Migration
             $table->unsignedBigInteger('f_tag_color_id');
             $table->foreign('f_tag_color_id')->references('id')->on('m_tag_colors')->onDelete('cascade');
             $table->string('status');
-            $table->integer('counter')->default(0);
+            $table->integer('usage_count')->default(0);
             $table->string('description')->nullable();
             $table->string('memo')->nullable();
             $table->timestamps();

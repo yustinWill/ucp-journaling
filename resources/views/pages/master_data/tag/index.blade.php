@@ -138,34 +138,19 @@
 
             if (main_table) {
                 dt_adv_filter = new DataTable(main_table, {
+                    processing: true,
+                    serverSide: true,
                     ajax: `{{ route('master_data.tag.index_data_table') }}`,
-                    columns: [{
-                            data: 'created_at'
-                        },
-                        {
-                            data: 'code'
-                        },
-                        {
-                            data: 'name'
-                        },
-                        {
-                            data: 'color'
-                        },
-                        {
-                            data: 'description'
-                        },
-                        {
-                            data: 'status'
-                        },
-                        {
-                            data: 'usage_count'
-                        },
-                        {
-                            data: 'created_by'
-                        },
-                        {
-                            data: null
-                        }
+                    columns: [
+                        { data: 'created_at' },
+                        { data: 'code' },
+                        { data: 'name' },
+                        { data: 'tag_color' },
+                        { data: 'description' },
+                        { data: 'status' },
+                        { data: 'usage_count' },
+                        { data: 'created_by' },
+                        { data: 'id' }
                     ],
                     columnDefs: [{
                             targets: -1, // Action column (last column)
@@ -207,7 +192,12 @@
                         {
                             targets: [3], // Color column
                             render: function(data, type, row) {
-                                return `<span class="badge bg-label-${data} me-1">${data.toUpperCase()}</span>`;
+                                console.log(data)
+                                if (!data) return '-';
+                                const parts = data.split('|');
+                                const preview = parts[0]?.trim().toLowerCase() || 'secondary';
+                                const label = parts[1]?.trim() || preview;
+                                return `<span class="badge ${preview} me-1">${label}</span>`;
                             }
                         },
                         {

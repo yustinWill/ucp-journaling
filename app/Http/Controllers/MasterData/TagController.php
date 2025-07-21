@@ -16,7 +16,7 @@ use App\Domains\Tag\Actions\CreateTagAction;
 
 //Services
 use App\Domains\Tag\Services\TagColorService;
-
+use App\Domains\Tag\Services\TagService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -42,88 +42,8 @@ class TagController extends Controller
 
     public function index_data_table()
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "code" => "PENJUALAN",
-                    "name" => "Transaksi Penjualan",
-                    "color" => "success",
-                    "description" => "Tag untuk semua transaksi penjualan produk RIYO Water",
-                    "status" => "ACTIVE",
-                    "usage_count" => 145,
-                    "created_by" => "Admin System",
-                    "created_at" => "2025-01-15 08:00:00",
-                ],
-                [
-                    "id" => 2,
-                    "code" => "PEMBELIAN",
-                    "name" => "Transaksi Pembelian",
-                    "color" => "info",
-                    "description" => "Tag untuk semua transaksi pembelian bahan baku dan operasional",
-                    "status" => "ACTIVE",
-                    "usage_count" => 89,
-                    "created_by" => "Admin System",
-                    "created_at" => "2025-01-15 08:05:00",
-                ],
-                [
-                    "id" => 3,
-                    "code" => "OPERASIONAL",
-                    "name" => "Biaya Operasional",
-                    "color" => "warning",
-                    "description" => "Tag untuk biaya operasional harian seperti listrik, gaji, maintenance",
-                    "status" => "ACTIVE",
-                    "usage_count" => 67,
-                    "created_by" => "Finance Manager",
-                    "created_at" => "2025-01-15 09:10:00",
-                ],
-                [
-                    "id" => 4,
-                    "code" => "INVESTASI",
-                    "name" => "Investasi & Aset",
-                    "color" => "primary",
-                    "description" => "Tag untuk transaksi investasi dan pembelian aset perusahaan",
-                    "status" => "ACTIVE",
-                    "usage_count" => 23,
-                    "created_by" => "Finance Manager",
-                    "created_at" => "2025-01-15 10:15:00",
-                ],
-                [
-                    "id" => 5,
-                    "code" => "KEUANGAN",
-                    "name" => "Transaksi Keuangan",
-                    "color" => "secondary",
-                    "description" => "Tag untuk transaksi keuangan umum dan transfer dana",
-                    "status" => "ACTIVE",
-                    "usage_count" => 112,
-                    "created_by" => "Finance Manager",
-                    "created_at" => "2025-01-15 11:20:00",
-                ],
-                [
-                    "id" => 6,
-                    "code" => "PAJAK",
-                    "name" => "Transaksi Pajak",
-                    "color" => "danger",
-                    "description" => "Tag untuk semua transaksi terkait pajak dan kewajiban negara",
-                    "status" => "ACTIVE",
-                    "usage_count" => 34,
-                    "created_by" => "Accounting Staff",
-                    "created_at" => "2025-01-15 14:25:00",
-                ],
-                [
-                    "id" => 7,
-                    "code" => "KOREKSI",
-                    "name" => "Koreksi & Penyesuaian",
-                    "color" => "dark",
-                    "description" => "Tag untuk transaksi koreksi dan penyesuaian jurnal",
-                    "status" => "ACTIVE",
-                    "usage_count" => 12,
-                    "created_by" => "Accounting Staff",
-                    "created_at" => "2025-01-15 15:30:00",
-                ]
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(TagService::class)->getAllTagsDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
