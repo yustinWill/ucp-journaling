@@ -76,7 +76,7 @@
                                 <select class="global-select2 form-select" data-allow-clear="false">
                                     <option value="">Semua Warna</option>
                                     @foreach($availableColors as $color)
-                                        <option value="{{ $color['value'] }}">{{ $color['label'] }}</option>
+                                        <option value="{{ $color->code }}">{{ $color->name }}</option>
                                     @endforeach
                                 </select>
                             </div>

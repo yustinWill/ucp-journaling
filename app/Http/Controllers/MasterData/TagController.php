@@ -3,28 +3,30 @@
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
+use App\Domains\Tag\Services\TagColorService;
 use Illuminate\Http\Request;
+use App\Domains\Tag\Actions\CreateTagAction;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Helpers\ValidationHelper;
 
 class TagController extends Controller
 {
+    private $availableStatus = [
+        ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+    ];
+
     public function index()
     {
         // Available colors for filter dropdown
-        $availableColors = [
-            ['value' => 'primary', 'label' => 'PRIMARY - Primary (Ungu)'],
-            ['value' => 'secondary', 'label' => 'SECONDARY - Secondary (Abu-abu)'],
-            ['value' => 'success', 'label' => 'SUCCESS - Success (Hijau)'],
-            ['value' => 'info', 'label' => 'INFO - Info (Biru)'],
-            ['value' => 'warning', 'label' => 'WARNING - Warning (Kuning)'],
-            ['value' => 'danger', 'label' => 'DANGER - Danger (Merah)'],
-            ['value' => 'dark', 'label' => 'DARK - Dark (Hitam)']
-        ];
+        $availableColors = app(TagColorService::class)->findAll();
 
         // Available status options
-        $availableStatus = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
-        ];
+        $availableStatus = $this->availableStatus;
 
         return view('pages.master_data.tag.index', compact('availableColors', 'availableStatus'));
     }
@@ -117,18 +119,47 @@ class TagController extends Controller
 
     public function add()
     {
-        // Available colors for tag badge
-        $availableColors = [
-            ['value' => 'primary', 'label' => 'Primary (Ungu)', 'preview' => 'bg-label-primary'],
-            ['value' => 'secondary', 'label' => 'Secondary (Abu-abu)', 'preview' => 'bg-label-secondary'],
-            ['value' => 'success', 'label' => 'Success (Hijau)', 'preview' => 'bg-label-success'],
-            ['value' => 'info', 'label' => 'Info (Biru)', 'preview' => 'bg-label-info'],
-            ['value' => 'warning', 'label' => 'Warning (Kuning)', 'preview' => 'bg-label-warning'],
-            ['value' => 'danger', 'label' => 'Danger (Merah)', 'preview' => 'bg-label-danger'],
-            ['value' => 'dark', 'label' => 'Dark (Hitam)', 'preview' => 'bg-label-dark']
-        ];
+        $availableColors = app(TagColorService::class)->findAll();
+        $availableStatus = $this->availableStatus;
+        return view('pages.master_data.tag.add', compact('availableColors', 'availableStatus'));
+    }
 
-        return view('pages.master_data.tag.add', compact('availableColors'));
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'code' => 'required|string|max:1|unique:m_tags,code',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->availableStatus, 'value'))
+                ],
+                'f_tag_color_id' => 'required|exists:m_tag_colors,id',
+                'description' => 'nullable|string|max:1',
+            ]);
+
+            dd($validated);
+
+            // app(CreateTagAction::class)->execute($validated);
+            return response()->json([
+                'message' => SuccessCodes::CREATE_TAG_SUCCESS->message()
+            ], SuccessCodes::CREATE_TAG_SUCCESS->code());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], 500);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function edit($id)
@@ -144,16 +175,7 @@ class TagController extends Controller
             'usage_count' => 145
         ];
 
-        // Available colors for tag badge
-        $availableColors = [
-            ['value' => 'primary', 'label' => 'Primary (Ungu)', 'preview' => 'bg-label-primary'],
-            ['value' => 'secondary', 'label' => 'Secondary (Abu-abu)', 'preview' => 'bg-label-secondary'],
-            ['value' => 'success', 'label' => 'Success (Hijau)', 'preview' => 'bg-label-success'],
-            ['value' => 'info', 'label' => 'Info (Biru)', 'preview' => 'bg-label-info'],
-            ['value' => 'warning', 'label' => 'Warning (Kuning)', 'preview' => 'bg-label-warning'],
-            ['value' => 'danger', 'label' => 'Danger (Merah)', 'preview' => 'bg-label-danger'],
-            ['value' => 'dark', 'label' => 'Dark (Hitam)', 'preview' => 'bg-label-dark']
-        ];
+        $availableColors = app(TagColorService::class)->findAll();
 
         return view('pages.master_data.tag.edit', compact('tag', 'availableColors'));
     }
