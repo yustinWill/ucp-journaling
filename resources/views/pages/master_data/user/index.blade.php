@@ -75,24 +75,29 @@
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Nama User:</label>
                                 <input type="text" class="form-control dt-input dt-full-name" data-column="1"
-                                    placeholder="Cari Berdasarkan Kode User" data-column-index="0" />
+                                    placeholder="Cari Berdasarkan Kode User" id="user-name" data-column-index="0" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Email User:</label>
                                 <input type="text" class="form-control dt-input" data-column="2"
-                                    placeholder="Cari Berdasarkan Nama User" data-column-index="1" />
+                                    placeholder="Cari Berdasarkan Nama User" id="user-email" data-column-index="1" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Role:</label>
-                                <input type="text" class="form-control dt-input" data-column="2"
-                                    placeholder="Cari Berdasarkan Nama User" data-column-index="1" />
+                                <select class="global-select2 form-select" data-allow-clear="true" id="user-role">
+                                    <option value="">Semua Status</option>
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" data-allow-clear="false">
+                                <select class="global-select2 form-select" data-allow-clear="true" id="user-status">
                                     <option value="">Semua Status</option>
-                                    <option value="ACTIVE">ACTIVE - Aktif</option>
-                                    <option value="INACTIVE">INACTIVE - Tidak Aktif</option>
+                                    @foreach ($statuses as $status)
+                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -112,7 +117,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex gap-2">
                         <a href="{{ route('master_data.user.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -156,7 +161,17 @@
 
             if (main_table) {
                 dt_adv_filter = new DataTable(main_table, {
-                    ajax: `{{ route('master_data.user.index_data_table') }}`,
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: `{{ route('master_data.user.index_data_table') }}`,
+                        data: function(d) {
+                            d.name = $('#user-name').val();
+                            d.email = $('#user-email').val();
+                            d.role = $('#user-role').val();
+                            d.status = $('#user-status').val();
+                        }
+                    },
                     columns: [{
                             data: 'created_at',
                             responsivePriority: 2
@@ -165,7 +180,8 @@
                             data: 'name',
                             responsivePriority: 3,
                             render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.user.detail', ':id') }}`.replace(':id', row.id);
+                                const detailUrl = `{{ route('master_data.user.detail', ':id') }}`
+                                    .replace(':id', row.id);
                                 return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
                         },
@@ -178,17 +194,19 @@
                             responsivePriority: 7
                         },
                         {
-                            data: 'role',
+                            data: 'role_name',
                             responsivePriority: 5
                         },
                         {
                             data: 'tags',
                             responsivePriority: 6,
                             render: function(data, type, row) {
-                                if (!data || data.length === 0) return '-';
-                                return data.map(tag => {
-                                    const colorClass = `bg-label-${tag.color}`;
-                                    return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
+                                let tags = JSON.parse(data);
+                                return tags.map(tag => {
+                                    if (tag.code == null) {
+                                        return ``;
+                                    }
+                                    return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
                                 }).join('');
                             }
                         },
@@ -212,8 +230,10 @@
                             width: '120px',
                             responsivePriority: 1,
                             render: function(data, type, row, meta) {
-                                const detailUrl = "{{ route('master_data.user.detail', ':id') }}".replace(':id', row.id);
-                                const editUrl = "{{ route('master_data.user.edit', ':id') }}".replace(':id', row.id);
+                                const detailUrl = "{{ route('master_data.user.detail', ':id') }}"
+                                    .replace(':id', row.id);
+                                const editUrl = "{{ route('master_data.user.edit', ':id') }}"
+                                    .replace(':id', row.id);
                                 return `
                                 <div class="d-flex gap-2">
                                     <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
@@ -237,14 +257,16 @@
                             targets: [1], // Name column - make clickable
                             responsivePriority: 3,
                             render: function(data, type, row) {
-                                const detailUrl = "{{ route('master_data.user.detail', ':id') }}".replace(':id', row.id);
+                                const detailUrl = "{{ route('master_data.user.detail', ':id') }}"
+                                    .replace(':id', row.id);
                                 return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
                         },
                         {
                             targets: [6], // Status column
                             render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
+                                    'bg-label-secondary';
                                 const statusText = data === 'ACTIVE' ? 'Aktif' : 'Inaktif';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
@@ -286,6 +308,19 @@
             const initialTagVisibility = $('#toggleTagColumn').is(':checked');
             dt_adv_filter.column(5).visible(initialTagVisibility);
 
+            // Search functionality
+            $('#user-name, #user-email').on('keyup', function() {
+                if (dt_adv_filter) {
+                    dt_adv_filter.search(this.value).draw();
+                }
+            });
+
+            // Filter functionality
+            $('#user-role, #user-status').on('change', function() {
+                if (dt_adv_filter) {
+                    dt_adv_filter.draw();
+                }
+            });
         });
     </script>
 @endsection

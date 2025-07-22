@@ -158,23 +158,6 @@ class UnitController extends Controller
             abort(404);
         }
 
-        // Audit log data
-        // $auditLogs = [
-        //     [
-        //         'created_at' => '2025-01-18 11:30:15',
-        //         'user_id' => 'USR-001',
-        //         'user_name' => 'Admin User',
-        //         'action_type' => 'UPDATE',
-        //         'description' => 'Mengubah deskripsi unit BTL untuk menambahkan informasi kemasan kaca'
-        //     ],
-        //     [
-        //         'created_at' => '2025-01-10 09:20:45',
-        //         'user_id' => 'USR-003',
-        //         'user_name' => 'Warehouse Manager',
-        //         'action_type' => 'CREATE',
-        //         'description' => 'Unit Botol (BTL) berhasil dibuat dengan kode BTL'
-        //     ]
-        // ];
         $auditLogs = app(UnitAuditLogService::class)->findAllBasedOnTagId($id);
 
         return view('pages.master_data.unit.detail', compact('unit', 'auditLogs'));

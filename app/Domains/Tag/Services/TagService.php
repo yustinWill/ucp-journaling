@@ -76,7 +76,7 @@ class TagService
             $query->where('t.code', $code);
         }
         if ($name = request()->input('name')) {
-            $query->where('t.name', $name);
+            $query->where('t.name', 'like', "%{$name}%");
         }
 
         // Filter by tag color

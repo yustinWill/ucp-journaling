@@ -67,7 +67,7 @@ class UnitService
             $query->where('ut.id', $type);
         }
         if ($name = request()->input('name')) {
-            $query->where('t.name', $name);
+            $query->where('t.name', 'like', "%{$name}%");
         }
 
         $draw = (int) request()->input('draw', 1);

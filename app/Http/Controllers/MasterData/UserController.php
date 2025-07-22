@@ -2,86 +2,44 @@
 
 namespace App\Http\Controllers\MasterData;
 
+//Main
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
+//Actions
+use App\Domains\User\Actions\CreateUserAction;
+use App\Domains\User\Actions\UpdateUserAction;
+//Services
+use App\Domains\User\Services\UserService;
+use App\Domains\User\Services\UserAuditLogService;
+use App\Domains\Role\Services\RoleService;
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
 
 class UserController extends Controller
 {
+    private $statuses = [
+        ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+    ];
+
     public function index()
     {
-        return view('pages.master_data.user.index', []);
+        $statuses = $this->statuses;
+        $roles = app(RoleService::class)->findAll();
+        return view('pages.master_data.user.index', compact('statuses', 'roles'));
     }
 
     public function index_data_table()
     {
-        // Mock roles data (no DB connection)
-        $roles = [
-            "Super Admin",
-            "Admin", 
-            "Accounting",
-            "Sales",
-            "Purchase"
-        ];
-
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "created_at" => "2025-01-15",
-                    "name" => "Yustinus Komunal",
-                    "email" => "yustinus.komunal@riyowater.com",
-                    "phone" => "081234567890",
-                    "role" => "Manager Produksi",
-                    "tags" => [
-                        ["name" => "MANAGEMENT", "color" => "primary"],
-                        ["name" => "SUPERVISOR", "color" => "warning"]
-                    ],
-                    "last_login" => "2025-01-20 08:30:00",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 2,
-                    "created_at" => "2025-01-10",
-                    "name" => "Ririn Safitri",
-                    "email" => "ririn.safitri@riyowater.com",
-                    "phone" => "081234567891",
-                    "role" => "Staff Keuangan",
-                    "tags" => [
-                        ["name" => "STAFF", "color" => "info"]
-                    ],
-                    "last_login" => "2025-01-20 09:15:00",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 3,
-                    "created_at" => "2025-01-05",
-                    "name" => "Ahmad Setyo",
-                    "email" => "ahmad.setyo@riyowater.com",
-                    "phone" => "081234567892",
-                    "role" => "Supervisor QC",
-                    "tags" => [
-                        ["name" => "SUPERVISOR", "color" => "warning"],
-                        ["name" => "OPERATOR", "color" => "success"]
-                    ],
-                    "last_login" => "2025-01-19 16:45:00",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 4,
-                    "created_at" => "2024-12-20",
-                    "name" => "Siti Nurhaliza",
-                    "email" => "siti.nurhaliza@riyowater.com",
-                    "phone" => "081234567893",
-                    "role" => "Admin Gudang",
-                    "tags" => [
-                        ["name" => "ADMIN", "color" => "secondary"]
-                    ],
-                    "last_login" => "2025-01-18 14:20:00",
-                    "status" => "INACTIVE",
-                ],
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(UserService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
@@ -102,7 +60,7 @@ class UserController extends Controller
             'tags' => $tags,
             'canAddTags' => $canAddTags
         ];
-        
+
         return view('pages.master_data.user.add', $selectData);
     }
 
@@ -135,7 +93,7 @@ class UserController extends Controller
                 'status' => 'ACTIVE'
             ]
         ];
-        
+
         $user = $userData[$id] ?? $userData[1];
 
         $tags = [
@@ -148,13 +106,13 @@ class UserController extends Controller
 
         // Permission check for adding new tags
         $canAddTags = true; // Mock permission check
-        
+
         $selectData = [
             'roles' => $this->getMockRoleSelectData(),
             'tags' => $tags,
             'canAddTags' => $canAddTags
         ];
-        
+
         return view('pages.master_data.user.edit', compact('user') + $selectData);
     }
 
@@ -238,9 +196,9 @@ class UserController extends Controller
                 ]
             ]
         ];
-        
+
         $user = $userData[$id] ?? $userData[1];
-        
+
         return view('pages.master_data.user.detail', ['user' => $user]);
     }
 
