@@ -127,34 +127,33 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Sistem & Pengaturan</span>
         </li>
-        <li class="menu-item">
-            <a href="app-chat.html" class="menu-link">
+        <li class="menu-item @if (request()->routeIs(['master_data.tax.*', 'master_data.unit.*', 'master_data.category.*'])) active open @endif">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
-                <div data-i18n="Chat">Daftar Lainnnya - wip</div>
+                <div data-i18n="Chat">Daftar Lainnya</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item @if (request()->routeIs(['master_data.tax.*'])) active @endif">
+                    <a href="{{ route('master_data.tax.index') }}" class="menu-link">
+                        <div data-i18n="Tax">Pajak</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.unit.*'])) active @endif">
+                    <a href="{{ route('master_data.unit.index') }}" class="menu-link">
+                        <div data-i18n="Unit">Unit</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.category.*'])) active @endif">
+                    <a href="{{ route('master_data.category.index') }}" class="menu-link">
+                        <div data-i18n="Category">Kategori Produk</div>
+                    </a>
+                </li>
+            </ul>
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.user.*'])) active @endif">
             <a href="{{ route('master_data.user.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-users"></i>
                 <div data-i18n="Users">Users</div>
-            </a>
-        </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.tax.*'])) active @endif">
-            <a href="{{ route('master_data.tax.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-receipt-tax"></i>
-                <div data-i18n="Tax">Pajak</div>
-            </a>
-        </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.unit.*'])) active @endif">
-            <a href="{{ route('master_data.unit.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-ruler-measure"></i>
-                <div data-i18n="Unit">Unit</div>
-            </a>
-        </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.category.*'])) active @endif">
-            <a href="{{ route('master_data.category.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-category"></i>
-                <div data-i18n="Category">Kategori Produk</div>
             </a>
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.role.*'])) active @endif">
