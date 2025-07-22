@@ -35,5 +35,26 @@
 @include('layouts.global_script')
 @yield('ext_js_script')
 @yield('js_script')
+<script>
+    $.ajaxSetup({
+        statusCode: {
+            401: function() {
+                window.location.href = '/';
+            },
+            419: function() {
+                window.location.href = '/';
+            }
+        }
+    });
+</script>
+<script>
+    $.fn.dataTable.ext.errMode = 'none';
+
+    $(document).on('error.dt', function(e, settings, techNote, message) {
+        if (message.includes('401')) {
+            window.location.href = '/';
+        }
+    });
+</script>
 
 </html>
