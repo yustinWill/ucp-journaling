@@ -32,12 +32,6 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Simbol Unit <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="unit-symbol" name="unit_symbol"
-                        value="{{ $unit->symbol }}" maxlength="10" required />
-                    <small class="form-text text-muted">Simbol singkat untuk unit (btl, kg, ltr)</small>
-                </div>
-                <div class="col-md-6">
                     <label class="form-label">Tipe Unit <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="unit-type" name="unit_type" data-allow-clear="false"
                         required>
@@ -48,9 +42,6 @@
                         @endforeach
                     </select>
                 </div>
-            </div>
-
-            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="unit-status" name="status" data-allow-clear="false"
@@ -60,9 +51,6 @@
                                 {{ $unit->status == $status['value'] ? 'selected' : '' }}>{{ $status['label'] }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div class="col-md-6">
-                    <!-- Empty for alignment -->
                 </div>
             </div>
 
@@ -96,7 +84,7 @@
 
                 // Validate required fields
                 let isValid = true;
-                const requiredFields = ['unit-code', 'unit-name', 'unit-symbol', 'unit-type', 'unit-status'];
+                const requiredFields = ['unit-code', 'unit-name', 'unit-type', 'unit-status'];
 
                 requiredFields.forEach(function(fieldId) {
                     const field = document.getElementById(fieldId);
@@ -146,7 +134,6 @@
                                 _token: '{{ csrf_token() }}',
                                 id: $('#unit-id').val(),
                                 name: $('#unit-name').val(),
-                                symbol: $('#unit-symbol').val(),
                                 type: $('#unit-type').val(),
                                 status: $('#unit-status').val(),
                                 description: $('#unit-description').val()

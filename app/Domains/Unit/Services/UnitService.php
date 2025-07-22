@@ -15,7 +15,6 @@ class UnitService
             'name' => $data['name'],
             'code' => $data['code'],
             'status' => $data['status'],
-            'symbol' => $data['symbol'],
             'f_unit_type_id' => $data['type'],
             'description' => $data['description'] ?? '',
             'created_at' => now(),
@@ -30,8 +29,7 @@ class UnitService
             ->update([
                 'name' => $data['name'],
                 'status' => $data['status'],
-                'symbol' => $data['symbol'],
-                'f_unit_type_id' => $data['type'],
+                    'f_unit_type_id' => $data['type'],
                 'description' => $data['description'] ?? '',
                 'updated_at' => now(),
                 'updated_by' => Auth::id()
@@ -46,7 +44,6 @@ class UnitService
                 't.code',
                 't.name',
                 't.status',
-                't.symbol',
                 't.description',
                 't.created_at',
                 't.updated_at',
@@ -97,7 +94,6 @@ class UnitService
                 't.id',
                 't.name',
                 't.code',
-                't.symbol',
                 't.status',
                 'ut.id as unit_type_id',
                 'ut.name as unit_type_name',

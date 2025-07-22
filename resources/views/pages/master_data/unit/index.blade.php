@@ -128,7 +128,6 @@
                             <th>Tanggal</th>
                             <th>Kode Unit</th>
                             <th>Nama Unit</th>
-                            <th>Simbol</th>
                             <th>Tipe</th>
                             <th>Status</th>
                             <th>Aksi</th>
@@ -163,25 +162,16 @@
                         { data: 'created_at', responsivePriority: 2 },
                         { 
                             data: 'code',
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.unit.detail', ':id') }}`.replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            responsivePriority: 3
                         },
                         { data: 'name', responsivePriority: 4 },
                         { 
-                            data: 'symbol',
-                            responsivePriority: 5,
-                            className: 'text-center'
-                        },
-                        { 
                             data: 'unit_type_name',
-                            responsivePriority: 6,
+                            responsivePriority: 5,
                         },
                         { 
                             data: 'status',
-                            responsivePriority: 5,
+                            responsivePriority: 6,
                             render: function(data, type, row) {
                                 const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
                                 const statusText = data === 'ACTIVE' ? 'Aktif' : 'Inaktif';

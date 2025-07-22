@@ -30,12 +30,6 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Simbol Unit <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="unit-symbol" name="unit_symbol" placeholder="btl"
-                        maxlength="10" required />
-                    <small class="form-text text-muted">Simbol singkat untuk unit (btl, kg, ltr)</small>
-                </div>
-                <div class="col-md-6">
                     <label class="form-label">Tipe Unit <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="unit-type" name="unit_type" data-allow-clear="false"
                         required>
@@ -45,9 +39,6 @@
                         @endforeach
                     </select>
                 </div>
-            </div>
-
-            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="unit-status" name="status" data-allow-clear="false"
@@ -57,9 +48,6 @@
                             <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div class="col-md-6">
-                    <!-- Empty for alignment -->
                 </div>
             </div>
 
@@ -93,7 +81,7 @@
 
                 // Validate required fields
                 let isValid = true;
-                const requiredFields = ['unit-code', 'unit-name', 'unit-symbol', 'unit-type', 'unit-status'];
+                const requiredFields = ['unit-code', 'unit-name', 'unit-type', 'unit-status'];
 
                 requiredFields.forEach(function(fieldId) {
                     const field = document.getElementById(fieldId);
@@ -143,7 +131,6 @@
                                 _token: '{{ csrf_token() }}',
                                 code: $('#unit-code').val(),
                                 name: $('#unit-name').val(),
-                                symbol: $('#unit-symbol').val(),
                                 type: $('#unit-type').val(),
                                 status: $('#unit-status').val(),
                                 description: $('#unit-description').val()
@@ -182,26 +169,6 @@
                         });
                     }
                 });
-            });
-
-            // Auto-generate symbol based on unit name
-            $('#unit-name').on('input', function() {
-                const name = $(this).val().toLowerCase();
-                let symbol = '';
-
-                // Common unit mappings for RIYO Water business
-                if (name.includes('botol')) symbol = 'btl';
-                else if (name.includes('gallon') || name.includes('galon')) symbol = 'gln';
-                else if (name.includes('liter')) symbol = 'ltr';
-                else if (name.includes('kilogram')) symbol = 'kg';
-                else if (name.includes('dus') || name.includes('kotak')) symbol = 'dus';
-                else if (name.includes('pieces') || name.includes('pcs')) symbol = 'pcs';
-                else {
-                    // Generate from first 3 characters
-                    symbol = name.substring(0, 3);
-                }
-
-                $('#unit-symbol').val(symbol);
             });
 
             // Real-time validation

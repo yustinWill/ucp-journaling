@@ -38,16 +38,12 @@
                     <input type="text" class="form-control" value="{{ $unit->code }}" disabled />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Simbol Unit</label>
-                    <input type="text" class="form-control" value="{{ $unit->symbol }}" disabled />
+                    <label class="form-label">Tipe Unit</label>
+                    <input type="text" class="form-control" value="{{ $unit->unit_type_name }}" disabled />
                 </div>
             </div>
             
             <div class="row g-6 mt-3">
-                <div class="col-md-6">
-                    <label class="form-label">Tipe Unit</label>
-                    <input type="text" class="form-control" value="{{ $unit->unit_type_name }}" disabled />
-                </div>
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
@@ -57,6 +53,9 @@
                             <span class="badge bg-label-secondary">Inaktif</span>
                         @endif
                     </div>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty for alignment -->
                 </div>
             </div>
             <hr class="my-6 mx-n6" />

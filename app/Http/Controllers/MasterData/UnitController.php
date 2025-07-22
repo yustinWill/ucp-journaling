@@ -64,7 +64,6 @@ class UnitController extends Controller
                     'required',
                     Rule::in(array_column($this->statuses, 'value'))
                 ],
-                'symbol' => 'required|string|max:255',
                 'type' => 'required|exists:m_unit_types,id',
                 'description' => 'nullable|string|max:255',
             ]);
@@ -121,7 +120,6 @@ class UnitController extends Controller
                     'required',
                     Rule::in(array_column($this->statuses, 'value'))
                 ],
-                'symbol' => 'required|string|max:255',
                 'type' => 'required|exists:m_unit_types,id',
                 'description' => 'nullable|string|max:255',
             ]);
@@ -168,10 +166,9 @@ class UnitController extends Controller
         $data = [
             ["no" => 1, "value" => "Kode Unit"],
             ["no" => 2, "value" => "Nama Unit"],
-            ["no" => 3, "value" => "Simbol Unit"],
-            ["no" => 4, "value" => "Tipe Unit"],
-            ["no" => 5, "value" => "Deskripsi"],
-            ["no" => 6, "value" => "Status"]
+            ["no" => 3, "value" => "Tipe Unit"],
+            ["no" => 4, "value" => "Deskripsi"],
+            ["no" => 5, "value" => "Status"]
         ];
         return view('pages.master_data.unit.export', ['data' => $data]);
     }
