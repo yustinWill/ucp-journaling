@@ -9,12 +9,16 @@ enum SuccessCodes: string
     case GENERAL_SUCCESS = 'GENERAL_SUCCESS';
     case LOGOUT_SUCCESS = 'LOGOUT_SUCCESS';
     case CREATE_TAG_SUCCESS = 'CREATE_TAG_SUCCESS';
+    case CREATE_UNIT_SUCCESS = 'CREATE_UNIT_SUCCESS';
+    case UPDATE_UNIT_SUCCESS = 'UPDATE_UNIT_SUCCESS';
 
     public function message(): string
     {
         return match ($this) {
             self::LOGOUT_SUCCESS => 'Anda berhasil logout.',
             self::CREATE_TAG_SUCCESS => 'Tag berhasil dibuat.',
+            self::CREATE_UNIT_SUCCESS => 'Unit berhasil dibuat.',
+            self::UPDATE_UNIT_SUCCESS => 'Unit berhasil diubah.',
             self::GENERAL_SUCCESS => 'Berhasil',
         };
     }
@@ -24,6 +28,8 @@ enum SuccessCodes: string
         return match ($this) {
             self::LOGOUT_SUCCESS => self::OK,
             self::CREATE_TAG_SUCCESS => self::OK,
+            self::CREATE_UNIT_SUCCESS => self::OK,
+            self::UPDATE_UNIT_SUCCESS => self::OK,
             self::GENERAL_SUCCESS => self::OK,
         };
     }

@@ -14,7 +14,7 @@
                 <div class="col-md-4">
                     <div class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('master_data.unit.edit', $unit['id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                            <a href="{{ route('master_data.unit.edit', $unit->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-edit me-2"></i>Edit
                             </a>
                         </div>
@@ -24,9 +24,9 @@
             
             <div class="row">
                 <div class="col-md-6">
-                    <h5 class="text-primary mb-1">{{ $unit['unit_name'] }}</h5>
-                    <p class="text-muted mb-1">{{ $unit['unit_code'] }} - {{ $unit['unit_symbol'] }}</p>
-                    @if($unit['status'] == 'ACTIVE')
+                    <h5 class="text-primary mb-1">{{ $unit->name }}</h5>
+                    <p class="text-muted mb-1">{{ $unit->code }} - {{ $unit->symbol }}</p>
+                    @if($unit->status == 'ACTIVE')
                         <span class="badge bg-label-success">Aktif</span>
                     @else
                         <span class="badge bg-label-secondary">Inaktif</span>
@@ -34,7 +34,7 @@
                 </div>
                 <div class="col-md-6 text-md-end">
                     <p class="text-muted mb-1">Terakhir diperbarui</p>
-                    <p class="fw-semibold">{{ $unit['last_updated'] }}</p>
+                    <p class="fw-semibold">{{ $unit->updated_at }}</p>
                 </div>
             </div>
         </div>
@@ -62,30 +62,30 @@
                     <form class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Kode Unit</label>
-                            <input type="text" class="form-control" value="{{ $unit['unit_code'] }}" disabled />
+                            <input type="text" class="form-control" value="{{ $unit->code }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Nama Unit</label>
-                            <input type="text" class="form-control" value="{{ $unit['unit_name'] }}" disabled />
+                            <input type="text" class="form-control" value="{{ $unit->name }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Simbol Unit</label>
-                            <input type="text" class="form-control" value="{{ $unit['unit_symbol'] }}" disabled />
+                            <input type="text" class="form-control" value="{{ $unit->symbol }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Tipe Unit</label>
-                            <input type="text" class="form-control" value="{{ $unit['unit_type'] }}" disabled />
+                            <input type="text" class="form-control" value="{{ $unit->unit_type_name }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Status</label>
-                            <input type="text" class="form-control" value="{{ $unit['status'] == 'ACTIVE' ? 'Aktif' : 'Inaktif' }}" disabled />
+                            <input type="text" class="form-control" value="{{ $unit->status == 'ACTIVE' ? 'Aktif' : 'Inaktif' }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <!-- Empty for alignment -->
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Deskripsi</label>
-                            <textarea class="form-control" rows="3" disabled>{{ $unit['description'] }}</textarea>
+                            <textarea class="form-control" rows="3" disabled>{{ $unit->description }}</textarea>
                         </div>
                         <div class="col-md-6">
                             <!-- Empty for alignment -->
@@ -114,24 +114,24 @@
                         <tbody>
                             @foreach($auditLogs as $log)
                             <tr>
-                                <td>{{ $log['created_at'] }}</td>
+                                <td>{{ $log->created_at }}</td>
                                 <td>
-                                    <a href="{{ route('master_data.user.detail', ['id' => $log['user_id']]) }}" class="text-primary fw-semibold">
-                                        {{ $log['user_name'] }}
+                                    <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" class="text-primary fw-semibold">
+                                        {{ $log->user_name }}
                                     </a>
                                 </td>
                                 <td>
-                                    @if($log['action_type'] == 'CREATE')
+                                    @if($log->action_type == 'CREATE')
                                         <span class="badge bg-label-success">Buat</span>
-                                    @elseif($log['action_type'] == 'UPDATE')
+                                    @elseif($log->action_type == 'UPDATE')
                                         <span class="badge bg-label-warning">Ubah</span>
-                                    @elseif($log['action_type'] == 'DELETE')
+                                    @elseif($log->action_type == 'DELETE')
                                         <span class="badge bg-label-danger">Hapus</span>
                                     @else
-                                        <span class="badge bg-label-info">{{ $log['action_type'] }}</span>
+                                        <span class="badge bg-label-info">{{ $log->action_type }}</span>
                                     @endif
                                 </td>
-                                <td>{{ $log['description'] }}</td>
+                                <td>{{ $log->description }}</td>
                             </tr>
                             @endforeach
                         </tbody>

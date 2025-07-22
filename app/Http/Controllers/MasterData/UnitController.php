@@ -2,113 +2,51 @@
 
 namespace App\Http\Controllers\MasterData;
 
+//Main
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
+//Actions
+use App\Domains\Unit\Actions\CreateUnitAction;
+use App\Domains\Unit\Actions\UpdateUnitAction;
+//Services
+use App\Domains\Unit\Services\UnitService;
+use App\Domains\Unit\Services\UnitAuditLogService;
+use App\Domains\Unit\Services\UnitTypeService;
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
 
 class UnitController extends Controller
 {
+    private $statuses = [
+        ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+    ];
+
     public function index()
     {
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        $statuses = $this->statuses;
+        $unitTypes = app(UnitTypeService::class)->findAll();
 
-        $unitTypes = [
-            ['value' => 'WEIGHT', 'label' => 'WEIGHT - Berat'],
-            ['value' => 'VOLUME', 'label' => 'VOLUME - Volume'],
-            ['value' => 'LENGTH', 'label' => 'LENGTH - Panjang'],
-            ['value' => 'PIECE', 'label' => 'PIECE - Satuan']
-        ];
-
-        return view('pages.master_data.unit.index', [
-            'statuses' => $statuses,
-            'unitTypes' => $unitTypes
-        ]);
+        return view('pages.master_data.unit.index', compact('unitTypes', 'statuses'));
     }
 
     public function index_data_table()
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "created_at" => "2025-01-20 11:30:15",
-                    "unit_code" => "PCS",
-                    "unit_name" => "Pieces",
-                    "unit_symbol" => "pcs",
-                    "unit_type" => "PIECE",
-                    "description" => "Unit untuk barang satuan",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 2,
-                    "created_at" => "2025-01-18 09:45:30",
-                    "unit_code" => "KG",
-                    "unit_name" => "Kilogram",
-                    "unit_symbol" => "kg",
-                    "unit_type" => "WEIGHT",
-                    "description" => "Unit untuk berat dalam kilogram",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 3,
-                    "created_at" => "2025-01-18 09:47:22",
-                    "unit_code" => "LTR",
-                    "unit_name" => "Liter",
-                    "unit_symbol" => "ltr",
-                    "unit_type" => "VOLUME",
-                    "description" => "Unit untuk volume cairan",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 4,
-                    "created_at" => "2025-01-16 14:20:45",
-                    "unit_code" => "BTL",
-                    "unit_name" => "Botol",
-                    "unit_symbol" => "btl",
-                    "unit_type" => "PIECE",
-                    "description" => "Unit untuk produk dalam kemasan botol",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 5,
-                    "created_at" => "2025-01-16 14:25:18",
-                    "unit_code" => "DUS",
-                    "unit_name" => "Dus",
-                    "unit_symbol" => "dus",
-                    "unit_type" => "PIECE",
-                    "description" => "Unit untuk kemasan dus/kotak",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 6,
-                    "created_at" => "2025-01-12 10:15:30",
-                    "unit_code" => "MTR",
-                    "unit_name" => "Meter",
-                    "unit_symbol" => "m",
-                    "unit_type" => "LENGTH",
-                    "description" => "Unit untuk panjang/jarak",
-                    "status" => "INACTIVE"
-                ]
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(UnitService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
     {
-        $unitTypes = [
-            ['value' => 'WEIGHT', 'label' => 'WEIGHT - Berat'],
-            ['value' => 'VOLUME', 'label' => 'VOLUME - Volume'],
-            ['value' => 'LENGTH', 'label' => 'LENGTH - Panjang'],
-            ['value' => 'PIECE', 'label' => 'PIECE - Satuan']
-        ];
-
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        $unitTypes = app(UnitTypeService::class)->findAll();
+        $statuses = $this->statuses;
 
         return view('pages.master_data.unit.add', [
             'unitTypes' => $unitTypes,
@@ -116,30 +54,55 @@ class UnitController extends Controller
         ]);
     }
 
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string|max:255|unique:m_units,code',
+                'name' => 'required|string|max:255',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'symbol' => 'required|string|max:255',
+                'type' => 'required|exists:m_unit_types,id',
+                'description' => 'nullable|string|max:255',
+            ]);
+
+            app(CreateUnitAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_TAG_SUCCESS->message()
+            ], SuccessCodes::CREATE_TAG_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
     public function edit($id)
     {
-        $unitTypes = [
-            ['value' => 'WEIGHT', 'label' => 'WEIGHT - Berat'],
-            ['value' => 'VOLUME', 'label' => 'VOLUME - Volume'],
-            ['value' => 'LENGTH', 'label' => 'LENGTH - Panjang'],
-            ['value' => 'PIECE', 'label' => 'PIECE - Satuan']
-        ];
+        $unit = app(UnitService::class)->findOne($id);
 
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        if ($unit == null) {
+            abort(404);
+        }
 
-        // Sample unit data for editing
-        $unit = [
-            'id' => $id,
-            'code' => 'BTL',
-            'name' => 'Botol',
-            'symbol' => 'btl',
-            'type' => 'PIECE',
-            'description' => 'Unit untuk produk RIYO Water dalam kemasan botol plastik dan kaca',
-            'status' => 'ACTIVE'
-        ];
+        $unitTypes = app(UnitTypeService::class)->findAll();
+        $statuses = $this->statuses;
 
         return view('pages.master_data.unit.edit', [
             'unitTypes' => $unitTypes,
@@ -148,37 +111,71 @@ class UnitController extends Controller
         ]);
     }
 
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:m_units,id',
+                'name' => 'required|string|max:255',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'symbol' => 'required|string|max:255',
+                'type' => 'required|exists:m_unit_types,id',
+                'description' => 'nullable|string|max:255',
+            ]);
+
+            app(UpdateUnitAction::class)->execute($request->id, $validated);
+
+            return response()->json([
+                'message' => SuccessCodes::UPDATE_UNIT_SUCCESS->message()
+            ], SuccessCodes::UPDATE_UNIT_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
     public function detail($id)
     {
-        // Sample unit data for detail view
-        $unit = [
-            'id' => $id,
-            'unit_code' => 'BTL',
-            'unit_name' => 'Botol',
-            'unit_symbol' => 'btl',
-            'unit_type' => 'Satuan',
-            'description' => 'Unit untuk produk RIYO Water dalam kemasan botol plastik dan kaca. Digunakan untuk menghitung inventory dan penjualan produk air minum',
-            'status' => 'ACTIVE',
-            'last_updated' => '2025-01-21 16:45:22'
-        ];
+        $unit = app(UnitService::class)->findOne($id);
+
+        if ($unit == null) {
+            abort(404);
+        }
 
         // Audit log data
-        $auditLogs = [
-            [
-                'created_at' => '2025-01-18 11:30:15',
-                'user_id' => 'USR-001',
-                'user_name' => 'Admin User',
-                'action_type' => 'UPDATE',
-                'description' => 'Mengubah deskripsi unit BTL untuk menambahkan informasi kemasan kaca'
-            ],
-            [
-                'created_at' => '2025-01-10 09:20:45',
-                'user_id' => 'USR-003',
-                'user_name' => 'Warehouse Manager',
-                'action_type' => 'CREATE',
-                'description' => 'Unit Botol (BTL) berhasil dibuat dengan kode BTL'
-            ]
-        ];
+        // $auditLogs = [
+        //     [
+        //         'created_at' => '2025-01-18 11:30:15',
+        //         'user_id' => 'USR-001',
+        //         'user_name' => 'Admin User',
+        //         'action_type' => 'UPDATE',
+        //         'description' => 'Mengubah deskripsi unit BTL untuk menambahkan informasi kemasan kaca'
+        //     ],
+        //     [
+        //         'created_at' => '2025-01-10 09:20:45',
+        //         'user_id' => 'USR-003',
+        //         'user_name' => 'Warehouse Manager',
+        //         'action_type' => 'CREATE',
+        //         'description' => 'Unit Botol (BTL) berhasil dibuat dengan kode BTL'
+        //     ]
+        // ];
+        $auditLogs = app(UnitAuditLogService::class)->findAllBasedOnTagId($id);
 
         return view('pages.master_data.unit.detail', compact('unit', 'auditLogs'));
     }

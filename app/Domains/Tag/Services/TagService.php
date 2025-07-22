@@ -9,7 +9,7 @@ class TagService
 {
     private $table_name = 'm_tags';
 
-    public function createTag(array $data)
+    public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
             'name' => $data['name'],
@@ -38,7 +38,7 @@ class TagService
             ]);
     }
 
-    public function getAllTagsDatatable()
+    public function findAllDatatable()
     {
         $query = DB::table($this->table_name . ' as t')
             ->select([
@@ -84,15 +84,16 @@ class TagService
             $query->where('t.f_tag_color_id', $colorId);
         }
 
-        // Pagination
-        $start = (int) request()->input('start', 0);
-        $length = (int) request()->input('length', 10);
-        $query->skip($start)->take($length);
-
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
         $filteredQuery = clone $query;
+
+        // Pagination
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
         $recordsFiltered = $filteredQuery->count();
+
+        $query->skip($start)->take($length);
         $query->orderBy('name', 'ASC');
         $data = $query->get();
 
@@ -114,7 +115,8 @@ class TagService
                 't.status',
                 'tc.id as tag_id',
                 'tc.name as tag_name',
-                 'tc.preview as tag_preview',
+                'tc.code as tag_code',
+                'tc.preview as tag_preview',
                 't.description',
                 't.status',
                 't.memo',

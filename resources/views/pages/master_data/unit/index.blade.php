@@ -84,10 +84,10 @@
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-4">
                                     <label class="form-label">Tipe Unit:</label>
-                                    <select class="global-select2 form-select" id="type-filter" data-allow-clear="false">
+                                    <select class="global-select2 form-select" id="type-filter" data-allow-clear="true">
                                         <option value="">Semua Tipe</option>
                                         @foreach($unitTypes as $type)
-                                            <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>
+                                            <option value="{{ $type->id }}">{{ $type->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -149,42 +149,35 @@
 
             if (mainTable) {
                 dt_adv_filter = new DataTable(mainTable, {
+                    processing: true,
+                    serverSide: true,
                     ajax: {
                         url: `{{ route('master_data.unit.index_data_table') }}`,
                         data: function(d) {
-                            d.status_filter = $('#status-filter').val();
-                            d.unit_type_filter = $('#unit-type-filter').val();
-                            return d;
+                            d.status = $('#status-filter').val();
+                            d.type = $('#type-filter').val();
+                            d.name = $('#search').val();
                         }
                     },
                     columns: [
                         { data: 'created_at', responsivePriority: 2 },
                         { 
-                            data: 'unit_code',
+                            data: 'code',
                             responsivePriority: 3,
                             render: function(data, type, row) {
                                 const detailUrl = `{{ route('master_data.unit.detail', ':id') }}`.replace(':id', row.id);
                                 return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
                         },
-                        { data: 'unit_name', responsivePriority: 4 },
+                        { data: 'name', responsivePriority: 4 },
                         { 
-                            data: 'unit_symbol',
+                            data: 'symbol',
                             responsivePriority: 5,
                             className: 'text-center'
                         },
                         { 
-                            data: 'unit_type',
+                            data: 'unit_type_name',
                             responsivePriority: 6,
-                            render: function(data, type, row) {
-                                const typeMapping = {
-                                    'WEIGHT': 'Berat',
-                                    'VOLUME': 'Volume',
-                                    'LENGTH': 'Panjang',
-                                    'PIECE': 'Satuan'
-                                };
-                                return typeMapping[data] || data;
-                            }
                         },
                         { 
                             data: 'status',
