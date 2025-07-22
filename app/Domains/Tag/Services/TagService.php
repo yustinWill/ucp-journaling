@@ -84,13 +84,13 @@ class TagService
             $query->where('t.f_tag_color_id', $colorId);
         }
 
-        // Pagination
-        $start = (int) request()->input('start', 0);
-        $length = (int) request()->input('length', 10);
-
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
         $filteredQuery = clone $query;
+
+        // Pagination
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
         $recordsFiltered = $filteredQuery->count();
 
         $query->skip($start)->take($length);

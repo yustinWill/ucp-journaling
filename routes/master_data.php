@@ -145,7 +145,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $unit_segment . '/index', 'index')->name('master_data.unit.index');
         Route::get($base_segment . $unit_segment . '/index_data_table', 'index_data_table')->name('master_data.unit.index_data_table');
         Route::get($base_segment . $unit_segment . '/add', 'add')->name('master_data.unit.add');
+        Route::post($base_segment . $unit_segment . '/save', 'save')->name('master_data.unit.save');
         Route::get($base_segment . $unit_segment . '/edit/{id}', 'edit')->name('master_data.unit.edit');
+        Route::post($base_segment . $unit_segment . '/update', 'update')->name('master_data.unit.update');
         Route::get($base_segment . $unit_segment . '/detail/{id}', 'detail')->name('master_data.unit.detail');
         Route::get($base_segment . $unit_segment . '/export', 'export')->name('master_data.unit.export');
         Route::get($base_segment . $unit_segment . '/import', 'import')->name('master_data.unit.import');
