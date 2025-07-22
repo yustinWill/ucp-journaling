@@ -23,13 +23,12 @@ class TagService
         ]);
     }
 
-    public function updateTag(int $id, array $data): int
+    public function update(int $id, array $data): int
     {
         return DB::table($this->table_name)
             ->where('id', $id)
             ->update([
                 'name' => $data['name'],
-                'code' => $data['code'],
                 'status' => $data['status'],
                 'f_tag_color_id' => $data['f_tag_color_id'],
                 'description' => $data['description'] ?? null,
@@ -76,7 +75,7 @@ class TagService
         if ($code = request()->input('code')) {
             $query->where('t.code', $code);
         }
-          if ($name = request()->input('name')) {
+        if ($name = request()->input('name')) {
             $query->where('t.name', $name);
         }
 
@@ -103,5 +102,26 @@ class TagService
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ];
+    }
+
+    public function findOne($id)
+    {
+        return DB::table($this->table_name . ' as t')
+            ->select([
+                't.id',
+                't.name',
+                't.code',
+                't.status',
+                'tc.id as tag_id',
+                'tc.name as tag_name',
+                 'tc.preview as tag_preview',
+                't.description',
+                't.status',
+                't.memo',
+                't.usage_count'
+            ])
+            ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+            ->where('t.id', $id)
+            ->first();
     }
 }

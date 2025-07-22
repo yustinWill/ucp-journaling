@@ -107,17 +107,17 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $stock_opname_segment . '/add', 'add')->name('master_data.stock_opname.add');
         Route::get($base_segment . $stock_opname_segment . '/edit/{id}', 'edit')->name('master_data.stock_opname.edit');
         Route::get($base_segment . $stock_opname_segment . '/detail/{id}', 'detail')->name('master_data.stock_opname.detail');
-        
+
         // Import routes
         Route::get($base_segment . $stock_opname_segment . '/import', 'import')->name('master_data.stock_opname.import');
         Route::get($base_segment . $stock_opname_segment . '/download-template', 'downloadTemplate')->name('master_data.stock_opname.download_template');
         Route::post($base_segment . $stock_opname_segment . '/validate-import', 'validateImport')->name('master_data.stock_opname.validate_import');
         Route::post($base_segment . $stock_opname_segment . '/process-import', 'processImport')->name('master_data.stock_opname.process_import');
-        
+
         // Export routes
         Route::get($base_segment . $stock_opname_segment . '/export', 'export')->name('master_data.stock_opname.export');
         Route::post($base_segment . $stock_opname_segment . '/process-export', 'processExport')->name('master_data.stock_opname.process_export');
-        
+
         Route::post($base_segment . $stock_opname_segment . '/create_adjustment/{id}', 'createAdjustment')->name('master_data.stock_opname.create_adjustment');
     });
 
@@ -127,6 +127,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $tag_segment . '/add', 'add')->name('master_data.tag.add');
         Route::post($base_segment . $tag_segment . '/save', 'save')->name('master_data.tag.save');
         Route::get($base_segment . $tag_segment . '/edit/{id}', 'edit')->name('master_data.tag.edit');
+        Route::post($base_segment . $tag_segment . '/update', 'update')->name('master_data.tag.update');
         Route::get($base_segment . $tag_segment . '/detail/{id}', 'detail')->name('master_data.tag.detail');
     });
 

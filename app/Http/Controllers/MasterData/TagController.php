@@ -13,7 +13,7 @@ use App\Helpers\DiscordNotifier;
 
 //Actions
 use App\Domains\Tag\Actions\CreateTagAction;
-
+use App\Domains\Tag\Actions\UpdateTagAction;
 //Services
 use App\Domains\Tag\Services\TagColorService;
 use App\Domains\Tag\Services\TagService;
@@ -65,6 +65,7 @@ class TagController extends Controller
                 ],
                 'f_tag_color_id' => 'required|exists:m_tag_colors,id',
                 'description' => 'nullable|string|max:255',
+                'memo' => 'nullable|string|max:255',
             ]);
 
             app(CreateTagAction::class)->execute($validated);
@@ -93,20 +94,54 @@ class TagController extends Controller
 
     public function edit($id)
     {
-        // Sample tag data for editing
-        $tag = [
-            'id' => $id,
-            'code' => 'PENJUALAN',
-            'name' => 'Transaksi Penjualan',
-            'color' => 'success',
-            'description' => 'Tag untuk semua transaksi penjualan produk RIYO Water kepada distributor dan retailer. Termasuk penjualan tunai maupun kredit.',
-            'status' => 'ACTIVE',
-            'usage_count' => 145
-        ];
+        $tag = app(TagService::class)->findOne($id);
+
+        if ($tag == null) {
+            abort(404);
+        }
 
         $availableColors = app(TagColorService::class)->findAll();
 
         return view('pages.master_data.tag.edit', compact('tag', 'availableColors'));
+    }
+
+     public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:m_tags,id',
+                'name' => 'required|string|max:255',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->availableStatus, 'value'))
+                ],
+                'f_tag_color_id' => 'required|exists:m_tag_colors,id',
+                'description' => 'nullable|string|max:255',
+                'memo' => 'nullable|string|max:255',
+            ]);
+
+            app(UpdateTagAction::class)->execute($request->id, $validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_TAG_SUCCESS->message()
+            ], SuccessCodes::CREATE_TAG_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function detail($id)
