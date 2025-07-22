@@ -127,7 +127,7 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Sistem & Pengaturan</span>
         </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.tax.*', 'master_data.unit.*', 'master_data.category.*'])) active open @endif">
+        <li class="menu-item @if (request()->routeIs(['master_data.tax.*', 'master_data.unit.*', 'master_data.category.*', 'master_data.tag.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
                 <div data-i18n="Chat">Daftar Lainnya</div>
@@ -148,6 +148,11 @@
                         <div data-i18n="Category">Kategori Produk</div>
                     </a>
                 </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.tag.*'])) active @endif">
+                    <a href="{{ route('master_data.tag.index') }}" class="menu-link">
+                        <div data-i18n="Tags">Tag Management</div>
+                    </a>
+                </li>
             </ul>
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.user.*'])) active @endif">
@@ -160,12 +165,6 @@
             <a href="{{ route('master_data.role.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-shield-check"></i>
                 <div data-i18n="Roles">Role Management</div>
-            </a>
-        </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.tag.*'])) active @endif">
-            <a href="{{ route('master_data.tag.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-tags"></i>
-                <div data-i18n="Tags">Tag Management</div>
             </a>
         </li>
         <li class="menu-item">
