@@ -87,12 +87,13 @@ class TagService
         // Pagination
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
-        $query->skip($start)->take($length);
 
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
         $filteredQuery = clone $query;
         $recordsFiltered = $filteredQuery->count();
+
+        $query->skip($start)->take($length);
         $query->orderBy('name', 'ASC');
         $data = $query->get();
 

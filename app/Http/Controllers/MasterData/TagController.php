@@ -154,29 +154,10 @@ class TagController extends Controller
         }
 
         $audit_log_data = app(TagAuditLogService::class)->findAllBasedOnTagId($id);
-        // dd($audit_log_data);
         $usage_log_data = app(TagUsageLogService::class)->findAllBasedOnTagId($id);
-        // Sample tag data for detail view
-        // $tag = [
-        //     'id' => $id,
-        //     'code' => 'PENJUALAN',
-        //     'name' => 'Transaksi Penjualan',
-        //     'color' => 'success',
-        //     'description' => 'Tag untuk semua transaksi penjualan produk RIYO Water kepada distributor dan retailer. Termasuk penjualan tunai maupun kredit.',
-        //     'status' => 'ACTIVE',
-        //     'usage_count' => 145,
-        //     'created_by' => 'Admin System',
-        //     'created_at' => '2025-01-15 08:00:00',
-        //     'updated_by' => 'Finance Manager',
-        //     'updated_at' => '2025-01-18 14:30:00',
-        //     'recent_transactions' => $usage_log_data,
-        //     'audit_logs' => $audit_log_data
-        // ];
 
-          $tag->recent_transactions = $usage_log_data;
-           $tag->audit_logs = $audit_log_data;
-
-        // dd($tag);
+        $tag->recent_transactions = $usage_log_data;
+        $tag->audit_logs = $audit_log_data;
 
         return view('pages.master_data.tag.detail', compact('tag'));
     }
