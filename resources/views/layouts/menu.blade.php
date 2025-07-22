@@ -85,15 +85,15 @@
         <li class="menu-item @if (request()->routeIs(['master_data.product.*'])) active @endif">
             <a href="{{ route('master_data.product.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-package"></i>
-                <div data-i18n="Chat">Produk</div>
+                <div data-i18n="Produk">Produk</div>
             </a>
         </li>
-        <!-- <li class="menu-item @if (request()->routeIs(['master_data.storage.*'])) active @endif">
+        <li class="menu-item @if (request()->routeIs(['master_data.storage.*'])) active @endif">
             <a href="{{ route('master_data.storage.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-warehouse"></i>
-                <div data-i18n="Chat">Gudang</div>
+                <div data-i18n="Gudang">Gudang</div>
             </a>
-        </li> -->
+        </li>
         <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-tools"></i>
@@ -137,6 +137,24 @@
             <a href="{{ route('master_data.user.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-users"></i>
                 <div data-i18n="Users">Users</div>
+            </a>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['master_data.tax.*'])) active @endif">
+            <a href="{{ route('master_data.tax.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-receipt-tax"></i>
+                <div data-i18n="Tax">Pajak</div>
+            </a>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['master_data.unit.*'])) active @endif">
+            <a href="{{ route('master_data.unit.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-ruler-measure"></i>
+                <div data-i18n="Unit">Unit</div>
+            </a>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['master_data.category.*'])) active @endif">
+            <a href="{{ route('master_data.category.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-category"></i>
+                <div data-i18n="Category">Kategori Produk</div>
             </a>
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.role.*'])) active @endif">

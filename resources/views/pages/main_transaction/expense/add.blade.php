@@ -86,6 +86,31 @@
                     </div>
                 </div>
                 
+                <!-- Row 5: Tags and Memo -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Tag</label>
+                        <div class="d-flex gap-2">
+                            <select class="global-select2 form-select flex-grow-1" id="expense-tags" multiple data-allow-clear="false">
+                                @foreach($availableTags as $tag)
+                                    <option value="{{ $tag['code'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                                @endforeach
+                            </select>
+                            @if($canAddTags)
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-expense-tag" title="Tambah Tag Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </button>
+                            @endif
+                        </div>
+                        <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
+                        <textarea class="form-control" id="expense-memo" rows="3" placeholder="Catatan internal untuk transaksi pengeluaran..." maxlength="500"></textarea>
+                        <small class="form-text text-muted">Maksimal 500 karakter - Hanya untuk keperluan internal</small>
+                    </div>
+                </div>
+                
                 <!-- Section 2: Expense Information -->
                 <div class="section-header mt-12">
                     <h6>Informasi Biaya</h6>

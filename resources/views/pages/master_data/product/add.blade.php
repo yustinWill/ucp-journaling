@@ -14,49 +14,58 @@
             
             <!-- Row 1: Basic Information -->
             <div class="row g-3 mb-4">
-                <div class="col-md-8">
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Nama Produk <span style="color: red;">*</span></label>
-                            <input type="text" class="form-control" id="product-name" placeholder="Masukkan nama produk" maxlength="255" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Unit <span style="color: red;">*</span></label>
-                            <select class="global-select2 form-select" id="unit-select" data-allow-clear="false">
-                                <option value="">Pilih Unit</option>
-                                @foreach($units as $unit)
-                                    <option value="{{ $unit['value'] }}">{{ $unit['label'] }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Kode Produk <span style="color: red;">*</span></label>
-                            <input type="text" class="form-control" id="product-code" placeholder="PROD-2025-001" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Kategori Produk</label>
-                            <select class="global-select2 form-select" id="category-select" data-allow-clear="false">
-                                <option value="">Pilih Kategori</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Deskripsi</label>
-                            <textarea class="form-control" id="product-description" rows="3" placeholder="Deskripsi detail produk..." maxlength="1000"></textarea>
-                            <small class="form-text text-muted">Maksimal 1000 karakter</small>
-                        </div>
-                        <div class="col-md-6">
-                            <!-- Empty column for layout balance -->
-                        </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nama Produk <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="product-name" placeholder="Masukkan nama produk" maxlength="255" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Unit <span style="color: red;">*</span></label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="unit-select" data-allow-clear="false">
+                            <option value="">Pilih Unit</option>
+                            @foreach($units as $unit)
+                                <option value="{{ $unit['value'] }}">{{ $unit['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddUnits)
+                            <a href="{{ route('master_data.unit.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Unit Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </a>
+                        @endif
                     </div>
                 </div>
-                <div class="col-md-4">
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Kode Produk <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="product-code" placeholder="PROD-2025-001" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Kategori Produk</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="category-select" data-allow-clear="false">
+                            <option value="">Pilih Kategori</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddCategories)
+                            <a href="{{ route('master_data.category.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Kategori Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Deskripsi</label>
+                    <textarea class="form-control" id="product-description" rows="3" placeholder="Deskripsi detail produk..." maxlength="1000"></textarea>
+                    <small class="form-text text-muted">Maksimal 1000 karakter</small>
+                </div>
+                <div class="col-md-6">
                     <label class="form-label">Gambar Produk</label>
                     <div class="image-upload-area" style="height: 200px; width: 200px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; flex-direction: column;">
                         <div id="image-placeholder" class="text-center">
@@ -125,23 +134,37 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Akun Pembelian <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="purchase-account" data-allow-clear="false">
-                                    <option value="">Pilih Akun</option>
-                                    @foreach($accounts as $account)
-                                        <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="d-flex gap-2">
+                                    <select class="global-select2 form-select flex-grow-1" id="purchase-account" data-allow-clear="false">
+                                        <option value="">Pilih Akun</option>
+                                        @foreach($accounts as $account)
+                                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    @if($canAddAccounts)
+                                        <a href="{{ route('master_data.coa.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Akun Baru">
+                                            <i class="icon-base ti tabler-plus"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Pajak Pembelian <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="purchase-tax" data-allow-clear="false">
-                                    <option value="">Pilih Pajak</option>
-                                    @foreach($taxes as $tax)
-                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="d-flex gap-2">
+                                    <select class="global-select2 form-select flex-grow-1" id="purchase-tax" data-allow-clear="false">
+                                        <option value="">Pilih Pajak</option>
+                                        @foreach($taxes as $tax)
+                                            <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    @if($canAddTaxes)
+                                        <a href="{{ route('master_data.tax.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Pajak Baru">
+                                            <i class="icon-base ti tabler-plus"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <!-- Empty column for layout balance -->
@@ -161,27 +184,46 @@
                     
                     <div id="sales-fields" style="display: none;">
                         <div class="row g-3 mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
-                                <input type="text" class="form-control curr-mask" id="sales-price" placeholder="Rp 0" class="text-end" />
+                                <input type="text" class="form-control curr-mask text-end" id="sales-price" placeholder="Rp 0" />
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label">Akun Penjualan <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="sales-account" data-allow-clear="false">
-                                    <option value="">Pilih Akun</option>
-                                    @foreach($accounts as $account)
-                                        <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="d-flex gap-2">
+                                    <select class="global-select2 form-select flex-grow-1" id="sales-account" data-allow-clear="false">
+                                        <option value="">Pilih Akun</option>
+                                        @foreach($accounts as $account)
+                                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    @if($canAddAccounts)
+                                        <a href="{{ route('master_data.coa.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Akun Baru">
+                                            <i class="icon-base ti tabler-plus"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="col-md-4">
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
                                 <label class="form-label">Pajak Penjualan <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="sales-tax" data-allow-clear="false">
-                                    <option value="">Pilih Pajak</option>
-                                    @foreach($taxes as $tax)
-                                        <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="d-flex gap-2">
+                                    <select class="global-select2 form-select flex-grow-1" id="sales-tax" data-allow-clear="false">
+                                        <option value="">Pilih Pajak</option>
+                                        @foreach($taxes as $tax)
+                                            <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    @if($canAddTaxes)
+                                        <a href="{{ route('master_data.tax.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Pajak Baru">
+                                            <i class="icon-base ti tabler-plus"></i>
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Empty column for layout balance -->
                             </div>
                         </div>
                     </div>
@@ -204,12 +246,19 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Akun Persediaan Default <span style="color: red;">*</span></label>
-                                <select class="global-select2 form-select" id="inventory-account" data-allow-clear="false">
-                                    <option value="">Pilih Akun</option>
-                                    @foreach($accounts as $account)
-                                        <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="d-flex gap-2">
+                                    <select class="global-select2 form-select flex-grow-1" id="inventory-account" data-allow-clear="false">
+                                        <option value="">Pilih Akun</option>
+                                        @foreach($accounts as $account)
+                                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    @if($canAddAccounts)
+                                        <a href="{{ route('master_data.coa.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Akun Baru">
+                                            <i class="icon-base ti tabler-plus"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         <small class="form-text text-muted">*Ketentuan stok awal dapat menggunakan penyesuaian stok</small>
@@ -269,11 +318,11 @@
                             
                             <div id="bundle-purchase-fields" style="display: none;">
                                 <div class="row g-3 mb-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
-                                        <input type="text" class="form-control curr-mask" id="bundle-purchase-price" placeholder="Rp 0" class="text-end" />
+                                        <input type="text" class="form-control curr-mask text-end" id="bundle-purchase-price" placeholder="Rp 0" />
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Akun Pembelian <span style="color: red;">*</span></label>
                                         <select class="global-select2 form-select" id="bundle-purchase-account" data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
@@ -282,7 +331,9 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
                                         <label class="form-label">Pajak Pembelian <span style="color: red;">*</span></label>
                                         <select class="global-select2 form-select" id="bundle-purchase-tax" data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
@@ -290,6 +341,9 @@
                                                 <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
                                             @endforeach
                                         </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <!-- Empty column for layout balance -->
                                     </div>
                                 </div>
                             </div>
@@ -306,11 +360,11 @@
                             
                             <div id="bundle-sales-fields" style="display: none;">
                                 <div class="row g-3 mb-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
-                                        <input type="text" class="form-control curr-mask" id="bundle-sales-price" placeholder="Rp 0" class="text-end" />
+                                        <input type="text" class="form-control curr-mask text-end" id="bundle-sales-price" placeholder="Rp 0" />
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Akun Penjualan <span style="color: red;">*</span></label>
                                         <select class="global-select2 form-select" id="bundle-sales-account" data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
@@ -319,7 +373,9 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
                                         <label class="form-label">Pajak Penjualan <span style="color: red;">*</span></label>
                                         <select class="global-select2 form-select" id="bundle-sales-tax" data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
@@ -327,6 +383,9 @@
                                                 <option value="{{ $tax['value'] }}">{{ $tax['label'] }}</option>
                                             @endforeach
                                         </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <!-- Empty column for layout balance -->
                                     </div>
                                 </div>
                             </div>
@@ -468,9 +527,9 @@
                             @endforeach
                         </select>
                         @if($canAddTags)
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-product-tag" title="Tambah Tag Baru">
+                            <a href="{{ route('master_data.tag.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Tag Baru">
                                 <i class="icon-base ti tabler-plus"></i>
-                            </button>
+                            </a>
                         @endif
                     </div>
                     <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi produk</small>
@@ -743,7 +802,7 @@
                         </select>
                     </td>
                     <td>
-                        <input type="text" class="form-control curr-mask account-cost" data-id="${bundleAccountCounter}" placeholder="Rp-" class="text-end">
+                        <input type="text" class="form-control curr-mask text-end account-cost" data-id="${bundleAccountCounter}" placeholder="Rp 0">
                     </td>
                     <td>
                         <button type="button" class="btn btn-sm btn-danger remove-account" data-id="${bundleAccountCounter}">

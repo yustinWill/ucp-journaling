@@ -51,35 +51,29 @@
     
     <!-- Tabs -->
     <div class="mt-6">
-        <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#pesanan-tab" type="button"
-                role="tab" aria-controls="pesanan-tab" aria-selected="true">
+        <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
+            <a class="list-group-item list-group-item-action active" data-bs-toggle="list" 
+               href="#pesanan-tab" role="tab" aria-controls="pesanan-tab" aria-selected="true">
                 <i class="icon-base ti tabler-shopping-cart me-2"></i>
-                Pesanan
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#pengiriman-tab" type="button"
-                role="tab" aria-controls="pengiriman-tab" aria-selected="false">
+                <b>Pesanan</b>
+            </a>
+            <a class="list-group-item list-group-item-action" data-bs-toggle="list" 
+               href="#pengiriman-tab" role="tab" aria-controls="pengiriman-tab" aria-selected="false">
                 <i class="icon-base ti tabler-truck-delivery me-2"></i>
-                Pengiriman
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#faktur-tab" type="button"
-                role="tab" aria-controls="faktur-tab" aria-selected="false">
+                <b>Pengiriman</b>
+            </a>
+            <a class="list-group-item list-group-item-action" data-bs-toggle="list" 
+               href="#faktur-tab" role="tab" aria-controls="faktur-tab" aria-selected="false">
                 <i class="icon-base ti tabler-file-invoice me-2"></i>
-                Faktur
-            </button>
-        </li>
-        </ul>
+                <b>Faktur</b>
+            </a>
+        </div>
         
         <div class="tab-content p-0 mt-3">
             <!-- Pesanan Tab -->
             <div class="tab-pane fade show active" id="pesanan-tab" role="tabpanel">
                 <div class="card">
-                    <h5 class="card-header">Pesanan Pembelian</h5>
+                    <h4 class="card-header">Pesanan Pembelian</h4>
                     <div class="card-body">
                         <!-- Advanced Search Form -->
                         <div class="row mb-4">
@@ -141,7 +135,7 @@
             <!-- Pengiriman Tab -->
             <div class="tab-pane fade" id="pengiriman-tab" role="tabpanel">
                 <div class="card">
-                    <h5 class="card-header">Pengiriman Pembelian</h5>
+                    <h4 class="card-header">Pengiriman Pembelian</h4>
                     <div class="card-body">
                         <!-- Advanced Search Form -->
                         <div class="row mb-4">
@@ -199,7 +193,7 @@
             <!-- Faktur Tab -->
             <div class="tab-pane fade" id="faktur-tab" role="tabpanel">
                 <div class="card">
-                    <h5 class="card-header">Faktur Pembelian</h5>
+                    <h4 class="card-header">Faktur Pembelian</h4>
                     <div class="card-body">
                         <!-- Advanced Search Form -->
                         <div class="row mb-4">

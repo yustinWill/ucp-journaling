@@ -184,9 +184,9 @@
                             targets: -2,
                             render: function(data, type, full, meta) {
                                 if (data == 'ACTIVE') {
-                                    return `<span class="badge bg-label-success">${data}</span>`;
+                                    return `<span class="badge bg-label-success">Aktif</span>`;
                                 } else {
-                                    return `<span class="badge bg-label-danger">${data}</span>`;
+                                    return `<span class="badge bg-label-secondary">Inaktif</span>`;
                                 }
                             }
                         },

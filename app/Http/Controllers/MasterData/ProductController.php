@@ -10,26 +10,27 @@ class ProductController extends Controller
     public function index()
     {
         $productCategories = [
-            ['value' => 'Alat Tulis', 'label' => 'Alat Tulis'],
-            ['value' => 'Kertas', 'label' => 'Kertas'],
-            ['value' => 'Elektronik', 'label' => 'Elektronik']
+            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
+            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
+            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
+            ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan']
         ];
 
         $stockStatuses = [
-            ['value' => 'available', 'label' => 'Stok Tersedia'],
-            ['value' => 'low', 'label' => 'Stok Segera Habis'],
-            ['value' => 'out', 'label' => 'Stok Habis']
+            ['value' => 'AVAILABLE', 'label' => 'AVAILABLE - Stok Tersedia'],
+            ['value' => 'LOW_STOCK', 'label' => 'LOW_STOCK - Stok Segera Habis'],
+            ['value' => 'OUT_OF_STOCK', 'label' => 'OUT_OF_STOCK - Stok Habis']
         ];
 
         $warehouseStatuses = [
-            ['value' => 'ACTIVE', 'label' => 'Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'Tidak Aktif']
+            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
         ];
 
         $warehouseLocations = [
-            ['value' => 'Jakarta', 'label' => 'Jakarta'],
-            ['value' => 'Bandung', 'label' => 'Bandung'],
-            ['value' => 'Surabaya', 'label' => 'Surabaya']
+            ['value' => 'GDG-JKT', 'label' => 'GDG-JKT - Gudang Jakarta'],
+            ['value' => 'GDG-BDG', 'label' => 'GDG-BDG - Gudang Bandung'],
+            ['value' => 'GDG-SBY', 'label' => 'GDG-SBY - Gudang Surabaya']
         ];
 
         return view('pages.master_data.product.index', [
@@ -261,8 +262,12 @@ class ProductController extends Controller
             ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan', 'color' => 'danger']
         ];
 
-        // Permission check for adding new tags
+        // Permission checks for adding new options
         $canAddTags = true; // Mock permission check
+        $canAddUnits = true; // Mock permission check
+        $canAddCategories = true; // Mock permission check
+        $canAddAccounts = true; // Mock permission check
+        $canAddTaxes = true; // Mock permission check
 
         return view('pages.master_data.product.add', [
             'units' => $units,
@@ -271,7 +276,11 @@ class ProductController extends Controller
             'taxes' => $taxes,
             'products' => $products,
             'tags' => $tags,
-            'canAddTags' => $canAddTags
+            'canAddTags' => $canAddTags,
+            'canAddUnits' => $canAddUnits,
+            'canAddCategories' => $canAddCategories,
+            'canAddAccounts' => $canAddAccounts,
+            'canAddTaxes' => $canAddTaxes
         ]);
     }
 
@@ -315,19 +324,158 @@ class ProductController extends Controller
             'selling_price' => 'Rp 4,000',
             'sales_account' => '[4001] - Penjualan Barang Dagang',
             'sales_tax' => '[PPN11] - PPN 11%',
+            'estimated_cogs' => 'Rp 2,750',
+            'profit_margin' => '31.25%',
+            'profit_per_unit' => 'Rp 1,250',
             'minimum_stock' => '100',
             'inventory_account' => '[1301] - Persediaan Barang Dagang',
             'track_quantity' => true,
             'track_batch' => false,
-            'image' => null
+            'image' => null,
+            'tags' => [
+                ['name' => 'FINISHED_GOODS', 'color' => 'success'],
+                ['name' => 'POPULAR', 'color' => 'primary']
+            ],
+            'memo' => 'Produk utama RIYO Water dengan tingkat penjualan tertinggi. Diproduksi dengan teknologi RO dan UV sterilization.',
+            'last_updated' => '2025-01-21 14:30:25'
         ];
 
-        return view('pages.master_data.product.detail', compact('product'));
+        // Inventory data per warehouse from controller
+        $inventoryData = [
+            [
+                'warehouse_id' => 1,
+                'warehouse_code' => 'GDG-001',
+                'warehouse_name' => 'Gudang Utama Produksi',
+                'available_stock' => 2500,
+                'reserved_stock' => 150,
+                'total_stock' => 2650,
+                'average_price' => 'Rp 2,750',
+                'inventory_value' => 'Rp 7,287,500'
+            ],
+            [
+                'warehouse_id' => 2,
+                'warehouse_code' => 'GDG-002',
+                'warehouse_name' => 'Gudang Raw Material',
+                'available_stock' => 800,
+                'reserved_stock' => 50,
+                'total_stock' => 850,
+                'average_price' => 'Rp 2,700',
+                'inventory_value' => 'Rp 2,295,000'
+            ],
+            [
+                'warehouse_id' => 3,
+                'warehouse_code' => 'GDG-003',
+                'warehouse_name' => 'Gudang Produk Jadi',
+                'available_stock' => 1200,
+                'reserved_stock' => 80,
+                'total_stock' => 1280,
+                'average_price' => 'Rp 2,750',
+                'inventory_value' => 'Rp 3,520,000'
+            ]
+        ];
+
+        // Audit log data with standard 4-column structure
+        $auditLogs = [
+            [
+                'created_at' => '2025-01-20 14:30:25',
+                'user_id' => 'USR-001',
+                'user_name' => 'Admin User',
+                'action_type' => 'UPDATE',
+                'description' => 'Memperbarui harga jual dari Rp 3,800 menjadi Rp 4,000'
+            ],
+            [
+                'created_at' => '2025-01-18 09:15:10',
+                'user_id' => 'USR-002',
+                'user_name' => 'Manager Warehouse',
+                'action_type' => 'UPDATE',
+                'description' => 'Mengubah batas stok minimum dari 50 menjadi 100 unit'
+            ],
+            [
+                'created_at' => '2025-01-15 16:45:33',
+                'user_id' => 'USR-001',
+                'user_name' => 'Admin User',
+                'action_type' => 'CREATE',
+                'description' => 'Produk RIYO Water 600ml berhasil dibuat dengan kode PROD-2025-001'
+            ]
+        ];
+
+        return view('pages.master_data.product.detail', compact('product', 'inventoryData', 'auditLogs'));
     }
 
     public function edit($id)
     {
-        // TODO: Implement edit functionality
-        return view('pages.master_data.product.edit', ['id' => $id]);
+        $units = [
+            ['value' => 'btl', 'label' => 'BTL - Botol'],
+            ['value' => 'dus', 'label' => 'DUS - Dus'],
+            ['value' => 'kg', 'label' => 'KG - Kilogram'],
+            ['value' => 'ltr', 'label' => 'LTR - Liter'],
+            ['value' => 'pcs', 'label' => 'PCS - Pieces']
+        ];
+
+        $categories = [
+            ['value' => 'finished_goods', 'label' => 'FINISHED_GOODS - Produk Jadi'],
+            ['value' => 'raw_materials', 'label' => 'RAW_MATERIALS - Bahan Baku'],
+            ['value' => 'packaging', 'label' => 'PACKAGING - Kemasan'],
+            ['value' => 'chemicals', 'label' => 'CHEMICALS - Bahan Kimia']
+        ];
+
+        $accounts = [
+            ['value' => '5001', 'label' => '[5001] - Pembelian Barang Dagang'],
+            ['value' => '4001', 'label' => '[4001] - Penjualan Barang Dagang'],
+            ['value' => '1003', 'label' => '[1003] - Persediaan Barang Dagang'],
+            ['value' => '5002', 'label' => '[5002] - Biaya Pembelian']
+        ];
+
+        $taxes = [
+            ['value' => 'ppn_11', 'label' => '[PPN11] - PPN 11%'],
+            ['value' => 'ppn_0', 'label' => '[PPN0] - PPN 0%'],
+            ['value' => 'no_tax', 'label' => '[NOTAX] - Tanpa Pajak']
+        ];
+
+        $tags = [
+            ['value' => 'finished_goods', 'label' => 'FINISHED_GOODS - Produk Jadi', 'color' => 'success'],
+            ['value' => 'retail', 'label' => 'RETAIL - Produk Retail', 'color' => 'info'],
+            ['value' => 'premium', 'label' => 'PREMIUM - Produk Premium', 'color' => 'warning'],
+            ['value' => 'popular', 'label' => 'POPULAR - Produk Populer', 'color' => 'primary']
+        ];
+
+        // Sample product data for editing
+        $product = [
+            'id' => $id,
+            'name' => 'RIYO Water 600ml',
+            'unit' => 'btl',
+            'code' => 'PROD-2025-001',
+            'category' => 'finished_goods',
+            'description' => 'Air minum dalam kemasan botol 600ml berkualitas tinggi dengan proses filtrasi canggih',
+            'image' => '/custom_assets/images/riyo-water-600ml.jpg',
+            'type' => 'single',
+            'enable_purchase' => true,
+            'purchase_price' => 'Rp 1,200',
+            'purchase_account' => '5001',
+            'purchase_tax' => 'ppn_11',
+            'enable_sales' => true,
+            'sales_price' => 'Rp 2,500',
+            'sales_account' => '4001',
+            'sales_tax' => 'ppn_11',
+            'enable_inventory' => true,
+            'minimum_stock' => '1000',
+            'inventory_account' => '1003',
+            'track_quantity' => true,
+            'track_batch' => false,
+            'tags' => ['finished_goods', 'retail'],
+            'memo' => 'Produk utama RIYO Water dengan margin keuntungan terbaik'
+        ];
+
+        $canAddTags = true; // Permission-based flag
+
+        return view('pages.master_data.product.edit', [
+            'units' => $units,
+            'categories' => $categories,
+            'accounts' => $accounts,
+            'taxes' => $taxes,
+            'tags' => $tags,
+            'product' => $product,
+            'canAddTags' => $canAddTags
+        ]);
     }
 }
