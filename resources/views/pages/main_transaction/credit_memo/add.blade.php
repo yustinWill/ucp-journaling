@@ -32,7 +32,18 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Tag</label>
-                    <input type="text" class="form-control" id="tag" placeholder="Kategori transaksi" />
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="credit-memo-tags" multiple data-allow-clear="false">
+                            @foreach($availableTags as $tag)
+                                <option value="{{ $tag['code'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags)
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-credit-memo-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
                 </div>
             </div>
             

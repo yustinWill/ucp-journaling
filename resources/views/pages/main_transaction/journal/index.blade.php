@@ -52,7 +52,7 @@
     <!-- Main Content Card -->
     <div class="mt-6">
         <div class="card">
-        <h5 class="card-header">List Jurnal</h5>
+        <h4 class="card-header">List Jurnal</h4>
         <div class="card-body">
             <!-- Advanced Search Form -->
             <form class="dt_adv_search" method="GET">

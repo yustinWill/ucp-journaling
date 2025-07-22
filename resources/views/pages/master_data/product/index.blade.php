@@ -63,29 +63,8 @@
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="mt-4">
-        <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#products-tab" type="button"
-                role="tab" aria-controls="products-tab" aria-selected="true">
-                <i class="icon-base ti tabler-box me-2"></i>
-                Barang & Jasa
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#warehouse-tab" type="button"
-                role="tab" aria-controls="warehouse-tab" aria-selected="false">
-                <i class="icon-base ti tabler-building-warehouse me-2"></i>
-                Gudang
-            </button>
-        </li>
-        </ul>
-    </div>
-
-    <div class="tab-content p-0 mt-3">
-        <!-- Products Tab -->
-        <div class="tab-pane fade show active" id="products-tab" role="tabpanel">
+    <!-- Main Content Card -->
+    <div class="mt-6">
             <div class="card">
                 <h4 class="card-header">Kelola Produk</h4>
                 <div class="card-body">
@@ -178,77 +157,6 @@
                                 <th>Harga Beli Terakhir</th>
                                 <th>Harga Beli</th>
                                 <th>Harga Jual</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Warehouse Tab -->
-        <div class="tab-pane fade" id="warehouse-tab" role="tabpanel">
-            <div class="card">
-                <h4 class="card-header">Kelola Gudang</h4>
-                <div class="card-body">
-                    <!-- Advanced Search Form -->
-                    <form class="dt_adv_search" method="GET">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="row g-3">
-                                    <div class="col-12 col-sm-6 col-lg-4">
-                                        <label class="form-label">Status:</label>
-                                        <select class="global-select2 form-select" id="warehouse-status-filter" data-allow-clear="false">
-                                            <option value="">Semua Status</option>
-                                            @foreach($warehouseStatuses as $status)
-                                                <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-12 col-sm-6 col-lg-4">
-                                        <label class="form-label">Lokasi:</label>
-                                        <select class="global-select2 form-select" id="warehouse-location-filter" data-allow-clear="false">
-                                            <option value="">Semua Lokasi</option>
-                                            @foreach($warehouseLocations as $location)
-                                                <option value="{{ $location['value'] }}">{{ $location['label'] }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-12 col-sm-6 col-lg-4">
-                                        <label class="form-label">Pencarian:</label>
-                                        <input type="text" class="form-control" id="warehouse-search" placeholder="Cari Gudang">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                    <hr class="my-6 mx-n6" />
-                    <!-- Action Buttons -->
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-end">
-                            <div class="d-flex gap-2">
-                                <button type="button" id="btn-import-warehouse"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</button>
-                                <button type="button" id="btn-export-warehouse"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</button>
-                                <button type="button" id="btn-add-warehouse"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Data Table -->
-                <div class="card-datatable">
-                    <table id="warehouse-table" class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Kode Gudang</th>
-                                <th>Nama Gudang</th>
-                                <th>Penanggung Jawab</th>
-                                <th>Alamat</th>
                                 <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
@@ -256,13 +164,12 @@
                     </table>
                 </div>
             </div>
-        </div>
     </div>
 @stop
 @section('js_script')
     <script>
         $(function() {
-            let productsTable, warehouseTable;
+            let productsTable;
             
             // Initialize Products Table
             function initProductsTable() {
@@ -273,8 +180,12 @@
                 productsTable = new DataTable('#products-table', {
                     ajax: {
                         url: `{{ route('master_data.product.index_data_table') }}`,
-                        data: {
-                            tab: 'products'
+                        data: function(d) {
+                            d.tab = 'products';
+                            d.category_filter = $('#category-filter').val();
+                            d.stock_status_filter = $('#stock-status-filter').val();
+                            d.warehouse_filter = $('#warehouse-filter').val();
+                            return d;
                         }
                     },
                     columns: [
@@ -377,6 +288,15 @@
                                 return data ?? 'Rp 0';
                             }
                         },
+                        { 
+                            data: 'status',
+                            responsivePriority: 5,
+                            render: function(data, type, row) {
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const statusText = data === 'ACTIVE' ? 'Aktif' : 'Inaktif';
+                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                            }
+                        },
                         {
                             data: null,
                             orderable: false,
@@ -418,87 +338,8 @@
                 });
             }
             
-            // Initialize Warehouse Table
-            function initWarehouseTable() {
-                if (warehouseTable) {
-                    warehouseTable.destroy();
-                }
-                
-                warehouseTable = new DataTable('#warehouse-table', {
-                    ajax: {
-                        url: `{{ route('master_data.product.index_warehouse_data_table') }}`,
-                        data: {
-                            tab: 'warehouse'
-                        }
-                    },
-                    columns: [
-                        { data: 'warehouse_code' },
-                        { 
-                            data: 'warehouse_name',
-                            render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
-                            }
-                        },
-                        { data: 'pic_name' },
-                        { data: 'address' },
-                        { 
-                            data: 'status',
-                            render: function(data, type, row) {
-                                return data; // Plain text for status
-                            }
-                        },
-                        {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            render: function(data, type, row, meta) {
-                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`.replace(':id', row.id);
-                                const editUrl = `{{ route('master_data.product.edit', ':id') }}`.replace(':id', row.id);
-                                return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                                `;
-                            }
-                        }
-                    ],
-                    layout: {
-                        topStart: { rowClass: 'm-0', features: [] },
-                        topEnd: {},
-                        bottomStart: { rowClass: 'row mx-3 justify-content-between', features: ['info'] },
-                        bottomEnd: 'paging'
-                    },
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                        }
-                    },
-                    scrollX: true,
-                    responsive: true
-                });
-            }
-            
-            // Initialize first table
+            // Initialize table
             initProductsTable();
-            
-            // Tab switching
-            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-                const target = $(e.target).attr('data-bs-target');
-                
-                if (target === '#products-tab') {
-                    initProductsTable();
-                } else if (target === '#warehouse-tab') {
-                    initWarehouseTable();
-                }
-            });
             
             // Button click events - Products Tab
             $('#btn-add-products').on('click', function() {
@@ -513,22 +354,9 @@
                 window.location.href = "{{ route('master_data.product.export') }}?type=bundle";
             });
             
-            // Button click events - Warehouse Tab
-            $('#btn-add-warehouse').on('click', function() {
-                window.location.href = "{{ route('master_data.storage.add') }}";
-            });
-            
-            $('#btn-export-warehouse').on('click', function() {
-                window.location.href = "{{ route('master_data.storage.export') }}";
-            });
-            
             // Import button events
             $('#btn-import-products, #btn-import-update, #btn-import-bundle').on('click', function() {
                 window.location.href = "{{ route('master_data.product.import') }}";
-            });
-            
-            $('#btn-import-warehouse').on('click', function() {
-                window.location.href = "{{ route('master_data.storage.import') }}";
             });
             
             // Search functionality
@@ -538,22 +366,10 @@
                 }
             });
             
-            $('#warehouse-search').on('keyup', function() {
-                if (warehouseTable) {
-                    warehouseTable.search(this.value).draw();
-                }
-            });
-            
             // Filter functionality
             $('#products-category-filter, #products-stock-filter').on('change', function() {
                 if (productsTable) {
                     productsTable.draw();
-                }
-            });
-            
-            $('#warehouse-status-filter, #warehouse-location-filter').on('change', function() {
-                if (warehouseTable) {
-                    warehouseTable.draw();
                 }
             });
             

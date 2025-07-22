@@ -48,10 +48,6 @@
             <!-- Row 3: Payment and Reference -->
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
-                    <label class="form-label">Tag</label>
-                    <input type="text" class="form-control" id="tag" placeholder="Kategori transaksi" />
-                </div>
-                <div class="col-md-3">
                     <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="payment-terms">
                         @foreach($paymentTerms as $term)
@@ -62,6 +58,31 @@
                 <div class="col-md-3">
                     <label class="form-label">Nomor Referensi Pelanggan</label>
                     <input type="text" class="form-control" id="customer-reference" placeholder="Referensi dari pelanggan" />
+                </div>
+            </div>
+            
+            <!-- Row 3b: Tags and Memo -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="d-flex gap-2">
+                        <select class="global-select2 form-select flex-grow-1" id="sales-order-tags" multiple data-allow-clear="false">
+                            @foreach($availableTags as $tag)
+                                <option value="{{ $tag['code'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if($canAddTags)
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-sales-tag" title="Tambah Tag Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </button>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
+                    <textarea class="form-control" id="sales-memo" rows="2" placeholder="Catatan internal untuk sales order..." maxlength="500"></textarea>
+                    <small class="form-text text-muted">Maksimal 500 karakter - Hanya untuk keperluan internal</small>
                 </div>
             </div>
             

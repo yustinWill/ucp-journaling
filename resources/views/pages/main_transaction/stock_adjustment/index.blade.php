@@ -54,35 +54,29 @@
     
     <!-- Tabs -->
     <div class="mt-6">
-        <ul class="nav nav-tabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#waiting-adjustment-tab" type="button"
-                role="tab" aria-controls="waiting-adjustment-tab" aria-selected="true">
+        <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
+            <a class="list-group-item list-group-item-action active" data-bs-toggle="list" 
+               href="#waiting-adjustment-tab" role="tab" aria-controls="waiting-adjustment-tab" aria-selected="true">
                 <i class="icon-base ti tabler-clock me-2"></i>
-                Menunggu Adjustment
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#waiting-approval-tab" type="button"
-                role="tab" aria-controls="waiting-approval-tab" aria-selected="false">
+                <b>Menunggu Adjustment</b>
+            </a>
+            <a class="list-group-item list-group-item-action" data-bs-toggle="list" 
+               href="#waiting-approval-tab" role="tab" aria-controls="waiting-approval-tab" aria-selected="false">
                 <i class="icon-base ti tabler-hourglass me-2"></i>
-                Menunggu Persetujuan
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#finished-tab" type="button"
-                role="tab" aria-controls="finished-tab" aria-selected="false">
+                <b>Menunggu Persetujuan</b>
+            </a>
+            <a class="list-group-item list-group-item-action" data-bs-toggle="list" 
+               href="#finished-tab" role="tab" aria-controls="finished-tab" aria-selected="false">
                 <i class="icon-base ti tabler-check me-2"></i>
-                Selesai
-            </button>
-        </li>
-        </ul>
+                <b>Selesai</b>
+            </a>
+        </div>
         
         <div class="tab-content p-0 mt-3">
             <!-- Waiting Adjustment Tab -->
             <div class="tab-pane fade show active" id="waiting-adjustment-tab" role="tabpanel">
                 <div class="card">
-                    <h5 class="card-header">Menunggu Adjustment</h5>
+                    <h4 class="card-header">Menunggu Adjustment</h4>
                     <div class="card-body">
                         <!-- Advanced Search Form -->
                         <div class="row mb-4">
@@ -138,7 +132,7 @@
             <!-- Waiting Approval Tab -->
             <div class="tab-pane fade" id="waiting-approval-tab" role="tabpanel">
                 <div class="card">
-                    <h5 class="card-header">Menunggu Persetujuan</h5>
+                    <h4 class="card-header">Menunggu Persetujuan</h4>
                     <div class="card-body">
                         <!-- Advanced Search Form -->
                         <div class="row mb-4">
@@ -195,7 +189,7 @@
             <!-- Finished Tab -->
             <div class="tab-pane fade" id="finished-tab" role="tabpanel">
                 <div class="card">
-                    <h5 class="card-header">Stock Adjustment Selesai</h5>
+                    <h4 class="card-header">Stock Adjustment Selesai</h4>
                     <div class="card-body">
                         <!-- Advanced Search Form -->
                         <div class="row mb-4">

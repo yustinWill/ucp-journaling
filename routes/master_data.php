@@ -11,6 +11,9 @@ use App\Http\Controllers\MasterData\UserController;
 use App\Http\Controllers\MasterData\RoleController;
 use App\Http\Controllers\MasterData\StockOpnameController;
 use App\Http\Controllers\MasterData\TagController;
+use App\Http\Controllers\MasterData\TaxController;
+use App\Http\Controllers\MasterData\UnitController;
+use App\Http\Controllers\MasterData\CategoryController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
@@ -21,8 +24,11 @@ $user_segment = '/user';
 $role_segment = '/role';
 $stock_opname_segment = '/stock_opname';
 $tag_segment = '/tag';
+$tax_segment = '/tax';
+$unit_segment = '/unit';
+$category_segment = '/category';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index');
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table');
@@ -40,7 +46,8 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $storage_segment . '/index', 'index')->name('master_data.storage.index');
         Route::get($base_segment . $storage_segment . '/index_data_table', 'index_data_table')->name('master_data.storage.index_data_table');
         Route::get($base_segment . $storage_segment . '/add', 'add')->name('master_data.storage.add');
-        Route::get($base_segment . $storage_segment . '/detail', 'detail')->name('master_data.storage.detail');
+        Route::get($base_segment . $storage_segment . '/edit/{id}', 'edit')->name('master_data.storage.edit');
+        Route::get($base_segment . $storage_segment . '/detail/{id}', 'detail')->name('master_data.storage.detail');
         Route::get($base_segment . $storage_segment . '/detail_product_data_table', 'detail_product_data_table')->name('master_data.storage.detail_product_data_table');
         Route::get($base_segment . $storage_segment . '/detail_transaction_data_table', 'detail_transaction_data_table')->name('master_data.storage.detail_transaction_data_table');
         Route::get($base_segment . $storage_segment . '/detail_batch_data_table', 'detail_batch_data_table')->name('master_data.storage.detail_batch_data_table');
@@ -121,5 +128,35 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::post($base_segment . $tag_segment . '/save', 'save')->name('master_data.tag.save');
         Route::get($base_segment . $tag_segment . '/edit/{id}', 'edit')->name('master_data.tag.edit');
         Route::get($base_segment . $tag_segment . '/detail/{id}', 'detail')->name('master_data.tag.detail');
+    });
+
+    Route::controller(TaxController::class)->group(function () use ($base_segment, $tax_segment) {
+        Route::get($base_segment . $tax_segment . '/index', 'index')->name('master_data.tax.index');
+        Route::get($base_segment . $tax_segment . '/index_data_table', 'index_data_table')->name('master_data.tax.index_data_table');
+        Route::get($base_segment . $tax_segment . '/add', 'add')->name('master_data.tax.add');
+        Route::get($base_segment . $tax_segment . '/edit/{id}', 'edit')->name('master_data.tax.edit');
+        Route::get($base_segment . $tax_segment . '/detail/{id}', 'detail')->name('master_data.tax.detail');
+        Route::get($base_segment . $tax_segment . '/export', 'export')->name('master_data.tax.export');
+        Route::get($base_segment . $tax_segment . '/import', 'import')->name('master_data.tax.import');
+    });
+
+    Route::controller(UnitController::class)->group(function () use ($base_segment, $unit_segment) {
+        Route::get($base_segment . $unit_segment . '/index', 'index')->name('master_data.unit.index');
+        Route::get($base_segment . $unit_segment . '/index_data_table', 'index_data_table')->name('master_data.unit.index_data_table');
+        Route::get($base_segment . $unit_segment . '/add', 'add')->name('master_data.unit.add');
+        Route::get($base_segment . $unit_segment . '/edit/{id}', 'edit')->name('master_data.unit.edit');
+        Route::get($base_segment . $unit_segment . '/detail/{id}', 'detail')->name('master_data.unit.detail');
+        Route::get($base_segment . $unit_segment . '/export', 'export')->name('master_data.unit.export');
+        Route::get($base_segment . $unit_segment . '/import', 'import')->name('master_data.unit.import');
+    });
+
+    Route::controller(CategoryController::class)->group(function () use ($base_segment, $category_segment) {
+        Route::get($base_segment . $category_segment . '/index', 'index')->name('master_data.category.index');
+        Route::get($base_segment . $category_segment . '/index_data_table', 'index_data_table')->name('master_data.category.index_data_table');
+        Route::get($base_segment . $category_segment . '/add', 'add')->name('master_data.category.add');
+        Route::get($base_segment . $category_segment . '/edit/{id}', 'edit')->name('master_data.category.edit');
+        Route::get($base_segment . $category_segment . '/detail/{id}', 'detail')->name('master_data.category.detail');
+        Route::get($base_segment . $category_segment . '/export', 'export')->name('master_data.category.export');
+        Route::get($base_segment . $category_segment . '/import', 'import')->name('master_data.category.import');
     });
 });

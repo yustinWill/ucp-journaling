@@ -91,6 +91,37 @@ class StorageController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        $picUsers = [
+            ['value' => 'USR-001', 'label' => 'USR-001 - Yustinus Komunal (Warehouse Manager)'],
+            ['value' => 'USR-002', 'label' => 'USR-002 - Ahmad Rizki (Staff Gudang)'],
+            ['value' => 'USR-003', 'label' => 'USR-003 - Siti Nurhaliza (Quality Control)'],
+            ['value' => 'USR-004', 'label' => 'USR-004 - Budi Santoso (Supervisor Produksi)'],
+            ['value' => 'USR-005', 'label' => 'USR-005 - Maya Sari (Admin Gudang)']
+        ];
+
+        // Sample data for editing - this would normally come from database
+        $storage = [
+            'id' => $id,
+            'code' => 'GDG-001',
+            'name' => 'Gudang Utama Pusat RIYO Water',
+            'pic_users' => ['USR-003', 'USR-005'],
+            'status' => 'ACTIVE',
+            'province' => 'Jawa Tengah',
+            'city' => 'Semarang',
+            'district' => 'Genuk',
+            'village' => 'Bangetayu Kulon',
+            'address' => 'Jl. Industri Raya No. 15, Kawasan Industri Terboyo',
+            'postal_code' => '50112'
+        ];
+
+        return view('pages.master_data.storage.edit', [
+            'picUsers' => $picUsers,
+            'storage' => $storage
+        ]);
+    }
+
     public function export()
     {
         $data = [
@@ -108,9 +139,27 @@ class StorageController extends Controller
         return view('pages.master_data.storage.import', []);
     }
 
-    public function detail()
+    public function detail($id)
     {
-        return view('pages.master_data.storage.detail', []);
+        // Sample storage data for detail view - would come from database
+        $storage = [
+            'id' => $id,
+            'storage_code' => 'GDG-001',
+            'storage_name' => 'Gudang Utama Produksi RIYO Water',
+            'pic_names' => 'Yustinus Komunal, Ahmad Rizki',
+            'status' => 'ACTIVE',
+            'address' => 'Jl. Raya Ciomas No. 15, Bogor Barat',
+            'province' => 'Jawa Barat',
+            'city' => 'Bogor',
+            'district' => 'Ciomas',
+            'village' => 'Pagelaran',
+            'postal_code' => '16610',
+            'capacity' => '5000 m³',
+            'current_utilization' => '3500 m³',
+            'last_updated' => '2025-01-21 16:45:12'
+        ];
+        
+        return view('pages.master_data.storage.detail', compact('storage'));
     }
 
     public function detail_product_data_table()
