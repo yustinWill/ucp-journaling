@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah Unit</h5>
+        <h4 class="card-header">Tambah Unit</h4>
         <form class="card-body" id="unit-form" action="#" method="POST">
             @csrf
 
@@ -41,7 +41,7 @@
                         required>
                         <option value="">Pilih Tipe Unit</option>
                         @foreach ($unitTypes as $type)
-                            <option value="{{ $type->id }}">{{ $type->name }}</option>
+                            <option value="{{ $type->id }}">{{ $type->code }} - {{ str_replace($type->code . ' - ', '', $type->name) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -76,16 +76,9 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="mt-6">
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary waves-effect waves-light">
-                        <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan
-                    </button>
-                    <button type="button" class="btn btn-secondary waves-effect waves-light"
-                        onclick="window.history.back()">
-                        <i class="icon-base ti tabler-arrow-left me-2"></i>Batal
-                    </button>
-                </div>
+            <div class="pt-6 text-end">
+                <button type="button" class="btn btn-label-danger me-3" onclick="window.history.back()">Batalkan</button>
+                <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
             </div>
         </form>
     </div>

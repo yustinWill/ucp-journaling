@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Edit Unit</h5>
+        <h4 class="card-header">Edit Unit</h4>
         <form class="card-body" id="unit-form" action="#" method="POST">
             <input type="hidden" id="unit-id" value="{{ $unit->id }}">
             @csrf
@@ -44,7 +44,7 @@
                         <option value="">Pilih Tipe Unit</option>
                         @foreach ($unitTypes as $type)
                             <option value="{{ $type->id }}" {{ $unit->unit_type_id == $type->id ? 'selected' : '' }}>
-                                {{ $type->name }}</option>
+                                {{ $type->code }} - {{ str_replace($type->code . ' - ', '', $type->name) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -79,16 +79,9 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="mt-6">
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary waves-effect waves-light">
-                        <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan Perubahan
-                    </button>
-                    <a href="{{ route('master_data.unit.detail', $unit->id) }}"
-                        class="btn btn-secondary waves-effect waves-light">
-                        <i class="icon-base ti tabler-arrow-left me-2"></i>Batal
-                    </a>
-                </div>
+            <div class="pt-6 text-end">
+                <a href="{{ route('master_data.unit.detail', $unit->id) }}" class="btn btn-label-danger me-3">Batalkan</a>
+                <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
             </div>
         </form>
     </div>

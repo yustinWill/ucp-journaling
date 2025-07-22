@@ -226,7 +226,8 @@
                     },
                     scrollX: true,
                     responsive: true,
-                    orderCellsTop: true
+                    orderCellsTop: true,
+                    ordering: false
                 });
             }
 

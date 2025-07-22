@@ -72,8 +72,8 @@ class UnitController extends Controller
             app(CreateUnitAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_TAG_SUCCESS->message()
-            ], SuccessCodes::CREATE_TAG_SUCCESS->httpStatus());
+                'message' => SuccessCodes::CREATE_UNIT_SUCCESS->message()
+            ], SuccessCodes::CREATE_UNIT_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => ValidationHelper::formatErrors($e->errors()),

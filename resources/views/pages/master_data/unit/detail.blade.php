@@ -1,10 +1,11 @@
 @extends('layouts.default')
 @section('page_title')
-    Detail Unit
+    Informasi Unit - {{ $unit->name }}
 @stop
 @section('content')
     <div class="card mb-6">
         <div class="card-body">
+            <!-- Header Section -->
             <div class="row mb-4">
                 <div class="col-md-8">
                     <h4 class="mb-3">Detail Unit</h4>
@@ -15,127 +16,127 @@
                     <div class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
                             <a href="{{ route('master_data.unit.edit', $unit->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-edit me-2"></i>Edit
+                                <i class="icon-base ti tabler-edit me-2"></i>
+                                Edit
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="row">
+
+            <!-- Entity Title -->
+            <h2>{{ $unit->name }}</h2>
+            <span>
+                <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
+            </span>
+            <hr class="my-6 mx-n6" />
+
+            <!-- Top-level Information (col-6 Maximum) -->
+            <div class="row g-6">
                 <div class="col-md-6">
-                    <h5 class="text-primary mb-1">{{ $unit->name }}</h5>
-                    <p class="text-muted mb-1">{{ $unit->code }} - {{ $unit->symbol }}</p>
-                    @if($unit->status == 'ACTIVE')
-                        <span class="badge bg-label-success">Aktif</span>
-                    @else
-                        <span class="badge bg-label-secondary">Inaktif</span>
-                    @endif
+                    <label class="form-label">Kode Unit</label>
+                    <input type="text" class="form-control" value="{{ $unit->code }}" disabled />
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="text-muted mb-1">Terakhir diperbarui</p>
-                    <p class="fw-semibold">{{ $unit->updated_at }}</p>
+                <div class="col-md-6">
+                    <label class="form-label">Simbol Unit</label>
+                    <input type="text" class="form-control" value="{{ $unit->symbol }}" disabled />
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="list-group list-group-horizontal-md text-md-center mb-4" role="tablist">
-        <a class="list-group-item list-group-item-action waves-effect active" id="informasi-list-item"
-            data-bs-toggle="list" href="#informasi-tab" aria-selected="true" role="tab" tabindex="-1">
-            <i class="icon-base ti tabler-info-circle me-2"></i>
-            <b>Informasi</b>
-        </a>
-        <a class="list-group-item list-group-item-action waves-effect" id="audit-list-item"
-            data-bs-toggle="list" href="#audit-tab" aria-selected="false" role="tab" tabindex="-1">
-            <i class="icon-base ti tabler-history me-2"></i>
-            <b>Audit Log</b>
-        </a>
-    </div>
-    
-    <div class="tab-content px-0 mt-0">
-        <!-- Informasi Tab -->
-        <div class="tab-pane fade show active" id="informasi-tab" role="tabpanel">
-            <div class="card">
-                <div class="card-body">
-                    <form class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Kode Unit</label>
-                            <input type="text" class="form-control" value="{{ $unit->code }}" disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Nama Unit</label>
-                            <input type="text" class="form-control" value="{{ $unit->name }}" disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Simbol Unit</label>
-                            <input type="text" class="form-control" value="{{ $unit->symbol }}" disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tipe Unit</label>
-                            <input type="text" class="form-control" value="{{ $unit->unit_type_name }}" disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <input type="text" class="form-control" value="{{ $unit->status == 'ACTIVE' ? 'Aktif' : 'Inaktif' }}" disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <!-- Empty for alignment -->
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Deskripsi</label>
-                            <textarea class="form-control" rows="3" disabled>{{ $unit->description }}</textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <!-- Empty for alignment -->
-                        </div>
-                    </form>
+            
+            <div class="row g-6 mt-3">
+                <div class="col-md-6">
+                    <label class="form-label">Tipe Unit</label>
+                    <input type="text" class="form-control" value="{{ $unit->unit_type_name }}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <div class="form-control-plaintext">
+                        @if($unit->status == 'ACTIVE')
+                            <span class="badge bg-label-success">Aktif</span>
+                        @else
+                            <span class="badge bg-label-secondary">Inaktif</span>
+                        @endif
+                    </div>
                 </div>
             </div>
-        </div>
+            <hr class="my-6 mx-n6" />
 
-        <!-- Audit Log Tab -->
-        <div class="tab-pane fade" id="audit-tab" role="tabpanel">
-            <div class="card">
-                <div class="section-header mt-6">
-                    <h6>Log Aktivitas Unit</h6>
-                </div>
-                <div class="mx-n6">
-                    <table id="audit-log-table" class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Tanggal & Waktu</th>
-                                <th>Pengguna</th>
-                                <th>Aksi</th>
-                                <th>Deskripsi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($auditLogs as $log)
-                            <tr>
-                                <td>{{ $log->created_at }}</td>
-                                <td>
-                                    <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" class="text-primary fw-semibold">
-                                        {{ $log->user_name }}
-                                    </a>
-                                </td>
-                                <td>
-                                    @if($log->action_type == 'CREATE')
-                                        <span class="badge bg-label-success">Buat</span>
-                                    @elseif($log->action_type == 'UPDATE')
-                                        <span class="badge bg-label-warning">Ubah</span>
-                                    @elseif($log->action_type == 'DELETE')
-                                        <span class="badge bg-label-danger">Hapus</span>
-                                    @else
-                                        <span class="badge bg-label-info">{{ $log->action_type }}</span>
-                                    @endif
-                                </td>
-                                <td>{{ $log->description }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+            <!-- Tab System with Section Headers -->
+            <div class="col-lg-12">
+                <div class="demo-inline-spacing mt-4">
+                    <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
+                        <a class="list-group-item list-group-item-action waves-effect active" 
+                            data-bs-toggle="list" href="#horizontal-info" role="tab">
+                            <i class="icon-base ti tabler-info-circle me-2"></i>
+                            <b>Informasi Detail</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect"
+                            data-bs-toggle="list" href="#horizontal-audit-log" role="tab">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Audit Log</b>
+                        </a>
+                    </div>
+                    <div class="tab-content px-0 mt-0">
+                        <!-- Informasi Detail Tab -->
+                        <div class="tab-pane fade show active" id="horizontal-info" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Detail Informasi Unit</h6>
+                                <hr class="mx-n6">
+                            </div>
+                            
+                            <div class="row g-6">
+                                <div class="col-md-6">
+                                    <label class="form-label">Deskripsi</label>
+                                    <textarea class="form-control" rows="3" disabled>{{ $unit->description ?: '-' }}</textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- Empty for alignment -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Audit Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Riwayat Perubahan</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table class="table table-bordered" id="audit-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal & Waktu</th>
+                                            <th>Pengguna</th>
+                                            <th>Aksi</th>
+                                            <th>Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($auditLogs as $log)
+                                        <tr>
+                                            <td>{{ $log->created_at }}</td>
+                                            <td>
+                                                <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" 
+                                                   class="text-primary fw-semibold">{{ $log->user_name }}</a>
+                                            </td>
+                                            <td>
+                                                @if($log->action_type == 'CREATE')
+                                                    <span class="badge bg-label-success">CREATE</span>
+                                                @elseif($log->action_type == 'UPDATE')
+                                                    <span class="badge bg-label-warning">UPDATE</span>
+                                                @elseif($log->action_type == 'DELETE')
+                                                    <span class="badge bg-label-danger">DELETE</span>
+                                                @else
+                                                    <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $log->description }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -143,16 +144,17 @@
 @stop
 
 @section('js_script')
-    <script>
-        $(function() {
-            // Initialize audit log table
-            $('#audit-log-table').DataTable({
-                responsive: true,
-                orderCellsTop: true,
-                searching: false,
-                paging: false,
-                info: false
-            });
-        });
-    </script>
+<script>
+$(function() {
+    // Initialize DataTable for audit log
+    $('#audit-log-table').DataTable({
+        responsive: true,
+        orderCellsTop: true,
+        searching: false,
+        paging: false,
+        info: false,
+        order: [[0, 'desc']] // Sort by date descending
+    });
+});
+</script>
 @endsection

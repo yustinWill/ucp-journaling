@@ -17,7 +17,7 @@ class UnitService
             'status' => $data['status'],
             'symbol' => $data['symbol'],
             'f_unit_type_id' => $data['type'],
-            'description' => $data['description'] ?? null,
+            'description' => $data['description'] ?? '',
             'created_at' => now(),
             'created_by' => Auth::id()
         ]);
@@ -32,7 +32,7 @@ class UnitService
                 'status' => $data['status'],
                 'symbol' => $data['symbol'],
                 'f_unit_type_id' => $data['type'],
-                'description' => $data['description'] ?? null,
+                'description' => $data['description'] ?? '',
                 'updated_at' => now(),
                 'updated_by' => Auth::id()
             ]);
