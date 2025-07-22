@@ -17,6 +17,8 @@ use App\Domains\Tag\Actions\UpdateTagAction;
 //Services
 use App\Domains\Tag\Services\TagColorService;
 use App\Domains\Tag\Services\TagService;
+use App\Domains\Tag\Services\TagAuditLogService;
+use App\Domains\Tag\Services\TagUsageLogService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -42,7 +44,7 @@ class TagController extends Controller
 
     public function index_data_table()
     {
-        $data = app(TagService::class)->getAllTagsDatatable();
+        $data = app(TagService::class)->findAllDatatable();
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -105,7 +107,7 @@ class TagController extends Controller
         return view('pages.master_data.tag.edit', compact('tag', 'availableColors'));
     }
 
-     public function update(Request $request)
+    public function update(Request $request)
     {
         try {
             $validated = $request->validate([
@@ -146,69 +148,35 @@ class TagController extends Controller
 
     public function detail($id)
     {
+        $tag = app(TagService::class)->findOne($id);
+        if ($tag == null) {
+            abort(404);
+        }
+
+        $audit_log_data = app(TagAuditLogService::class)->findAllBasedOnTagId($id);
+        // dd($audit_log_data);
+        $usage_log_data = app(TagUsageLogService::class)->findAllBasedOnTagId($id);
         // Sample tag data for detail view
-        $tag = [
-            'id' => $id,
-            'code' => 'PENJUALAN',
-            'name' => 'Transaksi Penjualan',
-            'color' => 'success',
-            'description' => 'Tag untuk semua transaksi penjualan produk RIYO Water kepada distributor dan retailer. Termasuk penjualan tunai maupun kredit.',
-            'status' => 'ACTIVE',
-            'usage_count' => 145,
-            'created_by' => 'Admin System',
-            'created_at' => '2025-01-15 08:00:00',
-            'updated_by' => 'Finance Manager',
-            'updated_at' => '2025-01-18 14:30:00',
-            'recent_transactions' => [
-                [
-                    'id' => 'JU-2025-001',
-                    'module' => 'Journal',
-                    'description' => 'Penjualan RIYO Water 330ml - CV Berkah Sentosa',
-                    'amount' => 'Rp 12,500,000',
-                    'date' => '2025-01-20',
-                    'created_by' => 'Finance Manager'
-                ],
-                [
-                    'id' => 'SO-2025-005',
-                    'module' => 'Sales Order',
-                    'description' => 'Penjualan RIYO Water 600ml - Supermarket Maju Jaya',
-                    'amount' => 'Rp 8,750,000',
-                    'date' => '2025-01-19',
-                    'created_by' => 'Sales Manager'
-                ],
-                [
-                    'id' => 'SI-2025-012',
-                    'module' => 'Sales Invoice',
-                    'description' => 'Penjualan RIYO Water 1500ml - Hotel Santika',
-                    'amount' => 'Rp 5,200,000',
-                    'date' => '2025-01-18',
-                    'created_by' => 'Sales Staff'
-                ]
-            ],
-            'audit_logs' => [
-                [
-                    'created_at' => '2025-01-18 14:30:25',
-                    'user_id' => 'USR-002',
-                    'user_name' => 'Finance Manager',
-                    'action_type' => 'UPDATE',
-                    'description' => 'Memperbarui deskripsi tag untuk memperjelas cakupan penggunaan'
-                ],
-                [
-                    'created_at' => '2025-01-16 09:15:10',
-                    'user_id' => 'USR-001',
-                    'user_name' => 'Admin System',
-                    'action_type' => 'UPDATE',
-                    'description' => 'Mengubah warna badge dari primary menjadi success'
-                ],
-                [
-                    'created_at' => '2025-01-15 08:00:00',
-                    'user_id' => 'USR-001',
-                    'user_name' => 'Admin System',
-                    'action_type' => 'CREATE',
-                    'description' => 'Membuat tag baru untuk kategori transaksi penjualan'
-                ]
-            ]
-        ];
+        // $tag = [
+        //     'id' => $id,
+        //     'code' => 'PENJUALAN',
+        //     'name' => 'Transaksi Penjualan',
+        //     'color' => 'success',
+        //     'description' => 'Tag untuk semua transaksi penjualan produk RIYO Water kepada distributor dan retailer. Termasuk penjualan tunai maupun kredit.',
+        //     'status' => 'ACTIVE',
+        //     'usage_count' => 145,
+        //     'created_by' => 'Admin System',
+        //     'created_at' => '2025-01-15 08:00:00',
+        //     'updated_by' => 'Finance Manager',
+        //     'updated_at' => '2025-01-18 14:30:00',
+        //     'recent_transactions' => $usage_log_data,
+        //     'audit_logs' => $audit_log_data
+        // ];
+
+          $tag->recent_transactions = $usage_log_data;
+           $tag->audit_logs = $audit_log_data;
+
+        // dd($tag);
 
         return view('pages.master_data.tag.detail', compact('tag'));
     }

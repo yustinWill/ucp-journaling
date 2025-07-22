@@ -16,7 +16,7 @@
                     <div class="text-end">
                         @php
                             $totalActions = 1; // Edit always present
-                            if($tag['usage_count'] == 0) {
+                            if($tag->usage_count == 0) {
                                 $totalActions++; // Add delete action when usage is 0
                             }
                         @endphp
@@ -24,10 +24,10 @@
                         @if($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.tag.edit', $tag['id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                <a href="{{ route('master_data.tag.edit', $tag->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
-                                @if($tag['usage_count'] == 0)
+                                @if($tag->usage_count == 0)
                                     <button type="button" class="btn btn-danger btn-md waves-effect waves-light" id="delete-tag-btn">
                                         <i class="icon-base ti tabler-trash me-2"></i>Hapus
                                     </button>
@@ -40,9 +40,9 @@
                                     Aksi
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ route('master_data.tag.edit', $tag['id']) }}">
+                                    <li><a class="dropdown-item" href="{{ route('master_data.tag.edit', $tag->id) }}">
                                         <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
-                                    @if($tag['usage_count'] == 0)
+                                    @if($tag->usage_count == 0)
                                         <li><a class="dropdown-item text-danger" href="javascript:void(0);" id="delete-tag-btn">
                                             <i class="icon-base ti tabler-trash me-2"></i>Hapus</a></li>
                                     @endif
@@ -54,7 +54,7 @@
             </div>
 
             <!-- Tag Title -->
-            <h2>{{ $tag['code'] }} - {{ $tag['name'] }}</h2>
+            <h2>{{ $tag->code }} - {{ $tag->name }}</h2>
             <span>
                 <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
             </span>
@@ -64,14 +64,14 @@
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
-                        <span class="badge {{ $tag['status'] === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary' }}">
-                            {{ $tag['status'] }}
+                        <span class="badge {{ $tag->status === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary' }}">
+                            {{ $tag->status }}
                         </span>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Total Penggunaan</label>
-                    <input type="text" class="form-control text-center fw-bold" value="{{ $tag['usage_count'] }}" disabled />
+                    <input type="text" class="form-control text-center fw-bold" value="{{ $tag->usage_count }}" disabled />
                 </div>
             </div>
             <hr class="my-6 mx-n6" />
@@ -107,11 +107,11 @@
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Kode Tag</label>
-                                    <input type="text" class="form-control" value="{{ $tag['code'] }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $tag->code }}" disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Nama Tag</label>
-                                    <input type="text" class="form-control" value="{{ $tag['name'] }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $tag->name }}" disabled />
                                 </div>
                             </div>
                             
@@ -119,8 +119,8 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Warna Badge</label>
                                     <div class="form-control-plaintext">
-                                        <span class="badge bg-label-{{ $tag['color'] }} me-2">{{ $tag['code'] }}</span>
-                                        <small class="text-muted">({{ ucfirst($tag['color']) }})</small>
+                                        <span class="badge {{ $tag->tag_preview }} me-2">{{ $tag->code }}</span>
+                                        <small class="text-muted">({{ ucfirst($tag->tag_code) }})</small>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -131,11 +131,11 @@
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Deskripsi</label>
-                                    <textarea class="form-control" rows="3" disabled>{{ $tag['description'] }}</textarea>
+                                    <textarea class="form-control" rows="3" disabled>{{ $tag->description }}</textarea>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Memo</label>
-                                    <textarea class="form-control" rows="3" disabled>{{ $tag['memo'] ?? '-' }}</textarea>
+                                    <textarea class="form-control" rows="3" disabled>{{ $tag->memo ?? '-' }}</textarea>
                                 </div>
                             </div>
                         </div>
@@ -158,14 +158,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($tag['recent_transactions'] as $transaction)
+                                        @foreach($tag->recent_transactions as $transaction)
                                         <tr>
-                                            <td><a href="#" class="text-primary fw-semibold">{{ $transaction['id'] }}</a></td>
-                                            <td><span class="badge bg-label-info">{{ $transaction['module'] }}</span></td>
-                                            <td>{{ $transaction['description'] }}</td>
-                                            <td class="text-end">{{ $transaction['amount'] }}</td>
-                                            <td>{{ $transaction['date'] }}</td>
-                                            <td>{{ $transaction['created_by'] }}</td>
+                                            <td><a href="#" class="text-primary fw-semibold">{{ $transaction->transaction_code }}</a></td>
+                                            <td><span class="badge bg-label-info">{{ $transaction->module }}</span></td>
+                                            <td>{{ $transaction->description }}</td>
+                                            <td class="text-end">{{ number_format($transaction->amount) }}</td>
+                                            <td>{{ $transaction->created_at }}</td>
+                                            <td>{{ $transaction->user_name }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -189,12 +189,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($tag['audit_logs'] as $log)
+                                        @foreach($tag->audit_logs as $log)
                                         <tr>
-                                            <td>{{ $log['created_at'] }}</td>
-                                            <td><a href="{{ route('master_data.user.detail', ['id' => $log['user_id']]) }}" class="text-primary fw-semibold">{{ $log['user_name'] }}</a></td>
-                                            <td><span class="badge bg-label-{{ $log['action_type'] === 'CREATE' ? 'success' : ($log['action_type'] === 'UPDATE' ? 'warning' : 'info') }}">{{ $log['action_type'] }}</span></td>
-                                            <td>{{ $log['description'] }}</td>
+                                            <td>{{ $log->created_at }}</td>
+                                            <td><a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" class="text-primary fw-semibold">{{ $log->user_name }}</a></td>
+                                            <td><span class="badge bg-label-{{ $log->action_type === 'CREATE' ? 'success' : ($log->action_type === 'UPDATE' ? 'warning' : 'info') }}">{{ $log->action_type }}</span></td>
+                                            <td>{{ $log->description }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
