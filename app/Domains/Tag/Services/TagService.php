@@ -4,6 +4,7 @@ namespace App\Domains\Tag\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\GeneralStatuses;
 
 class TagService
 {
@@ -103,6 +104,21 @@ class TagService
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ];
+    }
+
+    public function findAll()
+    {
+        return DB::table($this->table_name . ' as t')
+            ->select([
+                't.id',
+                't.name',
+                't.code',
+                'tc.code AS tag_color_code'
+            ])
+            ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+            ->where('t.status', GeneralStatuses::ACTIVE)
+            ->orderBy('code', 'ASC')
+            ->get();
     }
 
     public function findOne($id)

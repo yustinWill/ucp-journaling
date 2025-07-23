@@ -13,11 +13,12 @@ class UserService
     {
         return DB::table($this->table_name)->insertGetId([
             'name' => $data['name'],
-            'code' => $data['code'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
             'status' => $data['status'],
-            'symbol' => $data['symbol'],
-            'f_unit_type_id' => $data['type'],
-            'description' => $data['description'] ?? null,
+            'role_id' => $data['role'],
+            'f_tag_codes' => json_encode($data['tags']),
+            'password' => bcrypt($data['password']),
             'created_at' => now(),
             'created_by' => Auth::id()
         ]);
@@ -25,17 +26,22 @@ class UserService
 
     public function update(int $id, array $data): int
     {
+        $updateData = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'status' => $data['status'],
+            'role_id' => $data['role'],
+            'f_tag_codes' => json_encode($data['tags']),
+            'updated_at' => now(),
+            'updated_by' => Auth::id()
+        ];
+        if (isset($data['password']) && $data['password'] !== '') {
+            $updateData['password'] = bcrypt($data['password']);
+        }
         return DB::table($this->table_name)
             ->where('id', $id)
-            ->update([
-                'name' => $data['name'],
-                'status' => $data['status'],
-                'symbol' => $data['symbol'],
-                'f_unit_type_id' => $data['type'],
-                'description' => $data['description'] ?? null,
-                'updated_at' => now(),
-                'updated_by' => Auth::id()
-            ]);
+            ->update($updateData);
     }
 
     public function findAllDatatable()
@@ -62,7 +68,7 @@ class UserService
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
             })
             ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
-            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id');;
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id');
 
         // Filter by status
 
@@ -106,22 +112,25 @@ class UserService
 
     public function findOne($id)
     {
-        return DB::table($this->table_name . ' as t')
+        $data = DB::table($this->table_name . ' as t')
             ->select([
                 't.id',
+                't.role_id',
                 't.name',
-                't.code',
-                't.symbol',
-                't.status',
-                'ut.id as unit_type_id',
-                'ut.name as unit_type_name',
-                'ut.code as unit_type_code',
-                't.description',
-                't.status',
-                't.updated_at'
+                't.email',
+                't.phone',
+                't.f_tag_codes as f_tag_codes',
+                't.status as status',
+                't.created_at as created_at',
+                't.last_login',
+                't.last_password_change',
+                'r.name as role_name'
             ])
-            ->leftJoin('m_unit_types as ut', 't.f_unit_type_id', '=', 'ut.id')
+            ->join('roles as r', 't.role_id', '=', 'r.id')
             ->where('t.id', $id)
             ->first();
+
+        $data->f_tag_codes = json_decode($data->f_tag_codes);
+        return $data;
     }
 }

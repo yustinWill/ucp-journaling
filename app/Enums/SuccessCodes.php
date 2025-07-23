@@ -9,6 +9,8 @@ enum SuccessCodes: string
     case GENERAL_SUCCESS = 'GENERAL_SUCCESS';
     case LOGOUT_SUCCESS = 'LOGOUT_SUCCESS';
     case CREATE_TAG_SUCCESS = 'CREATE_TAG_SUCCESS';
+    case CREATE_USER_SUCCESS = 'CREATE_USER_SUCCESS';
+    case UPDATE_USER_SUCCESS = 'UPDATE_USER_SUCCESS';
     case CREATE_UNIT_SUCCESS = 'CREATE_UNIT_SUCCESS';
     case UPDATE_UNIT_SUCCESS = 'UPDATE_UNIT_SUCCESS';
     case CREATE_TAX_SUCCESS = 'CREATE_TAX_SUCCESS';
@@ -21,6 +23,8 @@ enum SuccessCodes: string
         return match ($this) {
             self::LOGOUT_SUCCESS => 'Anda berhasil logout.',
             self::CREATE_TAG_SUCCESS => 'Tag berhasil dibuat.',
+            self::CREATE_USER_SUCCESS => 'User berhasil dibuat.',
+            self::UPDATE_USER_SUCCESS => 'User berhasil diperbarui.',
             self::CREATE_UNIT_SUCCESS => 'Unit berhasil dibuat.',
             self::UPDATE_UNIT_SUCCESS => 'Unit berhasil diubah.',
             self::CREATE_TAX_SUCCESS => 'Pajak berhasil dibuat.',
@@ -36,6 +40,8 @@ enum SuccessCodes: string
         return match ($this) {
             self::LOGOUT_SUCCESS => self::OK,
             self::CREATE_TAG_SUCCESS => self::OK,
+            self::CREATE_USER_SUCCESS => self::OK,
+            self::UPDATE_USER_SUCCESS => self::OK,
             self::CREATE_UNIT_SUCCESS => self::OK,
             self::UPDATE_UNIT_SUCCESS => self::OK,
             self::CREATE_TAX_SUCCESS => self::OK,
