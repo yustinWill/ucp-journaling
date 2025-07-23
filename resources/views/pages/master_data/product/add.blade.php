@@ -20,17 +20,21 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Unit <span style="color: red;">*</span></label>
-                    <div class="d-flex gap-2">
-                        <select class="global-select2 form-select flex-grow-1" id="unit-select" data-allow-clear="false">
-                            <option value="">Pilih Unit</option>
-                            @foreach($units as $unit)
-                                <option value="{{ $unit['value'] }}">{{ $unit['label'] }}</option>
-                            @endforeach
-                        </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="unit-select" data-allow-clear="false">
+                                <option value="">Pilih Unit</option>
+                                @foreach($units as $unit)
+                                    <option value="{{ $unit['value'] }}">{{ $unit['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @if($canAddUnits)
-                            <a href="{{ route('master_data.unit.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Unit Baru">
-                                <i class="icon-base ti tabler-plus"></i>
-                            </a>
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.unit.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Unit Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -43,17 +47,21 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kategori Produk</label>
-                    <div class="d-flex gap-2">
-                        <select class="global-select2 form-select flex-grow-1" id="category-select" data-allow-clear="false">
-                            <option value="">Pilih Kategori</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
-                            @endforeach
-                        </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="category-select" data-allow-clear="false">
+                                <option value="">Pilih Kategori</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @if($canAddCategories)
-                            <a href="{{ route('master_data.category.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Kategori Baru">
-                                <i class="icon-base ti tabler-plus"></i>
-                            </a>
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.category.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Kategori Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -520,16 +528,20 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tag</label>
-                    <div class="d-flex gap-2">
-                        <select class="global-select2 form-select flex-grow-1" id="product-tags" multiple data-allow-clear="false">
-                            @foreach($tags as $tag)
-                                <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
-                            @endforeach
-                        </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="product-tags" multiple data-allow-clear="false">
+                                @foreach($tags as $tag)
+                                    <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @if($canAddTags)
-                            <a href="{{ route('master_data.tag.add') }}" target="_blank" class="btn btn-outline-primary btn-sm" title="Tambah Tag Baru">
-                                <i class="icon-base ti tabler-plus"></i>
-                            </a>
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.tag.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Tag Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
                         @endif
                     </div>
                     <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi produk</small>

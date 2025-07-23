@@ -257,16 +257,20 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tag</label>
-                    <div class="d-flex gap-2">
-                        <select class="global-select2 form-select flex-grow-1" id="contact-tags" multiple data-allow-clear="false">
-                            @foreach($tags as $tag)
-                                <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}" @if(isset($contact['tags']) && in_array($tag['value'], $contact['tags'])) selected @endif>{{ $tag['label'] }}</option>
-                            @endforeach
-                        </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="contact-tags" multiple data-allow-clear="false">
+                                @foreach($tags as $tag)
+                                    <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}" @if(isset($contact['tags']) && in_array($tag['value'], $contact['tags'])) selected @endif>{{ $tag['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @if($canAddTags)
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-contact-tag" title="Tambah Tag Baru">
-                                <i class="icon-base ti tabler-plus"></i>
-                            </button>
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.tag.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" id="add-new-contact-tag" title="Tambah Tag Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
                         @endif
                     </div>
                     <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi kontak</small>

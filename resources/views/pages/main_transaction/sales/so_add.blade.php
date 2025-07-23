@@ -65,16 +65,20 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Tag</label>
-                    <div class="d-flex gap-2">
-                        <select class="global-select2 form-select flex-grow-1" id="sales-order-tags" multiple data-allow-clear="false">
-                            @foreach($availableTags as $tag)
-                                <option value="{{ $tag['code'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
-                            @endforeach
-                        </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="sales-order-tags" multiple data-allow-clear="false">
+                                @foreach($availableTags as $tag)
+                                    <option value="{{ $tag['code'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @if($canAddTags)
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-sales-tag" title="Tambah Tag Baru">
-                                <i class="icon-base ti tabler-plus"></i>
-                            </button>
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.tag.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" id="add-new-sales-tag" title="Tambah Tag Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
                         @endif
                     </div>
                     <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi</small>

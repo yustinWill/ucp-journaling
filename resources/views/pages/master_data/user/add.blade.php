@@ -110,8 +110,7 @@
                             <select class="global-select2 form-select" id="user-tags" multiple
                                 data-allow-clear="false">
                                 @foreach ($tags as $tag)
-                                    <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}">
-                                        {{ $tag->code }} - {{ $tag->name }}</option>
+                                    <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}">{{ $tag->code }} - {{ $tag->name }}</option>
                                 @endforeach
                             </select>
                         </div>
