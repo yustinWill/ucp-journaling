@@ -212,7 +212,7 @@ class CategoryController extends Controller
             'description' => $category->description,
             'status' => $category->status,
             'product_count' => rand(0, 50), // TODO: Calculate actual product count
-            'last_updated' => $category->updated_at->format('Y-m-d H:i:s')
+            'last_updated' => $category->updated_at
         ];
 
         $auditLogs = app(CategoryAuditLogService::class)->findAllBasedOnTagId($id);
