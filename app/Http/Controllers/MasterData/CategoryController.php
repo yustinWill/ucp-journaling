@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 use App\Exceptions\AppException;
 use App\Helpers\ValidationHelper;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 
 //Actions
 use App\Domains\Category\Actions\CreateCategoryAction;
@@ -36,10 +37,18 @@ class CategoryController extends Controller
     ];
     public function index()
     {
+        if (!PermissionHelper::hasPermission('master_data_category', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
+        }
+
         $statuses = $this->statuses;
         $categoryTypes = $this->categoryTypes;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_category');
 
-        return view('pages.master_data.category.index', compact('categoryTypes', 'statuses'));
+        return view('pages.master_data.category.index', array_merge(
+            compact('categoryTypes', 'statuses'),
+            $permissionData
+        ));
     }
 
     public function index_data_table()
@@ -50,17 +59,29 @@ class CategoryController extends Controller
 
     public function add()
     {
+        if (!PermissionHelper::hasPermission('master_data_category', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
+
         $categoryTypes = $this->categoryTypes;
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_category');
 
-        return view('pages.master_data.category.add', [
+        return view('pages.master_data.category.add', array_merge([
             'categoryTypes' => $categoryTypes,
             'statuses' => $statuses
-        ]);
+        ], $permissionData));
     }
 
     public function save(Request $request)
     {
+        if (!PermissionHelper::hasPermission('master_data_category', 'write')) {
+            return response()->json([
+                'message' => 'Anda tidak memiliki akses untuk menyimpan data.',
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'code' => 'required|string|max:255|unique:m_categories,code',
@@ -102,6 +123,10 @@ class CategoryController extends Controller
 
     public function edit($id)
     {
+        if (!PermissionHelper::hasPermission('master_data_category', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
+        }
+
         $category = app(CategoryService::class)->findOne($id);
 
         if ($category == null) {
@@ -109,16 +134,24 @@ class CategoryController extends Controller
         }
 
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_category');
 
-        return view('pages.master_data.category.edit', [
+        return view('pages.master_data.category.edit', array_merge([
             'categoryTypes' => $this->categoryTypes,
             'statuses' => $statuses,
             'category' => $category
-        ]);
+        ], $permissionData));
     }
 
     public function update(Request $request)
     {
+        if (!PermissionHelper::hasPermission('master_data_category', 'write')) {
+            return response()->json([
+                'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_categories,id',
@@ -160,6 +193,10 @@ class CategoryController extends Controller
 
     public function detail($id)
     {
+        if (!PermissionHelper::hasPermission('master_data_category', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat detail data.');
+        }
+
         $category = app(CategoryService::class)->findOne($id);
 
         if ($category == null) {
@@ -179,15 +216,20 @@ class CategoryController extends Controller
         ];
 
         $auditLogs = app(CategoryAuditLogService::class)->findAllBasedOnTagId($id);
+        $permissionData = PermissionHelper::getViewPermissions('master_data_category');
 
-        return view('pages.master_data.category.detail', [
+        return view('pages.master_data.category.detail', array_merge([
             'category' => $categoryArray,
             'auditLogs' => $auditLogs
-        ]);
+        ], $permissionData));
     }
 
     public function export()
     {
+        if (!PermissionHelper::hasPermission('master_data_category', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk export data.');
+        }
+
         $data = [
             ["no" => 1, "value" => "Kode Kategori"],
             ["no" => 2, "value" => "Nama Kategori"],
@@ -201,6 +243,10 @@ class CategoryController extends Controller
 
     public function import()
     {
+        if (!PermissionHelper::hasPermission('master_data_category', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk import data.');
+        }
+
         return view('pages.master_data.category.import', []);
     }
 }

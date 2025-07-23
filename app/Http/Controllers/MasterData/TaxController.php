@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 use App\Exceptions\AppException;
 use App\Helpers\ValidationHelper;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 
 //Actions
 use App\Domains\Tax\Actions\CreateTaxAction;
@@ -35,10 +36,18 @@ class TaxController extends Controller
 
     public function index()
     {
+        if (!PermissionHelper::hasPermission('master_data_tax', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
+        }
+
         $statuses = $this->statuses;
         $taxTypes = $this->taxTypes;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tax');
 
-        return view('pages.master_data.tax.index', compact('taxTypes', 'statuses'));
+        return view('pages.master_data.tax.index', array_merge(
+            compact('taxTypes', 'statuses'),
+            $permissionData
+        ));
     }
 
     public function index_data_table()
@@ -49,17 +58,29 @@ class TaxController extends Controller
 
     public function add()
     {
+        if (!PermissionHelper::hasPermission('master_data_tax', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
+
         $taxTypes = $this->taxTypes;
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tax');
 
-        return view('pages.master_data.tax.add', [
+        return view('pages.master_data.tax.add', array_merge([
             'taxTypes' => $taxTypes,
             'statuses' => $statuses
-        ]);
+        ], $permissionData));
     }
 
     public function save(Request $request)
     {
+        if (!PermissionHelper::hasPermission('master_data_tax', 'write')) {
+            return response()->json([
+                'message' => 'Anda tidak memiliki akses untuk menyimpan data.',
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'code' => 'required|string|max:255|unique:m_taxes,code',
@@ -102,6 +123,10 @@ class TaxController extends Controller
 
     public function edit($id)
     {
+        if (!PermissionHelper::hasPermission('master_data_tax', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
+        }
+
         $tax = app(TaxService::class)->findOne($id);
 
         if ($tax == null) {
@@ -109,16 +134,24 @@ class TaxController extends Controller
         }
 
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tax');
 
-        return view('pages.master_data.tax.edit', [
+        return view('pages.master_data.tax.edit', array_merge([
             'taxTypes' => $this->taxTypes,
             'statuses' => $statuses,
             'tax' => $tax
-        ]);
+        ], $permissionData));
     }
 
     public function update(Request $request)
     {
+        if (!PermissionHelper::hasPermission('master_data_tax', 'write')) {
+            return response()->json([
+                'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], 403);
+        }
+
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_taxes,id',
@@ -161,6 +194,10 @@ class TaxController extends Controller
 
     public function detail($id)
     {
+        if (!PermissionHelper::hasPermission('master_data_tax', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat detail data.');
+        }
+
         $tax = app(TaxService::class)->findOne($id);
 
         if ($tax == null) {
@@ -168,12 +205,20 @@ class TaxController extends Controller
         }
 
         $auditLogs = app(TaxAuditLogService::class)->findAllBasedOnTagId($id);
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tax');
 
-        return view('pages.master_data.tax.detail', compact('tax', 'auditLogs'));
+        return view('pages.master_data.tax.detail', array_merge(
+            compact('tax', 'auditLogs'),
+            $permissionData
+        ));
     }
 
     public function export()
     {
+        if (!PermissionHelper::hasPermission('master_data_tax', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk export data.');
+        }
+
         $data = [
             ["no" => 1, "value" => "Kode Pajak"],
             ["no" => 2, "value" => "Nama Pajak"],
@@ -187,6 +232,10 @@ class TaxController extends Controller
 
     public function import()
     {
+        if (!PermissionHelper::hasPermission('master_data_tax', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk import data.');
+        }
+
         return view('pages.master_data.tax.import', []);
     }
 }
