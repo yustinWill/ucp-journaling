@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah Pajak</h5>
+        <h4 class="card-header">Tambah Pajak</h4>
         <form class="card-body" id="tax-form" action="#" method="POST">
                 @csrf
                 

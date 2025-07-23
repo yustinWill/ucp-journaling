@@ -2,93 +2,55 @@
 
 namespace App\Http\Controllers\MasterData;
 
+//Main
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
+//Actions
+use App\Domains\Tax\Actions\CreateTaxAction;
+use App\Domains\Tax\Actions\UpdateTaxAction;
+//Services
+use App\Domains\Tax\Services\TaxService;
+use App\Domains\Tax\Services\TaxAuditLogService;
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
 
 class TaxController extends Controller
 {
+    private $statuses = [
+        ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
+    ];
+
+    private $taxTypes = [
+        ['value' => 'PERCENTAGE', 'label' => 'PERCENTAGE - Persentase'],
+        ['value' => 'FIXED', 'label' => 'FIXED - Nominal Tetap']
+    ];
+
     public function index()
     {
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        $statuses = $this->statuses;
+        $taxTypes = $this->taxTypes;
 
-        return view('pages.master_data.tax.index', [
-            'statuses' => $statuses
-        ]);
+        return view('pages.master_data.tax.index', compact('taxTypes', 'statuses'));
     }
 
     public function index_data_table()
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "created_at" => "2025-01-20 10:15:30",
-                    "tax_code" => "PPN11",
-                    "tax_name" => "PPN 11%",
-                    "tax_rate" => 11.00,
-                    "tax_type" => "PERCENTAGE",
-                    "description" => "Pajak Pertambahan Nilai standar Indonesia",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 2,
-                    "created_at" => "2025-01-18 14:30:22",
-                    "tax_code" => "PPN0",
-                    "tax_name" => "PPN 0%",
-                    "tax_rate" => 0.00,
-                    "tax_type" => "PERCENTAGE",
-                    "description" => "Pajak Pertambahan Nilai untuk barang tertentu",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 3,
-                    "created_at" => "2025-01-15 09:45:15",
-                    "tax_code" => "PPH21",
-                    "tax_name" => "PPh Pasal 21",
-                    "tax_rate" => 5.00,
-                    "tax_type" => "PERCENTAGE",
-                    "description" => "Pajak Penghasilan atas gaji dan upah",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 4,
-                    "created_at" => "2025-01-15 09:50:33",
-                    "tax_code" => "PPH23",
-                    "tax_name" => "PPh Pasal 23",
-                    "tax_rate" => 2.00,
-                    "tax_type" => "PERCENTAGE",
-                    "description" => "Pajak Penghasilan atas jasa profesional",
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 5,
-                    "created_at" => "2025-01-10 16:20:45",
-                    "tax_code" => "NOTAX",
-                    "tax_name" => "Tanpa Pajak",
-                    "tax_rate" => 0.00,
-                    "tax_type" => "PERCENTAGE",
-                    "description" => "Untuk transaksi yang tidak dikenai pajak",
-                    "status" => "INACTIVE"
-                ]
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(TaxService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
     {
-        $taxTypes = [
-            ['value' => 'PERCENTAGE', 'label' => 'PERCENTAGE - Persentase'],
-            ['value' => 'FIXED', 'label' => 'FIXED - Nominal Tetap']
-        ];
-
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        $taxTypes = $this->taxTypes;
+        $statuses = $this->statuses;
 
         return view('pages.master_data.tax.add', [
             'taxTypes' => $taxTypes,
@@ -96,67 +58,116 @@ class TaxController extends Controller
         ]);
     }
 
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string|max:255|unique:m_taxes,code',
+                'name' => 'required|string|max:255',
+                'rate' => 'required|numeric|min:0|max:100',
+                'type' => [
+                    'required',
+                    Rule::in(array_column($this->taxTypes, 'value'))
+                ],
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'description' => 'nullable|string|max:255',
+            ]);
+
+            app(CreateTaxAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_TAX_SUCCESS->message()
+            ], SuccessCodes::CREATE_TAX_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
     public function edit($id)
     {
-        $taxTypes = [
-            ['value' => 'PERCENTAGE', 'label' => 'PERCENTAGE - Persentase'],
-            ['value' => 'FIXED', 'label' => 'FIXED - Nominal Tetap']
-        ];
+        $tax = app(TaxService::class)->findOne($id);
 
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        if ($tax == null) {
+            abort(404);
+        }
 
-        // Sample tax data for editing
-        $tax = [
-            'id' => $id,
-            'code' => 'PPN11',
-            'name' => 'PPN 11%',
-            'rate' => '11.00',
-            'type' => 'PERCENTAGE',
-            'description' => 'Pajak Pertambahan Nilai standar Indonesia sebesar 11%',
-            'status' => 'ACTIVE'
-        ];
+        $statuses = $this->statuses;
 
         return view('pages.master_data.tax.edit', [
-            'taxTypes' => $taxTypes,
+            'taxTypes' => $this->taxTypes,
             'statuses' => $statuses,
             'tax' => $tax
         ]);
     }
 
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:m_taxes,id',
+                'name' => 'required|string|max:255',
+                'rate' => 'required|numeric|min:0|max:100',
+                'type' => [
+                    'required',
+                    Rule::in(array_column($this->taxTypes, 'value'))
+                ],
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'description' => 'nullable|string|max:255',
+            ]);
+
+            app(UpdateTaxAction::class)->execute($request->id, $validated);
+
+            return response()->json([
+                'message' => SuccessCodes::UPDATE_TAX_SUCCESS->message()
+            ], SuccessCodes::UPDATE_TAX_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
     public function detail($id)
     {
-        // Sample tax data for detail view
-        $tax = [
-            'id' => $id,
-            'tax_code' => 'PPN11',
-            'tax_name' => 'PPN 11%',
-            'tax_rate' => '11.00',
-            'tax_type' => 'Persentase',
-            'description' => 'Pajak Pertambahan Nilai standar Indonesia sebesar 11% yang dikenakan pada sebagian besar transaksi jual beli barang dan jasa',
-            'status' => 'ACTIVE',
-            'last_updated' => '2025-01-21 16:30:15'
-        ];
+        $tax = app(TaxService::class)->findOne($id);
 
-        // Audit log data
-        $auditLogs = [
-            [
-                'created_at' => '2025-01-20 10:15:30',
-                'user_id' => 'USR-001',
-                'user_name' => 'Admin User',
-                'action_type' => 'UPDATE',
-                'description' => 'Mengubah tarif pajak dari 10% menjadi 11%'
-            ],
-            [
-                'created_at' => '2025-01-15 14:22:45',
-                'user_id' => 'USR-002',
-                'user_name' => 'Tax Manager',
-                'action_type' => 'CREATE',
-                'description' => 'Pajak PPN 11% berhasil dibuat dengan kode PPN11'
-            ]
-        ];
+        if ($tax == null) {
+            abort(404);
+        }
+
+        $auditLogs = app(TaxAuditLogService::class)->findAllBasedOnTagId($id);
 
         return view('pages.master_data.tax.detail', compact('tax', 'auditLogs'));
     }

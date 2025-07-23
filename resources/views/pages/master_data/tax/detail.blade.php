@@ -1,6 +1,6 @@
 @extends('layouts.default')
 @section('page_title')
-    Detail Pajak
+    Informasi Pajak - {{ $tax->name }}
 @stop
 @section('content')
     <div class="card mb-6">
@@ -21,7 +21,7 @@
                         @if($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.tax.edit', ['id' => $tax['id']]) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                <a href="{{ route('master_data.tax.edit', $tax->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
                             </div>
@@ -32,7 +32,7 @@
                                     Aksi
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ route('master_data.tax.edit', ['id' => $tax['id']]) }}">
+                                    <li><a class="dropdown-item" href="{{ route('master_data.tax.edit', $tax->id) }}">
                                         <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
                                 </ul>
                             </div>
@@ -41,27 +41,38 @@
                 </div>
             </div>
             
-            <!-- Tax Title -->
-            <h2>{{ $tax['tax_name'] }}</h2>
+            <!-- Entity Title -->
+            <h2>{{ $tax->name }}</h2>
             <span>
-                <h6>Data pajak berdasarkan tanggal {{ $tax['last_updated'] }}</h6>
+                <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
             </span>
             <hr class="my-6 mx-n6" />
 
+            <!-- Top-level Information (col-6 Maximum) -->
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label">Kode Pajak</label>
-                    <input type="text" class="form-control" value="{{ $tax['tax_code'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $tax->code }}" disabled />
                 </div>
                 <div class="col-md-6">
+                    <label class="form-label">Tarif Pajak</label>
+                    <input type="text" class="form-control" value="{{ $tax->rate }}%" disabled />
+                </div>
+            </div>
+            
+            <div class="row g-6 mt-3">
+                <div class="col-md-6">
                     <label class="form-label">Status</label>
-                    <div>
-                        @if($tax['status'] === 'ACTIVE')
+                    <div class="form-control-plaintext">
+                        @if($tax->status == 'ACTIVE')
                             <span class="badge bg-label-success">Aktif</span>
                         @else
                             <span class="badge bg-label-secondary">Inaktif</span>
                         @endif
                     </div>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty for alignment -->
                 </div>
             </div>
             <hr class="my-6 mx-n6" />
@@ -82,40 +93,28 @@
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <div class="tab-pane fade show active" id="horizontal-tax-info" role="tabpanel">
-                            <div id="tax-info-content">
-                                <!-- Info Pajak Section -->
-                                <div class="section-header mt-6">
-                                    <h6>Info Pajak</h6>
+                            <div class="section-header mt-6">
+                                <h6>Detail Informasi Pajak</h6>
+                                <hr class="mx-n6">
+                            </div>
+                            
+                            <div class="row g-6">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tipe Pajak</label>
+                                    <input type="text" class="form-control" value="{{ $tax->type == 'PERCENTAGE' ? 'Persentase' : 'Nominal Tetap' }}" disabled />
                                 </div>
-                                
-                                <!-- Row 1: Basic Information -->
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Kode Pajak</label>
-                                        <input type="text" class="form-control" value="{{ $tax['tax_code'] }}" disabled />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Nama Pajak</label>
-                                        <input type="text" class="form-control" value="{{ $tax['tax_name'] }}" disabled />
-                                    </div>
+                                <div class="col-md-6">
+                                    <!-- Empty for alignment -->
                                 </div>
-                                
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Tarif Pajak</label>
-                                        <input type="text" class="form-control" value="{{ $tax['tax_rate'] }}%" disabled />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Tipe Pajak</label>
-                                        <input type="text" class="form-control" value="{{ $tax['tax_type'] }}" disabled />
-                                    </div>
+                            </div>
+                            
+                            <div class="row g-6 mt-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Deskripsi</label>
+                                    <textarea class="form-control" rows="3" disabled>{{ $tax->description ?: '-' }}</textarea>
                                 </div>
-                                
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-12">
-                                        <label class="form-label">Deskripsi</label>
-                                        <textarea class="form-control" rows="3" disabled>{{ $tax['description'] }}</textarea>
-                                    </div>
+                                <div class="col-md-6">
+                                    <!-- Empty for alignment -->
                                 </div>
                             </div>
                         </div>
@@ -137,22 +136,25 @@
                                     </thead>
                                     <tbody>
                                         @foreach($auditLogs as $log)
-                                            <tr>
-                                                <td>{{ $log['created_at'] }}</td>
-                                                <td><a href="{{ route('master_data.user.detail', ['id' => $log['user_id']]) }}" class="text-primary fw-semibold">{{ $log['user_name'] }}</a></td>
-                                                <td>
-                                                    @if($log['action_type'] === 'CREATE')
-                                                        <span class="badge bg-label-success">CREATE</span>
-                                                    @elseif($log['action_type'] === 'UPDATE')
-                                                        <span class="badge bg-label-warning">UPDATE</span>
-                                                    @elseif($log['action_type'] === 'DELETE')
-                                                        <span class="badge bg-label-danger">DELETE</span>
-                                                    @else
-                                                        <span class="badge bg-label-info">{{ $log['action_type'] }}</span>
-                                                    @endif
-                                                </td>
-                                                <td>{{ $log['description'] }}</td>
-                                            </tr>
+                                        <tr>
+                                            <td>{{ $log->created_at }}</td>
+                                            <td>
+                                                <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" 
+                                                   class="text-primary fw-semibold">{{ $log->user_name }}</a>
+                                            </td>
+                                            <td>
+                                                @if($log->action_type == 'CREATE')
+                                                    <span class="badge bg-label-success">CREATE</span>
+                                                @elseif($log->action_type == 'UPDATE')
+                                                    <span class="badge bg-label-warning">UPDATE</span>
+                                                @elseif($log->action_type == 'DELETE')
+                                                    <span class="badge bg-label-danger">DELETE</span>
+                                                @else
+                                                    <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $log->description }}</td>
+                                        </tr>
                                         @endforeach
                                     </tbody>
                                 </table>

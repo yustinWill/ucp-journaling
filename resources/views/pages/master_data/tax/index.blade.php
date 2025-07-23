@@ -87,7 +87,13 @@
                                     <input type="text" class="form-control" id="search" placeholder="Cari Pajak">
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-4">
-                                    <!-- Empty for alignment -->
+                                    <label class="form-label">Tipe Pajak:</label>
+                                    <select class="global-select2 form-select" id="type-filter" data-allow-clear="true">
+                                        <option value="">Semua Tipe</option>
+                                        @foreach($taxTypes as $type)
+                                            <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -143,26 +149,25 @@
 
             if (mainTable) {
                 dt_adv_filter = new DataTable(mainTable, {
+                    processing: true,
+                    serverSide: true,
                     ajax: {
                         url: `{{ route('master_data.tax.index_data_table') }}`,
                         data: function(d) {
-                            d.status_filter = $('#status-filter').val();
-                            return d;
+                            d.status = $('#status-filter').val();
+                            d.type = $('#type-filter').val();
+                            d.name = $('#search').val();
                         }
                     },
                     columns: [
                         { data: 'created_at', responsivePriority: 2 },
                         { 
-                            data: 'tax_code',
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.tax.detail', ':id') }}`.replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            data: 'code',
+                            responsivePriority: 3
                         },
-                        { data: 'tax_name', responsivePriority: 4 },
+                        { data: 'name', responsivePriority: 4 },
                         { 
-                            data: 'tax_rate',
+                            data: 'rate',
                             className: 'text-end',
                             responsivePriority: 5,
                             render: function(data, type, row) {
@@ -170,7 +175,7 @@
                             }
                         },
                         { 
-                            data: 'tax_type',
+                            data: 'type',
                             responsivePriority: 6,
                             render: function(data, type, row) {
                                 return data === 'PERCENTAGE' ? 'Persentase' : 'Nominal Tetap';
@@ -178,7 +183,7 @@
                         },
                         { 
                             data: 'status',
-                            responsivePriority: 5,
+                            responsivePriority: 7,
                             render: function(data, type, row) {
                                 const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
                                 const statusText = data === 'ACTIVE' ? 'Aktif' : 'Inaktif';
@@ -223,7 +228,8 @@
                     },
                     scrollX: true,
                     responsive: true,
-                    orderCellsTop: true
+                    orderCellsTop: true,
+                    ordering: false
                 });
             }
 
@@ -235,7 +241,7 @@
             });
             
             // Filter functionality
-            $('#status-filter').on('change', function() {
+            $('#status-filter, #type-filter').on('change', function() {
                 if (dt_adv_filter) {
                     dt_adv_filter.draw();
                 }

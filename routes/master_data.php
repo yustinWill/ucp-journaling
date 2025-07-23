@@ -135,7 +135,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $tax_segment . '/index', 'index')->name('master_data.tax.index');
         Route::get($base_segment . $tax_segment . '/index_data_table', 'index_data_table')->name('master_data.tax.index_data_table');
         Route::get($base_segment . $tax_segment . '/add', 'add')->name('master_data.tax.add');
+        Route::post($base_segment . $tax_segment . '/save', 'save')->name('master_data.tax.save');
         Route::get($base_segment . $tax_segment . '/edit/{id}', 'edit')->name('master_data.tax.edit');
+        Route::post($base_segment . $tax_segment . '/update', 'update')->name('master_data.tax.update');
         Route::get($base_segment . $tax_segment . '/detail/{id}', 'detail')->name('master_data.tax.detail');
         Route::get($base_segment . $tax_segment . '/export', 'export')->name('master_data.tax.export');
         Route::get($base_segment . $tax_segment . '/import', 'import')->name('master_data.tax.import');
