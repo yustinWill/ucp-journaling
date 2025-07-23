@@ -18,6 +18,7 @@ use App\Domains\User\Actions\UpdateUserAction;
 use App\Domains\User\Services\UserService;
 use App\Domains\User\Services\UserAuditLogService;
 use App\Domains\Role\Services\RoleService;
+use App\Domains\Tag\Services\TagService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -44,162 +45,126 @@ class UserController extends Controller
 
     public function add()
     {
-        $tags = [
-            ['value' => 'MANAGEMENT', 'label' => 'MANAGEMENT - Manajemen', 'color' => 'primary'],
-            ['value' => 'STAFF', 'label' => 'STAFF - Staff', 'color' => 'info'],
-            ['value' => 'SUPERVISOR', 'label' => 'SUPERVISOR - Supervisor', 'color' => 'warning'],
-            ['value' => 'ADMIN', 'label' => 'ADMIN - Administrator', 'color' => 'secondary'],
-            ['value' => 'OPERATOR', 'label' => 'OPERATOR - Operator', 'color' => 'success']
-        ];
+        $roles = app(RoleService::class)->findAll();
 
-        // Permission check for adding new tags
-        $canAddTags = true; // Mock permission check
+        $tags = app(TagService::class)->findAll();
 
-        $selectData = [
-            'roles' => $this->getMockRoleSelectData(),
+        return view('pages.master_data.user.add', [
+            'roles' => $roles,
             'tags' => $tags,
-            'canAddTags' => $canAddTags
-        ];
+            'canAddTags' => true
+        ]);
+    }
 
-        return view('pages.master_data.user.add', $selectData);
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email',
+                'phone' => 'required|string|max:255|unique:users,phone',
+                'role' => 'required|exists:m_tags,id',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'password' => 'required|string|min:8|max:50|same:password_confirmation',
+                'password_confirmation' => 'required|string|min:8|max:50',
+                'tags' => 'nullable|array',
+            ]);
+
+            app(CreateUserAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_USER_SUCCESS->message()
+            ], SuccessCodes::CREATE_USER_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function edit($id)
     {
-        // Mock data (no DB connection)
-        $userData = [
-            1 => [
-                'id' => 1,
-                'name' => 'Yustinus Komunal',
-                'email' => 'yustinus.komunal@riyowater.com',
-                'phone' => '081234567890',
-                'role' => 'MANAGER_PRODUKSI',
-                'status' => 'ACTIVE'
-            ],
-            2 => [
-                'id' => 2,
-                'name' => 'Ririn Safitri',
-                'email' => 'ririn.safitri@riyowater.com',
-                'phone' => '081234567891',
-                'role' => 'STAFF_KEUANGAN',
-                'status' => 'ACTIVE'
-            ],
-            3 => [
-                'id' => 3,
-                'name' => 'Ahmad Setyo',
-                'email' => 'ahmad.setyo@riyowater.com',
-                'phone' => '081234567892',
-                'role' => 'SUPERVISOR_QC',
-                'status' => 'ACTIVE'
-            ]
-        ];
+        $user = app(UserService::class)->findOne($id);
 
-        $user = $userData[$id] ?? $userData[1];
+        if ($user == null) {
+            abort(404);
+        }
 
-        $tags = [
-            ['value' => 'MANAGEMENT', 'label' => 'MANAGEMENT - Manajemen', 'color' => 'primary'],
-            ['value' => 'STAFF', 'label' => 'STAFF - Staff', 'color' => 'info'],
-            ['value' => 'SUPERVISOR', 'label' => 'SUPERVISOR - Supervisor', 'color' => 'warning'],
-            ['value' => 'ADMIN', 'label' => 'ADMIN - Administrator', 'color' => 'secondary'],
-            ['value' => 'OPERATOR', 'label' => 'OPERATOR - Operator', 'color' => 'success']
-        ];
+        $roles = app(RoleService::class)->findAll();
 
-        // Permission check for adding new tags
-        $canAddTags = true; // Mock permission check
+        $tags = app(TagService::class)->findAll();
+        $canAddTags = true;
 
-        $selectData = [
-            'roles' => $this->getMockRoleSelectData(),
-            'tags' => $tags,
-            'canAddTags' => $canAddTags
-        ];
+        return view('pages.master_data.user.edit', compact('user', 'roles', 'tags', 'canAddTags'));
+    }
 
-        return view('pages.master_data.user.edit', compact('user') + $selectData);
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:users,id',
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $request->id,
+                'phone' => 'required|string|max:255|unique:users,phone,' . $request->id,
+                'role' => 'required|exists:m_tags,id',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'password' => 'nullable|string|min:8|max:50|same:password_confirmation',
+                'password_confirmation' => 'nullable|string|min:8|max:50',
+                'tags' => 'nullable|array',
+            ]);
+
+            app(UpdateUserAction::class)->execute($request->id, $validated);
+
+            return response()->json([
+                'message' => SuccessCodes::UPDATE_USER_SUCCESS->message()
+            ], SuccessCodes::UPDATE_USER_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function detail($id)
     {
-        // Mock data (no DB connection)
-        $userData = [
-            1 => [
-                'id' => 1,
-                'name' => 'Yustinus Komunal',
-                'email' => 'yustinus.komunal@riyowater.com',
-                'phone' => '081234567890',
-                'role' => 'Manager Produksi',
-                'last_login' => '2025-01-20 08:30:00',
-                'last_password_change' => '2025-01-15 10:00:00',
-                'status' => 'ACTIVE',
-                // CRITICAL: Audit logs MUST be sorted by latest date first (as per Form Standards Rule #21)
-                'audit_logs' => [
-                    [
-                        'created_at' => '2025-01-21 14:15:30', // Most recent
-                        'user_id' => 'USR-001',
-                        'user_name' => 'Yustinus Komunal',
-                        'action_type' => 'UPDATE',
-                        'description' => 'Update profil dan nomor telepon untuk akses RIYO Water'
-                    ],
-                    [
-                        'created_at' => '2025-01-20 08:30:00',
-                        'user_id' => 'USR-001',
-                        'user_name' => 'Yustinus Komunal',
-                        'action_type' => 'UPDATE',
-                        'description' => 'Login berhasil dari IP 192.168.1.100 - RIYO Water Production Office'
-                    ],
-                    [
-                        'created_at' => '2025-01-15 10:00:00',
-                        'user_id' => 'USR-001',
-                        'user_name' => 'Yustinus Komunal',
-                        'action_type' => 'UPDATE',
-                        'description' => 'Password berhasil diubah untuk keamanan akun'
-                    ],
-                    [
-                        'created_at' => '2025-01-15 09:00:00', // Oldest
-                        'user_id' => 'ADM-001',
-                        'user_name' => 'System Administrator',
-                        'action_type' => 'CREATE',
-                        'description' => 'User account dibuat dengan role Manager Produksi RIYO Water'
-                    ]
-                ]
-            ],
-            2 => [
-                'id' => 2,
-                'name' => 'Ririn Safitri',
-                'email' => 'ririn.safitri@riyowater.com',
-                'phone' => '081234567891',
-                'role' => 'Staff Keuangan',
-                'last_login' => '2025-01-20 09:15:00',
-                'last_password_change' => '2025-01-10 14:30:00',
-                'status' => 'ACTIVE',
-                // CRITICAL: Audit logs MUST be sorted by latest date first (as per Form Standards Rule #21)
-                'audit_logs' => [
-                    [
-                        'created_at' => '2025-01-21 09:45:15', // Most recent
-                        'user_id' => 'USR-002',
-                        'user_name' => 'Ririn Safitri',
-                        'action_type' => 'UPDATE',
-                        'description' => 'Update akses keuangan untuk laporan RIYO Water bulanan'
-                    ],
-                    [
-                        'created_at' => '2025-01-20 09:15:00',
-                        'user_id' => 'USR-002',
-                        'user_name' => 'Ririn Safitri',
-                        'action_type' => 'UPDATE',
-                        'description' => 'Login berhasil dari IP 192.168.1.101 - RIYO Water Finance Office'
-                    ],
-                    [
-                        'created_at' => '2025-01-10 14:30:00', // Oldest
-                        'user_id' => 'ADM-001',
-                        'user_name' => 'System Administrator',
-                        'action_type' => 'CREATE',
-                        'description' => 'User account dibuat dengan role Staff Keuangan RIYO Water'
-                    ]
-                ]
-            ]
-        ];
+        $user = app(UserService::class)->findOne($id);
 
-        $user = $userData[$id] ?? $userData[1];
+        if ($user == null) {
+            abort(404);
+        }
 
-        return view('pages.master_data.user.detail', ['user' => $user]);
+        $auditLogs = app(UserAuditLogService::class)->findAllBasedOnId($id);
+        return view('pages.master_data.user.detail', compact('user', 'auditLogs'));
     }
 
     public function export()

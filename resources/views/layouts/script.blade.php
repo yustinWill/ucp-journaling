@@ -20,7 +20,7 @@
 <!-- endbuild -->
 
 <!-- Vendors JS -->
-<script src="https://cdn.jsdelivr.net/npm/cleave.js@1.6.0/dist/cleave.min.js"></script>
+<script src="../../assets/vendor/libs/cleave/cleave.min.js"></script>
 <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
 <script src="../../assets/vendor/libs/select2/select2.js"></script>
 

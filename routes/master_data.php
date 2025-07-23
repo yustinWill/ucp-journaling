@@ -80,7 +80,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $user_segment . '/index', 'index')->name('master_data.user.index');
         Route::get($base_segment . $user_segment . '/index_data_table', 'index_data_table')->name('master_data.user.index_data_table');
         Route::get($base_segment . $user_segment . '/add', 'add')->name('master_data.user.add');
+        Route::post($base_segment . $user_segment . '/save', 'save')->name('master_data.user.save');
         Route::get($base_segment . $user_segment . '/edit/{id}', 'edit')->name('master_data.user.edit');
+        Route::post($base_segment . $user_segment . '/update', 'update')->name('master_data.user.update');
         Route::get($base_segment . $user_segment . '/detail/{id}', 'detail')->name('master_data.user.detail');
         Route::get($base_segment . $user_segment . '/export', 'export')->name('master_data.user.export');
         Route::get($base_segment . $user_segment . '/import', 'import')->name('master_data.user.import');
