@@ -3,53 +3,31 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Session;
 
 class PermissionHelper
 {
+    private static function generatePermissions()
+    {
+        $permissions = Session::get('permissions');
+        $formattedPermissions = [];
+
+        foreach ($permissions as $permission) {
+            $moduleName = $permission->module_name;
+            $permissionType = $permission->permission_type;
+            $permissionStatus = $permission->status;
+
+            $formattedPermissions[$moduleName][$permissionType] = $permissionStatus;
+        }
+        return $formattedPermissions;
+    }
     /**
      * Mock permissions for development - replace with actual Gate logic in production
      * All permissions set to true for development phase
      */
     private static function getMockPermissions(): array
     {
-        return [
-            'master_data_sales_person' => [
-                'read' => true,
-                'write' => true, 
-                'delete' => true,
-                'approval' => true
-            ],
-            'master_data_tax' => [
-                'read' => true,
-                'write' => true,
-                'delete' => true,
-                'approval' => true
-            ],
-            'master_data_unit' => [
-                'read' => true,
-                'write' => true,
-                'delete' => true,
-                'approval' => true
-            ],
-            'master_data_category' => [
-                'read' => true,
-                'write' => true,
-                'delete' => true,
-                'approval' => true
-            ],
-            'master_data_tag' => [
-                'read' => true,
-                'write' => true,
-                'delete' => true,
-                'approval' => true
-            ],
-            'master_data_role' => [
-                'read' => true,
-                'write' => true,
-                'delete' => true,
-                'approval' => true
-            ]
-        ];
+        return self::generatePermissions();
     }
 
     /**
@@ -62,7 +40,7 @@ class PermissionHelper
         if (isset($mockPermissions[$module][$permission])) {
             return $mockPermissions[$module][$permission];
         }
-        
+
         // Fallback to Gate for production
         return Gate::allows("{$module}.{$permission}");
     }
@@ -117,10 +95,10 @@ class PermissionHelper
      */
     public static function hasAnyPermission(string $module): bool
     {
-        return self::canRead($module) || 
-               self::canWrite($module) || 
-               self::canDelete($module) || 
-               self::canApprove($module);
+        return self::canRead($module) ||
+            self::canWrite($module) ||
+            self::canDelete($module) ||
+            self::canApprove($module);
     }
 
     /**
@@ -129,7 +107,7 @@ class PermissionHelper
     public static function getViewPermissions(string $module): array
     {
         $permissions = self::getModulePermissions($module);
-        
+
         return [
             'permissions' => $permissions,
             'canRead' => $permissions['read'],
@@ -161,7 +139,7 @@ class PermissionHelper
             'master_data.sales_person.update' => ['master_data_sales_person', 'write'],
             'master_data.sales_person.import' => ['master_data_sales_person', 'write'],
             'master_data.sales_person.delete' => ['master_data_sales_person', 'delete'],
-            
+
             // Tax
             'master_data.tax.index' => ['master_data_tax', 'read'],
             'master_data.tax.detail' => ['master_data_tax', 'read'],
@@ -172,7 +150,7 @@ class PermissionHelper
             'master_data.tax.update' => ['master_data_tax', 'write'],
             'master_data.tax.import' => ['master_data_tax', 'write'],
             'master_data.tax.delete' => ['master_data_tax', 'delete'],
-            
+
             // Unit
             'master_data.unit.index' => ['master_data_unit', 'read'],
             'master_data.unit.detail' => ['master_data_unit', 'read'],
@@ -183,7 +161,7 @@ class PermissionHelper
             'master_data.unit.update' => ['master_data_unit', 'write'],
             'master_data.unit.import' => ['master_data_unit', 'write'],
             'master_data.unit.delete' => ['master_data_unit', 'delete'],
-            
+
             // Category
             'master_data.category.index' => ['master_data_category', 'read'],
             'master_data.category.detail' => ['master_data_category', 'read'],
@@ -226,7 +204,7 @@ class PermissionHelper
         ];
 
         $accessibleModules = [];
-        
+
         foreach ($modules as $module => $title) {
             if (self::hasAnyPermission($module)) {
                 $accessibleModules[$module] = [
