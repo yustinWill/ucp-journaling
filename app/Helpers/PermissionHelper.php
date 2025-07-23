@@ -21,8 +21,8 @@ class PermissionHelper
             ],
             'master_data_tax' => [
                 'read' => true,
-                'write' => false,
-                'delete' => false,
+                'write' => true,
+                'delete' => true,
                 'approval' => true
             ],
             'master_data_unit' => [

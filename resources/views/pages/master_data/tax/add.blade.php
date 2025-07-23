@@ -74,9 +74,11 @@
                     <button type="button" class="btn btn-label-danger me-3" onclick="window.history.back()">
                         <i class="icon-base ti tabler-arrow-left me-2"></i>Batal
                     </button>
-                    <button type="submit" class="btn btn-success">
-                        <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan
-                    </button>
+                    @if($canWrite)
+                        <button type="submit" class="btn btn-success">
+                            <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan
+                        </button>
+                    @endif
                 </div>
         </form>
     </div>

@@ -69,7 +69,9 @@
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <a href="{{ route('master_data.unit.detail', $unit->id) }}" class="btn btn-label-danger me-3">Batalkan</a>
-                <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
+                @if($canWrite)
+                    <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
+                @endif
             </div>
         </form>
     </div>
