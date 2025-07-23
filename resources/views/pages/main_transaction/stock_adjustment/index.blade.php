@@ -315,7 +315,7 @@ $(function() {
                 { 
                     data: 'warehouse_name',
                     render: function(data, type, full, meta) {
-                        const warehouseDetailUrl = "{{ route('master_data.storage.detail') }}?warehouse_id=" + full.warehouse_id;
+                        const warehouseDetailUrl = "{{ route('master_data.storage.detail', ':id') }}".replace(':id', full.warehouse_id);
                         return `<a href="${warehouseDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
                     }
                 },
@@ -409,7 +409,7 @@ $(function() {
                 { 
                     data: 'warehouse_name',
                     render: function(data, type, full, meta) {
-                        const warehouseDetailUrl = "{{ route('master_data.storage.detail') }}?warehouse_id=" + full.warehouse_id;
+                        const warehouseDetailUrl = "{{ route('master_data.storage.detail', ':id') }}".replace(':id', full.warehouse_id);
                         return `<a href="${warehouseDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
                     }
                 },
@@ -540,7 +540,7 @@ $(function() {
                 { 
                     data: 'warehouse_name',
                     render: function(data, type, full, meta) {
-                        const warehouseDetailUrl = "{{ route('master_data.storage.detail') }}?warehouse_id=" + full.warehouse_id;
+                        const warehouseDetailUrl = "{{ route('master_data.storage.detail', ':id') }}".replace(':id', full.warehouse_id);
                         return `<a href="${warehouseDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
                     }
                 },

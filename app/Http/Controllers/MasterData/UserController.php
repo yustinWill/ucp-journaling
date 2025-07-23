@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 use App\Exceptions\AppException;
 use App\Helpers\ValidationHelper;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 
 //Actions
 use App\Domains\User\Actions\CreateUserAction;
@@ -46,13 +47,17 @@ class UserController extends Controller
     public function add()
     {
         $roles = app(RoleService::class)->findAll();
-
         $tags = app(TagService::class)->findAll();
+        
+        // Permission checks for add buttons
+        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddRoles = PermissionHelper::canWrite('master_data_role');
 
         return view('pages.master_data.user.add', [
             'roles' => $roles,
             'tags' => $tags,
-            'canAddTags' => true
+            'canAddTags' => $canAddTags,
+            'canAddRoles' => $canAddRoles
         ]);
     }
 
@@ -106,11 +111,19 @@ class UserController extends Controller
         }
 
         $roles = app(RoleService::class)->findAll();
-
         $tags = app(TagService::class)->findAll();
-        $canAddTags = true;
+        
+        // Permission checks for add buttons
+        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddRoles = PermissionHelper::canWrite('master_data_role');
 
-        return view('pages.master_data.user.edit', compact('user', 'roles', 'tags', 'canAddTags'));
+        return view('pages.master_data.user.edit', [
+            'user' => $user,
+            'roles' => $roles,
+            'tags' => $tags,
+            'canAddTags' => $canAddTags,
+            'canAddRoles' => $canAddRoles
+        ]);
     }
 
     public function update(Request $request)

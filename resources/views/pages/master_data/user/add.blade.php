@@ -30,12 +30,24 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Role <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="user-role" data-allow-clear="false">
-                        <option value="">Pilih Role</option>
-                        @foreach ($roles as $role)
-                            <option value="{{ $role->id }}">{{ $role->name }} - {{ $role->description }}</option>
-                        @endforeach
-                    </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="user-role" data-allow-clear="false">
+                                <option value="">Pilih Role</option>
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role->id }}">{{ $role->name }} - {{ $role->description }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if ($canAddRoles)
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.role.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center"
+                                   title="Tambah Role Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status User</label>
@@ -93,19 +105,23 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tag</label>
-                    <div class="d-flex gap-2">
-                        <select class="global-select2 form-select flex-grow-1" id="user-tags" multiple
-                            data-allow-clear="false">
-                            @foreach ($tags as $tag)
-                                <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}">
-                                    {{ $tag->code }} - {{ $tag->name }}</option>
-                            @endforeach
-                        </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="user-tags" multiple
+                                data-allow-clear="false">
+                                @foreach ($tags as $tag)
+                                    <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}">
+                                        {{ $tag->code }} - {{ $tag->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         @if ($canAddTags)
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-new-user-tag"
-                                title="Tambah Tag Baru">
-                                <i class="icon-base ti tabler-plus"></i>
-                            </button>
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.tag.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" id="add-new-user-tag"
+                                    title="Tambah Tag Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
                         @endif
                     </div>
                     <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi user</small>
@@ -293,6 +309,7 @@
                     }
                 });
             });
+
         });
     </script>
 @endsection

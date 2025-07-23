@@ -36,6 +36,18 @@ class PermissionHelper
                 'write' => true,
                 'delete' => true,
                 'approval' => true
+            ],
+            'master_data_tag' => [
+                'read' => true,
+                'write' => true,
+                'delete' => true,
+                'approval' => true
+            ],
+            'master_data_role' => [
+                'read' => true,
+                'write' => true,
+                'delete' => true,
+                'approval' => true
             ]
         ];
     }

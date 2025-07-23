@@ -18,7 +18,7 @@ use App\Http\Controllers\MasterData\SalesPersonController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
-$storage_segment = '/gudang';
+$storage_segment = '/storage';
 $product_segment = '/product';
 $coa_segment = '/coa';
 $user_segment = '/user';
