@@ -15,10 +15,18 @@
                 <div class="col-md-4">
                     <div class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('master_data.unit.edit', $unit->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-edit me-2"></i>
-                                Edit
-                            </a>
+                            @if($canShowEditButton)
+                                <a href="{{ route('master_data.unit.edit', $unit->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                    <i class="icon-base ti tabler-edit me-2"></i>
+                                    Edit
+                                </a>
+                            @endif
+                            @if($canShowDeleteButton)
+                                <button class="btn btn-danger btn-md waves-effect waves-light" onclick="deleteItem({{ $unit->id }})">
+                                    <i class="icon-base ti tabler-trash me-2"></i>
+                                    Hapus
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

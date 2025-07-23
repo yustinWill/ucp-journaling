@@ -106,15 +106,21 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            <a href="{{ route('master_data.category.import') }}"
-                                class="btn btn-md btn-primary waves-effect waves-light"><span
-                                    class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                            <a href="{{ route('master_data.category.export') }}"
-                                class="btn btn-md btn-primary waves-effect waves-light"><span
-                                    class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            <a href="{{ route('master_data.category.add') }}"
-                                class="btn btn-md btn-primary waves-effect waves-light"><span
-                                    class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                            @if($canShowImportButton)
+                                <a href="{{ route('master_data.category.import') }}"
+                                    class="btn btn-md btn-primary waves-effect waves-light"><span
+                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+                            @endif
+                            @if($canShowExportButton)
+                                <a href="{{ route('master_data.category.export') }}"
+                                    class="btn btn-md btn-primary waves-effect waves-light"><span
+                                        class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                            @endif
+                            @if($canShowAddButton)
+                                <a href="{{ route('master_data.category.add') }}"
+                                    class="btn btn-md btn-primary waves-effect waves-light"><span
+                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -143,6 +149,13 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables
+            const canRead = @json($canRead);
+            const canWrite = @json($canWrite);
+            const canDelete = @json($canDelete);
+            const canShowEditButton = @json($canShowEditButton);
+            const canShowDeleteButton = @json($canShowDeleteButton);
+            
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');
             let dt_adv_filter;
@@ -206,16 +219,28 @@
                             render: function(data, type, row, meta) {
                                 const detailUrl = `{{ route('master_data.category.detail', ':id') }}`.replace(':id', row.id);
                                 const editUrl = `{{ route('master_data.category.edit', ':id') }}`.replace(':id', row.id);
-                                return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                let actions = '<div class="d-flex gap-2">';
+                                
+                                if (canRead) {
+                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-xs icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    </a>`;
+                                }
+                                
+                                if (canShowEditButton) {
+                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-xs icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                                `;
+                                    </a>`;
+                                }
+                                
+                                if (canShowDeleteButton) {
+                                    actions += `<button class="btn btn-sm btn-danger waves-effect waves-light" title="Hapus" onclick="deleteItem(${row.id})">
+                                        <i class="icon-xs icon-base ti tabler-trash"></i>
+                                    </button>`;
+                                }
+                                
+                                actions += '</div>';
+                                return actions;
                             }
                         }
                     ],

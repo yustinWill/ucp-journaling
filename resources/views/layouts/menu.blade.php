@@ -127,7 +127,7 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Sistem & Pengaturan</span>
         </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.tax.*', 'master_data.unit.*', 'master_data.category.*', 'master_data.tag.*'])) active open @endif">
+        <li class="menu-item @if (request()->routeIs(['master_data.tax.*', 'master_data.unit.*', 'master_data.category.*', 'master_data.tag.*', 'master_data.sales_person.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
                 <div data-i18n="Chat">Daftar Lainnya</div>
@@ -151,6 +151,11 @@
                 <li class="menu-item @if (request()->routeIs(['master_data.tag.*'])) active @endif">
                     <a href="{{ route('master_data.tag.index') }}" class="menu-link">
                         <div data-i18n="Tags">Tag Management</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.sales_person.*'])) active @endif">
+                    <a href="{{ route('master_data.sales_person.index') }}" class="menu-link">
+                        <div data-i18n="SalesPerson">Sales Person</div>
                     </a>
                 </li>
             </ul>
