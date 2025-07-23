@@ -159,7 +159,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $category_segment . '/index', 'index')->name('master_data.category.index');
         Route::get($base_segment . $category_segment . '/index_data_table', 'index_data_table')->name('master_data.category.index_data_table');
         Route::get($base_segment . $category_segment . '/add', 'add')->name('master_data.category.add');
+        Route::post($base_segment . $category_segment . '/save', 'save')->name('master_data.category.save');
         Route::get($base_segment . $category_segment . '/edit/{id}', 'edit')->name('master_data.category.edit');
+        Route::post($base_segment . $category_segment . '/update', 'update')->name('master_data.category.update');
         Route::get($base_segment . $category_segment . '/detail/{id}', 'detail')->name('master_data.category.detail');
         Route::get($base_segment . $category_segment . '/export', 'export')->name('master_data.category.export');
         Route::get($base_segment . $category_segment . '/import', 'import')->name('master_data.category.import');

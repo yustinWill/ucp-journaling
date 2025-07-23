@@ -2,113 +2,56 @@
 
 namespace App\Http\Controllers\MasterData;
 
+//Main
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
+//Actions
+use App\Domains\Category\Actions\CreateCategoryAction;
+use App\Domains\Category\Actions\UpdateCategoryAction;
+//Services
+use App\Domains\Category\Services\CategoryService;
+use App\Domains\Category\Services\CategoryAuditLogService;
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
 
 class CategoryController extends Controller
 {
+    private $statuses = [
+        ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
+    ];
+
+    private $categoryTypes = [
+        ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
+        ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
+        ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
+        ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan']
+    ];
     public function index()
     {
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        $statuses = $this->statuses;
+        $categoryTypes = $this->categoryTypes;
 
-        $categoryTypes = [
-            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
-            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
-            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
-            ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan']
-        ];
-
-        return view('pages.master_data.category.index', [
-            'statuses' => $statuses,
-            'categoryTypes' => $categoryTypes
-        ]);
+        return view('pages.master_data.category.index', compact('categoryTypes', 'statuses'));
     }
 
     public function index_data_table()
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "created_at" => "2025-01-19 10:30:15",
-                    "category_code" => "FINISHED_GOODS",
-                    "category_name" => "Produk Jadi",
-                    "category_type" => "FINISHED_GOODS",
-                    "description" => "Kategori untuk produk yang sudah siap jual",
-                    "product_count" => 25,
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 2,
-                    "created_at" => "2025-01-19 10:35:22",
-                    "category_code" => "RAW_MATERIALS",
-                    "category_name" => "Bahan Baku",
-                    "category_type" => "RAW_MATERIALS",
-                    "description" => "Kategori untuk bahan baku produksi",
-                    "product_count" => 12,
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 3,
-                    "created_at" => "2025-01-19 10:38:45",
-                    "category_code" => "PACKAGING",
-                    "category_name" => "Kemasan",
-                    "category_type" => "PACKAGING",
-                    "description" => "Kategori untuk material kemasan dan label",
-                    "product_count" => 18,
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 4,
-                    "created_at" => "2025-01-19 10:42:18",
-                    "category_code" => "MAINTENANCE",
-                    "category_name" => "Perawatan",
-                    "category_type" => "MAINTENANCE",
-                    "description" => "Kategori untuk spare part dan material perawatan",
-                    "product_count" => 8,
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 5,
-                    "created_at" => "2025-01-17 14:20:30",
-                    "category_code" => "CHEMICALS",
-                    "category_name" => "Bahan Kimia",
-                    "category_type" => "RAW_MATERIALS",
-                    "description" => "Kategori untuk bahan kimia treatment air",
-                    "product_count" => 5,
-                    "status" => "ACTIVE"
-                ],
-                [
-                    "id" => 6,
-                    "created_at" => "2025-01-15 09:15:45",
-                    "category_code" => "CONSUMABLES",
-                    "category_name" => "Habis Pakai",
-                    "category_type" => "MAINTENANCE",
-                    "description" => "Kategori untuk barang habis pakai operasional",
-                    "product_count" => 0,
-                    "status" => "INACTIVE"
-                ]
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(CategoryService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
     {
-        $categoryTypes = [
-            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
-            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
-            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
-            ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan']
-        ];
-
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        $categoryTypes = $this->categoryTypes;
+        $statuses = $this->statuses;
 
         return view('pages.master_data.category.add', [
             'categoryTypes' => $categoryTypes,
@@ -116,70 +59,131 @@ class CategoryController extends Controller
         ]);
     }
 
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string|max:255|unique:m_categories,code',
+                'name' => 'required|string|max:255',
+                'type' => [
+                    'required',
+                    Rule::in(array_column($this->categoryTypes, 'value'))
+                ],
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'description' => 'nullable|string|max:255',
+            ]);
+
+            app(CreateCategoryAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_CATEGORY_SUCCESS->message()
+            ], SuccessCodes::CREATE_CATEGORY_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
     public function edit($id)
     {
-        $categoryTypes = [
-            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
-            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
-            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
-            ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan']
-        ];
+        $category = app(CategoryService::class)->findOne($id);
 
-        $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
+        if ($category == null) {
+            abort(404);
+        }
 
-        // Sample category data for editing
-        $category = [
-            'id' => $id,
-            'code' => 'FINISHED_GOODS',
-            'name' => 'Produk Jadi',
-            'type' => 'FINISHED_GOODS',
-            'description' => 'Kategori untuk produk RIYO Water yang sudah siap untuk dijual kepada konsumen, termasuk berbagai varian kemasan',
-            'status' => 'ACTIVE'
-        ];
+        $statuses = $this->statuses;
 
         return view('pages.master_data.category.edit', [
-            'categoryTypes' => $categoryTypes,
+            'categoryTypes' => $this->categoryTypes,
             'statuses' => $statuses,
             'category' => $category
         ]);
     }
 
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:m_categories,id',
+                'name' => 'required|string|max:255',
+                'type' => [
+                    'required',
+                    Rule::in(array_column($this->categoryTypes, 'value'))
+                ],
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'description' => 'nullable|string|max:255',
+            ]);
+
+            app(UpdateCategoryAction::class)->execute($request->id, $validated);
+
+            return response()->json([
+                'message' => SuccessCodes::UPDATE_CATEGORY_SUCCESS->message()
+            ], SuccessCodes::UPDATE_CATEGORY_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
     public function detail($id)
     {
-        // Sample category data for detail view
-        $category = [
-            'id' => $id,
-            'category_code' => 'FINISHED_GOODS',
-            'category_name' => 'Produk Jadi',
-            'category_type' => 'Produk Jadi',
-            'description' => 'Kategori untuk produk RIYO Water yang sudah siap untuk dijual kepada konsumen, termasuk berbagai varian kemasan mulai dari 330ml hingga 19 liter',
-            'product_count' => 25,
-            'status' => 'ACTIVE',
-            'last_updated' => '2025-01-21 17:15:30'
+        $category = app(CategoryService::class)->findOne($id);
+
+        if ($category == null) {
+            abort(404);
+        }
+
+        // Convert to array format expected by the view
+        $categoryArray = [
+            'id' => $category->id,
+            'category_code' => $category->code,
+            'category_name' => $category->name,
+            'category_type' => $category->type,
+            'description' => $category->description,
+            'status' => $category->status,
+            'product_count' => rand(0, 50), // TODO: Calculate actual product count
+            'last_updated' => $category->updated_at->format('Y-m-d H:i:s')
         ];
 
-        // Audit log data
-        $auditLogs = [
-            [
-                'created_at' => '2025-01-19 13:45:20',
-                'user_id' => 'USR-002',
-                'user_name' => 'Product Manager',
-                'action_type' => 'UPDATE',
-                'description' => 'Mengubah deskripsi kategori untuk menambahkan informasi varian kemasan'
-            ],
-            [
-                'created_at' => '2025-01-05 08:30:15',
-                'user_id' => 'USR-001',
-                'user_name' => 'Admin User',
-                'action_type' => 'CREATE',
-                'description' => 'Kategori Produk Jadi berhasil dibuat dengan kode FINISHED_GOODS'
-            ]
-        ];
+        $auditLogs = app(CategoryAuditLogService::class)->findAllBasedOnTagId($id);
 
-        return view('pages.master_data.category.detail', compact('category', 'auditLogs'));
+        return view('pages.master_data.category.detail', [
+            'category' => $categoryArray,
+            'auditLogs' => $auditLogs
+        ]);
     }
 
     public function export()

@@ -13,6 +13,8 @@ enum SuccessCodes: string
     case UPDATE_UNIT_SUCCESS = 'UPDATE_UNIT_SUCCESS';
     case CREATE_TAX_SUCCESS = 'CREATE_TAX_SUCCESS';
     case UPDATE_TAX_SUCCESS = 'UPDATE_TAX_SUCCESS';
+    case CREATE_CATEGORY_SUCCESS = 'CREATE_CATEGORY_SUCCESS';
+    case UPDATE_CATEGORY_SUCCESS = 'UPDATE_CATEGORY_SUCCESS';
 
     public function message(): string
     {
@@ -23,6 +25,8 @@ enum SuccessCodes: string
             self::UPDATE_UNIT_SUCCESS => 'Unit berhasil diubah.',
             self::CREATE_TAX_SUCCESS => 'Pajak berhasil dibuat.',
             self::UPDATE_TAX_SUCCESS => 'Pajak berhasil diubah.',
+            self::CREATE_CATEGORY_SUCCESS => 'Kategori berhasil dibuat.',
+            self::UPDATE_CATEGORY_SUCCESS => 'Kategori berhasil diubah.',
             self::GENERAL_SUCCESS => 'Berhasil',
         };
     }
@@ -36,6 +40,8 @@ enum SuccessCodes: string
             self::UPDATE_UNIT_SUCCESS => self::OK,
             self::CREATE_TAX_SUCCESS => self::OK,
             self::UPDATE_TAX_SUCCESS => self::OK,
+            self::CREATE_CATEGORY_SUCCESS => self::OK,
+            self::UPDATE_CATEGORY_SUCCESS => self::OK,
             self::GENERAL_SUCCESS => self::OK,
         };
     }

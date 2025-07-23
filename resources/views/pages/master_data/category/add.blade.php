@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Tambah Kategori Produk</h5>
+        <h4 class="card-header">Tambah Kategori Produk</h4>
         <form class="card-body" id="category-form" action="#" method="POST">
                 @csrf
                 
@@ -59,15 +59,9 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="mt-6">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary waves-effect waves-light">
-                            <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan
-                        </button>
-                        <button type="button" class="btn btn-secondary waves-effect waves-light" onclick="window.history.back()">
-                            <i class="icon-base ti tabler-arrow-left me-2"></i>Batal
-                        </button>
-                    </div>
+                <div class="pt-6 text-end">
+                    <a href="{{ route('master_data.category.index') }}" class="btn btn-label-danger me-3">Batalkan</a>
+                    <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
                 </div>
             </form>
     </div>
@@ -120,15 +114,49 @@
                 buttonsStyling: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Simulate save success
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Kategori berhasil dibuat.',
-                        customClass: { confirmButton: 'btn btn-success' },
-                        buttonsStyling: false
-                    }).then(() => {
-                        window.location.href = "{{ route('master_data.category.index') }}";
+                    $('#submit-btn').prop('disabled', true).html(
+                        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...'
+                    );
+                    
+                    $.ajax({
+                        url: "{{ route('master_data.category.save') }}",
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            code: $('#category-code').val(),
+                            name: $('#category-name').val(),
+                            type: $('#category-type').val(),
+                            status: $('#status').val(),
+                            description: $('#description').val()
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Kategori berhasil dibuat.',
+                                customClass: {
+                                    confirmButton: 'btn btn-success'
+                                },
+                                buttonsStyling: false
+                            }).then(function() {
+                                window.location.href = "{{ route('master_data.category.index') }}";
+                            });
+                        },
+                        error: function(xhr) {
+                            const res = xhr.responseJSON;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal menyimpan',
+                                html: res?.message || 'Terjadi kesalahan saat menyimpan data.',
+                                customClass: {
+                                    confirmButton: 'btn btn-primary'
+                                },
+                                buttonsStyling: false
+                            });
+                        },
+                        complete: function() {
+                            $('#submit-btn').prop('disabled', false).html('Simpan');
+                        }
                     });
                 }
             });

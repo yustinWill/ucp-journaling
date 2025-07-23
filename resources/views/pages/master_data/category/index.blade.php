@@ -149,11 +149,14 @@
 
             if (mainTable) {
                 dt_adv_filter = new DataTable(mainTable, {
+                    processing: true,
+                    serverSide: true,
+                    ordering: false,
                     ajax: {
                         url: `{{ route('master_data.category.index_data_table') }}`,
                         data: function(d) {
                             d.status_filter = $('#status-filter').val();
-                            d.category_type_filter = $('#category-type-filter').val();
+                            d.category_type_filter = $('#type-filter').val();
                             return d;
                         }
                     },
@@ -161,11 +164,7 @@
                         { data: 'created_at', responsivePriority: 2 },
                         { 
                             data: 'category_code',
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.category.detail', ':id') }}`.replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            responsivePriority: 3
                         },
                         { data: 'category_name', responsivePriority: 4 },
                         { 

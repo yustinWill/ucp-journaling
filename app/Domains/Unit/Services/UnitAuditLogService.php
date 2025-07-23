@@ -28,6 +28,7 @@ class UnitAuditLogService
                 't.f_unit_id',
                 't.action_type',
                 't.description',
+                't.metadata',
                 't.created_at',
                 't.created_by AS user_id',
                 'usr.name AS user_name'

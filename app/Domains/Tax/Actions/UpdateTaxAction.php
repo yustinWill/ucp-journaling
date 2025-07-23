@@ -5,26 +5,24 @@ namespace App\Domains\Tax\Actions;
 use App\Domains\Tax\Services\TaxService;
 use App\Domains\Tax\Services\TaxAuditLogService;
 use Illuminate\Support\Facades\DB;
+use App\Enums\ActionTypes;
 
 class UpdateTaxAction
 {
-    public function __construct(
-        private TaxService $taxService,
-        private TaxAuditLogService $taxAuditLogService
-    ) {}
-
     public function execute(int $id, array $data)
     {
-        return DB::transaction(function () use ($id, $data) {
-            $this->taxService->update($id, $data);
-            
-            $this->taxAuditLogService->create(
-                $id,
-                'UPDATE',
-                "Pajak {$data['name']} berhasil diperbarui"
-            );
-
-            return true;
+        $old_data = app(TaxService::class)->findOne($id);
+        return DB::transaction(function () use ($id, $data, $old_data) {
+            app(TaxService::class)->update($id, $data);
+            $log_data = [
+                'action_type' => ActionTypes::UPDATE,
+                'description' => "Perubahan Pajak",
+                'metadata' => json_encode([
+                    'before' => $old_data,
+                    'after' => $data,
+                ])
+            ];
+            app(TaxAuditLogService::class)->create($log_data, $id);
         });
     }
 }

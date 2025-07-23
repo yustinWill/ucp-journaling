@@ -4,10 +4,11 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <h5 class="card-header">Edit Kategori Produk</h5>
+        <h4 class="card-header">Edit Kategori Produk</h4>
         <form class="card-body" id="category-form" action="#" method="POST">
+                <input type="hidden" id="category-id" value="{{ $category->id }}">
                 @csrf
-                @method('PUT')
+                @method('POST')
                 
                 <!-- Info Kategori Section -->
                 <div class="section-header mt-12">
@@ -18,12 +19,12 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label">Kode Kategori <span style="color: red;">*</span></label>
-                        <input type="text" class="form-control" id="category-code" name="category_code" value="{{ $category['code'] }}" maxlength="50" required />
+                        <input type="text" class="form-control" id="category-code" name="category_code" value="{{ $category->code }}" disabled maxlength="50" required />
                         <small class="form-text text-muted">Kode unik untuk identifikasi kategori</small>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Nama Kategori <span style="color: red;">*</span></label>
-                        <input type="text" class="form-control" id="category-name" name="category_name" value="{{ $category['name'] }}" maxlength="100" required />
+                        <input type="text" class="form-control" id="category-name" name="category_name" value="{{ $category->name }}" maxlength="100" required />
                     </div>
                 </div>
                 
@@ -33,7 +34,7 @@
                         <select class="global-select2 form-select" id="category-type" name="category_type" data-allow-clear="false" required>
                             <option value="">Pilih Tipe Kategori</option>
                             @foreach($categoryTypes as $type)
-                                <option value="{{ $type['value'] }}" {{ $category['type'] == $type['value'] ? 'selected' : '' }}>{{ $type['label'] }}</option>
+                                <option value="{{ $type['value'] }}" {{ $category->type == $type['value'] ? 'selected' : '' }}>{{ $type['label'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -41,7 +42,7 @@
                         <label class="form-label">Status <span style="color: red;">*</span></label>
                         <select class="global-select2 form-select" id="status" name="status" data-allow-clear="false" required>
                             @foreach($statuses as $status)
-                                <option value="{{ $status['value'] }}" {{ $category['status'] == $status['value'] ? 'selected' : '' }}>{{ $status['label'] }}</option>
+                                <option value="{{ $status['value'] }}" {{ $category->status == $status['value'] ? 'selected' : '' }}>{{ $status['label'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -50,7 +51,7 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label">Deskripsi</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Deskripsi kategori (opsional)">{{ $category['description'] }}</textarea>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Deskripsi kategori (opsional)">{{ $category->description }}</textarea>
                         <small class="form-text text-muted">Penjelasan mengenai kategori ini</small>
                     </div>
                     <div class="col-md-6">
@@ -59,15 +60,9 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="mt-6">
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary waves-effect waves-light">
-                            <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan Perubahan
-                        </button>
-                        <a href="{{ route('master_data.category.detail', $category['id']) }}" class="btn btn-secondary waves-effect waves-light">
-                            <i class="icon-base ti tabler-arrow-left me-2"></i>Batal
-                        </a>
-                    </div>
+                <div class="pt-6 text-end">
+                    <a href="{{ route('master_data.category.detail', $category->id) }}" class="btn btn-label-danger me-3">Batalkan</a>
+                    <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
                 </div>
             </form>
     </div>
@@ -120,15 +115,49 @@
                 buttonsStyling: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Simulate save success
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Kategori berhasil diperbarui.',
-                        customClass: { confirmButton: 'btn btn-success' },
-                        buttonsStyling: false
-                    }).then(() => {
-                        window.location.href = "{{ route('master_data.category.detail', $category['id']) }}";
+                    $('#submit-btn').prop('disabled', true).html(
+                        '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...'
+                    );
+                    
+                    $.ajax({
+                        url: "{{ route('master_data.category.update') }}",
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            id: $('#category-id').val(),
+                            name: $('#category-name').val(),
+                            type: $('#category-type').val(),
+                            status: $('#status').val(),
+                            description: $('#description').val()
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Kategori berhasil diperbarui.',
+                                customClass: {
+                                    confirmButton: 'btn btn-success'
+                                },
+                                buttonsStyling: false
+                            }).then(function() {
+                                window.location.href = "{{ route('master_data.category.detail', $category->id) }}";
+                            });
+                        },
+                        error: function(xhr) {
+                            const res = xhr.responseJSON;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal menyimpan',
+                                html: res?.message || 'Terjadi kesalahan saat menyimpan data.',
+                                customClass: {
+                                    confirmButton: 'btn btn-primary'
+                                },
+                                buttonsStyling: false
+                            });
+                        },
+                        complete: function() {
+                            $('#submit-btn').prop('disabled', false).html('Simpan');
+                        }
                     });
                 }
             });
