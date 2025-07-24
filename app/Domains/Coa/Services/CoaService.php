@@ -12,13 +12,14 @@ class CoaService
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
+            'code' => $data['code'],
             'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'],
+            'level' => $data['level'],
+            'note' => $data['note'],
             'status' => $data['status'],
-            'role_id' => $data['role'],
+            'type' => $data['type'],
             'f_tag_codes' => json_encode($data['tags']),
-            'password' => bcrypt($data['password']),
+            'current_balance' => 0,
             'created_at' => now(),
             'created_by' => Auth::id()
         ]);
@@ -28,17 +29,13 @@ class CoaService
     {
         $updateData = [
             'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'],
+            'level' => $data['level'],
+            'note' => $data['note'],
             'status' => $data['status'],
-            'role_id' => $data['role'],
-            'f_tag_codes' => json_encode($data['tags']),
+            'type' => $data['type'],
             'updated_at' => now(),
             'updated_by' => Auth::id()
         ];
-        if (isset($data['password']) && $data['password'] !== '') {
-            $updateData['password'] = bcrypt($data['password']);
-        }
         return DB::table($this->table_name)
             ->where('id', $id)
             ->update($updateData);

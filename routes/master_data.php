@@ -72,6 +72,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $coa_segment . '/index', 'index')->name('master_data.coa.index');
         Route::get($base_segment . $coa_segment . '/index_data_table', 'index_data_table')->name('master_data.coa.index_data_table');
         Route::get($base_segment . $coa_segment . '/add', 'add')->name('master_data.coa.add');
+        Route::post($base_segment . $coa_segment . '/save', 'save')->name('master_data.coa.save');
         Route::get($base_segment . $coa_segment . '/detail/{id}', 'detail')->name('master_data.coa.detail');
         Route::get($base_segment . $coa_segment . '/edit/{id}', 'edit')->name('master_data.coa.edit');
         Route::get($base_segment . $coa_segment . '/export', 'export')->name('master_data.coa.export');

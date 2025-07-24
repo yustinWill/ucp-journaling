@@ -26,7 +26,6 @@ use App\Enums\SuccessCodes;
 
 class CoaController extends Controller
 {
-
     private $statuses = [
         ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
         ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
@@ -46,21 +45,53 @@ class CoaController extends Controller
 
     public function add()
     {
-        $tags = [
-            ['value' => 'AKTIVA', 'label' => 'AKTIVA - Aktiva', 'color' => 'success'],
-            ['value' => 'KEWAJIBAN', 'label' => 'KEWAJIBAN - Kewajiban', 'color' => 'danger'],
-            ['value' => 'MODAL', 'label' => 'MODAL - Modal', 'color' => 'primary'],
-            ['value' => 'PENDAPATAN', 'label' => 'PENDAPATAN - Pendapatan', 'color' => 'info'],
-            ['value' => 'BEBAN', 'label' => 'BEBAN - Beban', 'color' => 'warning']
-        ];
+        $tags = app(TagService::class)->findAll();
 
-        // Permission check for adding new tags
-        $canAddTags = true; // Mock permission check
-
+        $statuses = $this->statuses;
         return view('pages.master_data.coa.add', [
             'tags' => $tags,
-            'canAddTags' => $canAddTags
+            'statuses' => $statuses
         ]);
+    }
+
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'code' => 'required|string|max:255|unique:m_coas,code',
+                'name' => 'required|string|max:255',
+                'level' => 'required|numeric',
+                'type' => 'required|string|in:HEADER,DETAIL',
+                'note' => 'nullable|string|max:255',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'tags' => 'nullable|array',
+            ]);
+
+            app(CreateCoaAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_COA_SUCCESS->message()
+            ], SuccessCodes::CREATE_COA_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function export()

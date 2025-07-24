@@ -264,7 +264,8 @@
                         <tbody>
                             <tr>
                                 <td>2025-01-20</td>
-                                <td><a href="{{ route('main_transaction.journal.detail', ['id' => 'JU-2025-001']) }}" class="text-primary fw-semibold">JU-2025-001</a></td>
+                                <td>JU-2025-001</td>
+                                {{-- <td><a href="{{ route('main_transaction.journal.detail', ['id' => 'JU-2025-001']) }}" class="text-primary fw-semibold">JU-2025-001</a></td> --}}
                                 <td><span class="badge bg-label-info">Jurnal</span></td>
                                 <td>Penerimaan kas dari penjualan produk</td>
                                 <td class="text-end">Rp 15,500,000</td>
@@ -273,7 +274,8 @@
                             </tr>
                             <tr>
                                 <td>2025-01-19</td>
-                                <td><a href="{{ route('main_transaction.sales.detail', ['id' => 'SI-2025-028']) }}" class="text-primary fw-semibold">SI-2025-028</a></td>
+                                <td>SI-2025-028</td>
+                                {{-- <td><a href="{{ route('main_transaction.sales.detail', ['id' => 'SI-2025-028']) }}" class="text-primary fw-semibold">SI-2025-028</a></td> --}}
                                 <td><span class="badge bg-label-success">Penjualan</span></td>
                                 <td>Penjualan air mineral ke distributor</td>
                                 <td class="text-end">Rp 8,750,000</td>
@@ -282,7 +284,8 @@
                             </tr>
                             <tr>
                                 <td>2025-01-18</td>
-                                <td><a href="{{ route('main_transaction.expense.detail', ['id' => 'EX-2025-015']) }}" class="text-primary fw-semibold">EX-2025-015</a></td>
+                                <td>EX-2025-015</td>
+                                {{-- <td><a href="{{ route('main_transaction.expense.detail', ['id' => 'EX-2025-015']) }}" class="text-primary fw-semibold">EX-2025-015</a></td> --}}
                                 <td><span class="badge bg-label-warning">Biaya</span></td>
                                 <td>Pembayaran biaya operasional</td>
                                 <td class="text-end">-</td>
@@ -291,7 +294,8 @@
                             </tr>
                             <tr>
                                 <td>2025-01-17</td>
-                                <td><a href="{{ route('main_transaction.purchase.detail', ['id' => 'PI-2025-012']) }}" class="text-primary fw-semibold">PI-2025-012</a></td>
+                                <td>PI-2025-012</td>
+                                {{-- <td><a href="{{ route('main_transaction.purchase.detail', ['id' => 'PI-2025-012']) }}" class="text-primary fw-semibold">PI-2025-012</a></td> --}}
                                 <td><span class="badge bg-label-primary">Pembelian</span></td>
                                 <td>Pembayaran supplier bahan baku</td>
                                 <td class="text-end">-</td>
@@ -300,7 +304,8 @@
                             </tr>
                             <tr>
                                 <td>2025-01-16</td>
-                                <td><a href="{{ route('main_transaction.journal.detail', ['id' => 'JU-2025-002']) }}" class="text-primary fw-semibold">JU-2025-002</a></td>
+                                <td>JU-2025-002</td>
+                                {{-- <td><a href="{{ route('main_transaction.journal.detail', ['id' => 'JU-2025-002']) }}" class="text-primary fw-semibold">JU-2025-002</a></td> --}}
                                 <td><span class="badge bg-label-info">Jurnal</span></td>
                                 <td>Setoran modal dari investor</td>
                                 <td class="text-end">Rp 25,000,000</td>
