@@ -74,24 +74,26 @@
                         <div class="row g-3">
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Kode COA:</label>
-                                <input type="text" class="form-control dt-input dt-full-name" data-column="1"
-                                    placeholder="Cari Berdasarkan Kode COA" data-column-index="0" />
+                                <input type="text" class="form-control dt-input dt-full-name"
+                                    placeholder="Cari Berdasarkan Kode COA" id="coa-code" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Nama COA:</label>
-                                <input type="text" class="form-control dt-input" data-column="2"
-                                    placeholder="Cari Berdasarkan Nama COA" data-column-index="1" />
+                                <input type="text" class="form-control dt-input" placeholder="Cari Berdasarkan Nama COA"
+                                    id="coa-name" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Level COA:</label>
-                                <input type="text" class="form-control dt-input" data-column="2"
-                                    placeholder="Cari Berdasarkan Nama COA" data-column-index="1" />
+                                <input type="text" class="form-control dt-input" placeholder="Cari Berdasarkan Level COA"
+                                    id="coa-level" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-3">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" data-allow-clear="false">
-                                    <option value="AK">Active</option>
-                                    <option value="HI">Inactive</option>
+                                <select class="global-select2 form-select" data-allow-clear="true" id="coa-status">
+                                    <option value="">Semua Status</option>
+                                    @foreach ($statuses as $status)
+                                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -111,7 +113,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex gap-2">
                         <a href="{{ route('master_data.coa.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -154,16 +156,27 @@
 
             if (main_table) {
                 dt_adv_filter = new DataTable(main_table, {
-                    ajax: `{{ route('master_data.coa.index_data_table') }}`,
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: `{{ route('master_data.coa.index_data_table') }}`,
+                        data: function(d) {
+                            d.code = $('#coa-code').val();
+                            d.name = $('#coa-name').val();
+                            d.level = $('#coa-level').val();
+                            d.status = $('#coa-status').val();
+                        }
+                    },
                     columns: [{
-                            data: 'coa_code',
+                            data: 'code',
                             responsivePriority: 3
                         },
                         {
-                            data: 'coa_name',
+                            data: 'name',
                             responsivePriority: 2,
                             render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.coa.detail', ':id') }}`.replace(':id', row.id);
+                                const detailUrl = `{{ route('master_data.coa.detail', ':id') }}`
+                                    .replace(':id', row.id);
                                 return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
                         },
@@ -179,10 +192,12 @@
                             data: 'tags',
                             responsivePriority: 6,
                             render: function(data, type, row) {
-                                if (!data || data.length === 0) return '-';
-                                return data.map(tag => {
-                                    const colorClass = `bg-label-${tag.color}`;
-                                    return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
+                                let tags = JSON.parse(data);
+                                return tags.map(tag => {
+                                    if (tag.code == null) {
+                                        return ``;
+                                    }
+                                    return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
                                 }).join('');
                             }
                         },
@@ -212,8 +227,10 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row, meta) {
-                                const detailUrl = `{{ route('master_data.coa.detail', ':id') }}`.replace(':id', row.id);
-                                const editUrl = `{{ route('master_data.coa.edit', ':id') }}`.replace(':id', row.id);
+                                const detailUrl = `{{ route('master_data.coa.detail', ':id') }}`
+                                    .replace(':id', row.id);
+                                const editUrl = `{{ route('master_data.coa.edit', ':id') }}`
+                                    .replace(':id', row.id);
                                 return `
                                 <div class="d-flex gap-2">
                                     <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
@@ -262,6 +279,20 @@
             // Initialize tag column visibility based on checkbox state
             const initialTagVisibility = $('#toggleTagColumn').is(':checked');
             dt_adv_filter.column(4).visible(initialTagVisibility);
+
+            // Search functionality with debounce (500ms)
+            $('#coa-code, #coa-name, #coa-level').on('keyup', debounce(function() {
+                if (dt_adv_filter) {
+                    dt_adv_filter.search(this.value).draw();
+                }
+            }, 1000));
+
+            // Filter functionality with debounce (1000ms)
+            $('#coa-status').on('change', debounce(function() {
+                if (dt_adv_filter) {
+                    dt_adv_filter.draw();
+                }
+            }, 1000));
 
         });
     </script>

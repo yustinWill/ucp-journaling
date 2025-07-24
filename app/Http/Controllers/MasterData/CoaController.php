@@ -4,105 +4,44 @@ namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
+
+//Actions
+use App\Domains\Coa\Actions\CreateCoaAction;
+use App\Domains\Coa\Actions\UpdateCoaAction;
+
+//Services
+use App\Domains\Coa\Services\CoaService;
+use App\Domains\Coa\Services\CoaAuditLogService;
+use App\Domains\Role\Services\RoleService;
+use App\Domains\Tag\Services\TagService;
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
 
 class CoaController extends Controller
 {
+
+    private $statuses = [
+        ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+    ];
+
     public function index()
     {
-        return view('pages.master_data.coa.index', []);
+        $statuses = $this->statuses;
+        return view('pages.master_data.coa.index', compact('statuses'));
     }
 
     public function index_data_table()
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "coa_code" => "1-10000",
-                    "coa_name" => "Kas dan Bank",
-                    "level" => "1",
-                    "type" => "Header",
-                    "tags" => [
-                        ["name" => "AKTIVA", "color" => "success"]
-                    ],
-                    "note" => "Akun untuk kas dan bank RIYO Water",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 2,
-                    "coa_code" => "1-10100",
-                    "coa_name" => "Kas Besar",
-                    "level" => "2",
-                    "type" => "Detail",
-                    "tags" => [
-                        ["name" => "AKTIVA", "color" => "success"]
-                    ],
-                    "note" => "Kas besar RIYO Water",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 3,
-                    "coa_code" => "1-10200",
-                    "coa_name" => "Bank BCA",
-                    "level" => "2",
-                    "type" => "Detail",
-                    "tags" => [
-                        ["name" => "AKTIVA", "color" => "success"]
-                    ],
-                    "note" => "Rekening operasional RIYO Water di BCA",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 4,
-                    "coa_code" => "1-20100",
-                    "coa_name" => "Piutang Dagang",
-                    "level" => "2",
-                    "type" => "Detail",
-                    "tags" => [
-                        ["name" => "AKTIVA", "color" => "success"]
-                    ],
-                    "note" => "Piutang dari penjualan RIYO Water",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 5,
-                    "coa_code" => "2-20100",
-                    "coa_name" => "Hutang Dagang",
-                    "level" => "2",
-                    "type" => "Detail",
-                    "tags" => [
-                        ["name" => "KEWAJIBAN", "color" => "danger"]
-                    ],
-                    "note" => "Hutang kepada supplier RIYO Water",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 6,
-                    "coa_code" => "4-40100",
-                    "coa_name" => "Penjualan RIYO Water",
-                    "level" => "2",
-                    "type" => "Detail",
-                    "tags" => [
-                        ["name" => "PENDAPATAN", "color" => "info"]
-                    ],
-                    "note" => "Pendapatan dari penjualan produk RIYO Water",
-                    "status" => "ACTIVE",
-                ],
-                [
-                    "id" => 7,
-                    "coa_code" => "5-50100",
-                    "coa_name" => "Beban Produksi",
-                    "level" => "2",
-                    "type" => "Detail",
-                    "tags" => [
-                        ["name" => "BEBAN", "color" => "warning"]
-                    ],
-                    "note" => "Biaya produksi RIYO Water",
-                    "status" => "ACTIVE",
-                ],
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(CoaService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
