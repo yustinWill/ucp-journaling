@@ -178,11 +178,7 @@
                     },
                     { 
                         data: 'name',
-                        responsivePriority: 3,
-                        render: function(data, type, row) {
-                            const detailUrl = '{{ route("master_data.role.detail", ":id") }}'.replace(':id', row.id);
-                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                        }
+                        responsivePriority: 3
                     },
                     { data: 'description' },
                     { 
@@ -211,7 +207,9 @@
                     { 
                         data: 'status',
                         render: function(data, type, row) {
-                            return data; // Plain text for status
+                            const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                            const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
+                            return `<span class="badge ${badgeClass}">${statusText}</span>`;
                         }
                     },
                     {

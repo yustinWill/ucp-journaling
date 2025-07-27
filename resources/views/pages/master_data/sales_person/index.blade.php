@@ -142,9 +142,7 @@
             // Permission variables
             const canRead = @json($canRead);
             const canWrite = @json($canWrite);
-            const canDelete = @json($canDelete);
             const canShowEditButton = @json($canShowEditButton);
-            const canShowDeleteButton = @json($canShowDeleteButton);
             
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');
@@ -192,7 +190,7 @@
                             responsivePriority: 6,
                             render: function(data, type, row) {
                                 const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
-                                const statusText = data === 'ACTIVE' ? 'Aktif' : 'Inaktif';
+                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         },
@@ -220,11 +218,6 @@
                                     </a>`;
                                 }
                                 
-                                if (canShowDeleteButton) {
-                                    actions += `<button class="btn btn-sm btn-danger waves-effect waves-light" title="Hapus" onclick="deleteItem(${row.id})">
-                                        <i class="icon-xs icon-base ti tabler-trash"></i>
-                                    </button>`;
-                                }
                                 
                                 actions += '</div>';
                                 return actions;

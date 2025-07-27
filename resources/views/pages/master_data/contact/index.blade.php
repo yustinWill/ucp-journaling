@@ -159,11 +159,7 @@
                     ajax: `{{ route('master_data.contact.index_data_table') }}`,
                     columns: [{
                             data: 'contact_name',
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const detailUrl = "{{ route('master_data.contact.detail', ':id') }}".replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            responsivePriority: 3
                         },
                         {
                             data: 'company_name',

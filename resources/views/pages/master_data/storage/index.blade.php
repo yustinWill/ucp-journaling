@@ -155,11 +155,7 @@
                         },
                         {
                             data: 'storage_name',
-                            responsivePriority: 2,
-                            render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.storage.detail', ':id') }}`.replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            responsivePriority: 2
                         },
                         {
                             data: 'pic_names',
@@ -183,11 +179,9 @@
                             orderable: false,
                             targets: -2,
                             render: function(data, type, full, meta) {
-                                if (data == 'ACTIVE') {
-                                    return `<span class="badge bg-label-success">Aktif</span>`;
-                                } else {
-                                    return `<span class="badge bg-label-secondary">Inaktif</span>`;
-                                }
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
+                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         },
                         {

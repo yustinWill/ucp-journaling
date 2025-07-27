@@ -191,11 +191,7 @@
                     columns: [
                         { 
                             data: 'product_name',
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`.replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            responsivePriority: 3
                         },
                         { data: 'product_code', responsivePriority: 4 },
                         { data: 'category', responsivePriority: 5 },
@@ -293,7 +289,7 @@
                             responsivePriority: 5,
                             render: function(data, type, row) {
                                 const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
-                                const statusText = data === 'ACTIVE' ? 'Aktif' : 'Inaktif';
+                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         },

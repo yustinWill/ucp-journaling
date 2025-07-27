@@ -178,12 +178,7 @@
                         },
                         {
                             data: 'name',
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.user.detail', ':id') }}`
-                                    .replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            responsivePriority: 3
                         },
                         {
                             data: 'email',
@@ -254,20 +249,14 @@
                             }
                         },
                         {
-                            targets: [1], // Name column - make clickable
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const detailUrl = "{{ route('master_data.user.detail', ':id') }}"
-                                    .replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            targets: [1], // Name column
+                            responsivePriority: 3
                         },
                         {
                             targets: [6], // Status column
                             render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
-                                    'bg-label-secondary';
-                                const statusText = data === 'ACTIVE' ? 'Aktif' : 'Inaktif';
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         }

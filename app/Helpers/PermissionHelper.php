@@ -172,6 +172,26 @@ class PermissionHelper
             'master_data.category.update' => ['master_data_category', 'write'],
             'master_data.category.import' => ['master_data_category', 'write'],
             'master_data.category.delete' => ['master_data_category', 'delete'],
+
+            // Expense Transaction
+            'main_transaction.expense.index' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.index_data_table' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.detail' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.export' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.add' => ['main_transaction_expense', 'write'],
+            'main_transaction.expense.save' => ['main_transaction_expense', 'write'],
+            'main_transaction.expense.edit' => ['main_transaction_expense', 'write'],
+            'main_transaction.expense.update' => ['main_transaction_expense', 'write'],
+            'main_transaction.expense.import' => ['main_transaction_expense', 'write'],
+            'main_transaction.expense.delete' => ['main_transaction_expense', 'delete'],
+            'main_transaction.expense.categories' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.statuses' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.recipients' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.accounts' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.payment_methods' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.payment_terms' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.taxes' => ['main_transaction_expense', 'read'],
+            'main_transaction.expense.tags' => ['main_transaction_expense', 'read'],
         ];
 
         if (!isset($routePermissions[$route])) {

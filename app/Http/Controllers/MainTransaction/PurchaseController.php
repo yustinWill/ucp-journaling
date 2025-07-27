@@ -3,12 +3,21 @@
 namespace App\Http\Controllers\MainTransaction;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\PermissionHelper;
 use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
 {
     public function index()
     {
+        // Check read permission for purchase module
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
+        }
+        
+        // Get permission data for view
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase');
+        
         $pesananStatuses = [
             ['value' => 'Belum Dikirim', 'label' => 'Belum Dikirim'],
             ['value' => 'Dikirim Sebagian', 'label' => 'Dikirim Sebagian'],
@@ -30,15 +39,33 @@ class PurchaseController extends Controller
             ['value' => 'Dibayar Sebagian', 'label' => 'Dibayar Sebagian']
         ];
 
-        return view('pages.main_transaction.purchase.index', [
+        // Map permissions to view variables
+        $canAddPurchase = PermissionHelper::canWrite('main_transaction_purchase');
+        $canImportPurchase = PermissionHelper::canWrite('main_transaction_purchase');
+        $canExportPurchase = PermissionHelper::canRead('main_transaction_purchase');
+        $canViewPurchase = PermissionHelper::canRead('main_transaction_purchase');
+        $canEditPurchase = PermissionHelper::canWrite('main_transaction_purchase');
+
+        $data = [
             'pesananStatuses' => $pesananStatuses,
             'pengirimanStatuses' => $pengirimanStatuses,
-            'fakturStatuses' => $fakturStatuses
-        ]);
+            'fakturStatuses' => $fakturStatuses,
+            'canAddPurchase' => $canAddPurchase,
+            'canImportPurchase' => $canImportPurchase,
+            'canExportPurchase' => $canExportPurchase,
+            'canViewPurchase' => $canViewPurchase,
+            'canEditPurchase' => $canEditPurchase
+        ];
+        
+        return view('pages.main_transaction.purchase.index', array_merge($data, $permissionData));
     }
 
     public function index_data_table(Request $request)
     {
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $tab = $request->get('tab', 'pesanan');
         
         switch ($tab) {
@@ -62,40 +89,56 @@ class PurchaseController extends Controller
                     "date" => "2025-07-01",
                     "reference_no" => "PO-2025-001",
                     "supplier" => "CV Plastik Prima",
+                    "supplier_id" => 1,
                     "due_date" => "2025-07-15",
                     "status" => "Belum Dikirim",
                     "down_payment" => 5000000,
                     "total" => 25000000,
+                    "tags" => [
+                        ["name" => "Bahan Baku", "color" => "primary"],
+                        ["name" => "Urgent", "color" => "warning"]
+                    ],
                 ],
                 [
                     "id" => 2,
                     "date" => "2025-07-02",
                     "reference_no" => "PO-2025-002",
                     "supplier" => "PT Grafika Mandiri",
+                    "supplier_id" => 2,
                     "due_date" => "2025-07-16",
                     "status" => "Dikirim Sebagian",
                     "down_payment" => 3000000,
                     "total" => 15000000,
+                    "tags" => [
+                        ["name" => "Kemasan", "color" => "success"]
+                    ],
                 ],
                 [
                     "id" => 3,
                     "date" => "2025-07-03",
                     "reference_no" => "PO-2025-003",
                     "supplier" => "CV Kemasan Sejahtera",
+                    "supplier_id" => 3,
                     "due_date" => "2025-07-17",
                     "status" => "Selesai",
                     "down_payment" => 4000000,
                     "total" => 20000000,
+                    "tags" => [
+                        ["name" => "Botol", "color" => "info"],
+                        ["name" => "Regular", "color" => "secondary"]
+                    ],
                 ],
                 [
                     "id" => 4,
                     "date" => "2025-07-04",
                     "reference_no" => "PO-2025-004",
                     "supplier" => "PT Supplier Bahan Kimia",
+                    "supplier_id" => 4,
                     "due_date" => "2025-07-18",
                     "status" => "Belum Dikirim",
                     "down_payment" => 2500000,
                     "total" => 12500000,
+                    "tags" => [],
                 ]
             ]
         ];
@@ -111,28 +154,42 @@ class PurchaseController extends Controller
                     "date" => "2025-07-02",
                     "reference_no" => "PD-2025-001",
                     "supplier" => "CV Plastik Prima",
+                    "supplier_id" => 1,
                     "status" => "Diterima",
+                    "tags" => [
+                        ["name" => "Diterima", "color" => "success"]
+                    ],
                 ],
                 [
                     "id" => 2,
                     "date" => "2025-07-03",
                     "reference_no" => "PD-2025-002",
                     "supplier" => "PT Grafika Mandiri",
+                    "supplier_id" => 2,
                     "status" => "Belum Ditagih",
+                    "tags" => [
+                        ["name" => "Pending", "color" => "warning"]
+                    ],
                 ],
                 [
                     "id" => 3,
                     "date" => "2025-07-04",
                     "reference_no" => "PD-2025-003",
                     "supplier" => "CV Kemasan Sejahtera",
+                    "supplier_id" => 3,
                     "status" => "Selesai",
+                    "tags" => [
+                        ["name" => "Complete", "color" => "success"]
+                    ],
                 ],
                 [
                     "id" => 4,
                     "date" => "2025-07-05",
                     "reference_no" => "PD-2025-004",
                     "supplier" => "PT Supplier Bahan Kimia",
+                    "supplier_id" => 4,
                     "status" => "Belum Ditagih",
+                    "tags" => [],
                 ],
             ]
         ];
@@ -148,50 +205,71 @@ class PurchaseController extends Controller
                     "date" => "2025-07-01",
                     "reference_no" => "PI-2025-001",
                     "supplier" => "CV Plastik Prima",
+                    "supplier_id" => 1,
                     "due_date" => "2025-07-15",
                     "status" => "Belum Dibayar",
                     "remaining_bill" => 25000000,
                     "total" => 25000000,
+                    "tags" => [
+                        ["name" => "High Value", "color" => "danger"]
+                    ],
                 ],
                 [
                     "id" => 2,
                     "date" => "2025-07-02",
                     "reference_no" => "PI-2025-002",
                     "supplier" => "PT Grafika Mandiri",
+                    "supplier_id" => 2,
                     "due_date" => "2025-07-16",
                     "status" => "Menunggu Pembayaran",
                     "remaining_bill" => 15000000,
                     "total" => 15000000,
+                    "tags" => [
+                        ["name" => "Approved", "color" => "info"]
+                    ],
                 ],
                 [
                     "id" => 3,
                     "date" => "2025-07-03",
                     "reference_no" => "PI-2025-003",
                     "supplier" => "CV Kemasan Sejahtera",
+                    "supplier_id" => 3,
                     "due_date" => "2025-07-17",
                     "status" => "Dibayar",
                     "remaining_bill" => 0,
                     "total" => 20000000,
+                    "tags" => [
+                        ["name" => "Paid", "color" => "success"]
+                    ],
                 ],
                 [
                     "id" => 4,
                     "date" => "2025-07-04",
                     "reference_no" => "PI-2025-004",
                     "supplier" => "PT Supplier Bahan Kimia",
+                    "supplier_id" => 4,
                     "due_date" => "2025-07-18",
                     "status" => "Dibayar Sebagian",
                     "remaining_bill" => 7500000,
                     "total" => 12500000,
+                    "tags" => [
+                        ["name" => "Partial", "color" => "warning"]
+                    ],
                 ],
                 [
                     "id" => 5,
                     "date" => "2025-07-05",
                     "reference_no" => "PI-2025-005",
                     "supplier" => "PT Mesin Produksi Indonesia",
+                    "supplier_id" => 5,
                     "due_date" => "2025-07-19",
                     "status" => "Telat Bayar",
                     "remaining_bill" => 45000000,
                     "total" => 45000000,
+                    "tags" => [
+                        ["name" => "Overdue", "color" => "danger"],
+                        ["name" => "High Value", "color" => "primary"]
+                    ],
                 ]
             ]
         ];
@@ -200,6 +278,10 @@ class PurchaseController extends Controller
 
     public function purchaseOrderAdd()
     {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
         // Get all required options for the Purchase Order form
         $suppliers = [
             ['value' => '1', 'label' => 'PT. Sumber Makmur'],
@@ -245,6 +327,10 @@ class PurchaseController extends Controller
 
     public function purchaseDeliveryAdd()
     {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
         // Get required options for the Purchase Delivery form
         $suppliers = [
             ['value' => '1', 'label' => 'PT. Sumber Makmur'],
@@ -267,6 +353,10 @@ class PurchaseController extends Controller
 
     public function purchaseInvoiceAdd()
     {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
         // Get required options for the Purchase Invoice form
         $purchaseDeliveries = [
             ['value' => 'PD-2025-001', 'label' => 'PD-2025-001 - PT. Sumber Makmur'],
@@ -312,6 +402,10 @@ class PurchaseController extends Controller
     // Import/Export Methods
     public function import(Request $request)
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
+        }
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
@@ -334,6 +428,10 @@ class PurchaseController extends Controller
 
     public function downloadTemplate(Request $request)
     {
+        // Check write permission for import template
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
+        }
         // Generate Excel template for purchase import
         $headers = [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -349,6 +447,10 @@ class PurchaseController extends Controller
 
     public function validateImport(Request $request)
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
         ]);
@@ -423,6 +525,10 @@ class PurchaseController extends Controller
 
     public function processImport(Request $request)
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $data = $request->json('data');
         
         // Mock import processing
@@ -440,6 +546,10 @@ class PurchaseController extends Controller
 
     public function export(Request $request)
     {
+        // Check read permission for export
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
+        }
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
@@ -462,6 +572,10 @@ class PurchaseController extends Controller
 
     public function processExport(Request $request)
     {
+        // Check read permission for export
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $format = $request->input('export_format', 'excel');
         $filters = $request->only(['purchase_type', 'status', 'start_date', 'end_date', 'supplier', 'warehouse']);
         $columns = $request->input('columns', []);
@@ -572,5 +686,216 @@ class PurchaseController extends Controller
 
         $content = "Mock PDF Content for Purchase Export";
         return response($content, 200, $headers);
+    }
+
+    public function detail($id)
+    {
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
+        }
+        
+        // Get permission data for view
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase');
+        
+        // Mock purchase data - in real implementation, get from database
+        $purchase = [
+            'id' => $id,
+            'reference_no' => 'PO-2025-001',
+            'date' => '2025-07-01',
+            'supplier' => 'CV Plastik Prima',
+            'supplier_id' => 1,
+            'status' => 'APPROVED',
+            'due_date' => '2025-07-15',
+            'type' => 'Purchase Order',
+            'down_payment' => 5000000,
+            'total' => 25000000,
+            'remaining_bill' => 20000000,
+            'currency' => 'IDR',
+            'warehouse' => 'Gudang Utama',
+            'pic' => 'Ahmad Supardi',
+            'payment_method' => 'Transfer Bank',
+            'payment_terms' => 'Net 30',
+            'notes' => 'Pembelian botol PET untuk produksi RIYO Water',
+            'created_at' => '2025-07-01 08:00:00',
+            'updated_at' => '2025-07-01 10:30:00'
+        ];
+        
+        // Mock audit logs
+        $auditLogs = [
+            [
+                'created_at' => '2025-07-01 10:30:00',
+                'user_id' => 1,
+                'user_name' => 'Admin System',
+                'action_type' => 'UPDATE',
+                'description' => 'Status diubah dari PENDING_APPROVAL menjadi APPROVED'
+            ],
+            [
+                'created_at' => '2025-07-01 08:00:00',
+                'user_id' => 2,
+                'user_name' => 'Purchasing Staff',
+                'action_type' => 'CREATE',
+                'description' => 'Purchase order dibuat dengan total Rp 25,000,000'
+            ]
+        ];
+        
+        $data = [
+            'purchase' => $purchase,
+            'auditLogs' => $auditLogs,
+            'canEditPurchase' => PermissionHelper::canWrite('main_transaction_purchase'),
+            'canDeletePurchase' => PermissionHelper::canDelete('main_transaction_purchase'),
+            'canApprovePurchase' => PermissionHelper::canApprove('main_transaction_purchase')
+        ];
+        
+        return view('pages.main_transaction.purchase.detail', array_merge($data, $permissionData));
+    }
+
+    public function edit($id)
+    {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
+        }
+        
+        // Get permission data for view
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase');
+        
+        // Mock purchase data - in real implementation, get from database
+        $purchase = [
+            'id' => $id,
+            'reference_no' => 'PO-2025-001',
+            'date' => '2025-07-01',
+            'supplier_id' => 1,
+            'status' => 'DRAFT',
+            'due_date' => '2025-07-15',
+            'type' => 'Purchase Order',
+            'down_payment' => 5000000,
+            'total' => 25000000,
+            'currency' => 'IDR',
+            'warehouse_id' => 1,
+            'pic_id' => 1,
+            'payment_method' => 'Transfer Bank',
+            'payment_terms' => 'Net 30',
+            'notes' => 'Pembelian botol PET untuk produksi RIYO Water'
+        ];
+        
+        // Options for form
+        $suppliers = [
+            ['value' => '1', 'label' => 'SUP-001 - CV Plastik Prima'],
+            ['value' => '2', 'label' => 'SUP-002 - PT Grafika Mandiri'],
+            ['value' => '3', 'label' => 'SUP-003 - CV Kemasan Sejahtera'],
+            ['value' => '4', 'label' => 'SUP-004 - PT Supplier Bahan Kimia']
+        ];
+
+        $purchaseTypes = [
+            ['value' => 'Purchase Order', 'label' => 'PO - Purchase Order'],
+            ['value' => 'Purchase Delivery', 'label' => 'PD - Purchase Delivery'],
+            ['value' => 'Purchase Invoice', 'label' => 'PI - Purchase Invoice']
+        ];
+
+        $statuses = [
+            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
+            ['value' => 'PENDING_APPROVAL', 'label' => 'PENDING_APPROVAL - Menunggu Persetujuan'],
+            ['value' => 'APPROVED', 'label' => 'APPROVED - Disetujui'],
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
+            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
+        ];
+
+        $currencies = [
+            ['value' => 'IDR', 'label' => 'IDR - Rupiah'],
+            ['value' => 'USD', 'label' => 'USD - Dollar'],
+            ['value' => 'EUR', 'label' => 'EUR - Euro']
+        ];
+
+        $paymentMethods = [
+            ['value' => 'Transfer Bank', 'label' => 'Transfer Bank'],
+            ['value' => 'Cash', 'label' => 'Cash'],
+            ['value' => 'Cek', 'label' => 'Cek'],
+            ['value' => 'Giro', 'label' => 'Giro']
+        ];
+
+        $warehouses = [
+            ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
+            ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
+            ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
+        ];
+
+        $picOptions = [
+            ['value' => '1', 'label' => 'USR-001 - Ahmad Supardi'],
+            ['value' => '2', 'label' => 'USR-002 - Siti Nurhaliza'],
+            ['value' => '3', 'label' => 'USR-003 - Budi Santoso']
+        ];
+
+        $paymentTerms = [
+            ['value' => 'Net 30', 'label' => 'Net 30'],
+            ['value' => 'Net 15', 'label' => 'Net 15'],
+            ['value' => 'Net 45', 'label' => 'Net 45'],
+            ['value' => 'Cash on Delivery', 'label' => 'Cash on Delivery'],
+            ['value' => 'Immediate', 'label' => 'Immediate']
+        ];
+        
+        $data = [
+            'purchase' => $purchase,
+            'suppliers' => $suppliers,
+            'purchaseTypes' => $purchaseTypes,
+            'statuses' => $statuses,
+            'currencies' => $currencies,
+            'paymentMethods' => $paymentMethods,
+            'warehouses' => $warehouses,
+            'picOptions' => $picOptions,
+            'paymentTerms' => $paymentTerms,
+            'canWrite' => PermissionHelper::canWrite('main_transaction_purchase')
+        ];
+        
+        return view('pages.main_transaction.purchase.edit', array_merge($data, $permissionData));
+    }
+    
+    public function update(Request $request)
+    {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
+            return response()->json([
+                'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
+                'error' => 'PERMISSION_DENIED',
+            ], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer',
+                'date' => 'required|date',
+                'supplier_id' => 'required|integer',
+                'type' => 'required|string',
+                'status' => 'required|string',
+                'due_date' => 'nullable|date',
+                'down_payment' => 'nullable|numeric|min:0',
+                'total' => 'required|numeric|min:0',
+                'currency' => 'nullable|string',
+                'payment_method' => 'nullable|string',
+                'warehouse_id' => 'nullable|integer',
+                'pic_id' => 'nullable|integer',
+                'payment_terms' => 'nullable|string',
+                'notes' => 'nullable|string|max:500'
+            ]);
+
+            // Mock update logic - in real implementation, update database
+            // app(UpdatePurchaseAction::class)->execute($request->id, $validated);
+
+            return response()->json([
+                'message' => 'Pembelian berhasil diperbarui'
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function($errors) {
+                    return implode(', ', $errors);
+                }, $e->errors())),
+                'error' => 'VALIDATION_ERROR',
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menyimpan data.',
+                'error' => 'INTERNAL_SERVER_ERROR',
+            ], 500);
+        }
     }
 }
