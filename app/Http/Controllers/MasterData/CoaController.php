@@ -136,7 +136,9 @@ class CoaController extends Controller
 
     public function edit($id)
     {
-        // TODO: Implement edit functionality
+        $tags = app(TagService::class)->findAll();
+
+        $statuses = $this->statuses;
         return view('pages.master_data.coa.edit', ['id' => $id]);
     }
 }
