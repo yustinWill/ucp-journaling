@@ -9,39 +9,79 @@
 
     <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
         <div class="navbar-nav align-items-center">
-            <div class="nav-item dropdown me-2 me-xl-0">
-                <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
-                    data-bs-toggle="dropdown">
-                    <i class="icon-base ti tabler-sun icon-md theme-icon-active"></i>
-                    <span class="d-none ms-2" id="nav-theme-text">Toggle
-                        theme</span>
+            <div class="col-12">
+                <div class="nav-item navbar-search-wrapper mb-0">
+                    <span id="company-badge-web" style="">
+                        <span class="badge bg-primary">
+                            Company Saat Ini: <b> {{ session('user_company_code') }} -
+                                {{ session('user_company_name') }}</b>
+                        </span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- /Search -->
+        <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+            <li class="nav-item dropdown-language dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill waves-effect"
+                    href="javascript:void(0);" data-bs-toggle="dropdown">
+                    <i class="icon-base ti tabler-building-cog icon-22px text-heading"></i>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="nav-theme-text">
+                <ul class="dropdown-menu dropdown-menu-end">
+                    @php
+                        $companies = session('user_company', []);
+                        $currentCompanyCode = session('user_company_code');
+                    @endphp
+                    @foreach ($companies as $company)
+                        <li>
+                            <a class="dropdown-item waves-effect {{ $company->company_code == $currentCompanyCode ? 'active' : '' }}"
+                                href="{{ route('change_company.index', ['company_code' => $company->company_code]) }}"
+                                data-company-code="{{ $company->company_code }}">
+                                <span>{{ $company->company_code }} - {{ $company->company_name }}</span>
+                                @if ($company->company_code == $currentCompanyCode)
+                                    <i class="icon-base ti tabler-check icon-18px ms-2 text-success"></i>
+                                @endif
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </li>
+            <!--/ Language -->
+
+            <!-- Style Switcher -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill waves-effect"
+                    id="nav-theme" href="javascript:void(0);" data-bs-toggle="dropdown"
+                    aria-label="Toggle theme (light)">
+                    <i class="tabler-sun icon-base ti icon-22px theme-icon-active text-heading"></i>
+                    <span class="d-none ms-2" id="nav-theme-text">Toggle theme</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-theme-text">
                     <li>
-                        <button type="button" class="dropdown-item align-items-center active"
-                            data-bs-theme-value="light" aria-pressed="false">
-                            <span><i class="icon-base ti tabler-sun icon-md me-3" data-icon="sun"></i>Light</span>
+                        <button type="button" class="dropdown-item align-items-center waves-effect active"
+                            data-bs-theme-value="light" aria-pressed="true">
+                            <span><i class="icon-base ti tabler-sun icon-22px me-3" data-icon="sun"></i>Light</span>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="dark"
-                            aria-pressed="true">
-                            <span><i class="icon-base ti tabler-moon-stars icon-md me-3"
+                        <button type="button" class="dropdown-item align-items-center waves-effect"
+                            data-bs-theme-value="dark" aria-pressed="false">
+                            <span><i class="icon-base ti tabler-moon-stars icon-22px me-3"
                                     data-icon="moon-stars"></i>Dark</span>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item align-items-center" data-bs-theme-value="system"
-                            aria-pressed="false">
-                            <span><i class="icon-base ti tabler-device-desktop-analytics icon-md me-3"
+                        <button type="button" class="dropdown-item align-items-center waves-effect"
+                            data-bs-theme-value="system" aria-pressed="false">
+                            <span><i class="icon-base ti tabler-device-desktop-analytics icon-22px me-3"
                                     data-icon="device-desktop-analytics"></i>System</span>
                         </button>
                     </li>
                 </ul>
-            </div>
-        </div>
+            </li>
+            <!-- / Style Switcher-->
 
-        <ul class="navbar-nav flex-row align-items-center ms-md-auto">
             <!-- User -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -94,6 +134,7 @@
                     </li>
                 </ul>
             </li>
+            <!--/ User -->
         </ul>
     </div>
 </nav>
