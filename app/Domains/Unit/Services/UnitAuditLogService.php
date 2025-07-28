@@ -12,6 +12,7 @@ class UnitAuditLogService
     public function create(array $data, $tag_id)
     {
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
             'f_unit_id' => $tag_id,
             'action_type' => $data['action_type'],
             'description' => $data['description'],
@@ -35,6 +36,7 @@ class UnitAuditLogService
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
             ->where('t.f_unit_id', $id)
+            ->where('t.company_code', session('user_company_code'))
             ->orderBy('t.created_at', 'DESC')
             ->get();
     }

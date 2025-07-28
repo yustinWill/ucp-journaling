@@ -9,6 +9,9 @@ class UnitTypeService
     
     public function findAll()
     {
-        return DB::table($this->table_name)->orderBy('id', 'asc')->get();
+        return DB::table($this->table_name)
+            ->where('company_code', session('user_company_code'))
+            ->orderBy('id', 'asc')
+            ->get();
     }
 }

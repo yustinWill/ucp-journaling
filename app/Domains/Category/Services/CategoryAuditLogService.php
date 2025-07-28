@@ -11,7 +11,10 @@ class CategoryAuditLogService
 
     public function create(array $data, $tag_id)
     {
+        $companyCode = session('user_company_code');
+
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => $companyCode,
             'f_category_id' => $tag_id,
             'action_type' => $data['action_type'],
             'description' => $data['description'],
@@ -23,6 +26,8 @@ class CategoryAuditLogService
 
     public function findAllBasedOnTagId($id)
     {
+        $companyCode = session('user_company_code');
+
         return DB::table($this->table_name . ' as t')
             ->select([
                 't.f_category_id',
@@ -34,6 +39,7 @@ class CategoryAuditLogService
                 'usr.name AS user_name'
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
+            ->where('t.company_code', $companyCode)
             ->where('t.f_category_id', $id)
             ->orderBy('t.created_at', 'DESC')
             ->get();
