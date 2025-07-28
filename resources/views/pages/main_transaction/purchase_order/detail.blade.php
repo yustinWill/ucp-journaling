@@ -72,18 +72,34 @@
             </span>
             <hr class="my-6 mx-n6" />
 
-            <div class="row g-6">
+            <!-- Informasi Dasar Transaksi Section - Outside tabs, on top -->
+            
+            <!-- Row 1: Tanggal Transaksi, Nomor Transaksi -->
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">No. Purchase Order</label>
+                    <label class="form-label">Tanggal Transaksi</label>
+                    <input type="text" class="form-control" value="{{ $purchaseOrder['date'] }}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nomor Transaksi</label>
                     <input type="text" class="form-control" value="{{ $purchaseOrder['reference_no'] }}" disabled />
                 </div>
+            </div>
+
+            <!-- Row 2: Status -->
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
-                    <span class="badge bg-label-primary d-block p-2 text-center">{{ $purchaseOrder['status'] }}</span>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="icon-base ti tabler-flag"></i></span>
+                        <input type="text" class="form-control" value="{{ $purchaseOrder['status'] }}" disabled />
+                    </div>
                 </div>
             </div>
+
             <hr class="my-6 mx-n6" />
 
+            <!-- Tabs Section -->
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
@@ -92,10 +108,10 @@
                             <i class="icon-base ti tabler-info-circle me-2"></i>
                             <b>Informasi Detail</b>
                         </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="product-list-item"
-                            data-bs-toggle="list" href="#horizontal-product" aria-selected="false" role="tab">
-                            <i class="icon-base ti tabler-package me-2"></i>
-                            <b>Produk</b>
+                        <a class="list-group-item list-group-item-action waves-effect" id="delivery-invoice-list-item"
+                            data-bs-toggle="list" href="#horizontal-delivery-invoice" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-truck-delivery me-2"></i>
+                            <b>Purchase Delivery & Invoice</b>
                         </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
@@ -107,82 +123,126 @@
                         <!-- Information Tab -->
                         <div class="tab-pane fade show active" id="horizontal-purchase-order-info" role="tabpanel">
                             <div id="purchase-order-info-content">
-                                <!-- Transaction Information Section -->
+                                <!-- Informasi Supplier Section -->
                                 <div class="section-header mt-12">
-                                    <h6>Informasi Transaksi</h6>
+                                    <h6>Informasi Supplier</h6>
                                     <hr class="mx-n6">
                                 </div>
-                                
-                                <!-- Row 1: Tanggal, Supplier -->
+
+                                <!-- Row 1: Supplier, Email -->
                                 <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Tanggal</label>
-                                        <input type="text" class="form-control" value="{{ $purchaseOrder['date'] }}" disabled />
-                                    </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Supplier</label>
                                         <input type="text" class="form-control" value="{{ $purchaseOrder['supplier'] }}" disabled />
                                     </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="text" class="form-control" value="{{ $purchaseOrder['email'] ?? '-' }}" disabled />
+                                    </div>
                                 </div>
-                                
-                                <!-- Row 2: Tanggal Jatuh Tempo, Currency -->
+
+                                <!-- Row 2: Alamat, Nomor Referensi Supplier -->
                                 <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Alamat</label>
+                                        <textarea class="form-control" rows="2" disabled>{{ $purchaseOrder['address'] ?? '-' }}</textarea>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nomor Referensi Supplier</label>
+                                        <input type="text" class="form-control" value="{{ $purchaseOrder['supplier_reference'] ?? '-' }}" disabled />
+                                    </div>
+                                </div>
+
+                                <!-- Detail Pembelian Section -->
+                                <div class="section-header mt-12">
+                                    <h6>Detail Pembelian</h6>
+                                    <hr class="mx-n6">
+                                </div>
+
+                                <!-- Row 1: Syarat Pembayaran -->
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Syarat Pembayaran</label>
+                                        <input type="text" class="form-control" value="{{ $purchaseOrder['payment_terms'] ?? '-' }}" disabled />
+                                    </div>
+                                </div>
+
+                                <!-- Row 2: Jumlah Hari, Tanggal Jatuh Tempo (conditional) -->
+                                @if(isset($purchaseOrder['payment_terms_type']) && in_array($purchaseOrder['payment_terms_type'], ['NET', 'CUSTOM']))
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Jumlah Hari</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" value="{{ $purchaseOrder['days'] ?? '0' }}" disabled>
+                                            <span class="input-group-text">Hari</span>
+                                        </div>
+                                    </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Tanggal Jatuh Tempo</label>
-                                        <input type="text" class="form-control" value="{{ $purchaseOrder['due_date'] }}" disabled />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Currency</label>
-                                        <input type="text" class="form-control" value="{{ $purchaseOrder['currency'] }}" disabled />
+                                        <input type="text" class="form-control" value="{{ $purchaseOrder['due_date'] ?? '-' }}" disabled />
                                     </div>
                                 </div>
-                                
-                                <!-- Row 3: Down Payment, Total -->
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Down Payment</label>
-                                        <input type="text" class="form-control" value="Rp {{ number_format($purchaseOrder['down_payment'], 0, ',', '.') }}" disabled />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Total</label>
-                                        <input type="text" class="form-control" value="Rp {{ number_format($purchaseOrder['total'], 0, ',', '.') }}" disabled />
-                                    </div>
-                                </div>
+                                @endif
 
-                                <!-- Row 4: Sisa Tagihan, Payment Method -->
+                                <!-- Row 3: Gudang, Keterangan -->
                                 <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Sisa Tagihan</label>
-                                        <input type="text" class="form-control" value="Rp {{ number_format($purchaseOrder['remaining_bill'], 0, ',', '.') }}" disabled />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Payment Method</label>
-                                        <input type="text" class="form-control" value="{{ $purchaseOrder['payment_method'] }}" disabled />
-                                    </div>
-                                </div>
-
-                                <!-- Row 5: Payment Terms, Warehouse -->
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Payment Terms</label>
-                                        <input type="text" class="form-control" value="{{ $purchaseOrder['payment_terms'] }}" disabled />
-                                    </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Gudang</label>
                                         <input type="text" class="form-control" value="{{ $purchaseOrder['warehouse'] }}" disabled />
-                                    </div>
-                                </div>
-
-                                <!-- Row 6: PIC, Keterangan -->
-                                <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">PIC</label>
-                                        <input type="text" class="form-control" value="{{ $purchaseOrder['pic'] }}" disabled />
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Keterangan</label>
                                         <textarea class="form-control" rows="3" disabled>{{ $purchaseOrder['description'] ?? '-' }}</textarea>
                                     </div>
+                                </div>
+
+                                <!-- Informasi Pembelian Section -->
+                                <div class="section-header mt-12 d-flex justify-content-between align-items-center">
+                                    <h6>Informasi Pembelian</h6>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="include-tax" name="include_tax" {{ $purchaseOrder['include_tax'] ? 'checked' : '' }} disabled>
+                                        <label class="form-check-label" for="include-tax">Harga Termasuk Pajak</label>
+                                    </div>
+                                </div>
+
+                                <!-- Product Table -->
+                                <div class="mb-4 mx-n6">
+                                    <table class="table table-bordered" id="product-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 25%;">Produk</th>
+                                                    <th style="width: 12%;">Kuantitas</th>
+                                                    <th style="width: 10%;">Satuan</th>
+                                                    <th style="width: 18%;">Harga Satuan</th>
+                                                    <th style="width: 15%;">Pajak</th>
+                                                    <th style="width: 20%;">Jumlah</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($purchaseOrder['product_lines'] as $line)
+                                                <tr>
+                                                    <td>
+                                                        <input type="text" class="form-control" value="{{ $line['product_name'] }}" disabled />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" value="{{ number_format($line['quantity'], 0, ',', '.') }}" disabled />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" value="{{ $line['unit'] }}" disabled />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" value="Rp {{ number_format($line['unit_price'], 0, ',', '.') }}" disabled />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" value="{{ $line['tax_name'] ?: 'Tanpa Pajak' }}" disabled />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control" value="Rp {{ number_format($line['total'], 0, ',', '.') }}" disabled />
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
                                 </div>
 
                                 <!-- Informasi Tambahan & Ringkasan Section -->
@@ -191,9 +251,9 @@
                                     <hr class="mx-n6">
                                 </div>
                                 
-                                <!-- Split Layout: Tag, Memo, Notes -->
+                                <!-- Split Layout: Tag, Memo, Attachment & Financial Summary -->
                                 <div class="row">
-                                    <!-- Left Side: Tag and Memo -->
+                                    <!-- Left Side: Tag, Memo and Attachment -->
                                     <div class="col-md-6 mb-4">
                                         <div class="mb-3">
                                             <label class="form-label">Tag</label>
@@ -211,58 +271,264 @@
                                             <label class="form-label">Memo (Internal)</label>
                                             <textarea class="form-control" rows="4" disabled>{{ $purchaseOrder['memo'] ?? '-' }}</textarea>
                                         </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Lampiran</label>
+                                            @if(isset($purchaseOrder['attachment']) && $purchaseOrder['attachment'])
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" value="{{ $purchaseOrder['attachment']['name'] }}" disabled />
+                                                    <a href="{{ $purchaseOrder['attachment']['url'] }}" target="_blank" class="btn btn-outline-primary">
+                                                        <i class="icon-base ti tabler-download"></i>
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
+                                            @endif
+                                        </div>
                                     </div>
                                     
-                                    <!-- Right Side: Notes -->
+                                    <!-- Right Side: Financial Summary Section -->
                                     <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Catatan</label>
-                                            <textarea class="form-control" rows="4" disabled>{{ $purchaseOrder['notes'] ?? '-' }}</textarea>
+                                        <div class="summary-section ps-4">
+                                            <div class="row mb-3">
+                                                <div class="col-6">
+                                                    <label class="form-label">Subtotal</label>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($purchaseOrder['subtotal'] ?? 0, 0, ',', '.') }}" disabled>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-6">
+                                                    <label class="form-label">Total Pajak</label>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($purchaseOrder['tax_amount'] ?? 0, 0, ',', '.') }}" disabled>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-6">
+                                                    <label class="form-label">Total Sebelum Diskon</label>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($purchaseOrder['total_before_discount'] ?? $purchaseOrder['total'], 0, ',', '.') }}" disabled>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-6">
+                                                    <label class="form-label">Diskon</label>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($purchaseOrder['discount_amount'] ?? 0, 0, ',', '.') }}" disabled>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-6">
+                                                    <label class="form-label"><strong>Total Akhir</strong></label>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="text" class="form-control readonly-field fw-bold" dir="rtl" value="Rp {{ number_format($purchaseOrder['total'], 0, ',', '.') }}" disabled>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Product Tab -->
-                        <div class="tab-pane fade" id="horizontal-product" role="tabpanel">
-                            <!-- Product List Section -->
+                        <!-- Purchase Delivery & Invoice Tab -->
+                        <div class="tab-pane fade" id="horizontal-delivery-invoice" role="tabpanel">
+                            
+                            <!-- Summary Section -->
                             <div class="section-header mt-12">
-                                <h6>Daftar Produk Purchase Order</h6>
+                                <h6>Ringkasan Pembayaran & Pengiriman</h6>
+                                <hr class="mx-n6">
+                            </div>
+                            
+                            <!-- Payment Summary Cards -->
+                            <div class="row g-3 mb-12">
+                                <div class="col-md-3">
+                                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                                        <h4 class="mb-0 text-primary">Rp {{ number_format($purchaseOrder['down_payment'] ?? 0, 0, ',', '.') }}</h4>
+                                        <small class="text-muted">Down Payment</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                                        <h4 class="mb-0 text-info">Rp {{ number_format($purchaseOrder['total'], 0, ',', '.') }}</h4>
+                                        <small class="text-muted">Total Amount</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                                        <h4 class="mb-0 text-success">Rp {{ number_format($purchaseOrder['total_paid'] ?? $purchaseOrder['down_payment'] ?? 0, 0, ',', '.') }}</h4>
+                                        <small class="text-muted">Amount Paid</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                                        <h4 class="mb-0 text-warning">Rp {{ number_format($purchaseOrder['remaining_bill'] ?? ($purchaseOrder['total'] - ($purchaseOrder['total_paid'] ?? $purchaseOrder['down_payment'] ?? 0)), 0, ',', '.') }}</h4>
+                                        <small class="text-muted">Amount Left</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delivery Summary Table -->
+                            <div class="section-header mt-12">
+                                <h6>Ringkasan Pengiriman Produk</h6>
                             </div>
                             
                             <div class="mx-n5 my-4">
-                                <table class="table table-bordered" id="product-lines-table">
+                                <table class="table table-bordered" id="delivery-summary-table">
                                     <thead>
                                         <tr>
                                             <th>Produk</th>
-                                            <th>Deskripsi</th>
-                                            <th>Qty</th>
-                                            <th>Satuan</th>
-                                            <th>Harga Satuan</th>
-                                            <th>Pajak</th>
-                                            <th>Total</th>
+                                            <th class="text-end">Total Qty</th>
+                                            <th class="text-end">Qty Delivered</th>
+                                            <th class="text-end">Remaining Qty</th>
+                                            <th class="text-start">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($purchaseOrder['product_lines'] as $line)
+                                        @foreach($purchaseOrder['delivery_summary'] as $delivery)
                                         <tr>
-                                            <td>{{ $line['product_name'] }}</td>
-                                            <td>{{ $line['description'] }}</td>
-                                            <td class="text-center">{{ number_format($line['quantity'], 0, ',', '.') }}</td>
-                                            <td class="text-center">{{ $line['unit'] }}</td>
-                                            <td class="text-end">Rp {{ number_format($line['unit_price'], 0, ',', '.') }}</td>
-                                            <td class="text-center">{{ $line['tax_name'] ?: '-' }}</td>
-                                            <td class="text-end">Rp {{ number_format($line['total'], 0, ',', '.') }}</td>
+                                            <td>
+                                                @if($canViewProduct)
+                                                    <a href="{{ route('master_data.product.detail', $delivery['product_id']) }}" class="text-primary fw-semibold">
+                                                        {{ $delivery['product_name'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $delivery['product_name'] }}
+                                                @endif
+                                            </td>
+                                            <td class="text-end">{{ number_format($delivery['total_qty'], 0, ',', '.') }}</td>
+                                            <td class="text-end">{{ number_format($delivery['qty_delivered'], 0, ',', '.') }}</td>
+                                            <td class="text-end">{{ number_format($delivery['remaining_qty'], 0, ',', '.') }}</td>
+                                            <td class="text-start">
+                                                @if($delivery['remaining_qty'] == 0)
+                                                    <span class="badge bg-label-success">Complete</span>
+                                                @elseif($delivery['qty_delivered'] > 0)
+                                                    <span class="badge bg-label-warning">Partial</span>
+                                                @else
+                                                    <span class="badge bg-label-secondary">Pending</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         @endforeach
                                     </tbody>
-                                    <tfoot>
-                                        <tr class="table-info">
-                                            <th colspan="6">Total</th>
-                                            <th class="text-end">Rp {{ number_format($purchaseOrder['total'], 0, ',', '.') }}</th>
+                                </table>
+                            </div>
+
+                            <!-- Purchase Delivery Table -->
+                            <div class="section-header mt-12">
+                                <h6>Daftar Purchase Delivery</h6>
+                            </div>
+                            
+                            <div class="mx-n5 my-4">
+                                <table class="table table-bordered" id="purchase-delivery-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 20%;">Tanggal & Waktu</th>
+                                            <th>Nomor Transaksi</th>
+                                            <th style="width: 12%;" class="text-start">Status</th>
+                                            <th style="width: 15%;">Dibuat Oleh</th>
+                                            <th style="width: 15%;">Tag</th>
                                         </tr>
-                                    </tfoot>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($purchaseOrder['purchase_deliveries'] as $delivery)
+                                        <tr>
+                                            <td>{{ $delivery['date'] }}</td>
+                                            <td>
+                                                @if($canViewPurchaseDelivery)
+                                                    <a href="{{ route('main_transaction.purchase_delivery.detail', $delivery['id']) }}" class="text-primary fw-semibold">
+                                                        {{ $delivery['reference_no'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $delivery['reference_no'] }}
+                                                @endif
+                                            </td>
+                                            <td class="text-start">
+                                                <span class="badge {{ $delivery['status_badge_class'] }}">{{ $delivery['status'] }}</span>
+                                            </td>
+                                            <td>
+                                                @if($canViewUser)
+                                                    <a href="{{ route('master_data.user.detail', $delivery['created_by_id']) }}" class="text-primary fw-semibold">
+                                                        {{ $delivery['created_by'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $delivery['created_by'] }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if(isset($delivery['tags']) && count($delivery['tags']) > 0)
+                                                    @foreach($delivery['tags'] as $tag)
+                                                        <span class="badge {{ $tag['preview'] }} me-1">{{ $tag['name'] }}</span>
+                                                    @endforeach
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Purchase Invoice Table -->
+                            <div class="section-header mt-12">
+                                <h6>Daftar Purchase Invoice</h6>
+                            </div>
+                            
+                            <div class="mx-n5 my-4">
+                                <table class="table table-bordered" id="purchase-invoice-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 20%;">Tanggal & Waktu</th>
+                                            <th>Nomor Transaksi</th>
+                                            <th style="width: 15%;" class="text-end">Jumlah</th>
+                                            <th style="width: 12%;" class="text-start">Status</th>
+                                            <th style="width: 15%;">Dibuat Oleh</th>
+                                            <th style="width: 15%;">Tag</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($purchaseOrder['purchase_invoices'] as $invoice)
+                                        <tr>
+                                            <td>{{ $invoice['date'] }}</td>
+                                            <td>
+                                                @if($canViewPurchaseInvoice)
+                                                    <a href="{{ route('main_transaction.purchase_invoice.detail', $invoice['id']) }}" class="text-primary fw-semibold">
+                                                        {{ $invoice['reference_no'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $invoice['reference_no'] }}
+                                                @endif
+                                            </td>
+                                            <td class="text-end">Rp {{ number_format($invoice['amount'], 0, ',', '.') }}</td>
+                                            <td class="text-start">
+                                                <span class="badge {{ $invoice['status_badge_class'] }}">{{ $invoice['status'] }}</span>
+                                            </td>
+                                            <td>
+                                                @if($canViewUser)
+                                                    <a href="{{ route('master_data.user.detail', $invoice['created_by_id']) }}" class="text-primary fw-semibold">
+                                                        {{ $invoice['created_by'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $invoice['created_by'] }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if(isset($invoice['tags']) && count($invoice['tags']) > 0)
+                                                    @foreach($invoice['tags'] as $tag)
+                                                        <span class="badge {{ $tag['preview'] }} me-1">{{ $tag['name'] }}</span>
+                                                    @endforeach
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -283,18 +549,32 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @foreach($auditLogs as $log)
                                         <tr>
-                                            <td>{{ $purchaseOrder['created_at'] }}</td>
-                                            <td><a href="#" class="text-primary fw-semibold">{{ $purchaseOrder['pic'] }}</a></td>
-                                            <td><span class="badge bg-label-success">CREATE</span></td>
-                                            <td>Purchase Order dibuat dengan nomor {{ $purchaseOrder['reference_no'] }}</td>
+                                            <td>{{ $log['created_at'] }}</td>
+                                            <td>
+                                                @if($canViewUser)
+                                                    <a href="{{ route('master_data.user.detail', $log['user_id']) }}" class="text-primary fw-semibold">
+                                                        {{ $log['user_name'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $log['user_name'] }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($log['action_type'] === 'CREATE')
+                                                    <span class="badge bg-label-success">CREATE</span>
+                                                @elseif($log['action_type'] === 'UPDATE')
+                                                    <span class="badge bg-label-warning">UPDATE</span>
+                                                @elseif($log['action_type'] === 'DELETE')
+                                                    <span class="badge bg-label-danger">DELETE</span>
+                                                @else
+                                                    <span class="badge bg-label-info">{{ $log['action_type'] }}</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $log['description'] }}</td>
                                         </tr>
-                                        <tr>
-                                            <td>{{ $purchaseOrder['updated_at'] }}</td>
-                                            <td><a href="#" class="text-primary fw-semibold">{{ $purchaseOrder['pic'] }}</a></td>
-                                            <td><span class="badge bg-label-warning">UPDATE</span></td>
-                                            <td>Status diubah menjadi {{ $purchaseOrder['status'] }}</td>
-                                        </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -309,10 +589,38 @@
 @section('js_script')
 <script>
     $(function() {
-        // Initialize DataTables for tables inside tabs (no scrollX)
-        $('#product-lines-table').DataTable({
+        // Initialize DataTables for tables inside tabs
+        $('#product-table').DataTable({
             responsive: true,
             orderCellsTop: true,
+            searching: false,
+            paging: false,
+            info: false,
+            ordering: false
+        });
+
+        $('#delivery-summary-table').DataTable({
+            responsive: true,
+            orderCellsTop: true,
+            searching: false,
+            paging: false,
+            info: false,
+            ordering: false
+        });
+
+        $('#purchase-delivery-table').DataTable({
+            responsive: true,
+            orderCellsTop: true,
+            ordering: false,
+            searching: false,
+            paging: false,
+            info: false
+        });
+
+        $('#purchase-invoice-table').DataTable({
+            responsive: true,
+            orderCellsTop: true,
+            ordering: false,
             searching: false,
             paging: false,
             info: false

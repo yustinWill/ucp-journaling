@@ -110,16 +110,23 @@ class PurchaseOrderController extends Controller
             ['value' => '4', 'label' => 'SUP-004 - CV. Maju Bersama']
         ];
 
-        $paymentTerms = [
-            ['value' => 'Net 30', 'label' => 'Net 30'],
-            ['value' => 'Net 15', 'label' => 'Net 15'],
-            ['value' => 'Net 45', 'label' => 'Net 45'],
-            ['value' => 'Cash on Delivery', 'label' => 'Cash on Delivery'],
-            ['value' => 'Immediate', 'label' => 'Immediate'],
-            ['value' => 'Custom', 'label' => 'Custom - Manual Date Entry']
-        ];
+        // Load payment terms from database
+        $paymentTermsData = \DB::table('m_payment_terms')
+            ->where('status', 'ACTIVE')
+            ->orderBy('code')
+            ->get();
+        
+        $paymentTerms = [];
+        foreach ($paymentTermsData as $term) {
+            $paymentTerms[] = [
+                'value' => $term->code,
+                'label' => $term->code . ' - ' . $term->name,
+                'days' => $term->days,
+                'type' => $term->type
+            ];
+        }
 
-        $warehouses = [
+        $storages = [
             ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
             ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
             ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
@@ -149,19 +156,19 @@ class PurchaseOrderController extends Controller
         $canAddSuppliers = PermissionHelper::hasPermission('master_data_contact', 'write');
         $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
         $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddWarehouses = PermissionHelper::hasPermission('master_data_storage', 'write');
+        $canAddStorages = PermissionHelper::hasPermission('master_data_storage', 'write');
 
         return view('pages.main_transaction.purchase_order.add', [
             'suppliers' => $suppliers,
             'paymentTerms' => $paymentTerms,
-            'warehouses' => $warehouses,
+            'storages' => $storages,
             'products' => $products,
             'taxOptions' => $taxOptions,
             'availableTags' => $availableTags,
             'canAddSuppliers' => $canAddSuppliers,
             'canAddPaymentTerms' => $canAddPaymentTerms,
             'canAddTags' => $canAddTags,
-            'canAddWarehouses' => $canAddWarehouses
+            'canAddStorages' => $canAddStorages
         ]);
     }
 
@@ -181,7 +188,8 @@ class PurchaseOrderController extends Controller
                 'supplier_id' => 'required|integer',
                 'due_date' => 'nullable|date',
                 'payment_terms' => 'nullable|string',
-                'warehouse_id' => 'nullable|integer',
+                'days' => 'nullable|integer|min:0|max:365',
+                'storage_id' => 'nullable|integer',
                 'currency' => 'nullable|string',
                 'down_payment' => 'nullable|numeric|min:0',
                 'total' => 'required|numeric|min:0',
@@ -229,24 +237,38 @@ class PurchaseOrderController extends Controller
             'date' => '2025-07-01',
             'supplier' => 'CV Plastik Prima',
             'supplier_id' => 1,
+            'email' => 'procurement@plastikprima.co.id',
+            'address' => 'Jl. Industri Raya No. 123, Kawasan Industri MM2100, Bekasi',
+            'supplier_reference' => 'REF-PP-2025-001',
             'status' => 'APPROVED',
-            'due_date' => '2025-07-15',
+            'due_date' => '2025-07-31',
+            'payment_terms' => 'NET_30 - Net 30',
+            'payment_terms_type' => 'NET',
+            'days' => 30,
             'description' => 'Purchase Order untuk pengadaan bahan baku kemasan botol PET 330ml dan label kemasan untuk produk RIYO Water bulan Juli 2025',
-            'type' => 'Purchase Order',
+            'storage' => 'GDG-001 - Gudang Utama',
+            'include_tax' => true,
             'down_payment' => 5000000,
             'total' => 25000000,
+            'subtotal' => 22500000,
+            'tax_amount' => 2500000,
+            'total_before_discount' => 25000000,
+            'discount_amount' => 0,
+            'total_paid' => 5000000,
             'remaining_bill' => 20000000,
             'currency' => 'IDR',
-            'warehouse' => 'Gudang Utama',
             'pic' => 'Ahmad Supardi',
             'payment_method' => 'Transfer Bank',
-            'payment_terms' => 'Net 30',
             'tags' => [
                 ['name' => 'Bahan Baku', 'preview' => 'bg-label-primary'],
                 ['name' => 'Urgent', 'preview' => 'bg-label-warning']
             ],
             'memo' => 'Catatan internal: PO ini terkait dengan peningkatan produksi untuk mengantisipasi peningkatan permintaan di musim kemarau.',
             'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
+            'attachment' => [
+                'name' => 'PO-Specification.pdf',
+                'url' => '/storage/attachments/po-specification.pdf'
+            ],
             'created_at' => '2025-07-01 08:00:00',
             'updated_at' => '2025-07-01 10:30:00',
             'product_lines' => [
@@ -257,7 +279,7 @@ class PurchaseOrderController extends Controller
                     'unit' => 'pcs',
                     'unit_price' => 150,
                     'tax_name' => 'PPN 11%',
-                    'total' => 1500000
+                    'total' => 1665000
                 ],
                 [
                     'product_name' => 'PRD-002 - Label Kemasan',
@@ -266,7 +288,77 @@ class PurchaseOrderController extends Controller
                     'unit' => 'lembar',
                     'unit_price' => 75,
                     'tax_name' => 'PPN 11%',
-                    'total' => 750000
+                    'total' => 832500
+                ]
+            ],
+            'delivery_summary' => [
+                [
+                    'product_id' => 1,
+                    'product_name' => 'PRD-001 - Botol PET 330ml',
+                    'total_qty' => 10000,
+                    'qty_delivered' => 7500,
+                    'remaining_qty' => 2500
+                ],
+                [
+                    'product_id' => 2,
+                    'product_name' => 'PRD-002 - Label Kemasan',
+                    'total_qty' => 10000,
+                    'qty_delivered' => 10000,
+                    'remaining_qty' => 0
+                ]
+            ],
+            'purchase_deliveries' => [
+                [
+                    'id' => 1,
+                    'date' => '2025-07-15 14:30:00',
+                    'reference_no' => 'DEL-2025-001',
+                    'status' => 'Completed',
+                    'status_badge_class' => 'bg-label-success',
+                    'created_by' => 'Staff Gudang A',
+                    'created_by_id' => 5,
+                    'tags' => [
+                        ['name' => 'Partial', 'preview' => 'bg-label-warning']
+                    ]
+                ],
+                [
+                    'id' => 2,
+                    'date' => '2025-07-20 09:15:00',
+                    'reference_no' => 'DEL-2025-002',
+                    'status' => 'In Transit',
+                    'status_badge_class' => 'bg-label-info',
+                    'created_by' => 'Staff Gudang B',
+                    'created_by_id' => 6,
+                    'tags' => [
+                        ['name' => 'Final', 'preview' => 'bg-label-success']
+                    ]
+                ]
+            ],
+            'purchase_invoices' => [
+                [
+                    'id' => 1,
+                    'date' => '2025-07-16 16:00:00',
+                    'reference_no' => 'INV-2025-001',
+                    'amount' => 5000000,
+                    'status' => 'Paid',
+                    'status_badge_class' => 'bg-label-success',
+                    'created_by' => 'Finance Team',
+                    'created_by_id' => 3,
+                    'tags' => [
+                        ['name' => 'Down Payment', 'preview' => 'bg-label-primary']
+                    ]
+                ],
+                [
+                    'id' => 2,
+                    'date' => '2025-07-25 11:30:00',
+                    'reference_no' => 'INV-2025-002',
+                    'amount' => 20000000,
+                    'status' => 'Pending',
+                    'status_badge_class' => 'bg-label-warning',
+                    'created_by' => 'Finance Team',
+                    'created_by_id' => 3,
+                    'tags' => [
+                        ['name' => 'Final Payment', 'preview' => 'bg-label-info']
+                    ]
                 ]
             ]
         ];
@@ -294,7 +386,11 @@ class PurchaseOrderController extends Controller
             'auditLogs' => $auditLogs,
             'canEditPurchaseOrder' => PermissionHelper::canWrite('main_transaction_purchase_order'),
             'canDeletePurchaseOrder' => PermissionHelper::canDelete('main_transaction_purchase_order'),
-            'canApprovePurchaseOrder' => PermissionHelper::canApprove('main_transaction_purchase_order')
+            'canApprovePurchaseOrder' => PermissionHelper::canApprove('main_transaction_purchase_order'),
+            'canViewProduct' => PermissionHelper::canRead('master_data_product'),
+            'canViewUser' => PermissionHelper::canRead('master_data_user'),
+            'canViewPurchaseDelivery' => PermissionHelper::canRead('main_transaction_purchase_delivery'),
+            'canViewPurchaseInvoice' => PermissionHelper::canRead('main_transaction_purchase_invoice')
         ];
         
         return view('pages.main_transaction.purchase_order.detail', array_merge($data, $permissionData));
@@ -344,22 +440,58 @@ class PurchaseOrderController extends Controller
             'reference_no' => 'PO-2025-001',
             'date' => '2025-07-01',
             'supplier_id' => 1,
+            'email' => 'procurement@plastikprima.co.id',
+            'address' => 'Jl. Industri Raya No. 123, Kawasan Industri MM2100, Bekasi',
+            'supplier_reference' => 'REF-PP-2025-001',
             'status' => 'DRAFT',
             'due_date' => '2025-07-15',
+            'payment_terms' => 'NET_30',
+            'payment_terms_type' => 'NET',
+            'days' => 30,
             'description' => 'Purchase Order untuk pengadaan bahan baku kemasan botol PET 330ml dan label kemasan untuk produk RIYO Water bulan Juli 2025',
-            'down_payment' => 5000000,
+            'storage_id' => 1,
+            'include_tax' => true,
+            'subtotal' => 22500000,
+            'tax_amount' => 2500000,
+            'total_before_discount' => 25000000,
+            'discount_amount' => 0,
             'total' => 25000000,
             'currency' => 'IDR',
-            'warehouse_id' => 1,
-            'pic_id' => 1,
+            'down_payment' => 5000000,
             'payment_method' => 'Transfer Bank',
-            'payment_terms' => 'Net 30',
+            'pic_id' => 1,
             'tags' => [
                 ['code' => 'PO001', 'name' => 'Bahan Baku', 'preview' => 'bg-label-primary'],
                 ['code' => 'PO003', 'name' => 'Urgent', 'preview' => 'bg-label-warning']
             ],
             'memo' => 'Catatan internal: PO ini terkait dengan peningkatan produksi untuk mengantisipasi peningkatan permintaan di musim kemarau.',
-            'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water'
+            'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
+            'attachment' => [
+                'name' => 'PO-Specification.pdf',
+                'url' => '/storage/attachments/po-specification.pdf'
+            ],
+            'product_lines' => [
+                [
+                    'product_id' => 1,
+                    'product_name' => 'PRD-001 - Botol PET 330ml',
+                    'description' => 'Botol plastik PET untuk kemasan air mineral 330ml',
+                    'quantity' => 10000,
+                    'unit' => 'pcs',
+                    'unit_price' => 150,
+                    'tax_name' => 'PPN 11%',
+                    'total' => 1665000
+                ],
+                [
+                    'product_id' => 2,
+                    'product_name' => 'PRD-002 - Label Kemasan',
+                    'description' => 'Label kemasan dengan logo RIYO Water',
+                    'quantity' => 10000,
+                    'unit' => 'lembar',
+                    'unit_price' => 75,
+                    'tax_name' => 'PPN 11%',
+                    'total' => 832500
+                ]
+            ]
         ];
         
         // Options for form
@@ -391,7 +523,7 @@ class PurchaseOrderController extends Controller
             ['value' => 'Giro', 'label' => 'Giro']
         ];
 
-        $warehouses = [
+        $storages = [
             ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
             ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
             ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
@@ -403,14 +535,21 @@ class PurchaseOrderController extends Controller
             ['value' => '3', 'label' => 'USR-003 - Budi Santoso']
         ];
 
-        $paymentTerms = [
-            ['value' => 'Net 30', 'label' => 'Net 30'],
-            ['value' => 'Net 15', 'label' => 'Net 15'],
-            ['value' => 'Net 45', 'label' => 'Net 45'],
-            ['value' => 'Cash on Delivery', 'label' => 'Cash on Delivery'],
-            ['value' => 'Immediate', 'label' => 'Immediate'],
-            ['value' => 'Custom', 'label' => 'Custom - Manual Date Entry']
-        ];
+        // Load payment terms from database
+        $paymentTermsData = \DB::table('m_payment_terms')
+            ->where('status', 'ACTIVE')
+            ->orderBy('code')
+            ->get();
+        
+        $paymentTerms = [];
+        foreach ($paymentTermsData as $term) {
+            $paymentTerms[] = [
+                'value' => $term->code,
+                'label' => $term->code . ' - ' . $term->name,
+                'days' => $term->days,
+                'type' => $term->type
+            ];
+        }
 
         $availableTags = [
             ['value' => 'PO001', 'label' => 'PO001 - Bahan Baku', 'preview' => 'bg-label-primary'],
@@ -424,7 +563,7 @@ class PurchaseOrderController extends Controller
         $canAddSuppliers = PermissionHelper::hasPermission('master_data_contact', 'write');
         $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
         $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddWarehouses = PermissionHelper::hasPermission('master_data_storage', 'write');
+        $canAddStorages = PermissionHelper::hasPermission('master_data_storage', 'write');
         $canAddPIC = PermissionHelper::hasPermission('master_data_user', 'write');
         
         // Ensure all fields have default values
@@ -437,7 +576,7 @@ class PurchaseOrderController extends Controller
             'statuses' => $statuses,
             'currencies' => $currencies,
             'paymentMethods' => $paymentMethods,
-            'warehouses' => $warehouses,
+            'storages' => $storages,
             'picOptions' => $picOptions,
             'paymentTerms' => $paymentTerms,
             'availableTags' => $availableTags,
@@ -445,7 +584,7 @@ class PurchaseOrderController extends Controller
             'canAddSuppliers' => $canAddSuppliers,
             'canAddPaymentTerms' => $canAddPaymentTerms,
             'canAddTags' => $canAddTags,
-            'canAddWarehouses' => $canAddWarehouses,
+            'canAddStorages' => $canAddStorages,
             'canAddPIC' => $canAddPIC
         ];
         
@@ -467,16 +606,31 @@ class PurchaseOrderController extends Controller
                 'id' => 'required|integer',
                 'date' => 'required|date',
                 'supplier_id' => 'required|integer',
-                'status' => 'required|string',
+                'email' => 'nullable|email',
+                'address' => 'nullable|string',
+                'supplier_reference' => 'nullable|string',
                 'due_date' => 'nullable|date',
-                'down_payment' => 'nullable|numeric|min:0',
+                'payment_terms' => 'nullable|string',
+                'days' => 'nullable|integer|min:0|max:365',
+                'storage_id' => 'required|integer',
+                'description' => 'nullable|string|max:1000',
+                'include_tax' => 'nullable|boolean',
+                'products' => 'nullable|array',
+                'products.*.product_id' => 'nullable|integer',
+                'products.*.quantity' => 'nullable|numeric|min:0',
+                'products.*.unit' => 'nullable|string',
+                'products.*.unit_price' => 'nullable|numeric|min:0',
+                'products.*.tax_id' => 'nullable|string',
+                'products.*.total' => 'nullable|numeric|min:0',
+                'tags' => 'nullable|array',
+                'memo' => 'nullable|string|max:500',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+                'subtotal' => 'nullable|numeric|min:0',
+                'tax_amount' => 'nullable|numeric|min:0',
+                'discount_amount' => 'nullable|numeric|min:0',
                 'total' => 'required|numeric|min:0',
                 'currency' => 'nullable|string',
-                'payment_method' => 'nullable|string',
-                'warehouse_id' => 'nullable|integer',
-                'pic_id' => 'nullable|integer',
-                'payment_terms' => 'nullable|string',
-                'notes' => 'nullable|string|max:500'
+                'status' => 'nullable|string'
             ]);
 
             // Mock update logic - in real implementation, update database
@@ -514,7 +668,7 @@ class PurchaseOrderController extends Controller
             ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
         ];
 
-        $warehouses = [
+        $storages = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
             ['value' => '3', 'label' => 'Gudang Finished Goods']
@@ -522,7 +676,7 @@ class PurchaseOrderController extends Controller
 
         return view('pages.main_transaction.purchase_order.import', [
             'suppliers' => $suppliers,
-            'warehouses' => $warehouses
+            'storages' => $storages
         ]);
     }
 
@@ -595,7 +749,7 @@ class PurchaseOrderController extends Controller
             ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
         ];
 
-        $warehouses = [
+        $storages = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
             ['value' => '3', 'label' => 'Gudang Finished Goods']
@@ -603,7 +757,7 @@ class PurchaseOrderController extends Controller
 
         return view('pages.main_transaction.purchase_order.export', [
             'suppliers' => $suppliers,
-            'warehouses' => $warehouses
+            'storages' => $storages
         ]);
     }
 

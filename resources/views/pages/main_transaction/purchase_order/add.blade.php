@@ -1,20 +1,47 @@
 @extends('layouts.default')
 @section('page_title')
-    Buat Pemesanan Pembelian
+    Buat Purchase Order
 @stop
 
 @section('content')
 <div class="card mb-6">
-    <h4 class="card-header">Buat Pemesanan Pembelian</h4>
+    <h4 class="card-header">Buat Purchase Order</h4>
     <form class="card-body" id="purchase-order-form">
         @csrf
         
-        <!-- Informasi Transaksi Section -->
+        <!-- Informasi Dasar Transaksi Section -->
         <div class="section-header mt-12">
-            <h6>Informasi Transaksi</h6>
+            <h6>Informasi Dasar Transaksi</h6>
             <hr class="mx-n6">
         </div>
         
+        <!-- Row 1: Tanggal Transaksi, Nomor Transaksi -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
+                <input type="date" class="form-control global-single-date-picker" id="purchase-order-date" name="date" value="{{ date('Y-m-d') }}" placeholder="YYYY-MM-DD" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
+                <div class="row g-2">
+                    <div class="col">
+                        <input type="text" class="form-control" id="purchase-order-reference" name="reference_no" placeholder="Auto-generated but editable" required />
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-primary d-flex align-items-center" id="generate-po-number-btn" title="Generate New Number">
+                            <i class="icon-base ti tabler-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informasi Supplier Section -->
+        <div class="section-header mt-12">
+            <h6>Informasi Supplier</h6>
+            <hr class="mx-n6">
+        </div>
+
         <!-- Row 1: Supplier, Email -->
         <div class="row g-3 mb-4">
             <div class="col-md-6">
@@ -38,70 +65,39 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <label class="form-label">Email <span style="color: red;">*</span></label>
+                <label class="form-label">Email</label>
                 <input type="email" class="form-control" id="purchase-order-email" name="email" placeholder="Email akan otomatis terisi" disabled />
             </div>
         </div>
 
-        <!-- Row 2: Alamat, Tanggal Transaksi -->
+        <!-- Row 2: Alamat, Nomor Referensi Supplier -->
         <div class="row g-3 mb-4">
             <div class="col-md-6">
-                <label class="form-label">Alamat <span style="color: red;">*</span></label>
+                <label class="form-label">Alamat</label>
                 <textarea class="form-control" id="purchase-order-address" name="address" rows="2" placeholder="Alamat akan otomatis terisi"></textarea>
             </div>
             <div class="col-md-6">
-                <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
-                <input type="date" class="form-control global-single-date-picker" id="purchase-order-date" name="date" value="{{ date('Y-m-d') }}" placeholder="YYYY-MM-DD" required />
-            </div>
-        </div>
-        
-        <!-- Row 3: Nomor Transaksi, Gudang -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
-                <div class="row g-2">
-                    <div class="col">
-                        <input type="text" class="form-control" id="purchase-order-reference" name="reference_no" placeholder="Auto-generated but editable" required />
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-primary d-flex align-items-center" id="generate-po-number-btn" title="Generate New Number">
-                            <i class="icon-base ti tabler-refresh"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Gudang <span style="color: red;">*</span></label>
-                <div class="row g-2">
-                    <div class="col">
-                        <select class="global-select2 form-select" id="purchase-order-warehouse" name="warehouse_id" data-allow-clear="false" required>
-                            <option value="">Pilih Gudang</option>
-                            @foreach($warehouses as $warehouse)
-                                <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    @if($canAddWarehouses)
-                        <div class="col-auto">
-                            <a href="{{ route('master_data.storage.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
-                                <i class="icon-base ti tabler-plus"></i>
-                            </a>
-                        </div>
-                    @endif
-                </div>
+                <label class="form-label">Nomor Referensi Supplier</label>
+                <input type="text" class="form-control" id="purchase-order-supplier-ref" name="supplier_reference" placeholder="Masukkan nomor referensi" />
             </div>
         </div>
 
-        <!-- Row 4: Syarat Pembayaran, Tanggal Jatuh Tempo -->
+        <!-- Detail Pembelian Section -->
+        <div class="section-header mt-12">
+            <h6>Detail Pembelian</h6>
+            <hr class="mx-n6">
+        </div>
+
+        <!-- Row 1: Syarat Pembayaran -->
         <div class="row g-3 mb-4">
             <div class="col-md-6">
-                <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
+                <label class="form-label">Syarat Pembayaran</label>
                 <div class="row g-2">
                     <div class="col">
-                        <select class="global-select2 form-select" id="purchase-order-payment-terms" name="payment_terms" data-allow-clear="false" required>
+                        <select class="global-select2 form-select" id="purchase-order-payment-terms" name="payment_terms" data-allow-clear="false">
                             <option value="">Pilih Payment Terms</option>
                             @foreach($paymentTerms as $term)
-                                <option value="{{ $term['value'] }}">{{ $term['label'] }}</option>
+                                <option value="{{ $term['value'] }}" data-days="{{ $term['days'] }}" data-type="{{ $term['type'] }}">{{ $term['label'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -114,21 +110,50 @@
                     @endif
                 </div>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Tanggal Jatuh Tempo <span style="color: red;">*</span></label>
-                <input type="date" class="form-control global-single-date-picker" id="purchase-order-due-date" name="due_date" placeholder="YYYY-MM-DD" disabled required />
-            </div>
         </div>
         
-        <!-- Row 5: Keterangan, Nomor Referensi Supplier -->
+        <!-- Row 2: Jumlah Hari, Tanggal Jatuh Tempo (conditional) -->
+        <div class="row g-3 mb-4" id="payment-days-row" style="display: none;">
+            <div class="col-md-6">
+                <label class="form-label">Jumlah Hari <span style="color: red;">*</span></label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="purchase-order-days" name="days" 
+                           placeholder="30" min="0" max="365" disabled>
+                    <span class="input-group-text">Hari</span>
+                </div>
+                <small class="form-text text-muted">Jumlah hari untuk pembayaran (0 untuk immediate/COD)</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Tanggal Jatuh Tempo</label>
+                <input type="date" class="form-control global-single-date-picker" id="purchase-order-due-date" name="due_date" placeholder="YYYY-MM-DD" disabled />
+            </div>
+        </div>
+
+        <!-- Row 2: Gudang, Keterangan -->
         <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Gudang <span style="color: red;">*</span></label>
+                <div class="row g-2">
+                    <div class="col">
+                        <select class="global-select2 form-select" id="purchase-order-storage" name="storage_id" data-allow-clear="false" required>
+                            <option value="">Pilih Gudang</option>
+                            @foreach($storages as $storage)
+                                <option value="{{ $storage['value'] }}">{{ $storage['label'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @if($canAddStorages)
+                        <div class="col-auto">
+                            <a href="{{ route('master_data.storage.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
+                                <i class="icon-base ti tabler-plus"></i>
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
             <div class="col-md-6">
                 <label class="form-label">Keterangan</label>
                 <textarea class="form-control" id="purchase-order-description" name="description" rows="3" placeholder="Keterangan transaksi..."></textarea>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Nomor Referensi Supplier</label>
-                <input type="text" class="form-control" id="purchase-order-supplier-ref" name="supplier_reference" placeholder="Masukkan nomor referensi" />
             </div>
         </div>
 
@@ -148,7 +173,7 @@
         </div>
 
         <!-- Product Table -->
-        <div class="mb-4">
+        <div class="mb-4 mx-n5">
             <div class="table-responsive">
                 <table class="table table-bordered" id="product-table">
                     <thead>
@@ -333,8 +358,8 @@ $(function() {
         checkProductTableState();
     });
     
-    // Reset product table when warehouse changes
-    $('#purchase-order-warehouse').on('change', function() {
+    // Reset product table when storage changes
+    $('#purchase-order-storage').on('change', function() {
         resetProductTable();
         checkProductTableState();
     });
@@ -346,11 +371,16 @@ $(function() {
     });
     $('#purchase-order-date').on('change', updateDueDate);
     
+    // Update due date when days field changes (for CUSTOM type)
+    $('#purchase-order-days').on('input', function() {
+        updateDueDate();
+    });
+    
     function checkProductTableState() {
         const hasSupplier = $('#purchase-order-supplier').val();
-        const hasWarehouse = $('#purchase-order-warehouse').val();
+        const hasStorage = $('#purchase-order-storage').val();
         
-        productTableEnabled = hasSupplier && hasWarehouse;
+        productTableEnabled = hasSupplier && hasStorage;
         
         if (productTableEnabled) {
             // Enable product table
@@ -360,7 +390,7 @@ $(function() {
             });
             $('#add-product-row').prop('disabled', false);
             
-            // Load products for the selected supplier and warehouse
+            // Load products for the selected supplier and storage
             loadProducts();
         } else {
             // Disable product table
@@ -403,9 +433,9 @@ $(function() {
     
     function loadProducts() {
         const supplierId = $('#purchase-order-supplier').val();
-        const warehouseId = $('#purchase-order-warehouse').val();
+        const storageId = $('#purchase-order-storage').val();
         
-        if (!supplierId || !warehouseId) return;
+        if (!supplierId || !storageId) return;
         
         // Mock products - in real implementation, fetch via AJAX
         const products = [
@@ -504,38 +534,58 @@ $(function() {
     }
     
     function handlePaymentTermsChange() {
+        const selectedOption = $('#purchase-order-payment-terms option:selected');
         const paymentTerms = $('#purchase-order-payment-terms').val();
+        const type = selectedOption.data('type');
+        const days = selectedOption.data('days');
+        const daysRow = $('#payment-days-row');
+        const daysField = $('#purchase-order-days');
         const dueDateField = $('#purchase-order-due-date');
         
-        if (paymentTerms === 'Custom') {
-            // Enable due date field for custom payment terms
-            dueDateField.prop('disabled', false);
+        if (type === 'NET' || type === 'CUSTOM') {
+            // Show the row for NET and CUSTOM types
+            daysRow.show();
+            
+            if (type === 'NET') {
+                // For NET type: auto-fill days and disable field
+                daysField.val(days).prop('disabled', true);
+                dueDateField.prop('disabled', true);
+            } else if (type === 'CUSTOM') {
+                // For CUSTOM type: enable days field only, due date is always auto-calculated
+                daysField.val(days || '').prop('disabled', false);
+                dueDateField.prop('disabled', true);
+            }
         } else {
-            // Disable due date field and auto-calculate for standard terms
+            // Hide the row for other types (COD, Immediate, etc.)
+            daysRow.hide();
+            daysField.val('').prop('disabled', true);
             dueDateField.prop('disabled', true);
         }
     }
     
     function updateDueDate() {
         const transactionDate = $('#purchase-order-date').val();
-        const paymentTerms = $('#purchase-order-payment-terms').val();
+        const selectedOption = $('#purchase-order-payment-terms option:selected');
+        const type = selectedOption.data('type');
         const dueDateField = $('#purchase-order-due-date');
+        const daysField = $('#purchase-order-days');
         
-        // Only auto-calculate for non-custom payment terms
-        if (transactionDate && paymentTerms && paymentTerms !== 'Custom') {
+        // Auto-calculate for NET type, use manual input for CUSTOM type
+        if (transactionDate && type) {
             const date = new Date(transactionDate);
             let days = 0;
             
-            // Extract days from payment terms
-            if (paymentTerms.includes('Net ')) {
-                days = parseInt(paymentTerms.replace('Net ', '')) || 0;
-            } else if (paymentTerms === 'Cash on Delivery' || paymentTerms === 'Immediate') {
-                days = 0;
+            if (type === 'NET') {
+                days = parseInt(daysField.val()) || 0;
+            } else if (type === 'CUSTOM') {
+                days = parseInt(daysField.val()) || 0;
             }
             
-            date.setDate(date.getDate() + days);
-            const dueDate = date.toISOString().split('T')[0];
-            dueDateField.val(dueDate);
+            if (type === 'NET' || (type === 'CUSTOM' && days > 0)) {
+                date.setDate(date.getDate() + days);
+                const dueDate = date.toISOString().split('T')[0];
+                dueDateField.val(dueDate);
+            }
         }
     }
     
@@ -689,7 +739,7 @@ $(function() {
             'purchase-order-email', 
             'purchase-order-address',
             'purchase-order-date',
-            'purchase-order-warehouse',
+            'purchase-order-storage',
             'purchase-order-payment-terms',
             'purchase-order-due-date'
         ];
