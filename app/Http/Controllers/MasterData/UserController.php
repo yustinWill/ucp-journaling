@@ -23,6 +23,7 @@ use App\Domains\Tag\Services\TagService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
 
 class UserController extends Controller
 {
@@ -177,7 +178,9 @@ class UserController extends Controller
         }
 
         $auditLogs = app(UserAuditLogService::class)->findAllBasedOnId($id);
-        return view('pages.master_data.user.detail', compact('user', 'auditLogs'));
+        return view('pages.master_data.user.detail', compact('user', 'auditLogs'), [
+            'auditLogType' => AuditLogTypes::MASTER_DATA_USER->code()
+        ]);
     }
 
     public function export()

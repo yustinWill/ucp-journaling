@@ -141,6 +141,7 @@
                                             <th>Pengguna</th>
                                             <th>Aksi</th>
                                             <th>Deskripsi</th>
+                                            <th>Lihat Detail</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -153,6 +154,16 @@
                                                         class="badge bg-label-{{ $log->action_type === 'CREATE' ? 'success' : ($log->action_type === 'UPDATE' ? 'warning' : 'info') }}">{{ $log->action_type }}</span>
                                                 </td>
                                                 <td>{{ $log->description }}</td>
+                                                <td>
+                                                    @if ($log->action_type == 'UPDATE')
+                                                        <a target="_blank"
+                                                            href="{{ route('audit_log.detail', ['id' => $log->id, 'audit_log_type' => $auditLogType]) }}"
+                                                            class="btn btn-sm btn-primary waves-effect waves-light"
+                                                            title="Detail">
+                                                            <i class="icon-xs icon-base ti tabler-eye"></i>
+                                                        </a>
+                                                    @endif
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>

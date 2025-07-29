@@ -33,13 +33,17 @@
                     @foreach ($metadata['comparison'] as $row)
                         <tr>
                             <td>{{ $row['label'] }}</td>
-                            <td>{{ $row['before'] }}</td>
-                            <td>{{ $row['after'] }}</td>
-                            <td>@if ($row['before'] === $row['after'])
-                                <span class="badge bg-primary">Tidak Ada Perubahan</span>
+                            <td>{{ is_array($row['before']) || is_object($row['before']) ? json_encode($row['before']) : $row['before'] }}
+                            </td>
+                            <td>{{ is_array($row['after']) || is_object($row['after']) ? json_encode($row['after']) : $row['after'] }}
+                            </td>
+                            <td>
+                                @if ($row['before'] === $row['after'])
+                                    <span class="badge bg-primary">Tidak Ada Perubahan</span>
                                 @else
-                                <span class="badge bg-warning">Ada Perubahan</span>
-                            @endif</td>
+                                    <span class="badge bg-warning">Ada Perubahan</span>
+                                @endif
+                            </td>
                         </tr>
                     @endforeach
             </table>

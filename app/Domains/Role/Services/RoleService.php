@@ -19,4 +19,11 @@ class RoleService
             ->orderBy('t.name', 'ASC')
             ->get();
     }
+
+    public function findOne(int $id)
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->first();
+    }
 }

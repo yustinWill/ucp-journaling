@@ -26,6 +26,7 @@ class UserAuditLogService
     {
         return DB::table($this->table_name . ' as t')
             ->select([
+                't.id',
                 't.f_user_id',
                 't.action_type',
                 't.description',
@@ -39,5 +40,13 @@ class UserAuditLogService
             ->where('t.company_code', session('user_company_code'))
             ->orderBy('t.created_at', 'DESC')
             ->get();
+    }
+
+    public function findOneBasedOnId($id)
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->first();
     }
 }
