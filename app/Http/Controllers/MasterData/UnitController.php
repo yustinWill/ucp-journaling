@@ -22,6 +22,7 @@ use App\Domains\Unit\Services\UnitTypeService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
 
 class UnitController extends Controller
 {
@@ -148,6 +149,7 @@ class UnitController extends Controller
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_units,id',
+                'code' => 'required|string|max:255',
                 'name' => 'required|string|max:255',
                 'status' => [
                     'required',
@@ -198,7 +200,8 @@ class UnitController extends Controller
 
         return view('pages.master_data.unit.detail', array_merge(
             compact('unit', 'auditLogs'),
-            $permissionData
+            $permissionData,
+            ['auditLogType' => AuditLogTypes::MASTER_DATA_UNIT->code()]
         ));
     }
 

@@ -135,6 +135,7 @@
                             data: {
                                 _token: '{{ csrf_token() }}',
                                 id: $('#unit-id').val(),
+                                code: $('#unit-code').val(),
                                 name: $('#unit-name').val(),
                                 type: $('#unit-type').val(),
                                 status: $('#unit-status').val(),
