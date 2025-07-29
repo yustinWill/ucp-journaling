@@ -207,7 +207,12 @@
                         },
                         {
                             data: 'status',
-                            responsivePriority: 7
+                            responsivePriority: 7,
+                            render: function(data, type, row) {
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
+                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                            }
                         },
                         {
                             data: null,

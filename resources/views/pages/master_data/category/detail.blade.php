@@ -56,9 +56,9 @@
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
                         @if($category['status'] == 'ACTIVE')
-                            <span class="badge bg-label-success">Aktif</span>
+                            <span class="badge bg-label-success">ACTIVE</span>
                         @else
-                            <span class="badge bg-label-secondary">Inaktif</span>
+                            <span class="badge bg-label-secondary">INACTIVE</span>
                         @endif
                     </div>
                 </div>

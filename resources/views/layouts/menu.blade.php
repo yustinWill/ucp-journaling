@@ -49,11 +49,28 @@
                 <div data-i18n="Chat">Penjualan</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.purchase.*'])) active @endif">
-            <a href="{{ route('main_transaction.purchase.index') }}" class="menu-link">
+        <li class="menu-item @if (request()->routeIs(['main_transaction.purchase_order.*', 'main_transaction.purchase_delivery.*', 'main_transaction.purchase_invoice.*'])) open @endif">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-shopping-bag"></i>
                 <div data-i18n="Chat">Pembelian</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item @if (request()->routeIs(['main_transaction.purchase_order.*'])) active @endif">
+                    <a href="{{ route('main_transaction.purchase_order.index') }}" class="menu-link">
+                        <div data-i18n="Chat">Purchase Order</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['main_transaction.purchase_delivery.*'])) active @endif">
+                    <a href="{{ route('main_transaction.purchase_delivery.index') }}" class="menu-link">
+                        <div data-i18n="Chat">Purchase Delivery</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['main_transaction.purchase_invoice.*'])) active @endif">
+                    <a href="{{ route('main_transaction.purchase_invoice.index') }}" class="menu-link">
+                        <div data-i18n="Chat">Purchase Invoice</div>
+                    </a>
+                </li>
+            </ul>
         </li>
         <li class="menu-item @if (request()->routeIs(['main_transaction.journal.*'])) active @endif">
             <a href="{{ route('main_transaction.journal.index') }}" class="menu-link">
@@ -127,7 +144,7 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Sistem & Pengaturan</span>
         </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.tax.*', 'master_data.unit.*', 'master_data.category.*', 'master_data.tag.*', 'master_data.sales_person.*'])) active open @endif">
+        <li class="menu-item @if (request()->routeIs(['master_data.tax.*', 'master_data.unit.*', 'master_data.category.*', 'master_data.tag.*', 'master_data.sales_person.*', 'master_data.payment_term.*', 'master_data.transaction_number.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
                 <div data-i18n="Chat">Daftar Lainnya</div>
@@ -156,6 +173,16 @@
                 <li class="menu-item @if (request()->routeIs(['master_data.sales_person.*'])) active @endif">
                     <a href="{{ route('master_data.sales_person.index') }}" class="menu-link">
                         <div data-i18n="SalesPerson">Sales Person</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.payment_term.*'])) active @endif">
+                    <a href="{{ route('master_data.payment_term.index') }}" class="menu-link">
+                        <div data-i18n="PaymentTerm">Syarat Pembayaran</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.transaction_number.*'])) active @endif">
+                    <a href="{{ route('master_data.transaction_number.index') }}" class="menu-link">
+                        <div data-i18n="TransactionNumber">Nomor Transaksi</div>
                     </a>
                 </li>
             </ul>

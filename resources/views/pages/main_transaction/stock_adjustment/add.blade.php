@@ -36,24 +36,48 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Gudang <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="warehouse-select" data-allow-clear="false">
-                        <option value="">Pilih Gudang</option>
-                        @foreach($warehouses as $warehouse)
-                            <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
-                        @endforeach
-                    </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="warehouse-select" data-allow-clear="false">
+                                <option value="">Pilih Gudang</option>
+                                @foreach($warehouses as $warehouse)
+                                    <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if($canAddWarehouses)
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.storage.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" 
+                                   title="Tambah Gudang Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
             
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Penanggung Jawab <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="pic-select" data-allow-clear="false">
-                        <option value="">Pilih PIC</option>
-                        @foreach($picOptions as $pic)
-                            <option value="{{ $pic['value'] }}">{{ $pic['label'] }}</option>
-                        @endforeach
-                    </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="pic-select" data-allow-clear="false">
+                                <option value="">Pilih PIC</option>
+                                @foreach($picOptions as $pic)
+                                    <option value="{{ $pic['value'] }}">{{ $pic['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if($canAddUsers)
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.user.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" 
+                                   title="Tambah User Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status <span style="color: red;">*</span></label>
@@ -118,11 +142,9 @@
                     <label class="form-label">Filter Kategori Produk</label>
                     <select class="global-select2 form-select" id="product-category-filter" data-allow-clear="false">
                         <option value="">Semua Kategori</option>
-                        <option value="FINISHED_GOODS">FINISHED_GOODS - Produk Jadi</option>
-                        <option value="RAW_MATERIALS">RAW_MATERIALS - Bahan Baku</option>
-                        <option value="PACKAGING">PACKAGING - Kemasan</option>
-                        <option value="CHEMICALS">CHEMICALS - Bahan Kimia</option>
-                        <option value="MACHINERY">MACHINERY - Peralatan</option>
+                        @foreach($productCategories as $category)
+                            <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">

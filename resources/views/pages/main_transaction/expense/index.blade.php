@@ -95,20 +95,36 @@
             
             <!-- Action Buttons -->
             <div class="mt-4">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-between">
+                    <!-- Column Toggle -->
+                    <div class="d-flex align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                            <label class="form-check-label" for="toggleTagColumn">
+                                <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div class="d-flex gap-2">
-                        <a href="{{ route('main_transaction.expense.import') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light">
-                            <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
-                        </a>
-                        <a href="{{ route('main_transaction.expense.export') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light">
-                            <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
-                        </a>
-                        <a href="{{ route('main_transaction.expense.add') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light">
-                            <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
-                        </a>
+                        @if($canShowImportButton)
+                            <a href="{{ route('main_transaction.expense.import') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light">
+                                <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
+                            </a>
+                        @endif
+                        @if($canShowExportButton)
+                            <a href="{{ route('main_transaction.expense.export') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light">
+                                <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
+                            </a>
+                        @endif
+                        @if($canShowAddButton)
+                            <a href="{{ route('main_transaction.expense.add') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light">
+                                <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
+                            </a>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -119,15 +135,15 @@
             <table id="main-table" class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Tanggal</th>
-                        <th>No Referensi</th>
+                        <th style="width: 100px;">Tanggal</th>
+                        <th style="width: 140px;">No Referensi</th>
                         <th>Keterangan</th>
-                        <th>Kategori</th>
-                        <th>Supplier/Vendor</th>
-                        <th>Status</th>
-                        <th>Amount</th>
-                        <th>Diinput Oleh</th>
-                        <th>Aksi</th>
+                        <th style="width: 180px;">Supplier/Vendor</th>
+                        <th style="width: 120px;">Amount</th>
+                        <th style="width: 100px;">Status</th>
+                        <th style="width: 120px;">Diinput Oleh</th>
+                        <th style="width: 120px;">Tag</th>
+                        <th style="width: 80px;">Aksi</th>
                     </tr>
                 </thead>
             </table>
@@ -139,6 +155,13 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables
+            const canRead = @json($canRead);
+            const canWrite = @json($canWrite);
+            const canDelete = @json($canDelete);
+            const canShowEditButton = @json($canShowEditButton);
+            const canShowDeleteButton = @json($canShowDeleteButton);
+            
             // DataTable initialization
             const main_table = document.querySelector('#main-table');
             let dt_adv_filter;
@@ -147,49 +170,31 @@
                 dt_adv_filter = new DataTable(main_table, {
                     ajax: `{{ route('main_transaction.expense.index_data_table') }}`,
                     columns: [
-                        { data: 'date' },
+                        { data: 'date', width: '100px' },
                         { 
                             data: 'reference_no',
+                            width: '140px',
                             render: function(data, type, row) {
-                                return `<a href="#" class="text-primary">${data}</a>`;
+                                return data;
                             }
                         },
-                        { data: 'description' },
-                        { data: 'category' },
+                        { data: 'description' }, // Flexible width for longer content
                         { 
                             data: 'supplier',
+                            width: '180px',
                             render: function(data, type, row) {
-                                return data ? `<a href="#" class="text-primary">${data}</a>` : '-';
-                            }
-                        },
-                        { 
-                            data: 'status',
-                            render: function(data, type, row) {
-                                let badgeClass = '';
-                                switch (data) {
-                                    case 'Draft':
-                                        badgeClass = 'bg-label-secondary';
-                                        break;
-                                    case 'Diajukan':
-                                        badgeClass = 'bg-label-info';
-                                        break;
-                                    case 'Disetujui':
-                                        badgeClass = 'bg-label-success';
-                                        break;
-                                    case 'Dibayar':
-                                        badgeClass = 'bg-label-primary';
-                                        break;
-                                    case 'Ditolak':
-                                        badgeClass = 'bg-label-danger';
-                                        break;
-                                    default:
-                                        badgeClass = 'bg-label-secondary';
+                                if (!data) return '-';
+                                if (canRead) {
+                                    const detailUrl = `{{ route('master_data.contact.detail', ':id') }}`
+                                        .replace(':id', row.supplier_id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 }
-                                return `<span class="badge ${badgeClass}">${data}</span>`;
+                                return data;
                             }
                         },
                         { 
                             data: 'amount',
+                            width: '120px',
                             className: 'text-end',
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
@@ -198,24 +203,67 @@
                                 return data ?? '';
                             }
                         },
-                        { data: 'created_by' },
+                        { 
+                            data: 'status',
+                            width: '100px',
+                            render: function(data, type, row) {
+                                // Badge class passed from controller
+                                return `<span class="badge ${row.status_badge_class}">${data}</span>`;
+                            }
+                        },
+                        { 
+                            data: 'created_by',
+                            width: '120px',
+                            render: function(data, type, row) {
+                                if (canRead) {
+                                    const detailUrl = `{{ route('master_data.user.detail', ':id') }}`
+                                        .replace(':id', row.created_by_id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
+                            }
+                        },
+                        { 
+                            data: 'tags',
+                            width: '120px',
+                            render: function(data, type, row) {
+                                if (!data || data.length === 0) {
+                                    return '-';
+                                }
+                                let tagsHtml = '';
+                                data.forEach(function(tag) {
+                                    // Use the preview class directly from database
+                                    let badgeClass = tag.preview || 'bg-label-secondary';
+                                    tagsHtml += `<span class="badge me-1 ${badgeClass}">${tag.name}</span>`;
+                                });
+                                return tagsHtml;
+                            }
+                        },
                         {
                             data: null,
                             orderable: false,
                             searchable: false,
+                            responsivePriority: 1,
+                            width: '80px',
                             render: function(data, type, row, meta) {
                                 const detailUrl = `{{ route('main_transaction.expense.detail', ':id') }}`.replace(':id', row.id);
                                 const editUrl = `{{ route('main_transaction.expense.edit', ':id') }}`.replace(':id', row.id);
-                                return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                                `;
+                                let actions = '<div class="d-flex gap-2">';
+                                
+                                if (canRead) {
+                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                        <i class="icon-xs icon-base ti tabler-eye"></i>
+                                    </a>`;
+                                }
+                                
+                                if (canShowEditButton) {
+                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                        <i class="icon-xs icon-base ti tabler-edit"></i>
+                                    </a>`;
+                                }
+                                
+                                actions += '</div>';
+                                return actions;
                             }
                         }
                     ],
@@ -235,9 +283,16 @@
                     },
                     scrollX: true,
                     responsive: true,
-                    orderCellsTop: true
+                    orderCellsTop: true,
+                    ordering: false
                 });
             }
+
+            // Tag column toggle functionality
+            $('#toggleTagColumn').on('change', function() {
+                const column = dt_adv_filter.column(7); // Tag column is index 7
+                column.visible(this.checked);
+            });
 
             // Navigation buttons now use direct <a> elements with href - no JavaScript needed
         });

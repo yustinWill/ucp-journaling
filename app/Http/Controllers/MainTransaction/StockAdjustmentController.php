@@ -3,12 +3,29 @@
 namespace App\Http\Controllers\MainTransaction;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\PermissionHelper;
 use Illuminate\Http\Request;
 
 class StockAdjustmentController extends Controller
 {
     public function index()
     {
+        // Check read permission for stock adjustment module
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
+        }
+        
+        // Get permission data for view
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_stock_adjustment');
+        
+        // Map permissions to view variables
+        $canAddStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
+        $canImportStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
+        $canExportStockAdjustment = PermissionHelper::canRead('main_transaction_stock_adjustment');
+        $canViewDetails = PermissionHelper::canRead('main_transaction_stock_adjustment');
+        $canEditStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
+        $canDeleteStockAdjustment = PermissionHelper::canDelete('main_transaction_stock_adjustment');
+
         // Adjustment types for stock adjustment workflow
         $adjustmentTypes = [
             ['value' => 'MANUAL_ADJUSTMENT', 'label' => 'MANUAL_ADJUSTMENT - Penyesuaian Manual'],
@@ -45,133 +62,164 @@ class StockAdjustmentController extends Controller
             ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
         ];
 
-        return view('pages.main_transaction.stock_adjustment.index', [
+        $data = [
             'adjustmentTypes' => $adjustmentTypes,
             'adjustmentStatuses' => $adjustmentStatuses,
             'warehouseLocations' => $warehouseLocations,
-            'productCategories' => $productCategories
-        ]);
+            'productCategories' => $productCategories,
+            'canAddStockAdjustment' => $canAddStockAdjustment,
+            'canImportStockAdjustment' => $canImportStockAdjustment,
+            'canExportStockAdjustment' => $canExportStockAdjustment,
+            'canViewDetails' => $canViewDetails,
+            'canEditStockAdjustment' => $canEditStockAdjustment,
+            'canDeleteStockAdjustment' => $canDeleteStockAdjustment
+        ];
+        
+        return view('pages.main_transaction.stock_adjustment.index', array_merge($data, $permissionData));
     }
 
-    public function index_data_table()
+    public function index_data_table(Request $request)
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "adjustment_number" => "SA-2025-001",
-                    "adjustment_date" => "2025-01-15",
-                    "created_date" => "2025-01-15",
-                    "adjustment_type" => "STOCK_OPNAME",
-                    "warehouse_name" => "Gudang Utama Pusat",
-                    "warehouse_id" => "GDG-001",
-                    "reference_number" => "SO-2025-001",
-                    "total_items" => 3,
-                    "total_adjustment_qty" => 2,
-                    "total_adjustment_value" => 66000,
-                    "status" => "APPLIED",
-                    "pic_name" => "Yustinus Komunal",
-                    "approved_by" => "Yustinus Komunal",
-                    "approved_date" => "2025-01-15",
-                    "description" => "Penyesuaian stok dari hasil stock opname bulanan - RIYO Water semua varian"
-                ],
-                [
-                    "id" => 2,
-                    "adjustment_number" => "SA-2025-002",
-                    "adjustment_date" => "2025-01-16",
-                    "created_date" => "2025-01-16",
-                    "adjustment_type" => "MANUAL_ADJUSTMENT",
-                    "warehouse_name" => "Gudang Produksi",
-                    "warehouse_id" => "GDG-002",
-                    "reference_number" => null,
-                    "total_items" => 1,
-                    "total_adjustment_qty" => -50,
-                    "total_adjustment_value" => -825000,
-                    "status" => "PENDING_APPROVAL",
-                    "pic_name" => "Ririn Safitri",
-                    "approved_by" => null,
-                    "approved_date" => null,
-                    "description" => "Koreksi stok botol 330ml akibat kerusakan mesin"
-                ],
-                [
-                    "id" => 3,
-                    "adjustment_number" => "SA-2025-003",
-                    "adjustment_date" => "2025-01-17",
-                    "created_date" => "2025-01-17",
-                    "adjustment_type" => "PRODUCT_RETURN",
-                    "warehouse_name" => "Gudang Finished Goods",
-                    "warehouse_id" => "GDG-004",
-                    "reference_number" => "RTN-2025-001",
-                    "total_items" => 2,
-                    "total_adjustment_qty" => 25,
-                    "total_adjustment_value" => 412500,
-                    "status" => "APPROVED",
-                    "pic_name" => "Hartono Wijaya",
-                    "approved_by" => "Ririn Safitri",
-                    "approved_date" => "2025-01-17",
-                    "description" => "Retur produk dari customer - kualitas tidak sesuai"
-                ],
-                [
-                    "id" => 4,
-                    "adjustment_number" => "SA-2025-004",
-                    "adjustment_date" => "2025-01-18",
-                    "created_date" => "2025-01-18",
-                    "adjustment_type" => "DAMAGE_LOSS",
-                    "warehouse_name" => "Gudang Bahan Baku",
-                    "warehouse_id" => "GDG-003",
-                    "reference_number" => null,
-                    "total_items" => 1,
-                    "total_adjustment_qty" => -100,
-                    "total_adjustment_value" => -275000,
-                    "status" => "DRAFT",
-                    "pic_name" => "Sari Indah",
-                    "approved_by" => null,
-                    "approved_date" => null,
-                    "description" => "Kehilangan botol PET akibat kecelakaan forklift"
-                ],
-                [
-                    "id" => 5,
-                    "adjustment_number" => "SA-2025-005",
-                    "adjustment_date" => "2025-01-19",
-                    "created_date" => "2025-01-19",
-                    "adjustment_type" => "EXPIRY_DISPOSAL",
-                    "warehouse_name" => "Gudang Utama Pusat",
-                    "warehouse_id" => "GDG-001",
-                    "reference_number" => null,
-                    "total_items" => 2,
-                    "total_adjustment_qty" => -75,
-                    "total_adjustment_value" => -385000,
-                    "status" => "REJECTED",
-                    "pic_name" => "Budi Santoso",
-                    "approved_by" => "Hartono Wijaya",
-                    "approved_date" => "2025-01-19",
-                    "description" => "Pembuangan label kadaluarsa - perlu verifikasi ulang"
-                ],
-                [
-                    "id" => 6,
-                    "adjustment_number" => "SA-2025-006",
-                    "adjustment_date" => "2025-01-20",
-                    "created_date" => "2025-01-20",
-                    "adjustment_type" => "STOCK_OPNAME",
-                    "warehouse_name" => "Gudang Produksi",
-                    "warehouse_id" => "GDG-002",
-                    "reference_number" => "SO-2025-006",
-                    "total_items" => 6,
-                    "total_adjustment_qty" => 25,
-                    "total_adjustment_value" => 75000,
-                    "status" => "APPLIED",
-                    "pic_name" => "Ani Suhartini",
-                    "approved_by" => "Ani Suhartini",
-                    "approved_date" => "2025-01-20",
-                    "description" => "Penyesuaian stok spare parts mesin produksi"
-                ]
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        $tab = $request->get('tab', 'waiting_adjustment');
+        
+        $allData = [
+            [
+                "id" => 1,
+                "adjustment_number" => "SA-2025-001",
+                "adjustment_date" => "2025-01-15",
+                "created_date" => "2025-01-15",
+                "adjustment_type" => "STOCK_OPNAME",
+                "warehouse_name" => "Gudang Utama Pusat",
+                "warehouse_id" => "GDG-001",
+                "reference_number" => "SO-2025-001",
+                "total_items" => 3,
+                "total_adjustment_qty" => 2,
+                "total_adjustment_value" => 66000,
+                "status" => "APPLIED",
+                "pic_name" => "Yustinus Komunal",
+                "approved_by" => "Yustinus Komunal",
+                "approved_date" => "2025-01-15",
+                "description" => "Penyesuaian stok dari hasil stock opname bulanan - RIYO Water semua varian"
+            ],
+            [
+                "id" => 2,
+                "adjustment_number" => "SA-2025-002",
+                "adjustment_date" => "2025-01-16",
+                "created_date" => "2025-01-16",
+                "adjustment_type" => "MANUAL_ADJUSTMENT",
+                "warehouse_name" => "Gudang Produksi",
+                "warehouse_id" => "GDG-002",
+                "reference_number" => null,
+                "total_items" => 1,
+                "total_adjustment_qty" => -50,
+                "total_adjustment_value" => -825000,
+                "status" => "PENDING_APPROVAL",
+                "pic_name" => "Ririn Safitri",
+                "approved_by" => null,
+                "approved_date" => null,
+                "description" => "Koreksi stok botol 330ml akibat kerusakan mesin"
+            ],
+            [
+                "id" => 3,
+                "adjustment_number" => "SA-2025-003",
+                "adjustment_date" => "2025-01-17",
+                "created_date" => "2025-01-17",
+                "adjustment_type" => "PRODUCT_RETURN",
+                "warehouse_name" => "Gudang Finished Goods",
+                "warehouse_id" => "GDG-004",
+                "reference_number" => "RTN-2025-001",
+                "total_items" => 2,
+                "total_adjustment_qty" => 25,
+                "total_adjustment_value" => 412500,
+                "status" => "APPROVED",
+                "pic_name" => "Hartono Wijaya",
+                "approved_by" => "Ririn Safitri",
+                "approved_date" => "2025-01-17",
+                "description" => "Retur produk dari customer - kualitas tidak sesuai"
+            ],
+            [
+                "id" => 4,
+                "adjustment_number" => "SA-2025-004",
+                "adjustment_date" => "2025-01-18",
+                "created_date" => "2025-01-18",
+                "adjustment_type" => "DAMAGE_LOSS",
+                "warehouse_name" => "Gudang Bahan Baku",
+                "warehouse_id" => "GDG-003",
+                "reference_number" => null,
+                "total_items" => 1,
+                "total_adjustment_qty" => -100,
+                "total_adjustment_value" => -275000,
+                "status" => "DRAFT",
+                "pic_name" => "Sari Indah",
+                "approved_by" => null,
+                "approved_date" => null,
+                "description" => "Kehilangan botol PET akibat kecelakaan forklift"
+            ],
+            [
+                "id" => 5,
+                "adjustment_number" => "SA-2025-005",
+                "adjustment_date" => "2025-01-19",
+                "created_date" => "2025-01-19",
+                "adjustment_type" => "EXPIRY_DISPOSAL",
+                "warehouse_name" => "Gudang Utama Pusat",
+                "warehouse_id" => "GDG-001",
+                "reference_number" => null,
+                "total_items" => 2,
+                "total_adjustment_qty" => -75,
+                "total_adjustment_value" => -385000,
+                "status" => "REJECTED",
+                "pic_name" => "Budi Santoso",
+                "approved_by" => "Hartono Wijaya",
+                "approved_date" => "2025-01-19",
+                "description" => "Pembuangan label kadaluarsa - perlu verifikasi ulang"
+            ],
+            [
+                "id" => 6,
+                "adjustment_number" => "SA-2025-006",
+                "adjustment_date" => "2025-01-20",
+                "created_date" => "2025-01-20",
+                "adjustment_type" => "STOCK_OPNAME",
+                "warehouse_name" => "Gudang Produksi",
+                "warehouse_id" => "GDG-002",
+                "reference_number" => "SO-2025-006",
+                "total_items" => 6,
+                "total_adjustment_qty" => 25,
+                "total_adjustment_value" => 75000,
+                "status" => "APPLIED",
+                "pic_name" => "Ani Suhartini",
+                "approved_by" => "Ani Suhartini",
+                "approved_date" => "2025-01-20",
+                "description" => "Penyesuaian stok spare parts mesin produksi"
             ]
         ];
-        return response()->json($data, 200);
+        
+        // Filter data based on tab
+        $filteredData = collect($allData)->filter(function($item) use ($tab) {
+            switch ($tab) {
+                case 'waiting_adjustment':
+                    return $item['status'] === 'DRAFT';
+                case 'waiting_approval':
+                    return $item['status'] === 'PENDING_APPROVAL' || $item['status'] === 'APPROVED';
+                case 'finished':
+                    return $item['status'] === 'APPLIED' || $item['status'] === 'REJECTED';
+                default:
+                    return true;
+            }
+        })->values();
+        
+        return response()->json(['data' => $filteredData], 200);
     }
 
     public function add()
     {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
         // Adjustment types
         $adjustmentTypes = [
             ['value' => 'MANUAL_ADJUSTMENT', 'label' => 'MANUAL_ADJUSTMENT - Penyesuaian Manual'],
@@ -204,16 +252,49 @@ class StockAdjustmentController extends Controller
             ['value' => 'PENDING_APPROVAL', 'label' => 'PENDING_APPROVAL - Menunggu Persetujuan']
         ];
 
+        // Product categories for RIYO Water
+        $productCategories = [
+            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
+            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
+            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
+            ['value' => 'CHEMICALS', 'label' => 'CHEMICALS - Bahan Kimia'],
+            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
+        ];
+
+        // Available tags for stock adjustment
+        $availableTags = [
+            ['code' => 'ROUTINE', 'label' => 'ROUTINE - Rutin', 'color' => 'primary'],
+            ['code' => 'AUDIT', 'label' => 'AUDIT - Audit', 'color' => 'danger'],
+            ['code' => 'MONTHLY', 'label' => 'MONTHLY - Bulanan', 'color' => 'info'],
+            ['code' => 'ANNUAL', 'label' => 'ANNUAL - Tahunan', 'color' => 'success'],
+            ['code' => 'INVESTIGATION', 'label' => 'INVESTIGATION - Investigasi', 'color' => 'warning'],
+            ['code' => 'SYSTEM', 'label' => 'SYSTEM - Sistem', 'color' => 'danger']
+        ];
+
+        // Permission checks for add buttons
+        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddWarehouses = PermissionHelper::canWrite('master_data_storage');
+        $canAddUsers = PermissionHelper::canWrite('master_data_user');
+
         return view('pages.main_transaction.stock_adjustment.add', [
             'adjustmentTypes' => $adjustmentTypes,
             'warehouses' => $warehouses,
             'picOptions' => $picOptions,
-            'statusOptions' => $statusOptions
+            'statusOptions' => $statusOptions,
+            'productCategories' => $productCategories,
+            'availableTags' => $availableTags,
+            'canAddTags' => $canAddTags,
+            'canAddWarehouses' => $canAddWarehouses,
+            'canAddUsers' => $canAddUsers
         ]);
     }
 
     public function edit($id)
     {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
+        }
         // Mock data for edit form
         $stockAdjustment = [
             'id' => $id,
@@ -278,18 +359,58 @@ class StockAdjustmentController extends Controller
             ]
         ];
 
+        // Product categories for RIYO Water
+        $productCategories = [
+            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
+            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
+            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
+            ['value' => 'CHEMICALS', 'label' => 'CHEMICALS - Bahan Kimia'],
+            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
+        ];
+
+        // Available tags for stock adjustment
+        $availableTags = [
+            ['code' => 'ROUTINE', 'label' => 'ROUTINE - Rutin', 'color' => 'primary'],
+            ['code' => 'AUDIT', 'label' => 'AUDIT - Audit', 'color' => 'danger'],
+            ['code' => 'MONTHLY', 'label' => 'MONTHLY - Bulanan', 'color' => 'info'],
+            ['code' => 'ANNUAL', 'label' => 'ANNUAL - Tahunan', 'color' => 'success'],
+            ['code' => 'INVESTIGATION', 'label' => 'INVESTIGATION - Investigasi', 'color' => 'warning'],
+            ['code' => 'SYSTEM', 'label' => 'SYSTEM - Sistem', 'color' => 'danger']
+        ];
+
+        // Permission checks for add buttons
+        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddWarehouses = PermissionHelper::canWrite('master_data_storage');
+        $canAddUsers = PermissionHelper::canWrite('master_data_user');
+
         return view('pages.main_transaction.stock_adjustment.edit', [
             'stockAdjustment' => $stockAdjustment,
             'adjustmentTypes' => $adjustmentTypes,
             'warehouses' => $warehouses,
             'picOptions' => $picOptions,
             'statusOptions' => $statusOptions,
-            'adjustmentItems' => $adjustmentItems
+            'adjustmentItems' => $adjustmentItems,
+            'productCategories' => $productCategories,
+            'availableTags' => $availableTags,
+            'canAddTags' => $canAddTags,
+            'canAddWarehouses' => $canAddWarehouses,
+            'canAddUsers' => $canAddUsers
         ]);
     }
 
     public function detail($id)
     {
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
+        }
+        
+        // Permission checks for detail page actions
+        $canEditStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
+        $canApproveStockAdjustment = PermissionHelper::canApprove('main_transaction_stock_adjustment');
+        $canRejectStockAdjustment = PermissionHelper::canApprove('main_transaction_stock_adjustment');
+        $canApplyStockAdjustment = PermissionHelper::canApprove('main_transaction_stock_adjustment');
+
         // Mock data for detail view
         $stockAdjustment = [
             'id' => $id,
@@ -350,12 +471,20 @@ class StockAdjustmentController extends Controller
 
         return view('pages.main_transaction.stock_adjustment.detail', [
             'stockAdjustment' => $stockAdjustment,
-            'adjustmentItems' => $adjustmentItems
+            'adjustmentItems' => $adjustmentItems,
+            'canEditStockAdjustment' => $canEditStockAdjustment,
+            'canApproveStockAdjustment' => $canApproveStockAdjustment,
+            'canRejectStockAdjustment' => $canRejectStockAdjustment,
+            'canApplyStockAdjustment' => $canApplyStockAdjustment
         ]);
     }
 
     public function export()
     {
+        // Check read permission for export
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
+        }
         // Export columns configuration
         $exportColumns = [
             ['field' => 'adjustment_number', 'label' => 'Nomor Adjustment', 'export_name' => 'Nomor Adjustment'],
@@ -409,6 +538,10 @@ class StockAdjustmentController extends Controller
 
     public function processExport(Request $request)
     {
+        // Check read permission for export
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $format = $request->input('format');
         $columns = json_decode($request->input('columns'), true);
         $filters = json_decode($request->input('filters'), true);
@@ -496,11 +629,19 @@ class StockAdjustmentController extends Controller
 
     public function import()
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
+        }
         return view('pages.main_transaction.stock_adjustment.import');
     }
 
     public function downloadTemplate()
     {
+        // Check write permission for import template
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
+        }
         $filename = 'stock_adjustment_import_template.xlsx';
         $content = "Mock Excel template for Stock Adjustment import";
         
@@ -511,6 +652,10 @@ class StockAdjustmentController extends Controller
 
     public function validateImport(Request $request)
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
         ]);
@@ -576,6 +721,10 @@ class StockAdjustmentController extends Controller
 
     public function processImport(Request $request)
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         try {
             $data = $request->input('data');
             $importedCount = count($data);

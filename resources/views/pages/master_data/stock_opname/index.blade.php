@@ -171,11 +171,7 @@ $(function() {
             columns: [
                 { 
                     data: 'opname_number',
-                    responsivePriority: 3,
-                    render: function(data, type, row) {
-                        const detailUrl = `{{ route('master_data.stock_opname.detail', ':id') }}`.replace(':id', row.id);
-                        return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                    }
+                    responsivePriority: 3
                 },
                 { data: 'opname_date', responsivePriority: 2 },
                 { 
@@ -283,10 +279,10 @@ $(function() {
                         }
                         
                         const statusLabels = {
-                            'ADJUSTMENT_PENDING': 'Menunggu Adjustment',
-                            'ADJUSTMENT_CREATED': 'Adjustment Dibuat',
-                            'COMPLETED': 'Selesai',
-                            'CANCELLED': 'Dihapus'
+                            'ADJUSTMENT_PENDING': 'PENDING ADJUSTMENT',
+                            'ADJUSTMENT_CREATED': 'ADJUSTMENT CREATED',
+                            'COMPLETED': 'COMPLETED',
+                            'CANCELLED': 'CANCELLED'
                         };
                         
                         return `<span class="badge ${badgeClass}">${statusLabels[data] || data}</span>`;

@@ -209,13 +209,8 @@
                             }
                         },
                         {
-                            targets: [1], // Code column - make clickable
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const detailUrl = `{{ route('master_data.tag.detail', ':id') }}`
-                                    .replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                            }
+                            targets: [1], // Code column
+                            responsivePriority: 3
                         },
                         {
                             targets: [3], // Color column

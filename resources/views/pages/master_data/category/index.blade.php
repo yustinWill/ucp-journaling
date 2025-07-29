@@ -206,7 +206,7 @@
                             responsivePriority: 5,
                             render: function(data, type, row) {
                                 const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
-                                const statusText = data === 'ACTIVE' ? 'Aktif' : 'Inaktif';
+                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         },

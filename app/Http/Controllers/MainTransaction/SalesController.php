@@ -3,12 +3,21 @@
 namespace App\Http\Controllers\MainTransaction;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\PermissionHelper;
 use Illuminate\Http\Request;
 
 class SalesController extends Controller
 {
     public function index()
     {
+        // Check read permission for sales module
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
+        }
+        
+        // Get permission data for view
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales');
+        
         $pesananStatuses = [
             ['value' => 'Belum Ditagih', 'label' => 'Belum Ditagih'],
             ['value' => 'Dikirim Sebagian', 'label' => 'Dikirim Sebagian'],
@@ -28,15 +37,33 @@ class SalesController extends Controller
             ['value' => 'Belum Dibayar', 'label' => 'Belum Dibayar']
         ];
 
-        return view('pages.main_transaction.sales.index', [
+        // Map permissions to view variables
+        $canAddSales = PermissionHelper::canWrite('main_transaction_sales');
+        $canImportSales = PermissionHelper::canWrite('main_transaction_sales');
+        $canExportSales = PermissionHelper::canRead('main_transaction_sales');
+        $canViewSales = PermissionHelper::canRead('main_transaction_sales');
+        $canEditSales = PermissionHelper::canWrite('main_transaction_sales');
+
+        $data = [
             'pesananStatuses' => $pesananStatuses,
             'pengirimanStatuses' => $pengirimanStatuses,
-            'fakturStatuses' => $fakturStatuses
-        ]);
+            'fakturStatuses' => $fakturStatuses,
+            'canAddSales' => $canAddSales,
+            'canImportSales' => $canImportSales,
+            'canExportSales' => $canExportSales,
+            'canViewSales' => $canViewSales,
+            'canEditSales' => $canEditSales
+        ];
+        
+        return view('pages.main_transaction.sales.index', array_merge($data, $permissionData));
     }
 
     public function index_data_table(Request $request)
     {
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $tab = $request->get('tab', 'pesanan');
         
         switch ($tab) {
@@ -60,40 +87,56 @@ class SalesController extends Controller
                     "date" => "2025-07-01",
                     "reference_no" => "SO-2025-001",
                     "customer" => "Toko Segar Mart",
+                    "customer_id" => 1,
                     "due_date" => "2025-07-15",
                     "status" => "Belum Ditagih",
                     "down_payment" => 2500000,
                     "total" => 12500000,
+                    "tags" => [
+                        ["name" => "Retail", "color" => "primary"],
+                        ["name" => "Regular", "color" => "success"]
+                    ],
                 ],
                 [
                     "id" => 2,
                     "date" => "2025-07-02",
                     "reference_no" => "SO-2025-002",
                     "customer" => "Minimarket Berkah",
+                    "customer_id" => 2,
                     "due_date" => "2025-07-16",
                     "status" => "Dikirim Sebagian",
                     "down_payment" => 1800000,
                     "total" => 9000000,
+                    "tags" => [
+                        ["name" => "Wholesale", "color" => "info"]
+                    ],
                 ],
                 [
                     "id" => 3,
                     "date" => "2025-07-03",
                     "reference_no" => "SO-2025-003",
                     "customer" => "Supermarket Maju Jaya",
+                    "customer_id" => 3,
                     "due_date" => "2025-07-17",
                     "status" => "Selesai",
                     "down_payment" => 4500000,
                     "total" => 22500000,
+                    "tags" => [
+                        ["name" => "Supermarket", "color" => "warning"],
+                        ["name" => "VIP", "color" => "danger"]
+                    ],
                 ],
                 [
                     "id" => 4,
                     "date" => "2025-07-04",
                     "reference_no" => "SO-2025-004",
                     "customer" => "Warung Sembako Pak Haji",
+                    "customer_id" => 4,
                     "due_date" => "2025-07-18",
                     "status" => "Belum Ditagih",
                     "down_payment" => 1200000,
                     "total" => 6000000,
+                    "tags" => [],
                 ]
             ]
         ];
@@ -109,35 +152,53 @@ class SalesController extends Controller
                     "date" => "2025-07-02",
                     "reference_no" => "SD-2025-001",
                     "customer" => "Toko Segar Mart",
+                    "customer_id" => 1,
                     "status" => "Belum Ditagih",
+                    "tags" => [
+                        ["name" => "Delivered", "color" => "success"]
+                    ],
                 ],
                 [
                     "id" => 2,
                     "date" => "2025-07-03",
                     "reference_no" => "SD-2025-002",
                     "customer" => "Minimarket Berkah",
+                    "customer_id" => 2,
                     "status" => "Selesai",
+                    "tags" => [
+                        ["name" => "Complete", "color" => "primary"]
+                    ],
                 ],
                 [
                     "id" => 3,
                     "date" => "2025-07-04",
                     "reference_no" => "SD-2025-003",
                     "customer" => "Supermarket Maju Jaya",
+                    "customer_id" => 3,
                     "status" => "Selesai",
+                    "tags" => [
+                        ["name" => "Express", "color" => "warning"]
+                    ],
                 ],
                 [
                     "id" => 4,
                     "date" => "2025-07-05",
                     "reference_no" => "SD-2025-004",
                     "customer" => "Warung Sembako Pak Haji",
+                    "customer_id" => 4,
                     "status" => "Belum Ditagih",
+                    "tags" => [],
                 ],
                 [
                     "id" => 5,
                     "date" => "2025-07-06",
                     "reference_no" => "SD-2025-005",
                     "customer" => "Depot Air Minum Prima",
+                    "customer_id" => 5,
                     "status" => "Selesai",
+                    "tags" => [
+                        ["name" => "Depot", "color" => "info"]
+                    ],
                 ],
             ]
         ];
@@ -153,50 +214,71 @@ class SalesController extends Controller
                     "date" => "2025-07-01",
                     "reference_no" => "SI-2025-001",
                     "customer" => "Toko Segar Mart",
+                    "customer_id" => 1,
                     "due_date" => "2025-07-15",
                     "status" => "Belum Dibayar",
                     "remaining_bill" => 12500000,
                     "total" => 12500000,
+                    "tags" => [
+                        ["name" => "Outstanding", "color" => "danger"]
+                    ],
                 ],
                 [
                     "id" => 2,
                     "date" => "2025-07-02",
                     "reference_no" => "SI-2025-002",
                     "customer" => "Minimarket Berkah",
+                    "customer_id" => 2,
                     "due_date" => "2025-07-16",
                     "status" => "Menunggu Pembayaran",
                     "remaining_bill" => 9000000,
                     "total" => 9000000,
+                    "tags" => [
+                        ["name" => "Pending", "color" => "warning"]
+                    ],
                 ],
                 [
                     "id" => 3,
                     "date" => "2025-07-03",
                     "reference_no" => "SI-2025-003",
                     "customer" => "Supermarket Maju Jaya",
+                    "customer_id" => 3,
                     "due_date" => "2025-07-17",
                     "status" => "Dibayar",
                     "remaining_bill" => 0,
                     "total" => 22500000,
+                    "tags" => [
+                        ["name" => "Paid", "color" => "success"]
+                    ],
                 ],
                 [
                     "id" => 4,
                     "date" => "2025-07-04",
                     "reference_no" => "SI-2025-004",
                     "customer" => "Warung Sembako Pak Haji",
+                    "customer_id" => 4,
                     "due_date" => "2025-07-18",
                     "status" => "Dibayar Sebagian",
                     "remaining_bill" => 3600000,
                     "total" => 6000000,
+                    "tags" => [
+                        ["name" => "Partial", "color" => "info"]
+                    ],
                 ],
                 [
                     "id" => 5,
                     "date" => "2025-07-05",
                     "reference_no" => "SI-2025-005",
                     "customer" => "Depot Air Minum Prima",
+                    "customer_id" => 5,
                     "due_date" => "2025-07-19",
                     "status" => "Telat Bayar",
                     "remaining_bill" => 18000000,
                     "total" => 18000000,
+                    "tags" => [
+                        ["name" => "Overdue", "color" => "danger"],
+                        ["name" => "High Value", "color" => "primary"]
+                    ],
                 ]
             ]
         ];
@@ -205,6 +287,10 @@ class SalesController extends Controller
 
     public function salesOrderAdd()
     {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
         // Get all required options for the Sales Order form
         $customers = [
             ['value' => '1', 'label' => 'PT. Cahaya Abadi'],
@@ -251,6 +337,10 @@ class SalesController extends Controller
 
     public function salesDeliveryAdd()
     {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
         // Get required options for the Sales Delivery form
         $customers = [
             ['value' => '1', 'label' => 'PT. Cahaya Abadi'],
@@ -274,6 +364,10 @@ class SalesController extends Controller
 
     public function salesInvoiceAdd()
     {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
         // Get all required options for the Sales Invoice form
         $customers = [
             ['value' => '1', 'label' => 'PT. Cahaya Abadi'],
@@ -321,6 +415,10 @@ class SalesController extends Controller
     // Import/Export Methods
     public function import(Request $request)
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
+        }
         $customers = [
             ['value' => '1', 'label' => 'Toko Segar Mart'],
             ['value' => '2', 'label' => 'Minimarket Berkah'],
@@ -343,6 +441,10 @@ class SalesController extends Controller
 
     public function downloadTemplate()
     {
+        // Check write permission for import template
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
+        }
         // Generate and return Excel template file
         $filename = 'sales_import_template.xlsx';
         $content = $this->generateImportTemplate();
@@ -360,6 +462,10 @@ class SalesController extends Controller
 
     public function validateImport(Request $request)
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'write')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
         ]);
@@ -446,6 +552,10 @@ class SalesController extends Controller
 
     public function processImport(Request $request)
     {
+        // Check write permission for import
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'write')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         try {
             $data = $request->input('data');
             $importedCount = count($data);
@@ -471,6 +581,10 @@ class SalesController extends Controller
 
     public function export()
     {
+        // Check read permission for export
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
+        }
         // Export columns configuration
         $exportColumns = [
             ['field' => 'date', 'label' => 'Tanggal', 'export_name' => 'Tanggal'],
@@ -493,6 +607,10 @@ class SalesController extends Controller
 
     public function processExport(Request $request)
     {
+        // Check read permission for export
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $format = $request->input('format');
         $columns = json_decode($request->input('columns'), true);
         $filters = json_decode($request->input('filters'), true);
@@ -603,5 +721,31 @@ class SalesController extends Controller
 
         $content = "Mock PDF Content for Sales Export";
         return response($content, 200, $headers);
+    }
+
+    public function detail($id)
+    {
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
+        }
+        
+        // TODO: Implement sales detail functionality
+        return view('pages.main_transaction.sales.detail', [
+            'id' => $id
+        ]);
+    }
+
+    public function edit($id)
+    {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_sales', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
+        }
+        
+        // TODO: Implement sales edit functionality
+        return view('pages.main_transaction.sales.edit', [
+            'id' => $id
+        ]);
     }
 }

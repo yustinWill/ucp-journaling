@@ -15,6 +15,8 @@ use App\Http\Controllers\MasterData\TaxController;
 use App\Http\Controllers\MasterData\UnitController;
 use App\Http\Controllers\MasterData\CategoryController;
 use App\Http\Controllers\MasterData\SalesPersonController;
+use App\Http\Controllers\MasterData\PaymentTermController;
+use App\Http\Controllers\MasterData\TransactionNumberController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
@@ -29,8 +31,10 @@ $tax_segment = '/tax';
 $unit_segment = '/unit';
 $category_segment = '/category';
 $sales_person_segment = '/sales_person';
+$payment_term_segment = '/payment_term';
+$transaction_number_segment = '/transaction_number';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index');
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table');
@@ -182,5 +186,31 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $sales_person_segment . '/detail/{id}', 'detail')->name('master_data.sales_person.detail');
         Route::get($base_segment . $sales_person_segment . '/export', 'export')->name('master_data.sales_person.export');
         Route::get($base_segment . $sales_person_segment . '/import', 'import')->name('master_data.sales_person.import');
+    });
+
+    Route::controller(PaymentTermController::class)->group(function () use ($base_segment, $payment_term_segment) {
+        Route::get($base_segment . $payment_term_segment . '/index', 'index')->name('master_data.payment_term.index');
+        Route::get($base_segment . $payment_term_segment . '/index_data_table', 'indexDataTable')->name('master_data.payment_term.index_data_table');
+        Route::get($base_segment . $payment_term_segment . '/add', 'add')->name('master_data.payment_term.add');
+        Route::post($base_segment . $payment_term_segment . '/store', 'store')->name('master_data.payment_term.store');
+        Route::get($base_segment . $payment_term_segment . '/edit/{id}', 'edit')->name('master_data.payment_term.edit');
+        Route::put($base_segment . $payment_term_segment . '/update', 'update')->name('master_data.payment_term.update');
+        Route::get($base_segment . $payment_term_segment . '/detail/{id}', 'detail')->name('master_data.payment_term.detail');
+        Route::delete($base_segment . $payment_term_segment . '/delete', 'delete')->name('master_data.payment_term.delete');
+        Route::get($base_segment . $payment_term_segment . '/export', 'export')->name('master_data.payment_term.export');
+        Route::get($base_segment . $payment_term_segment . '/import', 'import')->name('master_data.payment_term.import');
+    });
+
+    // Transaction Number Routes
+    Route::controller(TransactionNumberController::class)->group(function () use ($base_segment, $transaction_number_segment) {
+        Route::get($base_segment . $transaction_number_segment . '/index', 'index')->name('master_data.transaction_number.index');
+        Route::get($base_segment . $transaction_number_segment . '/index_data_table', 'indexDataTable')->name('master_data.transaction_number.index_data_table');
+        Route::get($base_segment . $transaction_number_segment . '/detail/{id}', 'detail')->name('master_data.transaction_number.detail');
+        Route::get($base_segment . $transaction_number_segment . '/edit/{id}', 'edit')->name('master_data.transaction_number.edit');
+        Route::post($base_segment . $transaction_number_segment . '/update', 'update')->name('master_data.transaction_number.update');
+        Route::post($base_segment . $transaction_number_segment . '/preview_format', 'previewFormat')->name('master_data.transaction_number.preview_format');
+        Route::post($base_segment . $transaction_number_segment . '/generate_number/{module}', 'generateNumber')->name('master_data.transaction_number.generate_number');
+        Route::post($base_segment . $transaction_number_segment . '/check_duplicate/{module}', 'checkDuplicate')->name('master_data.transaction_number.check_duplicate');
+        Route::post($base_segment . $transaction_number_segment . '/reset_counter/{id}', 'resetCounter')->name('master_data.transaction_number.reset_counter');
     });
 });
