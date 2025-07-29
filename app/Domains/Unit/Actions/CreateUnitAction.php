@@ -12,17 +12,16 @@ class CreateUnitAction
     public function execute(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $tag_id = app(UnitService::class)->create($data);
-
+            $id = app(UnitService::class)->create($data);
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
                 'description' => "Pembuatan Unit",
                 'metadata' => json_encode([
                     'before' => null,
-                    'after' => $data,
+                    'after' => $data
                 ])
             ];
-            app(UnitAuditLogService::class)->create($log_data, $tag_id);
+            app(UnitAuditLogService::class)->create($log_data, $id);
         });
     }
 }

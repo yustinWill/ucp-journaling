@@ -12,6 +12,7 @@ class SalesPersonAuditLogService
     public function create(array $data, $tag_id)
     {
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
             'f_sales_person_id' => $tag_id,
             'action_type' => $data['action_type'],
             'description' => $data['description'],
@@ -25,6 +26,7 @@ class SalesPersonAuditLogService
     {
         return DB::table($this->table_name . ' as t')
             ->select([
+                't.id',
                 't.f_sales_person_id',
                 't.action_type',
                 't.description',
@@ -34,8 +36,17 @@ class SalesPersonAuditLogService
                 'usr.name AS user_name'
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
+            ->where('t.company_code', session('user_company_code'))
             ->where('t.f_sales_person_id', $id)
             ->orderBy('t.created_at', 'DESC')
             ->get();
+    }
+
+    public function findOneBasedOnId($id)
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->first();
     }
 }

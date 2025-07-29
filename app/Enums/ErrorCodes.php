@@ -12,6 +12,8 @@ enum ErrorCodes: string
     case FORM_VALIDATION_ERROR = 'FORM_VALIDATION_ERROR';
     case GENERAL_INTERNAL_SERVER_ERROR = 'GENERAL_INTERNAL_SERVER_ERROR';
     case NOT_AUTHORIZED = 'NOT_AUTHORIZED';
+    case USER_NO_PERMISSIONS = 'USER_NO_PERMISSIONS';
+    case USER_NO_COMPANY = 'USER_NO_COMPANY';
 
     public function message(): string
     {
@@ -20,6 +22,8 @@ enum ErrorCodes: string
             self::FORM_VALIDATION_ERROR => 'Terjadi kesalahan pada server.',
             self::GENERAL_INTERNAL_SERVER_ERROR => 'Terjadi kesalahan pada server.',
             self::NOT_AUTHORIZED => 'Terjadi kesalahan pada server.',
+            self::USER_NO_PERMISSIONS => 'User tidak memiliki hak akses apapun.',
+            self::USER_NO_COMPANY => 'User tidak memiliki perusahaan yang ditetapkan.',
         };
     }
 
@@ -30,6 +34,8 @@ enum ErrorCodes: string
             self::FORM_VALIDATION_ERROR => self::BAD_REQUEST,
             self::GENERAL_INTERNAL_SERVER_ERROR => self::INTERNAL_SERVER_ERROR,
             self::NOT_AUTHORIZED => self::UNAUTHORIZED,
+            self::USER_NO_PERMISSIONS => self::UNAUTHORIZED,
+            self::USER_NO_COMPANY => self::UNAUTHORIZED,
         };
     }
 

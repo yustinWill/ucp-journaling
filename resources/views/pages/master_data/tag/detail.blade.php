@@ -10,25 +10,27 @@
                 <div class="col-md-8">
                     <h4 class="mb-3">Detail Tag</h4>
                 </div>
-                
+
                 <!-- Action Panel -->
                 <div class="col-md-4">
                     <div class="text-end">
                         @php
                             $totalActions = 1; // Edit always present
-                            if($tag->usage_count == 0) {
+                            if ($tag->usage_count == 0) {
                                 $totalActions++; // Add delete action when usage is 0
                             }
                         @endphp
-                        
-                        @if($totalActions < 3)
+
+                        @if ($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.tag.edit', $tag->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                <a href="{{ route('master_data.tag.edit', $tag->id) }}"
+                                    class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
-                                @if($tag->usage_count == 0)
-                                    <button type="button" class="btn btn-danger btn-md waves-effect waves-light" id="delete-tag-btn">
+                                @if ($tag->usage_count == 0)
+                                    <button type="button" class="btn btn-danger btn-md waves-effect waves-light"
+                                        id="delete-tag-btn">
                                         <i class="icon-base ti tabler-trash me-2"></i>Hapus
                                     </button>
                                 @endif
@@ -36,15 +38,18 @@
                         @else
                             <!-- Show dropdown for 3 or more actions -->
                             <div class="dropdown">
-                                <button type="button" class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle" data-bs-toggle="dropdown">
+                                <button type="button"
+                                    class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle"
+                                    data-bs-toggle="dropdown">
                                     Aksi
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{{ route('master_data.tag.edit', $tag->id) }}">
-                                        <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
-                                    @if($tag->usage_count == 0)
-                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);" id="delete-tag-btn">
-                                            <i class="icon-base ti tabler-trash me-2"></i>Hapus</a></li>
+                                            <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
+                                    @if ($tag->usage_count == 0)
+                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);"
+                                                id="delete-tag-btn">
+                                                <i class="icon-base ti tabler-trash me-2"></i>Hapus</a></li>
                                     @endif
                                 </ul>
                             </div>
@@ -71,11 +76,12 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Total Penggunaan</label>
-                    <input type="text" class="form-control text-center fw-bold" value="{{ $tag->usage_count }}" disabled />
+                    <input type="text" class="form-control text-center fw-bold" value="{{ $tag->usage_count }}"
+                        disabled />
                 </div>
             </div>
             <hr class="my-6 mx-n6" />
-            
+
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
@@ -102,7 +108,7 @@
                             <div class="section-header mt-6">
                                 <h6>Informasi Tag</h6>
                             </div>
-                            
+
                             <!-- Row 1: Basic Information -->
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
@@ -114,7 +120,7 @@
                                     <input type="text" class="form-control" value="{{ $tag->name }}" disabled />
                                 </div>
                             </div>
-                            
+
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Warna Badge</label>
@@ -127,7 +133,7 @@
                                     <!-- Empty column for alignment -->
                                 </div>
                             </div>
-                            
+
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Deskripsi</label>
@@ -158,15 +164,18 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($tag->recent_transactions as $transaction)
-                                        <tr>
-                                            <td><a href="#" class="text-primary fw-semibold">{{ $transaction->transaction_code }}</a></td>
-                                            <td><span class="badge bg-label-info">{{ $transaction->module }}</span></td>
-                                            <td>{{ $transaction->description }}</td>
-                                            <td class="text-end">{{ number_format($transaction->amount) }}</td>
-                                            <td>{{ $transaction->created_at }}</td>
-                                            <td>{{ $transaction->user_name }}</td>
-                                        </tr>
+                                        @foreach ($tag->recent_transactions as $transaction)
+                                            <tr>
+                                                <td><a href="#"
+                                                        class="text-primary fw-semibold">{{ $transaction->transaction_code }}</a>
+                                                </td>
+                                                <td><span class="badge bg-label-info">{{ $transaction->module }}</span>
+                                                </td>
+                                                <td>{{ $transaction->description }}</td>
+                                                <td class="text-end">{{ number_format($transaction->amount) }}</td>
+                                                <td>{{ $transaction->created_at }}</td>
+                                                <td>{{ $transaction->user_name }}</td>
+                                            </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -186,16 +195,30 @@
                                             <th>Pengguna</th>
                                             <th>Aksi</th>
                                             <th>Deskripsi</th>
+                                            <th>Lihat Detail</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($tag->audit_logs as $log)
-                                        <tr>
-                                            <td>{{ $log->created_at }}</td>
-                                            <td><a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" class="text-primary fw-semibold">{{ $log->user_name }}</a></td>
-                                            <td><span class="badge bg-label-{{ $log->action_type === 'CREATE' ? 'success' : ($log->action_type === 'UPDATE' ? 'warning' : 'info') }}">{{ $log->action_type }}</span></td>
-                                            <td>{{ $log->description }}</td>
-                                        </tr>
+                                        @foreach ($tag->audit_logs as $log)
+                                            <tr>
+                                                <td>{{ $log->created_at }}</td>
+                                                <td><a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}"
+                                                        class="text-primary fw-semibold">{{ $log->user_name }}</a></td>
+                                                <td><span
+                                                        class="badge bg-label-{{ $log->action_type === 'CREATE' ? 'success' : ($log->action_type === 'UPDATE' ? 'warning' : 'info') }}">{{ $log->action_type }}</span>
+                                                </td>
+                                                <td>{{ $log->description }}</td>
+                                                <td>
+                                                    @if ($log->action_type == 'UPDATE')
+                                                        <a target="_blank"
+                                                            href="{{ route('audit_log.detail', ['id' => $log->id, 'audit_log_type' => $auditLogType]) }}"
+                                                            class="btn btn-sm btn-primary waves-effect waves-light"
+                                                            title="Detail">
+                                                            <i class="icon-xs icon-base ti tabler-eye"></i>
+                                                        </a>
+                                                    @endif
+                                                </td>
+                                            </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -209,80 +232,78 @@
 @stop
 
 @section('js_script')
-<script>
-    $(function() {
-        // Initialize DataTables for tag usage and audit log
-        $('#tag-usage-table').DataTable({
-            responsive: true,
-            orderCellsTop: true,
-            searching: false,
-            paging: false,
-            info: false,
-            columnDefs: [
-                {
+    <script>
+        $(function() {
+            // Initialize DataTables for tag usage and audit log
+            $('#tag-usage-table').DataTable({
+                responsive: true,
+                orderCellsTop: true,
+                searching: false,
+                paging: false,
+                info: false,
+                columnDefs: [{
                     targets: [3], // Amount column
                     className: 'text-end'
-                }
-            ],
-            language: {
-                paginate: {
-                    next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                    previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                    first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                    last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                }
-            }
-        });
-
-        $('#audit-log-table').DataTable({
-            responsive: true,
-            orderCellsTop: true,
-            searching: false,
-            paging: false,
-            info: false,
-            language: {
-                paginate: {
-                    next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                    previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                    first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                    last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                }
-            }
-        });
-
-        // Delete tag functionality
-        $('#delete-tag-btn').click(function(e) {
-            e.preventDefault();
-            
-            Swal.fire({
-                title: 'Hapus Tag?',
-                text: 'Data tag akan dihapus permanen dan tidak dapat dikembalikan!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal',
-                customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-label-secondary'
-                },
-                buttonsStyling: false
-            }).then(function(result) {
-                if (result.value) {
-                    // TODO: Submit delete request to server
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Tag berhasil dihapus.',
-                        customClass: {
-                            confirmButton: 'btn btn-success'
-                        },
-                        buttonsStyling: false
-                    }).then(function() {
-                        window.location.href = "{{ route('master_data.tag.index') }}";
-                    });
+                }],
+                language: {
+                    paginate: {
+                        next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                        previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                        first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                        last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                    }
                 }
             });
+
+            $('#audit-log-table').DataTable({
+                responsive: true,
+                orderCellsTop: true,
+                searching: false,
+                paging: false,
+                info: false,
+                language: {
+                    paginate: {
+                        next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                        previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                        first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                        last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                    }
+                }
+            });
+
+            // Delete tag functionality
+            $('#delete-tag-btn').click(function(e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Hapus Tag?',
+                    text: 'Data tag akan dihapus permanen dan tidak dapat dikembalikan!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-label-secondary'
+                    },
+                    buttonsStyling: false
+                }).then(function(result) {
+                    if (result.value) {
+                        // TODO: Submit delete request to server
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Tag berhasil dihapus.',
+                            customClass: {
+                                confirmButton: 'btn btn-success'
+                            },
+                            buttonsStyling: false
+                        }).then(function() {
+                            window.location.href = "{{ route('master_data.tag.index') }}";
+                        });
+                    }
+                });
+            });
         });
-    });
-</script>
+    </script>
 @endsection

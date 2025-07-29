@@ -4,6 +4,7 @@ namespace App\Domains\User\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\GeneralStatuses;
 
 class UserService
 {
@@ -63,6 +64,7 @@ class UserService
                 'r.name AS role_name',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
             ])
+            ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
             ->leftJoin('roles as r', 't.role_id', '=', 'r.id')
             ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
@@ -71,6 +73,8 @@ class UserService
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id');
 
         // Filter by status
+        $query->where('uc.f_company_code', session('user_company_code'));
+        $query->where('uc.status', GeneralStatuses::ACTIVE);
 
         if ($name = request()->input('name')) {
             $query->where('t.name', 'like', "%{$name}%");
@@ -126,8 +130,11 @@ class UserService
                 't.last_password_change',
                 'r.name as role_name'
             ])
+            ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
             ->join('roles as r', 't.role_id', '=', 'r.id')
             ->where('t.id', $id)
+            ->where('uc.f_company_code', session('user_company_code'))
+            ->where('uc.status', GeneralStatuses::ACTIVE)
             ->first();
 
         $data->f_tag_codes = json_decode($data->f_tag_codes);

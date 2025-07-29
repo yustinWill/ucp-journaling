@@ -12,6 +12,7 @@ class UnitService
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
             'name' => $data['name'],
             'code' => $data['code'],
             'status' => $data['status'],
@@ -26,10 +27,11 @@ class UnitService
     {
         return DB::table($this->table_name)
             ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
             ->update([
                 'name' => $data['name'],
                 'status' => $data['status'],
-                    'f_unit_type_id' => $data['type'],
+                'f_unit_type_id' => $data['type'],
                 'description' => $data['description'] ?? '',
                 'updated_at' => now(),
                 'updated_by' => Auth::id()
@@ -66,7 +68,7 @@ class UnitService
         if ($name = request()->input('name')) {
             $query->where('t.name', 'like', "%{$name}%");
         }
-
+        $query->where('t.company_code', session('user_company_code'));
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
         $filteredQuery = clone $query;
@@ -103,6 +105,7 @@ class UnitService
                 't.updated_at'
             ])
             ->leftJoin('m_unit_types as ut', 't.f_unit_type_id', '=', 'ut.id')
+            ->where('t.company_code', session('user_company_code'))
             ->where('t.id', $id)
             ->first();
     }

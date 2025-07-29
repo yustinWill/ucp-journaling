@@ -13,6 +13,7 @@ class TagService
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
             'name' => $data['name'],
             'code' => $data['code'],
             'status' => $data['status'],
@@ -28,6 +29,7 @@ class TagService
     {
         return DB::table($this->table_name)
             ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
             ->update([
                 'name' => $data['name'],
                 'status' => $data['status'],
@@ -67,7 +69,7 @@ class TagService
                     ->orWhere('tc.name', 'like', "%{$search}%");
             });
         }
-
+        $query->where('t.company_code', session('user_company_code'));
         // Filter by status
         if ($status = request()->input('status')) {
             $query->where('t.status', $status);
@@ -116,6 +118,7 @@ class TagService
                 'tc.code AS tag_color_code'
             ])
             ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+            ->where('t.company_code', session('user_company_code'))
             ->where('t.status', GeneralStatuses::ACTIVE)
             ->orderBy('code', 'ASC')
             ->get();
@@ -129,7 +132,7 @@ class TagService
                 't.name',
                 't.code',
                 't.status',
-                'tc.id as tag_id',
+                'tc.id as tag_color_id',
                 'tc.name as tag_name',
                 'tc.code as tag_code',
                 'tc.preview as tag_preview',
@@ -139,6 +142,7 @@ class TagService
                 't.usage_count'
             ])
             ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+            ->where('t.company_code', session('user_company_code'))
             ->where('t.id', $id)
             ->first();
     }

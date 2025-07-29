@@ -21,6 +21,7 @@ class CategoryService
                 'c.created_at'
             ]);
 
+        $query->where('c.company_code', session('user_company_code'));
         // Filter by status
         if ($status = request()->input('status_filter')) {
             $query->where('c.status', $status);
@@ -67,6 +68,7 @@ class CategoryService
     {
         return DB::table($this->table_name)
             ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
             ->first();
     }
 
@@ -74,12 +76,14 @@ class CategoryService
     {
         return DB::table($this->table_name)
             ->where('status', 'ACTIVE')
+            ->where('company_code', session('user_company_code'))
             ->get();
     }
 
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
             'name' => $data['name'],
             'code' => $data['code'],
             'type' => $data['type'],
@@ -94,6 +98,7 @@ class CategoryService
     {
         return DB::table($this->table_name)
             ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
             ->update([
                 'name' => $data['name'],
                 'type' => $data['type'],
@@ -108,6 +113,7 @@ class CategoryService
     {
         return DB::table($this->table_name)
             ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
             ->delete();
     }
 }

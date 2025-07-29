@@ -21,6 +21,7 @@ use App\Domains\Category\Services\CategoryAuditLogService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
 
 class CategoryController extends Controller
 {
@@ -155,6 +156,7 @@ class CategoryController extends Controller
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_categories,id',
+                'code' => 'required|string|max:255',
                 'name' => 'required|string|max:255',
                 'type' => [
                     'required',
@@ -212,16 +214,19 @@ class CategoryController extends Controller
             'description' => $category->description,
             'status' => $category->status,
             'product_count' => rand(0, 50), // TODO: Calculate actual product count
-            'last_updated' => $category->updated_at
+            'last_updated' => $category->updated_at,
+            'created_at' => $category->created_at
         ];
 
         $auditLogs = app(CategoryAuditLogService::class)->findAllBasedOnTagId($id);
+
         $permissionData = PermissionHelper::getViewPermissions('master_data_category');
 
         return view('pages.master_data.category.detail', array_merge([
             'category' => $categoryArray,
-            'auditLogs' => $auditLogs
-        ], $permissionData));
+            'auditLogs' => $auditLogs,
+
+        ], $permissionData, ['auditLogType' => AuditLogTypes::MASTER_DATA_CATEGORY->code()]));
     }
 
     public function export()

@@ -127,6 +127,7 @@
                         data: {
                             _token: '{{ csrf_token() }}',
                             id: $('#category-id').val(),
+                            code: $('#category-code').val(),
                             name: $('#category-name').val(),
                             type: $('#category-type').val(),
                             status: $('#status').val(),

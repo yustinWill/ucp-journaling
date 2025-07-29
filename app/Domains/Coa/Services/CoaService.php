@@ -12,6 +12,7 @@ class CoaService
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
             'code' => $data['code'],
             'name' => $data['name'],
             'level' => $data['level'],
@@ -65,7 +66,7 @@ class CoaService
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id');
 
         // Filter by status
-
+        $query->where('t.company_code', session('user_company_code'));
         if ($code = request()->input('code')) {
             $query->where('t.code', 'like', "%{$code}%");
         }
@@ -110,22 +111,23 @@ class CoaService
         $data = DB::table($this->table_name . ' as t')
             ->select([
                 't.id',
-                't.role_id',
+                't.code',
                 't.name',
-                't.email',
-                't.phone',
-                't.f_tag_codes as f_tag_codes',
+                't.level',
+                't.type',
+                't.note',
                 't.status as status',
                 't.created_at as created_at',
-                't.last_login',
-                't.last_password_change',
-                'r.name as role_name'
+                't.updated_at as updated_at',
+                DB::raw("CASE WHEN LEFT(t.code, 1) IN ('2','3') THEN 'CREDIT' ELSE 'DEBIT' END as normal_position"),
             ])
-            ->join('roles as r', 't.role_id', '=', 'r.id')
             ->where('t.id', $id)
+            ->where('t.company_code', session('user_company_code'))
             ->first();
 
-        $data->f_tag_codes = json_decode($data->f_tag_codes);
+        if ($data == null) {
+            abort(404);
+        }
         return $data;
     }
 }

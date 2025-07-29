@@ -2,17 +2,27 @@
 
 namespace App\Domains\User\Actions;
 
-use App\Domains\User\Services\UserService;
-use App\Domains\User\Services\UserAuditLogService;
 use Illuminate\Support\Facades\DB;
 use App\Enums\ActionTypes;
+use App\Enums\GeneralStatuses;
+use App\Domains\UserCompany\Services\UserCompanyService;
+use App\Domains\User\Services\UserService;
+use App\Domains\User\Services\UserAuditLogService;
+
 
 class CreateUserAction
 {
     public function execute(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $tag_id = app(UserService::class)->create($data);
+            $user_id = app(UserService::class)->create($data);
+
+            app(UserCompanyService::class)->create([
+                'user_id' => $user_id,
+                'company_code' => session('user_company_code'),
+                'status' => GeneralStatuses::ACTIVE,
+                'default_company' => true,
+            ]);
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
@@ -22,7 +32,8 @@ class CreateUserAction
                     'after' => $data,
                 ])
             ];
-            app(UserAuditLogService::class)->create($log_data, $tag_id);
+            
+            app(UserAuditLogService::class)->create($log_data, $user_id);
         });
     }
 }

@@ -12,6 +12,7 @@ class TaxService
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
             'name' => $data['name'],
             'code' => $data['code'],
             'rate' => $data['rate'],
@@ -27,6 +28,7 @@ class TaxService
     {
         return DB::table($this->table_name)
             ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
             ->update([
                 'name' => $data['name'],
                 'rate' => $data['rate'],
@@ -69,6 +71,7 @@ class TaxService
         if ($name = request()->input('name')) {
             $query->where('t.name', 'LIKE', '%' . $name . '%');
         }
+        $query->where('t.company_code', session('user_company_code'));
 
         // DataTable pagination
         $draw = (int) request()->input('draw', 1);
@@ -93,10 +96,18 @@ class TaxService
     {
         return DB::table($this->table_name . ' as t')
             ->select([
-                't.id', 't.name', 't.code', 't.rate', 't.type', 't.status',
-                't.description', 't.created_at', 't.updated_at'
+                't.id',
+                't.name',
+                't.code',
+                't.rate',
+                't.type',
+                't.status',
+                't.description',
+                't.created_at',
+                't.updated_at'
             ])
             ->where('t.id', $id)
+            ->where('t.company_code', session('user_company_code'))
             ->first();
     }
 
@@ -107,6 +118,9 @@ class TaxService
 
     public function findAll()
     {
-        return DB::table($this->table_name)->orderBy('name', 'asc')->get();
+        return DB::table($this->table_name)
+            ->where('company_code', session('user_company_code'))
+            ->orderBy('name', 'asc')
+            ->get();
     }
 }

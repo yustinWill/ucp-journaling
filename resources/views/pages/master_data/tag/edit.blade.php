@@ -37,7 +37,7 @@
                         <option value="">Pilih Warna</option>
                         @foreach ($availableColors as $color)
                             <option value="{{ $color->id }}" data-preview="{{ $color->preview }}"
-                                {{ $color->id === $tag->tag_id ? 'selected' : '' }}>{{ $color->name }}</option>
+                                {{ $color->id === $tag->tag_color_id ? 'selected' : '' }}>{{ $color->name }}</option>
                         @endforeach
                     </select>
                     <small class="form-text text-muted">Warna badge yang akan ditampilkan di sistem</small>

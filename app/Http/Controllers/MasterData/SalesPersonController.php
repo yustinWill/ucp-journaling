@@ -21,6 +21,7 @@ use App\Domains\SalesPerson\Services\SalesPersonAuditLogService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
 
 class SalesPersonController extends Controller
 {
@@ -156,6 +157,7 @@ class SalesPersonController extends Controller
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_sales_persons,id',
+                'f_sales_person_code' => 'required|string|max:255',
                 'f_employee_contact_id' => [
                     'required',
                     'integer',
@@ -217,7 +219,8 @@ class SalesPersonController extends Controller
 
         return view('pages.master_data.sales_person.detail', array_merge([
             'salesPerson' => $salesPersonArray,
-            'auditLogs' => $auditLogs
+            'auditLogs' => $auditLogs,
+            'auditLogType' => AuditLogTypes::MASTER_DATA_SALES_PERSON->code()
         ], $permissionData));
     }
 
