@@ -30,10 +30,10 @@ class CoaAuditLogService
                 't.description',
                 't.metadata',
                 't.created_at',
-                't.created_by AS coa_id',
-                'usr.name AS coa_name'
+                't.created_by AS user_id',
+                'usr.name AS user_name'
             ])
-            ->leftJoin('user as usr', 'usr.id', '=', 't.created_by')
+            ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
             ->where('t.f_coa_id', $id)
             ->orderBy('t.created_at', 'DESC')
             ->get();

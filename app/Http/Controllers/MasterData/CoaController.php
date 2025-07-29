@@ -18,8 +18,8 @@ use App\Domains\Coa\Actions\UpdateCoaAction;
 //Services
 use App\Domains\Coa\Services\CoaService;
 use App\Domains\Coa\Services\CoaAuditLogService;
-use App\Domains\Role\Services\RoleService;
 use App\Domains\Tag\Services\TagService;
+
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -114,24 +114,12 @@ class CoaController extends Controller
 
     public function detail($id)
     {
-        // Sample COA data for the detail view
-        $coa = [
-            'id' => $id,
-            'coa_code' => '1101',
-            'coa_name' => 'Kas',
-            'level' => '4',
-            'account_type' => 'AKTIVA',
-            'status' => 'ACTIVE',
-            'normal_position' => 'DEBIT',
-            'description' => 'Akun kas untuk mencatat semua transaksi kas masuk dan keluar perusahaan.',
-            'opening_balance' => 'Rp 50,000,000',
-            'total_debit' => 'Rp 125,750,000',
-            'total_credit' => 'Rp 98,250,000',
-            'ending_balance' => 'Rp 77,500,000',
-            'last_updated' => '2025-01-20 16:45:30'
-        ];
+        $coa = app(CoaService::class)->findOne($id);
 
-        return view('pages.master_data.coa.detail', compact('coa'));
+        $audit_log_data = app(CoaAuditLogService::class)->findAllBasedOnId($id);
+
+        // dd($audit_log_data);
+        return view('pages.master_data.coa.detail', compact('coa', 'audit_log_data'));
     }
 
     public function edit($id)

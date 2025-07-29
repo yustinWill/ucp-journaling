@@ -48,7 +48,7 @@ class UserController extends Controller
     {
         $roles = app(RoleService::class)->findAll();
         $tags = app(TagService::class)->findAll();
-        
+
         // Permission checks for add buttons
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
         $canAddRoles = PermissionHelper::canWrite('master_data_role');
@@ -112,7 +112,7 @@ class UserController extends Controller
 
         $roles = app(RoleService::class)->findAll();
         $tags = app(TagService::class)->findAll();
-        
+
         // Permission checks for add buttons
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
         $canAddRoles = PermissionHelper::canWrite('master_data_role');
