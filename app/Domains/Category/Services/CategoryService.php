@@ -68,7 +68,7 @@ class CategoryService
     {
         return DB::table($this->table_name)
             ->where('id', $id)
-            ->where('c.company_code', session('user_company_code'))
+            ->where('company_code', session('user_company_code'))
             ->first();
     }
 
@@ -76,7 +76,7 @@ class CategoryService
     {
         return DB::table($this->table_name)
             ->where('status', 'ACTIVE')
-            ->where('c.company_code', session('user_company_code'))
+            ->where('company_code', session('user_company_code'))
             ->get();
     }
 

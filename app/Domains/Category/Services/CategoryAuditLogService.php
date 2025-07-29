@@ -30,18 +30,28 @@ class CategoryAuditLogService
 
         return DB::table($this->table_name . ' as t')
             ->select([
+                't.id',
                 't.f_category_id',
                 't.action_type',
                 't.description',
                 't.metadata',
                 't.created_at',
                 't.created_by AS user_id',
-                'usr.name AS user_name'
+                'usr.name AS user_name',
+                't.created_at'
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
             ->where('t.company_code', $companyCode)
             ->where('t.f_category_id', $id)
             ->orderBy('t.created_at', 'DESC')
             ->get();
+    }
+
+    public function findOneBasedOnId($id)
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->first();
     }
 }

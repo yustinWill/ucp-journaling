@@ -10,19 +10,21 @@
                 <div class="col-md-8">
                     <h4 class="mb-3">Detail Kategori</h4>
                 </div>
-                
+
                 <!-- Action Panel -->
                 <div class="col-md-4">
                     <div class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
-                            @if($canShowEditButton)
-                                <a href="{{ route('master_data.category.edit', $category['id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                            @if ($canShowEditButton)
+                                <a href="{{ route('master_data.category.edit', $category['id']) }}"
+                                    class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>
                                     Edit
                                 </a>
                             @endif
-                            @if($canShowDeleteButton)
-                                <button class="btn btn-danger btn-md waves-effect waves-light" onclick="deleteItem({{ $category['id'] }})">
+                            @if ($canShowDeleteButton)
+                                <button class="btn btn-danger btn-md waves-effect waves-light"
+                                    onclick="deleteItem({{ $category['id'] }})">
                                     <i class="icon-base ti tabler-trash me-2"></i>
                                     Hapus
                                 </button>
@@ -31,7 +33,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Entity Title -->
             <h2>{{ $category['category_name'] }}</h2>
             <span>
@@ -50,12 +52,12 @@
                     <input type="text" class="form-control" value="{{ $category['category_type'] }}" disabled />
                 </div>
             </div>
-            
+
             <div class="row g-6 mt-3">
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
-                        @if($category['status'] == 'ACTIVE')
+                        @if ($category['status'] == 'ACTIVE')
                             <span class="badge bg-label-success">Aktif</span>
                         @else
                             <span class="badge bg-label-secondary">Inaktif</span>
@@ -69,7 +71,7 @@
             </div>
             <hr class="my-6 mx-n6" />
 
-            
+
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
@@ -90,7 +92,7 @@
                                 <h6>Detail Informasi Kategori</h6>
                                 <hr class="mx-n6">
                             </div>
-                            
+
                             <div class="row g-6">
                                 <div class="col-md-6">
                                     <label class="form-label">Deskripsi</label>
@@ -115,29 +117,40 @@
                                             <th>Pengguna</th>
                                             <th>Aksi</th>
                                             <th>Deskripsi</th>
+                                            <th>Lihat Detail</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($auditLogs as $log)
-                                        <tr>
-                                            <td>{{ $log['created_at'] }}</td>
-                                            <td>
-                                                <a href="{{ route('master_data.user.detail', ['id' => $log['user_id']]) }}" 
-                                                   class="text-primary fw-semibold">{{ $log['user_name'] }}</a>
-                                            </td>
-                                            <td>
-                                                @if($log['action_type'] == 'CREATE')
-                                                    <span class="badge bg-label-success">CREATE</span>
-                                                @elseif($log['action_type'] == 'UPDATE')
-                                                    <span class="badge bg-label-warning">UPDATE</span>
-                                                @elseif($log['action_type'] == 'DELETE')
-                                                    <span class="badge bg-label-danger">DELETE</span>
-                                                @else
-                                                    <span class="badge bg-label-info">{{ $log['action_type'] }}</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $log['description'] }}</td>
-                                        </tr>
+                                        @foreach ($auditLogs as $log)
+                                            <tr>
+                                                <td>{{ $log->created_at }}</td>
+                                                <td>
+                                                    <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}"
+                                                        class="text-primary fw-semibold">{{ $log->user_name }}</a>
+                                                </td>
+                                                <td>
+                                                    @if ($log->action_type == 'CREATE')
+                                                        <span class="badge bg-label-success">CREATE</span>
+                                                    @elseif($log->action_type == 'UPDATE')
+                                                        <span class="badge bg-label-warning">UPDATE</span>
+                                                    @elseif($log->action_type == 'DELETE')
+                                                        <span class="badge bg-label-danger">DELETE</span>
+                                                    @else
+                                                        <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $log->description }}</td>
+                                                <td>
+                                                    @if ($log->action_type == 'UPDATE')
+                                                        <a target="_blank"
+                                                            href="{{ route('audit_log.detail', ['id' => $log->id, 'audit_log_type' => $auditLogType]) }}"
+                                                            class="btn btn-sm btn-primary waves-effect waves-light"
+                                                            title="Detail">
+                                                            <i class="icon-xs icon-base ti tabler-eye"></i>
+                                                        </a>
+                                                    @endif
+                                                </td>
+                                            </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -157,7 +170,9 @@
             $('#audit-log-table').DataTable({
                 responsive: true,
                 orderCellsTop: true,
-                order: [[0, 'desc']], // Sort by date descending
+                order: [
+                    [0, 'desc']
+                ], // Sort by date descending
                 searching: false,
                 paging: false,
                 info: false
