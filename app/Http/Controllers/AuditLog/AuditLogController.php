@@ -8,11 +8,15 @@ use App\Http\Controllers\Controller;
 use App\Enums\AuditLogTypes;
 
 use App\Domains\User\Services\UserService;
+
 use App\Domains\Unit\Services\UnitAuditLogService;
 use App\Domains\Unit\Services\UnitService;
 
 use App\Domains\Category\Services\CategoryAuditLogService;
 use App\Domains\Category\Services\CategoryService;
+
+use App\Domains\Tag\Services\TagAuditLogService;
+use App\Domains\Tag\Services\TagService;
 
 
 class AuditLogController extends Controller
@@ -36,6 +40,12 @@ class AuditLogController extends Controller
                 $header_data = app(CategoryService::class)->findOne($log_data->f_category_id);
                 $form_title = AuditLogTypes::MASTER_DATA_CATEGORY->label(). ' -> ' . $header_data->name;
                 $form_type = AuditLogTypes::MASTER_DATA_CATEGORY->label();
+                break;
+            case AuditLogTypes::MASTER_DATA_TAG->code():
+                $log_data = app(TagAuditLogService::class)->findOneBasedOnId($id);
+                $header_data = app(TagService::class)->findOne($log_data->f_tag_id);
+                $form_title = AuditLogTypes::MASTER_DATA_TAG->label(). ' -> ' . $header_data->name;
+                $form_type = AuditLogTypes::MASTER_DATA_TAG->label();
                 break;
         }
 

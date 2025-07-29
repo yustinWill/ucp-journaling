@@ -22,6 +22,7 @@ use App\Domains\Tag\Services\TagUsageLogService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
 
 
 class TagController extends Controller
@@ -112,6 +113,7 @@ class TagController extends Controller
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_tags,id',
+                'code' => 'required|string|max:255',
                 'name' => 'required|string|max:255',
                 'status' => [
                     'required',
@@ -159,6 +161,9 @@ class TagController extends Controller
         $tag->recent_transactions = $usage_log_data;
         $tag->audit_logs = $audit_log_data;
 
-        return view('pages.master_data.tag.detail', compact('tag'));
+        return view('pages.master_data.tag.detail', array_merge(
+            compact('tag'),
+            ['auditLogType' => AuditLogTypes::MASTER_DATA_TAG->code()]
+        ));
     }
 }

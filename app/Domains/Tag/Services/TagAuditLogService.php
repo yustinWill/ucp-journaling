@@ -26,6 +26,7 @@ class TagAuditLogService
     {
         return DB::table($this->table_name . ' as t')
             ->select([
+                't.id',
                 't.f_tag_id',
                 't.action_type',
                 't.description',
@@ -38,5 +39,13 @@ class TagAuditLogService
             ->where('t.f_tag_id', $id)
             ->orderBy('t.created_at', 'DESC')
             ->get();
+    }
+
+    public function findOneBasedOnId($id)
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->first();
     }
 }

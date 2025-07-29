@@ -132,7 +132,7 @@ class TagService
                 't.name',
                 't.code',
                 't.status',
-                'tc.id as tag_id',
+                'tc.id as tag_color_id',
                 'tc.name as tag_name',
                 'tc.code as tag_code',
                 'tc.preview as tag_preview',

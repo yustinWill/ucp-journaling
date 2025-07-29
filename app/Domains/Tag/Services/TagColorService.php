@@ -11,4 +11,9 @@ class TagColorService
     {
         return DB::table($this->table_name)->orderBy('id', 'asc')->get();
     }
+
+    public function findOne($id)
+    {
+        return DB::table($this->table_name)->where('id', $id)->first();
+    }
 }
