@@ -4,6 +4,7 @@ namespace App\Domains\UserCompany\Services;
 
 use Illuminate\Support\Facades\DB;
 use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\Auth;
 
 class UserCompanyService
 {
@@ -39,5 +40,17 @@ class UserCompanyService
             ->where('c.f_company_code', $companyCode)
             ->where('c.status', GeneralStatuses::ACTIVE)
             ->first();
+    }
+
+    public function create(array $data)
+    {
+        return DB::table($this->table_name)->insertGetId([
+            'f_user_id' => $data['user_id'],
+            'f_company_code' => $data['company_code'],
+            'status' => $data['status'],
+            'default_company' => $data['default_company'],
+            'created_at' => now(),
+            'created_by' => Auth::id()
+        ]);
     }
 }
