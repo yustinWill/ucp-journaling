@@ -18,6 +18,9 @@ use App\Domains\Category\Services\CategoryService;
 use App\Domains\Tag\Services\TagAuditLogService;
 use App\Domains\Tag\Services\TagService;
 
+use App\Domains\SalesPerson\Services\SalesPersonAuditLogService;
+use App\Domains\SalesPerson\Services\SalesPersonService;
+
 
 class AuditLogController extends Controller
 {
@@ -46,6 +49,12 @@ class AuditLogController extends Controller
                 $header_data = app(TagService::class)->findOne($log_data->f_tag_id);
                 $form_title = AuditLogTypes::MASTER_DATA_TAG->label(). ' -> ' . $header_data->name;
                 $form_type = AuditLogTypes::MASTER_DATA_TAG->label();
+                break;
+            case AuditLogTypes::MASTER_DATA_SALES_PERSON->code():
+                $log_data = app(SalesPersonAuditLogService::class)->findOneBasedOnId($id);
+                $header_data = app(SalesPersonService::class)->findOne($log_data->f_sales_person_id);
+                $form_title = AuditLogTypes::MASTER_DATA_SALES_PERSON->label(). ' -> ' . $header_data->code;
+                $form_type = AuditLogTypes::MASTER_DATA_SALES_PERSON->label();
                 break;
         }
 

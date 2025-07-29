@@ -147,6 +147,7 @@ $(document).ready(function() {
                     data: {
                         _token: '{{ csrf_token() }}',
                         id: $('#sales-person-id').val(),
+                        f_sales_person_code: $('#sales-person-code').val(),
                         f_employee_contact_id: $('#sales-person-employee').val(),
                         status: $('#sales-person-status').val(),
                         commission_rate: $('#sales-person-commission').val(),
