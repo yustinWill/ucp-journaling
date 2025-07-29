@@ -85,7 +85,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment . $purchase_delivery_segment . '/index', 'index')->name('main_transaction.purchase_delivery.index');
         Route::get($base_segment . $purchase_delivery_segment . '/index_data_table', 'index_data_table')->name('main_transaction.purchase_delivery.index_data_table');
         Route::get($base_segment . $purchase_delivery_segment . '/add', 'add')->name('main_transaction.purchase_delivery.add');
+        Route::post($base_segment . $purchase_delivery_segment . '/store', 'store')->name('main_transaction.purchase_delivery.store');
         Route::get($base_segment . $purchase_delivery_segment . '/detail/{id}', 'detail')->name('main_transaction.purchase_delivery.detail');
+        Route::get($base_segment . $purchase_delivery_segment . '/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.purchase_delivery.audit_log_data_table');
         Route::get($base_segment . $purchase_delivery_segment . '/edit/{id}', 'edit')->name('main_transaction.purchase_delivery.edit');
         Route::post($base_segment . $purchase_delivery_segment . '/update', 'update')->name('main_transaction.purchase_delivery.update');
         Route::get($base_segment . $purchase_delivery_segment . '/import', 'import')->name('main_transaction.purchase_delivery.import');
@@ -94,6 +96,10 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::post($base_segment . $purchase_delivery_segment . '/process_import', 'processImport')->name('main_transaction.purchase_delivery.process_import');
         Route::get($base_segment . $purchase_delivery_segment . '/export', 'export')->name('main_transaction.purchase_delivery.export');
         Route::post($base_segment . $purchase_delivery_segment . '/process_export', 'processExport')->name('main_transaction.purchase_delivery.process_export');
+        Route::get($base_segment . $purchase_delivery_segment . '/print_pdf/{po_id}', 'printPDF')->name('main_transaction.purchase_delivery.print_pdf');
+        Route::get($base_segment . $purchase_delivery_segment . '/get_po_products', 'getPOProducts')->name('main_transaction.purchase_delivery.get_po_products');
+        Route::get($base_segment . $purchase_delivery_segment . '/get_previous_deliveries', 'getPreviousDeliveries')->name('main_transaction.purchase_delivery.get_previous_deliveries');
+        Route::get($base_segment . $purchase_delivery_segment . '/get_products', 'getProducts')->name('main_transaction.purchase_delivery.get_products');
     });
 
     // Purchase Invoice Routes
@@ -101,7 +107,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment . $purchase_invoice_segment . '/index', 'index')->name('main_transaction.purchase_invoice.index');
         Route::get($base_segment . $purchase_invoice_segment . '/index_data_table', 'index_data_table')->name('main_transaction.purchase_invoice.index_data_table');
         Route::get($base_segment . $purchase_invoice_segment . '/add', 'add')->name('main_transaction.purchase_invoice.add');
+        Route::post($base_segment . $purchase_invoice_segment . '/store', 'store')->name('main_transaction.purchase_invoice.store');
         Route::get($base_segment . $purchase_invoice_segment . '/detail/{id}', 'detail')->name('main_transaction.purchase_invoice.detail');
+        Route::get($base_segment . $purchase_invoice_segment . '/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.purchase_invoice.audit_log_data_table');
         Route::get($base_segment . $purchase_invoice_segment . '/edit/{id}', 'edit')->name('main_transaction.purchase_invoice.edit');
         Route::post($base_segment . $purchase_invoice_segment . '/update', 'update')->name('main_transaction.purchase_invoice.update');
         Route::get($base_segment . $purchase_invoice_segment . '/import', 'import')->name('main_transaction.purchase_invoice.import');

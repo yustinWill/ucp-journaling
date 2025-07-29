@@ -174,7 +174,7 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Gudang</label>
-                            <input type="text" class="form-control" value="{{ $purchaseDelivery['warehouse'] }}" disabled />
+                            <input type="text" class="form-control" value="{{ $purchaseDelivery['storage'] }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Diterima Oleh</label>

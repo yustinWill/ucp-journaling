@@ -33,6 +33,9 @@ class PurchaseInvoiceController extends Controller
         $canExportPurchaseInvoice = PermissionHelper::canRead('main_transaction_purchase_invoice');
         $canViewPurchaseInvoice = PermissionHelper::canRead('main_transaction_purchase_invoice');
         $canEditPurchaseInvoice = PermissionHelper::canWrite('main_transaction_purchase_invoice');
+        $canViewUser = PermissionHelper::canRead('master_data_user');
+        $canViewPurchaseOrder = PermissionHelper::canRead('main_transaction_purchase_order');
+        $canViewPurchaseDelivery = PermissionHelper::canRead('main_transaction_purchase_delivery');
 
         $data = [
             'statuses' => $statuses,
@@ -40,7 +43,10 @@ class PurchaseInvoiceController extends Controller
             'canImportPurchaseInvoice' => $canImportPurchaseInvoice,
             'canExportPurchaseInvoice' => $canExportPurchaseInvoice,
             'canViewPurchaseInvoice' => $canViewPurchaseInvoice,
-            'canEditPurchaseInvoice' => $canEditPurchaseInvoice
+            'canEditPurchaseInvoice' => $canEditPurchaseInvoice,
+            'canViewUser' => $canViewUser,
+            'canViewPurchaseOrder' => $canViewPurchaseOrder,
+            'canViewPurchaseDelivery' => $canViewPurchaseDelivery
         ];
         
         return view('pages.main_transaction.purchase_invoice.index', array_merge($data, $permissionData));
@@ -64,14 +70,19 @@ class PurchaseInvoiceController extends Controller
                     "supplier_id" => 1,
                     "due_date" => "2025-08-10",
                     "status" => "PAID",
+                    "status_badge_class" => "bg-label-success",
                     "po_reference" => "PO-2025-001",
                     "pd_reference" => "PD-2025-001",
                     "invoice_amount" => 25000000,
                     "paid_amount" => 25000000,
                     "remaining_amount" => 0,
+                    "created_by" => "Finance Staff",
+                    "created_by_id" => "USR-002",
+                    "po_id" => 1,
+                    "pd_id" => 1,
                     "tags" => [
-                        ["name" => "Lunas", "color" => "success"],
-                        ["name" => "Bahan Baku", "color" => "primary"]
+                        ["name" => "Lunas", "preview" => "bg-label-success"],
+                        ["name" => "Bahan Baku", "preview" => "bg-label-primary"]
                     ],
                 ],
                 [
@@ -82,14 +93,19 @@ class PurchaseInvoiceController extends Controller
                     "supplier_id" => 2,
                     "due_date" => "2025-08-12",
                     "status" => "PARTIAL_PAID",
+                    "status_badge_class" => "bg-label-warning",
                     "po_reference" => "PO-2025-002",
                     "pd_reference" => "PD-2025-002",
                     "invoice_amount" => 15000000,
                     "paid_amount" => 7500000,
                     "remaining_amount" => 7500000,
+                    "created_by" => "Accounting Staff",
+                    "created_by_id" => "USR-004",
+                    "po_id" => 2,
+                    "pd_id" => 2,
                     "tags" => [
-                        ["name" => "Sebagian Bayar", "color" => "warning"],
-                        ["name" => "Kemasan", "color" => "info"]
+                        ["name" => "Sebagian Bayar", "preview" => "bg-label-warning"],
+                        ["name" => "Kemasan", "preview" => "bg-label-info"]
                     ],
                 ]
             ]
@@ -151,6 +167,55 @@ class PurchaseInvoiceController extends Controller
             'currencies' => $currencies,
             'taxOptions' => $taxOptions
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        // Check write permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
+            return response()->json([
+                'message' => 'Anda tidak memiliki akses untuk menambah data.',
+                'error' => 'PERMISSION_DENIED',
+            ], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'date' => 'required|date',
+                'reference_no' => 'required|string|max:50',
+                'supplier_id' => 'required|integer',
+                'purchase_order_id' => 'nullable|integer',
+                'purchase_delivery_id' => 'nullable|integer',
+                'due_date' => 'required|date',
+                'payment_terms' => 'nullable|string',
+                'currency' => 'nullable|string',
+                'invoice_amount' => 'required|numeric|min:0',
+                'tax_amount' => 'nullable|numeric|min:0',
+                'total_amount' => 'required|numeric|min:0',
+                'notes' => 'nullable|string|max:500',
+                'attachment' => 'nullable|file|max:10240'
+            ]);
+
+            // Mock store logic - in real implementation, call Action
+            // $id = app(CreatePurchaseInvoiceAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => 'Purchase Invoice berhasil disimpan',
+                'id' => 1 // Mock ID
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function($errors) {
+                    return implode(', ', $errors);
+                }, $e->errors())),
+                'error' => 'VALIDATION_ERROR',
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan saat menyimpan data.',
+                'error' => 'INTERNAL_SERVER_ERROR',
+            ], 500);
+        }
     }
 
     public function detail($id)
@@ -223,6 +288,41 @@ class PurchaseInvoiceController extends Controller
         ];
         
         return view('pages.main_transaction.purchase_invoice.detail', array_merge($data, $permissionData));
+    }
+
+    public function auditLogDataTable($id)
+    {
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Mock audit log data - in real implementation, get from audit log service
+        $auditLogs = [
+            [
+                'created_at' => '2025-07-15 16:00:00',
+                'user_id' => 1,
+                'user_name' => 'Finance Staff',
+                'action_type' => 'UPDATE',
+                'description' => 'Status invoice diubah dari PENDING_PAYMENT menjadi PAID'
+            ],
+            [
+                'created_at' => '2025-07-12 14:30:00',
+                'user_id' => 2,
+                'user_name' => 'Accounting Staff',
+                'action_type' => 'UPDATE',
+                'description' => 'Invoice amount diupdate dari Rp 20,000,000 menjadi Rp 25,000,000'
+            ],
+            [
+                'created_at' => '2025-07-10 09:00:00',
+                'user_id' => 3,
+                'user_name' => 'Purchasing Staff',
+                'action_type' => 'CREATE',
+                'description' => 'Purchase Invoice dibuat dengan total Rp 25,000,000 untuk PO-2025-001'
+            ]
+        ];
+
+        return response()->json(['data' => $auditLogs], 200);
     }
 
     public function edit($id)

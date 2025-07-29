@@ -115,16 +115,15 @@
                 <table id="purchase-delivery-table" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Tanggal</th>
-                            <th>No Delivery</th>
-                            <th>Supplier</th>
-                            <th>Tag</th>
-                            <th>PO Reference</th>
-                            <th>Tgl Pengiriman</th>
-                            <th>Status</th>
-                            <th>Total Items</th>
-                            <th>Items Diterima</th>
-                            <th>Aksi</th>
+                            <th style="width: 100px;">Tanggal</th>
+                            <th style="width: 140px;">No Delivery</th>
+                            <th style="width: 180px;">Supplier</th>
+                            <th style="width: 120px;">Tgl Pengiriman</th>
+                            <th style="width: 140px;">PO Reference</th>
+                            <th style="width: 100px;">Status</th>
+                            <th style="width: 120px;">Diinput Oleh</th>
+                            <th style="width: 120px;">Tag</th>
+                            <th style="width: 80px;">Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -143,6 +142,8 @@ $(function() {
     // Permission variables
     const canRead = @json($canViewPurchaseDelivery ?? true);
     const canEdit = @json($canEditPurchaseDelivery ?? true);
+    const canViewUser = @json($canViewUser ?? true);
+    const canViewPurchaseOrder = @json($canViewPurchaseOrder ?? true);
     
     // Initialize DataTable
     function initPurchaseDeliveryTable() {
@@ -158,77 +159,73 @@ $(function() {
                 }
             },
             columns: [
-                { data: 'date', responsivePriority: 2 },
+                { data: 'date', width: '100px' },
                 { 
                     data: 'reference_no',
-                    responsivePriority: 3,
-                    render: function(data, type, row, meta) {
-                        const detailUrl = `{{ route('main_transaction.purchase_delivery.detail', ':id') }}`.replace(':id', row.id);
-                        return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                    width: '140px',
+                    render: function(data, type, row) {
+                        return data; // Non-clickable as per standard
                     }
                 },
                 { 
                     data: 'supplier',
-                    responsivePriority: 4,
-                    render: function(data, type, full, meta) {
-                        const supplierDetailUrl = "{{ route('master_data.contact.detail', ':id') }}".replace(':id', full.supplier_id);
-                        return `<a href="${supplierDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                    }
-                },
-                {
-                    data: 'tags',
-                    responsivePriority: 5,
+                    width: '180px',
                     render: function(data, type, row) {
-                        if (!data || data.length === 0) return '-';
-                        return data.map(tag => {
-                            const colorClass = `bg-label-${tag.color}`;
-                            return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
-                        }).join('');
+                        if (!data) return '-';
+                        if (canRead) {
+                            const detailUrl = `{{ route('master_data.contact.detail', ':id') }}`
+                                .replace(':id', row.supplier_id);
+                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                        }
+                        return data;
                     }
                 },
-                { data: 'po_reference', responsivePriority: 6 },
-                { data: 'delivery_date', responsivePriority: 7 },
+                { data: 'delivery_date', width: '120px' },
+                { 
+                    data: 'po_reference',
+                    width: '140px',
+                    render: function(data, type, row) {
+                        if (!data) return '-';
+                        if (canViewPurchaseOrder && row.po_id) {
+                            const detailUrl = `{{ route('main_transaction.purchase_order.detail', ':id') }}`
+                                .replace(':id', row.po_id);
+                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                        }
+                        return data;
+                    }
+                },
                 { 
                     data: 'status',
-                    responsivePriority: 8,
-                    render: function(data, type, row, meta) {
-                        let badgeClass = '';
-                        switch (data) {
-                            case 'PENDING':
-                                badgeClass = 'bg-label-secondary';
-                                break;
-                            case 'IN_TRANSIT':
-                                badgeClass = 'bg-label-warning';
-                                break;
-                            case 'DELIVERED':
-                                badgeClass = 'bg-label-success';
-                                break;
-                            case 'PARTIAL_DELIVERED':
-                                badgeClass = 'bg-label-info';
-                                break;
-                            case 'CANCELLED':
-                                badgeClass = 'bg-label-danger';
-                                break;
-                            default:
-                                badgeClass = 'bg-label-primary';
+                    width: '100px',
+                    render: function(data, type, row) {
+                        return `<span class="badge ${row.status_badge_class}">${data}</span>`;
+                    }
+                },
+                { 
+                    data: 'created_by',
+                    width: '120px',
+                    render: function(data, type, row) {
+                        if (canViewUser) {
+                            const detailUrl = `{{ route('master_data.user.detail', ':id') }}`
+                                .replace(':id', row.created_by_id);
+                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                         }
-                        return `<span class="badge ${badgeClass}">${data}</span>`;
+                        return data;
                     }
                 },
                 { 
-                    data: 'total_items',
-                    className: 'text-center',
-                    responsivePriority: 9,
-                    render: function(data, type, row, meta) {
-                        return data ?? 0;
-                    }
-                },
-                { 
-                    data: 'delivered_items',
-                    className: 'text-center',
-                    responsivePriority: 10,
-                    render: function(data, type, row, meta) {
-                        return data ?? 0;
+                    data: 'tags',
+                    width: '120px',
+                    render: function(data, type, row) {
+                        if (!data || data.length === 0) {
+                            return '-';
+                        }
+                        let tagsHtml = '';
+                        data.forEach(function(tag) {
+                            let badgeClass = tag.preview || 'bg-label-secondary';
+                            tagsHtml += `<span class="badge me-1 ${badgeClass}">${tag.name}</span>`;
+                        });
+                        return tagsHtml;
                     }
                 },
                 {
@@ -236,22 +233,21 @@ $(function() {
                     orderable: false,
                     searchable: false,
                     responsivePriority: 1,
-                    width: '120px',
+                    width: '80px',
                     render: function(data, type, row, meta) {
-                        const editUrl = `{{ route('main_transaction.purchase_delivery.edit', ':id') }}`.replace(':id', row.id);
                         const detailUrl = `{{ route('main_transaction.purchase_delivery.detail', ':id') }}`.replace(':id', row.id);
-                        
+                        const editUrl = `{{ route('main_transaction.purchase_delivery.edit', ':id') }}`.replace(':id', row.id);
                         let actions = '<div class="d-flex gap-2">';
                         
                         if (canRead) {
                             actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                <i class="icon-base ti tabler-eye"></i>
+                                <i class="icon-xs icon-base ti tabler-eye"></i>
                             </a>`;
                         }
                         
                         if (canEdit) {
                             actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                <i class="icon-base ti tabler-edit"></i>
+                                <i class="icon-xs icon-base ti tabler-edit"></i>
                             </a>`;
                         }
                         
@@ -300,7 +296,7 @@ $(function() {
     
     // Tag Column Toggle Functionality
     $('#toggleTagColumn').on('change', function() {
-        const tagColumn = purchaseDeliveryTable.column(3); // Tag column index (0-based)
+        const tagColumn = purchaseDeliveryTable.column(7); // Tag column index (0-based)
         tagColumn.visible(this.checked);
     });
 });

@@ -77,8 +77,8 @@
                     <label class="form-label">Gudang</label>
                     <select class="global-select2 form-select" id="warehouse-filter" data-allow-clear="true">
                         <option value="">Semua Gudang</option>
-                        @foreach($warehouses as $warehouse)
-                            <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
+                        @foreach($storages as $storage)
+                            <option value="{{ $storage['value'] }}">{{ $storage['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
