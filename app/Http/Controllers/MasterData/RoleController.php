@@ -6,6 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+//Services
+use App\Domains\Role\Services\RoleService;
+
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
+
 class RoleController extends Controller
 {
     public function index()
@@ -14,76 +22,82 @@ class RoleController extends Controller
         return view('pages.master_data.role.index', $selectData);
     }
 
+    // public function index_data_table()
+    // {
+    //     // Mock data for now - will be replaced with actual database queries
+    //     $data = [
+    //         "data" => [
+    //             [
+    //                 "id" => 1,
+    //                 "name" => "Super Admin",
+    //                 "description" => "Full system access with all permissions",
+    //                 "user_count" => 1,
+    //                 "permissions_count" => 12,
+    //                 "tags" => [
+    //                     ["name" => "SYSTEM", "color" => "danger"],
+    //                     ["name" => "MANAGEMENT", "color" => "primary"]
+    //                 ],
+    //                 "status" => "ACTIVE",
+    //                 "created_at" => "2025-01-01 10:00:00",
+    //             ],
+    //             [
+    //                 "id" => 2,
+    //                 "name" => "Admin",
+    //                 "description" => "Administrative access with limited permissions",
+    //                 "user_count" => 3,
+    //                 "permissions_count" => 8,
+    //                 "tags" => [
+    //                     ["name" => "MANAGEMENT", "color" => "primary"]
+    //                 ],
+    //                 "status" => "ACTIVE",
+    //                 "created_at" => "2025-01-01 10:00:00",
+    //             ],
+    //             [
+    //                 "id" => 3,
+    //                 "name" => "Accounting",
+    //                 "description" => "Financial and accounting module access",
+    //                 "user_count" => 2,
+    //                 "permissions_count" => 6,
+    //                 "tags" => [
+    //                     ["name" => "OPERATIONAL", "color" => "success"]
+    //                 ],
+    //                 "status" => "ACTIVE",
+    //                 "created_at" => "2025-01-01 10:00:00",
+    //             ],
+    //             [
+    //                 "id" => 4,
+    //                 "name" => "Sales",
+    //                 "description" => "Sales and customer management access",
+    //                 "user_count" => 4,
+    //                 "permissions_count" => 4,
+    //                 "tags" => [
+    //                     ["name" => "OPERATIONAL", "color" => "success"],
+    //                     ["name" => "SUPPORT", "color" => "info"]
+    //                 ],
+    //                 "status" => "ACTIVE",
+    //                 "created_at" => "2025-01-01 10:00:00",
+    //             ],
+    //             [
+    //                 "id" => 5,
+    //                 "name" => "Purchase",
+    //                 "description" => "Purchase and supplier management access",
+    //                 "user_count" => 0,
+    //                 "permissions_count" => 4,
+    //                 "tags" => [
+    //                     ["name" => "CUSTOM", "color" => "warning"]
+    //                 ],
+    //                 "status" => "INACTIVE",
+    //                 "created_at" => "2025-01-01 10:00:00",
+    //             ],
+    //         ]
+    //     ];
+    //     return response()->json($data, 200);
+    // }
+
     public function index_data_table()
     {
-        // Mock data for now - will be replaced with actual database queries
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "name" => "Super Admin",
-                    "description" => "Full system access with all permissions",
-                    "user_count" => 1,
-                    "permissions_count" => 12,
-                    "tags" => [
-                        ["name" => "SYSTEM", "color" => "danger"],
-                        ["name" => "MANAGEMENT", "color" => "primary"]
-                    ],
-                    "status" => "ACTIVE",
-                    "created_at" => "2025-01-01 10:00:00",
-                ],
-                [
-                    "id" => 2,
-                    "name" => "Admin",
-                    "description" => "Administrative access with limited permissions",
-                    "user_count" => 3,
-                    "permissions_count" => 8,
-                    "tags" => [
-                        ["name" => "MANAGEMENT", "color" => "primary"]
-                    ],
-                    "status" => "ACTIVE",
-                    "created_at" => "2025-01-01 10:00:00",
-                ],
-                [
-                    "id" => 3,
-                    "name" => "Accounting",
-                    "description" => "Financial and accounting module access",
-                    "user_count" => 2,
-                    "permissions_count" => 6,
-                    "tags" => [
-                        ["name" => "OPERATIONAL", "color" => "success"]
-                    ],
-                    "status" => "ACTIVE",
-                    "created_at" => "2025-01-01 10:00:00",
-                ],
-                [
-                    "id" => 4,
-                    "name" => "Sales",
-                    "description" => "Sales and customer management access",
-                    "user_count" => 4,
-                    "permissions_count" => 4,
-                    "tags" => [
-                        ["name" => "OPERATIONAL", "color" => "success"],
-                        ["name" => "SUPPORT", "color" => "info"]
-                    ],
-                    "status" => "ACTIVE",
-                    "created_at" => "2025-01-01 10:00:00",
-                ],
-                [
-                    "id" => 5,
-                    "name" => "Purchase",
-                    "description" => "Purchase and supplier management access",
-                    "user_count" => 0,
-                    "permissions_count" => 4,
-                    "tags" => [
-                        ["name" => "CUSTOM", "color" => "warning"]
-                    ],
-                    "status" => "INACTIVE",
-                    "created_at" => "2025-01-01 10:00:00",
-                ],
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(RoleService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
