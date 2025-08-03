@@ -18,6 +18,7 @@ enum SuccessCodes: string
     case CREATE_CATEGORY_SUCCESS = 'CREATE_CATEGORY_SUCCESS';
     case UPDATE_CATEGORY_SUCCESS = 'UPDATE_CATEGORY_SUCCESS';
     case CREATE_COA_SUCCESS = 'CREATE_COA_SUCCESS';
+    case CREATE_ROLE_SUCCESS = 'CREATE_ROLE_SUCCESS';
 
     public function message(): string
     {
@@ -34,6 +35,7 @@ enum SuccessCodes: string
             self::UPDATE_CATEGORY_SUCCESS => 'Kategori berhasil diubah.',
             self::GENERAL_SUCCESS => 'Berhasil',
             self::CREATE_COA_SUCCESS => 'COA berhasil dibuat.',
+            self::CREATE_ROLE_SUCCESS => 'Role berhasil dibuat.',
         };
     }
 
@@ -52,6 +54,7 @@ enum SuccessCodes: string
             self::UPDATE_CATEGORY_SUCCESS => self::OK,
             self::GENERAL_SUCCESS => self::OK,
             self::CREATE_COA_SUCCESS => self::OK,
+            self::CREATE_ROLE_SUCCESS => self::OK,
         };
     }
 

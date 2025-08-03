@@ -12,9 +12,9 @@ class RolePermissionService
     {
         return DB::table($this->table_name . ' as rp')
             ->select([
-               'm.name AS module_name',
-               'p.permission_type AS permission_type',
-               'rp.status AS status'
+                'm.name AS module_name',
+                'p.permission_type AS permission_type',
+                'rp.status AS status'
             ])
             ->join('permissions as p', 'p.id', '=', 'rp.permission_id')
             ->join('modules as m', 'm.id', '=', 'p.module_id')
@@ -23,5 +23,16 @@ class RolePermissionService
             ->orderBy('p.id', 'ASC')
             ->orderBy('rp.id', 'ASC')
             ->get();
+    }
+
+    public function create(array $data)
+    {
+        return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
+            'role_id' => $data['role_id'],
+            'permission_id' => $data['permission_id'],
+            'status' => $data['status'],
+            'created_at' => now()
+        ]);
     }
 }

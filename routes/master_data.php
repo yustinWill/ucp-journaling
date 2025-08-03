@@ -99,6 +99,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $role_segment . '/index', 'index')->name('master_data.role.index');
         Route::get($base_segment . $role_segment . '/index_data_table', 'index_data_table')->name('master_data.role.index_data_table');
         Route::get($base_segment . $role_segment . '/add', 'add')->name('master_data.role.add');
+        Route::post($base_segment . $role_segment . '/save', 'save')->name('master_data.role.save');
         Route::get($base_segment . $role_segment . '/edit/{id}', 'edit')->name('master_data.role.edit');
         Route::get($base_segment . $role_segment . '/detail/{id}', 'detail')->name('master_data.role.detail');
         Route::get($base_segment . $role_segment . '/export', 'export')->name('master_data.role.export');

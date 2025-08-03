@@ -3,96 +3,48 @@
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\PermissionHelper;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
 
 //Services
 use App\Domains\Role\Services\RoleService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\Permission\Services\PermissionService;
+use App\Domains\Module\Services\ModuleService;
+
+//Actions
+use App\Domains\Role\Actions\CreateRoleAction;
+use App\Domains\Role\Actions\UpdateRoleAction;
 
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
-use App\Enums\AuditLogTypes;
 
 class RoleController extends Controller
 {
+    private $statuses = [
+        ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+    ];
+
+    private $permission_types =  [
+        ['value' => 'read', 'label' => 'Read'],
+        ['value' => 'write', 'label' => 'Write'],
+        ['value' => 'delete', 'label' => 'Delete'],
+        ['value' => 'approval', 'label' => 'Approval'],
+    ];
+
     public function index()
     {
         $selectData = $this->getIndexSelectData();
         return view('pages.master_data.role.index', $selectData);
     }
-
-    // public function index_data_table()
-    // {
-    //     // Mock data for now - will be replaced with actual database queries
-    //     $data = [
-    //         "data" => [
-    //             [
-    //                 "id" => 1,
-    //                 "name" => "Super Admin",
-    //                 "description" => "Full system access with all permissions",
-    //                 "user_count" => 1,
-    //                 "permissions_count" => 12,
-    //                 "tags" => [
-    //                     ["name" => "SYSTEM", "color" => "danger"],
-    //                     ["name" => "MANAGEMENT", "color" => "primary"]
-    //                 ],
-    //                 "status" => "ACTIVE",
-    //                 "created_at" => "2025-01-01 10:00:00",
-    //             ],
-    //             [
-    //                 "id" => 2,
-    //                 "name" => "Admin",
-    //                 "description" => "Administrative access with limited permissions",
-    //                 "user_count" => 3,
-    //                 "permissions_count" => 8,
-    //                 "tags" => [
-    //                     ["name" => "MANAGEMENT", "color" => "primary"]
-    //                 ],
-    //                 "status" => "ACTIVE",
-    //                 "created_at" => "2025-01-01 10:00:00",
-    //             ],
-    //             [
-    //                 "id" => 3,
-    //                 "name" => "Accounting",
-    //                 "description" => "Financial and accounting module access",
-    //                 "user_count" => 2,
-    //                 "permissions_count" => 6,
-    //                 "tags" => [
-    //                     ["name" => "OPERATIONAL", "color" => "success"]
-    //                 ],
-    //                 "status" => "ACTIVE",
-    //                 "created_at" => "2025-01-01 10:00:00",
-    //             ],
-    //             [
-    //                 "id" => 4,
-    //                 "name" => "Sales",
-    //                 "description" => "Sales and customer management access",
-    //                 "user_count" => 4,
-    //                 "permissions_count" => 4,
-    //                 "tags" => [
-    //                     ["name" => "OPERATIONAL", "color" => "success"],
-    //                     ["name" => "SUPPORT", "color" => "info"]
-    //                 ],
-    //                 "status" => "ACTIVE",
-    //                 "created_at" => "2025-01-01 10:00:00",
-    //             ],
-    //             [
-    //                 "id" => 5,
-    //                 "name" => "Purchase",
-    //                 "description" => "Purchase and supplier management access",
-    //                 "user_count" => 0,
-    //                 "permissions_count" => 4,
-    //                 "tags" => [
-    //                     ["name" => "CUSTOM", "color" => "warning"]
-    //                 ],
-    //                 "status" => "INACTIVE",
-    //                 "created_at" => "2025-01-01 10:00:00",
-    //             ],
-    //         ]
-    //     ];
-    //     return response()->json($data, 200);
-    // }
 
     public function index_data_table()
     {
@@ -102,8 +54,65 @@ class RoleController extends Controller
 
     public function add()
     {
-        $selectData = $this->getSelectData();
-        return view('pages.master_data.role.add', $selectData);
+        $roles = app(RoleService::class)->findAll();
+        $tags = app(TagService::class)->findAll();
+        $modules = app(ModuleService::class)->findAll();
+        $permissions = app(PermissionService::class)->findAll();
+
+        // Permission checks for add buttons
+        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddRoles = PermissionHelper::canWrite('master_data_role');
+
+        return view('pages.master_data.role.add', [
+            'roles' => $roles,
+            'tags' => $tags,
+            'canAddTags' => $canAddTags,
+            'canAddRoles' => $canAddRoles,
+            'statuses' => $this->statuses,
+            'permission_types' => $this->permission_types,
+            'modules' => $modules,
+            'permissions' => $permissions
+        ]);
+    }
+
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'status' => 'required|string|in:ACTIVE,INACTIVE',
+                'description' => 'required|string|max:255',
+                'tags' => 'nullable|array',
+                'permissions' => 'required|array',
+                'permissions.*.module_id' => 'required|integer|exists:modules,id',
+                'permissions.*.permission_type' => [
+                    'required',
+                    Rule::in(['read', 'write', 'delete', 'approval']),
+                ],
+            ]);
+
+            app(CreateRoleAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_ROLE_SUCCESS->message()
+            ], SuccessCodes::CREATE_ROLE_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function edit($id)
@@ -116,7 +125,7 @@ class RoleController extends Controller
             'is_active' => true,
             'permissions' => [1, 2, 3, 5, 6, 7, 9, 10] // Mock selected permission IDs
         ];
-        
+
         $selectData = $this->getSelectData();
         return view('pages.master_data.role.edit', compact('role') + $selectData);
     }
@@ -209,7 +218,7 @@ class RoleController extends Controller
 
             // Delete role permissions first
             DB::table('role_permissions')->where('role_id', $id)->delete();
-            
+
             // Delete the role
             DB::table('roles')->where('id', $id)->delete();
 
@@ -289,17 +298,6 @@ class RoleController extends Controller
 
     private function getSelectData()
     {
-        $tags = [
-            ['value' => 'SYSTEM', 'label' => 'SYSTEM - System Role', 'color' => 'danger'],
-            ['value' => 'MANAGEMENT', 'label' => 'MANAGEMENT - Manajemen', 'color' => 'primary'],
-            ['value' => 'OPERATIONAL', 'label' => 'OPERATIONAL - Operasional', 'color' => 'success'],
-            ['value' => 'SUPPORT', 'label' => 'SUPPORT - Support', 'color' => 'info'],
-            ['value' => 'CUSTOM', 'label' => 'CUSTOM - Kustom', 'color' => 'warning']
-        ];
-
-        // Permission check for adding new tags
-        $canAddTags = true; // Mock permission check
-
         return [
             'modules' => [
                 ['id' => 1, 'name' => 'User Management', 'slug' => 'user'],
@@ -335,8 +333,6 @@ class RoleController extends Controller
                 ['value' => 'delete', 'label' => 'Delete'],
                 ['value' => 'approval', 'label' => 'Approval'],
             ],
-            'tags' => $tags,
-            'canAddTags' => $canAddTags
         ];
     }
 

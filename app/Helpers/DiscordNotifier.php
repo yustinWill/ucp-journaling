@@ -9,6 +9,10 @@ class DiscordNotifier
 {
     public static function send($message)
     {
+        // Discord message limit is 2000 characters
+        if (strlen($message) > 2000) {
+            $message = substr($message, 0, 1997) . '...';
+        }
         Http::post(env('DISCORD_WEBHOOK_URL'), [
             'content' => $message
         ]);
@@ -18,7 +22,7 @@ class DiscordNotifier
     {
         $ip = request()->ip();
         $url = request()->fullUrl();
-        $user = Auth::user()->name ." - ".Auth::user()->email;
+        $user = Auth::user()->name . " - " . Auth::user()->email;
         $env = app()->environment();
         $time = now()->toDateTimeString();
 

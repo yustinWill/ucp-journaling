@@ -69,8 +69,7 @@ class RoleService
         if ($status = request()->input('status')) {
             if ($status === 'ACTIVE') {
                 $query->where('t.is_active', true);
-            }
-            else{
+            } else {
                 $query->where('t.is_active', false);
             }
         }
@@ -103,11 +102,34 @@ class RoleService
         $query->orderBy('name', 'ASC');
         $data = $query->get();
 
+        foreach ($data as &$role) {
+            if (!empty($role->tags)) {
+                $tags = json_decode($role->tags, true);
+                $uniqueTags = [];
+                foreach ($tags as $tag) {
+                    $key = $tag['code'] . '_' . $tag['preview'];
+                    $uniqueTags[$key] = $tag;
+                }
+                $role->tags = json_encode(array_values($uniqueTags));
+            }
+        }
+
         return [
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ];
+    }
+
+    public function create(array $data)
+    {
+        return DB::table($this->table_name)->insertGetId([
+            'name' => $data['name'],
+            'description' => $data['description'],
+            'f_tag_codes' => json_encode($data['tags']),
+            'is_active' => $data['is_active'] ?? true,
+            'created_at' => now(),
+        ]);
     }
 }
