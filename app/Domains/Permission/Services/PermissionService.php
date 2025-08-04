@@ -45,9 +45,9 @@ class PermissionService
             ])
             ->join('modules as m', 'p.module_id', '=', 'm.id')
             ->leftJoin('role_permissions as rp', function ($join) use ($roleId) {
-                $join->on('rp.permission_id', '=', 'p.id')
-                    ->where('rp.role_id', '=', $roleId);
+                $join->on('rp.permission_id', '=', 'p.id');
             })
+            ->where('rp.role_id', '=', $roleId)
             ->orderBy('m.id')
             ->orderBy('p.id')
             ->get();

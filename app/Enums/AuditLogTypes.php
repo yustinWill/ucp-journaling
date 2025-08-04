@@ -9,6 +9,7 @@ enum AuditLogTypes: string
     case MASTER_DATA_TAG = 'MASTER_DATA_TAG';
     case MASTER_DATA_SALES_PERSON = 'MASTER_DATA_SALES_PERSON';
     case MASTER_DATA_USER = 'MASTER_DATA_USER';
+    case MASTER_DATA_ROLE = 'MASTER_DATA_ROLE';
 
     public function label(): string
     {
@@ -18,6 +19,7 @@ enum AuditLogTypes: string
             self::MASTER_DATA_TAG => 'Master Data Tag',
             self::MASTER_DATA_SALES_PERSON => 'Master Data Sales Person',
             self::MASTER_DATA_USER => 'Master Data Pengguna',
+            self::MASTER_DATA_ROLE => 'Master Data Role',
 
         };
     }
@@ -30,6 +32,7 @@ enum AuditLogTypes: string
             self::MASTER_DATA_TAG => 'MASTER_DATA_TAG',
             self::MASTER_DATA_SALES_PERSON => 'MASTER_DATA_SALES_PERSON',
             self::MASTER_DATA_USER => 'MASTER_DATA_USER',
+            self::MASTER_DATA_ROLE => 'MASTER_DATA_ROLE',
         };
     }
 }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\MasterData;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Helpers\PermissionHelper;
 use Illuminate\Validation\ValidationException;
 use App\Exceptions\AppException;
@@ -26,6 +25,7 @@ use App\Domains\Role\Services\RoleAuditLogService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
 
 class RoleController extends Controller
 {
@@ -118,17 +118,32 @@ class RoleController extends Controller
 
     public function edit($id)
     {
-        // Mock role data - will be replaced with actual database queries
-        $role = [
-            'id' => $id,
-            'name' => 'Admin',
-            'description' => 'Administrative access with limited permissions',
-            'is_active' => true,
-            'permissions' => [1, 2, 3, 5, 6, 7, 9, 10] // Mock selected permission IDs
-        ];
+        $role = app(RoleService::class)->findOne($id);
 
-        $selectData = $this->getSelectData();
-        return view('pages.master_data.role.edit', compact('role') + $selectData);
+        if ($role == null) {
+            abort(404);
+        }
+
+        $tags = app(TagService::class)->findAll();
+        $modules = app(ModuleService::class)->findAll();
+        $permissions = app(PermissionService::class)->findAll();
+        $role_permissions = app(PermissionService::class)->findAllBasedOnRole($id);
+
+        $role_permissions_arr = [];
+        foreach ($role_permissions as $perm) {
+            $role_permissions_arr[] = $perm->id;
+        }
+
+        $role->f_tag_codes = json_decode($role->f_tag_codes, true);
+
+        return view('pages.master_data.role.edit', [
+            'role' => $role,
+            'tags' => $tags,
+            'modules' => $modules,
+            'permissions' => $permissions,
+            'permission_types' => $this->permission_types,
+            'role_permissions' => $role_permissions_arr
+        ]);
     }
 
     public function detail($id)
@@ -142,51 +157,55 @@ class RoleController extends Controller
         $auditLogs = app(RoleAuditLogService::class)->findAllBasedOnId($id);
         $userList = app(UserService::class)->findAllBasedOnRole($id);
 
-        $selectData = $this->getSelectData();
-        return view('pages.master_data.role.detail', compact('role', 'auditLogs', 'userList'));
+        return view('pages.master_data.role.detail', [
+            'role' => $role,
+            'auditLogs' => $auditLogs,
+            'userList' => $userList,
+            'auditLogType' =>  AuditLogTypes::MASTER_DATA_ROLE->code()
+        ]);
     }
 
-    public function store(Request $request)
-    {
-        // TODO: Implement role creation
-        return response()->json(['message' => 'Role created successfully'], 201);
-    }
-
-    public function update(Request $request, $id)
-    {
-        // TODO: Implement role update
-        return response()->json(['message' => 'Role updated successfully'], 200);
-    }
-
-    public function destroy($id)
+    public function update(Request $request)
     {
         try {
-            // Check if role exists
-            $role = DB::table('roles')->where('id', $id)->first();
-            if (!$role) {
-                return response()->json(['message' => 'Role not found'], 404);
-            }
+            $validated = $request->validate([
+                'id' => 'required|exists:roles,id',
+                'name' => 'required|string|max:255',
+                'description' => 'required|string|max:255',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'tags' => 'nullable|array',
+                'permissions' => 'required|array',
+                'permissions.*.module_id' => 'required|integer|exists:modules,id',
+                'permissions.*.permission_type' => [
+                    'required',
+                    Rule::in(['read', 'write', 'delete', 'approval']),
+                ],
+            ]);
 
-            // Check if role has users assigned
-            $userCount = DB::table('users')->where('role_id', $id)->count();
-            if ($userCount > 0) {
-                return response()->json([
-                    'message' => 'Cannot delete role. There are ' . $userCount . ' user(s) still assigned to this role.',
-                    'error' => 'role_has_users'
-                ], 422);
-            }
+            app(UpdateRoleAction::class)->execute($request->id, $validated);
 
-            // Delete role permissions first
-            DB::table('role_permissions')->where('role_id', $id)->delete();
-
-            // Delete the role
-            DB::table('roles')->where('id', $id)->delete();
-
-            return response()->json(['message' => 'Role deleted successfully'], 200);
-        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error deleting role: ' . $e->getMessage()
-            ], 500);
+                'message' => SuccessCodes::UPDATE_ROLE_SUCCESS->message()
+            ], SuccessCodes::UPDATE_ROLE_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 

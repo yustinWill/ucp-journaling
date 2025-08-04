@@ -15,19 +15,21 @@
                     <div class="text-end">
                         @php
                             $totalActions = 1; // Edit always present
-                            if($role->user_count == 0) {
+                            if ($role->user_count == 0) {
                                 $totalActions++; // Add delete action when no users
                             }
                         @endphp
-                        
-                        @if($totalActions < 3)
+
+                        @if ($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.role.edit', $role->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                <a href="{{ route('master_data.role.edit', $role->id) }}"
+                                    class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
-                                @if($role->user_count == 0)
-                                    <button type="button" class="btn btn-danger btn-md waves-effect waves-light" id="delete-role-btn">
+                                @if ($role->user_count == 0)
+                                    <button type="button" class="btn btn-danger btn-md waves-effect waves-light"
+                                        id="delete-role-btn">
                                         <i class="icon-base ti tabler-trash me-2"></i>Hapus
                                     </button>
                                 @endif
@@ -35,15 +37,18 @@
                         @else
                             <!-- Show dropdown for 3 or more actions -->
                             <div class="dropdown">
-                                <button type="button" class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle" data-bs-toggle="dropdown">
+                                <button type="button"
+                                    class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle"
+                                    data-bs-toggle="dropdown">
                                     Aksi
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{{ route('master_data.role.edit', $role->id) }}">
-                                        <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
-                                    @if($role->user_count == 0)
-                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);" id="delete-role-btn">
-                                            <i class="icon-base ti tabler-trash me-2"></i>Hapus</a></li>
+                                            <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
+                                    @if ($role->user_count == 0)
+                                        <li><a class="dropdown-item text-danger" href="javascript:void(0);"
+                                                id="delete-role-btn">
+                                                <i class="icon-base ti tabler-trash me-2"></i>Hapus</a></li>
                                     @endif
                                 </ul>
                             </div>
@@ -64,11 +69,12 @@
                 <h6>Informasi Role</h6>
                 <hr class="mx-n6">
             </div>
-            
+
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
-                    <input type="text" class="form-control" value="{{ $role->is_active ? 'Aktif' : 'Tidak Aktif' }}" disabled />
+                    <input type="text" class="form-control" value="{{ $role->is_active ? 'Aktif' : 'Tidak Aktif' }}"
+                        disabled />
                 </div>
                 <div class="col-md-6">
                     <!-- Empty column for layout balance -->
@@ -101,7 +107,7 @@
                 <h6>Ringkasan Hak Akses</h6>
                 <hr class="mx-n6">
             </div>
-            
+
             <div class="row g-3 mb-12">
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
@@ -166,7 +172,7 @@
                                 <h6>Pengguna dengan Role Ini</h6>
                             </div>
                             <div id="users-content">
-                               <table id="users-log-table" class="table table-bordered">
+                                <table id="users-log-table" class="table table-bordered">
                                     <thead>
                                         <tr>
                                             <th>Nama</th>
@@ -174,11 +180,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($userList as $user)
-                                        <tr>
-                                            <td>{{ $user->name }}</td>
-                                            <td>{{ $user->email }}</td>
-                                        </tr>
+                                        @foreach ($userList as $user)
+                                            <tr>
+                                                <td>{{ $user->name }}</td>
+                                                <td>{{ $user->email }}</td>
+                                            </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -198,22 +204,34 @@
                                             <th>Pengguna</th>
                                             <th>Aksi</th>
                                             <th>Deskripsi</th>
+                                            <th>Lihat Detail</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($auditLogs as $log)
-                                        <tr>
-                                            <td>{{ $log->created_at }}</td>
-                                            <td>
-                                                <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" class="text-primary fw-semibold">
-                                                    {{ $log->user_name }}
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-label-info">{{ $log->action_type }}</span>
-                                            </td>
-                                            <td>{{ $log->description }}</td>
-                                        </tr>
+                                        @foreach ($auditLogs as $log)
+                                            <tr>
+                                                <td>{{ $log->created_at }}</td>
+                                                <td>
+                                                    <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}"
+                                                        class="text-primary fw-semibold">
+                                                        {{ $log->user_name }}
+                                                    </a>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                                </td>
+                                                <td>{{ $log->description }}</td>
+                                                <td>
+                                                    @if ($log->action_type == 'UPDATE')
+                                                        <a target="_blank"
+                                                            href="{{ route('audit_log.detail', ['id' => $log->id, 'audit_log_type' => $auditLogType]) }}"
+                                                            class="btn btn-sm btn-primary waves-effect waves-light"
+                                                            title="Detail">
+                                                            <i class="icon-xs icon-base ti tabler-eye"></i>
+                                                        </a>
+                                                    @endif
+                                                </td>
+                                            </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -227,166 +245,115 @@
 @endsection
 
 @section('js_script')
-<script>
-    $(function() {
-        var roleId = parseInt('{{ $role->id }}');
-        
-        // Initialize DataTable for audit log
-        $('#audit-log-table').DataTable({
-            responsive: true,
-            orderCellsTop: true,
-            searching: false,
-            paging: false,
-            info: false,
-            order: [[0, 'desc']] // Sort by date descending
-        });
-        
-        // Load permissions content on page load
-        loadPermissionsContent();
-        
-        // Tab event handlers
-        $('#permissions-list-item').on('shown.bs.tab', function () {
+    <script>
+        $(function() {
+            var roleId = parseInt('{{ $role->id }}');
+
+            // Initialize DataTable for audit log
+            $('#audit-log-table').DataTable({
+                responsive: true,
+                orderCellsTop: true,
+                searching: false,
+                paging: false,
+                info: false,
+                order: [
+                    [0, 'desc']
+                ] // Sort by date descending
+            });
+
+            // Load permissions content on page load
             loadPermissionsContent();
-        });
 
-        // Update permission counts
-        function updatePermissionCounts() {
-            $.get('/master_data/role/permissions/' + roleId, function(data) {
-                var readCount = 0, writeCount = 0, deleteCount = 0, approvalCount = 0;
-                
-                Object.keys(data).forEach(function(moduleName) {
-                    data[moduleName].forEach(function(permission) {
-                        if (permission.granted) {
-                            switch(permission.type) {
-                                case 'read': readCount++; break;
-                                case 'write': writeCount++; break;
-                                case 'delete': deleteCount++; break;
-                                case 'approval': approvalCount++; break;
+            // Tab event handlers
+            $('#permissions-list-item').on('shown.bs.tab', function() {
+                loadPermissionsContent();
+            });
+
+            // Update permission counts
+            function updatePermissionCounts() {
+                $.get('/master_data/role/permissions/' + roleId, function(data) {
+                    var readCount = 0,
+                        writeCount = 0,
+                        deleteCount = 0,
+                        approvalCount = 0;
+
+                    Object.keys(data).forEach(function(moduleName) {
+                        data[moduleName].forEach(function(permission) {
+                            if (permission.granted) {
+                                switch (permission.type) {
+                                    case 'read':
+                                        readCount++;
+                                        break;
+                                    case 'write':
+                                        writeCount++;
+                                        break;
+                                    case 'delete':
+                                        deleteCount++;
+                                        break;
+                                    case 'approval':
+                                        approvalCount++;
+                                        break;
+                                }
                             }
-                        }
-                    });
-                });
-                
-                $('#read-count').text(readCount);
-                $('#write-count').text(writeCount);
-                $('#delete-count').text(deleteCount);
-                $('#approval-count').text(approvalCount);
-            });
-        }
-
-        // Load permissions content
-        function loadPermissionsContent() {
-            $.get('/master_data/role/permissions/' + roleId, function(data) {
-                var content = '';
-                
-                Object.keys(data).forEach(function(moduleName) {
-                    content += '<div class="mb-4">';
-                    content += '<div class="d-flex justify-content-between align-items-center mb-3">';
-                    content += '<h6 class="mb-0">';
-                    content += '<i class="icon-base ti tabler-folder me-2"></i>';
-                    content += moduleName;
-                    content += '</h6>';
-                    content += '</div>';
-                    content += '<div class="row g-3">';
-                    
-                    data[moduleName].forEach(function(permission) {
-                        var badgeClass = permission.granted ? 'bg-label-success' : 'bg-label-secondary';
-                        var iconClass = permission.type === 'read' ? 'tabler-eye' : 
-                                        permission.type === 'write' ? 'tabler-edit' : 
-                                        permission.type === 'delete' ? 'tabler-trash' : 'tabler-check';
-                        
-                        content += '<div class="col-md-3">';
-                        content += '<span class="badge ' + badgeClass + ' d-flex align-items-center">';
-                        content += '<i class="icon-base ti ' + iconClass + ' me-1"></i>';
-                        content += permission.name;
-                        content += '</span>';
-                        content += '</div>';
-                    });
-                    
-                    content += '</div>';
-                    if (Object.keys(data).indexOf(moduleName) < Object.keys(data).length - 1) {
-                        content += '<hr class="my-4">';
-                    }
-                    content += '</div>';
-                });
-                
-                $('#permissions-content').html(content);
-                // Update counts after loading permissions
-                updatePermissionCounts();
-            }).fail(function() {
-                $('#permissions-content').html('<div class="alert alert-danger">Error loading permissions data</div>');
-            });
-        }
-
-        // Delete role functionality
-        $(document).on('click', '#delete-role-btn', function(e) {
-            e.preventDefault();
-            
-            Swal.fire({
-                title: 'Hapus Role?',
-                text: 'Data role akan dihapus permanen dan tidak dapat dikembalikan!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal',
-                customClass: {
-                    confirmButton: 'btn btn-danger',
-                    cancelButton: 'btn btn-secondary'
-                },
-                buttonsStyling: false
-            }).then(function(result) {
-                if (result.value) {
-                    var deleteUrl = '{{ route("master_data.role.destroy", ":id") }}';
-                    deleteUrl = deleteUrl.replace(':id', roleId);
-                    
-                    // Send DELETE request to server
-                    fetch(deleteUrl, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Content-Type': 'application/json',
-                        },
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error === 'role_has_users') {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Tidak Dapat Menghapus Role',
-                                text: data.message,
-                                customClass: {
-                                    confirmButton: 'btn btn-primary'
-                                },
-                                buttonsStyling: false
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: 'Role berhasil dihapus.',
-                                customClass: {
-                                    confirmButton: 'btn btn-success'
-                                },
-                                buttonsStyling: false
-                            }).then(() => {
-                                window.location.href = "{{ route('master_data.role.index') }}";
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Kesalahan!',
-                            text: 'Terjadi kesalahan saat menghapus role.',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
-                            buttonsStyling: false
                         });
                     });
-                }
-            });
+
+                    $('#read-count').text(readCount);
+                    $('#write-count').text(writeCount);
+                    $('#delete-count').text(deleteCount);
+                    $('#approval-count').text(approvalCount);
+                });
+            }
+
+            // Load permissions content
+            function loadPermissionsContent() {
+                $.get('/master_data/role/permissions/' + roleId, function(data) {
+                    var content = '';
+
+                    Object.keys(data).forEach(function(moduleName) {
+                        content += '<div class="mb-4">';
+                        content +=
+                            '<div class="d-flex justify-content-between align-items-center mb-3">';
+                        content += '<h6 class="mb-0">';
+                        content += '<i class="icon-base ti tabler-folder me-2"></i>';
+                        content += moduleName;
+                        content += '</h6>';
+                        content += '</div>';
+                        content += '<div class="row g-3">';
+
+                        data[moduleName].forEach(function(permission) {
+                            var badgeClass = permission.granted ? 'bg-label-success' :
+                                'bg-label-secondary';
+                            var iconClass = permission.type === 'read' ? 'tabler-eye' :
+                                permission.type === 'write' ? 'tabler-edit' :
+                                permission.type === 'delete' ? 'tabler-trash' :
+                                'tabler-check';
+
+                            content += '<div class="col-md-3">';
+                            content += '<span class="badge ' + badgeClass +
+                                ' d-flex align-items-center">';
+                            content += '<i class="icon-base ti ' + iconClass +
+                            ' me-1"></i>';
+                            content += permission.name;
+                            content += '</span>';
+                            content += '</div>';
+                        });
+
+                        content += '</div>';
+                        if (Object.keys(data).indexOf(moduleName) < Object.keys(data).length - 1) {
+                            content += '<hr class="my-4">';
+                        }
+                        content += '</div>';
+                    });
+
+                    $('#permissions-content').html(content);
+                    // Update counts after loading permissions
+                    updatePermissionCounts();
+                }).fail(function() {
+                    $('#permissions-content').html(
+                        '<div class="alert alert-danger">Error loading permissions data</div>');
+                });
+            }
         });
-    });
-</script>
+    </script>
 @endsection

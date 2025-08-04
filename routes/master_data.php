@@ -106,9 +106,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $role_segment . '/import', 'import')->name('master_data.role.import');
         Route::get($base_segment . $role_segment . '/permissions/{id}', 'getRolePermissions')->name('master_data.role.permissions');
         Route::get($base_segment . $role_segment . '/users/{id}', 'getUsersByRole')->name('master_data.role.users');
-        Route::post($base_segment . $role_segment . '/store', 'store')->name('master_data.role.store');
-        Route::put($base_segment . $role_segment . '/update/{id}', 'update')->name('master_data.role.update');
-        Route::delete($base_segment . $role_segment . '/delete/{id}', 'destroy')->name('master_data.role.destroy');
+        Route::post($base_segment . $role_segment . '/update', 'update')->name('master_data.role.update');
     });
 
     Route::controller(StockOpnameController::class)->group(function () use ($base_segment, $stock_opname_segment) {

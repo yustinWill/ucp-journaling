@@ -38,7 +38,7 @@
                             <td>{{ is_array($row['after']) || is_object($row['after']) ? json_encode($row['after']) : $row['after'] }}
                             </td>
                             <td>
-                                @if ($row['before'] === $row['after'])
+                                @if ($row['before'] == $row['after'])
                                     <span class="badge bg-primary">Tidak Ada Perubahan</span>
                                 @else
                                     <span class="badge bg-warning">Ada Perubahan</span>

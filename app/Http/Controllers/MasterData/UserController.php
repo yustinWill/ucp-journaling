@@ -201,20 +201,4 @@ class UserController extends Controller
     {
         return view('pages.master_data.user.import', []);
     }
-
-    /**
-     * Get mock role select data (no DB connection)
-     */
-    private function getMockRoleSelectData()
-    {
-        return [
-            ['value' => 'SUPER_ADMIN', 'label' => 'SUPER_ADMIN - Super Administrator'],
-            ['value' => 'MANAGER_PRODUKSI', 'label' => 'MANAGER_PRODUKSI - Manager Produksi'],
-            ['value' => 'STAFF_KEUANGAN', 'label' => 'STAFF_KEUANGAN - Staff Keuangan'],
-            ['value' => 'SUPERVISOR_QC', 'label' => 'SUPERVISOR_QC - Supervisor Quality Control'],
-            ['value' => 'ADMIN_GUDANG', 'label' => 'ADMIN_GUDANG - Administrator Gudang'],
-            ['value' => 'OPERATOR_PRODUKSI', 'label' => 'OPERATOR_PRODUKSI - Operator Produksi'],
-            ['value' => 'STAFF_PENJUALAN', 'label' => 'STAFF_PENJUALAN - Staff Penjualan']
-        ];
-    }
 }

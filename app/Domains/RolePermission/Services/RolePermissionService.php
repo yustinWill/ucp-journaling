@@ -35,4 +35,11 @@ class RolePermissionService
             'created_at' => now()
         ]);
     }
+
+    public function deleteByRoleId(int $role_id)
+    {
+        return DB::table($this->table_name)
+            ->where('role_id', $role_id)
+            ->delete();
+    }
 }
