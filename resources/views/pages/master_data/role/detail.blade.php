@@ -1,6 +1,6 @@
 @extends('layouts.default')
 @section('page_title')
-    Detail Role - {{ $role['name'] }}
+    Detail Role - {{ $role->name }}
 @stop
 @section('content')
     <div class="card mb-6">
@@ -15,7 +15,7 @@
                     <div class="text-end">
                         @php
                             $totalActions = 1; // Edit always present
-                            if($role['user_count'] == 0) {
+                            if($role->user_count == 0) {
                                 $totalActions++; // Add delete action when no users
                             }
                         @endphp
@@ -23,10 +23,10 @@
                         @if($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.role.edit', $role['id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                <a href="{{ route('master_data.role.edit', $role->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
-                                @if($role['user_count'] == 0)
+                                @if($role->user_count == 0)
                                     <button type="button" class="btn btn-danger btn-md waves-effect waves-light" id="delete-role-btn">
                                         <i class="icon-base ti tabler-trash me-2"></i>Hapus
                                     </button>
@@ -39,9 +39,9 @@
                                     Aksi
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ route('master_data.role.edit', $role['id']) }}">
+                                    <li><a class="dropdown-item" href="{{ route('master_data.role.edit', $role->id) }}">
                                         <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
-                                    @if($role['user_count'] == 0)
+                                    @if($role->user_count == 0)
                                         <li><a class="dropdown-item text-danger" href="javascript:void(0);" id="delete-role-btn">
                                             <i class="icon-base ti tabler-trash me-2"></i>Hapus</a></li>
                                     @endif
@@ -53,7 +53,7 @@
             </div>
 
             <!-- Role Title -->
-            <h2>{{ $role['name'] }}</h2>
+            <h2>{{ $role->name }}</h2>
             <span>
                 <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
             </span>
@@ -68,7 +68,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
-                    <input type="text" class="form-control" value="{{ $role['is_active'] ? 'Aktif' : 'Tidak Aktif' }}" disabled />
+                    <input type="text" class="form-control" value="{{ $role->is_active ? 'Aktif' : 'Tidak Aktif' }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <!-- Empty column for layout balance -->
@@ -78,18 +78,18 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Total Pengguna</label>
-                    <input type="text" class="form-control" value="{{ $role['user_count'] }} pengguna" disabled />
+                    <input type="text" class="form-control" value="{{ $role->user_count }} pengguna" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Total Hak Akses</label>
-                    <input type="text" class="form-control" value="{{ $role['permissions_count'] }} hak akses" disabled />
+                    <input type="text" class="form-control" value="{{ $role->permission_count }} hak akses" disabled />
                 </div>
             </div>
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Deskripsi</label>
-                    <textarea class="form-control" rows="3" disabled>{{ $role['description'] }}</textarea>
+                    <textarea class="form-control" rows="3" disabled>{{ $role->description }}</textarea>
                 </div>
                 <div class="col-md-6">
                     <!-- Empty column for alignment -->
@@ -166,7 +166,22 @@
                                 <h6>Pengguna dengan Role Ini</h6>
                             </div>
                             <div id="users-content">
-                                <!-- Content will be loaded here -->
+                               <table id="users-log-table" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Nama</th>
+                                            <th>Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($userList as $user)
+                                        <tr>
+                                            <td>{{ $user->name }}</td>
+                                            <td>{{ $user->email }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -186,18 +201,18 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($role['audit_logs'] as $log)
+                                        @foreach($auditLogs as $log)
                                         <tr>
-                                            <td>{{ $log['created_at'] }}</td>
+                                            <td>{{ $log->created_at }}</td>
                                             <td>
-                                                <a href="{{ route('master_data.user.detail', ['id' => $log['user_id']]) }}" class="text-primary fw-semibold">
-                                                    {{ $log['user_name'] }}
+                                                <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" class="text-primary fw-semibold">
+                                                    {{ $log->user_name }}
                                                 </a>
                                             </td>
                                             <td>
-                                                <span class="badge bg-label-info">{{ $log['action_type'] }}</span>
+                                                <span class="badge bg-label-info">{{ $log->action_type }}</span>
                                             </td>
-                                            <td>{{ $log['description'] }}</td>
+                                            <td>{{ $log->description }}</td>
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -214,7 +229,7 @@
 @section('js_script')
 <script>
     $(function() {
-        var roleId = parseInt('{{ $role["id"] }}');
+        var roleId = parseInt('{{ $role->id }}');
         
         // Initialize DataTable for audit log
         $('#audit-log-table').DataTable({
@@ -232,10 +247,6 @@
         // Tab event handlers
         $('#permissions-list-item').on('shown.bs.tab', function () {
             loadPermissionsContent();
-        });
-
-        $('#users-list-item').on('shown.bs.tab', function () {
-            loadUsersContent();
         });
 
         // Update permission counts
@@ -304,45 +315,6 @@
                 updatePermissionCounts();
             }).fail(function() {
                 $('#permissions-content').html('<div class="alert alert-danger">Error loading permissions data</div>');
-            });
-        }
-
-        // Load users content
-        function loadUsersContent() {
-            $.get('/master_data/role/users/' + roleId, function(data) {
-                var content = '';
-                
-                if (data.length > 0) {
-                    content += '<div class="mx-n6">';
-                    content += '<table class="table table-bordered">';
-                    content += '<thead>';
-                    content += '<tr>';
-                    content += '<th>Nama</th>';
-                    content += '<th>Email</th>';
-                    content += '</tr>';
-                    content += '</thead>';
-                    content += '<tbody>';
-                    
-                    data.forEach(function(user) {
-                        content += '<tr>';
-                        content += '<td><a href="/master_data/user/detail/' + user.id + '" class="text-primary fw-semibold">' + user.name + '</a></td>';
-                        content += '<td>' + user.email + '</td>';
-                        content += '</tr>';
-                    });
-                    
-                    content += '</tbody>';
-                    content += '</table>';
-                    content += '</div>';
-                } else {
-                    content += '<div class="text-center py-4">';
-                    content += '<i class="icon-base ti tabler-users-off" style="font-size: 3rem; color: #ccc;"></i>';
-                    content += '<p class="text-muted mt-2">Tidak ada pengguna yang diberikan role ini</p>';
-                    content += '</div>';
-                }
-                
-                $('#users-content').html(content);
-            }).fail(function() {
-                $('#users-content').html('<div class="alert alert-danger">Error loading users data</div>');
             });
         }
 

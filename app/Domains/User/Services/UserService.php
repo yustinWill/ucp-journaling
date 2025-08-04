@@ -140,4 +140,32 @@ class UserService
         $data->f_tag_codes = json_decode($data->f_tag_codes);
         return $data;
     }
+
+    public function findAllBasedOnRole($roleId)
+    {
+        $data = DB::table($this->table_name . ' as t')
+            ->select([
+                't.id',
+                't.role_id',
+                't.name',
+                't.email',
+                't.phone',
+                't.f_tag_codes as f_tag_codes',
+                't.status as status',
+                't.created_at as created_at',
+                't.last_login',
+                't.last_password_change',
+                'r.name as role_name'
+            ])
+            ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
+            ->join('roles as r', 't.role_id', '=', 'r.id')
+            ->where('t.role_id', $roleId)
+            ->where('uc.f_company_code', session('user_company_code'))
+            ->get();
+
+        foreach ($data as $item) {
+            $item->f_tag_codes = json_decode($item->f_tag_codes);
+        }
+        return $data;
+    }
 }

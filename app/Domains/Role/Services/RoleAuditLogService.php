@@ -27,7 +27,7 @@ class RoleAuditLogService
         return DB::table($this->table_name . ' as t')
             ->select([
                 't.id',
-                't.f_user_id',
+                't.f_role_id',
                 't.action_type',
                 't.description',
                 't.metadata',
@@ -36,7 +36,7 @@ class RoleAuditLogService
                 'usr.name AS user_name'
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
-            ->where('t.f_user_id', $id)
+            ->where('t.f_role_id', $id)
             ->where('t.company_code', session('user_company_code'))
             ->orderBy('t.created_at', 'DESC')
             ->get();

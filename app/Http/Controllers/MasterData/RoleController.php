@@ -14,6 +14,7 @@ use App\Helpers\DiscordNotifier;
 
 //Services
 use App\Domains\Role\Services\RoleService;
+use App\Domains\User\Services\UserService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Permission\Services\PermissionService;
 use App\Domains\Module\Services\ModuleService;
@@ -21,7 +22,7 @@ use App\Domains\Module\Services\ModuleService;
 //Actions
 use App\Domains\Role\Actions\CreateRoleAction;
 use App\Domains\Role\Actions\UpdateRoleAction;
-
+use App\Domains\Role\Services\RoleAuditLogService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -132,58 +133,17 @@ class RoleController extends Controller
 
     public function detail($id)
     {
-        // Mock role data - will be replaced with actual database queries
-        $role = [
-            'id' => $id,
-            'name' => 'Admin',
-            'description' => 'Administrative access with limited permissions',
-            'is_active' => true,
-            'user_count' => 3,
-            'permissions_count' => 8,
-            'created_at' => '2025-01-01 10:00:00',
-            'updated_at' => '2025-01-01 10:00:00',
-            // CRITICAL: Audit logs MUST be sorted by latest date first (as per Form Standards Rule #21)
-            'audit_logs' => [
-                [
-                    'created_at' => '2025-01-21 10:30:00', // Most recent
-                    'user_id' => 'USR-001',
-                    'user_name' => 'System Administrator',
-                    'action_type' => 'UPDATE',
-                    'description' => 'Updated role permissions for RIYO Water Production module'
-                ],
-                [
-                    'created_at' => '2025-01-20 15:45:12',
-                    'user_id' => 'USR-002',
-                    'user_name' => 'Manager Produksi',
-                    'action_type' => 'UPDATE',
-                    'description' => 'Modified role permissions for Contact Management access'
-                ],
-                [
-                    'created_at' => '2025-01-19 14:30:45',
-                    'user_id' => 'USR-001',
-                    'user_name' => 'System Administrator',
-                    'action_type' => 'UPDATE',
-                    'description' => 'Updated role description and user assignment limits'
-                ],
-                [
-                    'created_at' => '2025-01-18 09:15:23',
-                    'user_id' => 'USR-003',
-                    'user_name' => 'Staff Keuangan',
-                    'action_type' => 'ASSIGN',
-                    'description' => 'Assigned role to 2 new RIYO Water employees'
-                ],
-                [
-                    'created_at' => '2025-01-17 16:22:11', // Oldest
-                    'user_id' => 'USR-001',
-                    'user_name' => 'System Administrator',
-                    'action_type' => 'CREATE',
-                    'description' => 'Role created with initial permission setup for RIYO Water operations'
-                ]
-            ]
-        ];
+        $role = app(RoleService::class)->findOne($id);
+
+        if ($role == null) {
+            abort(404);
+        }
+
+        $auditLogs = app(RoleAuditLogService::class)->findAllBasedOnId($id);
+        $userList = app(UserService::class)->findAllBasedOnRole($id);
 
         $selectData = $this->getSelectData();
-        return view('pages.master_data.role.detail', compact('role') + $selectData);
+        return view('pages.master_data.role.detail', compact('role', 'auditLogs', 'userList'));
     }
 
     public function store(Request $request)
@@ -251,37 +211,21 @@ class RoleController extends Controller
         return view('pages.master_data.role.import', $selectData);
     }
 
-    public function getRolePermissions($id)
+    public function getRolePermissions($roleId)
     {
-        // Mock permission data grouped by module
-        $permissions = [
-            'User Management' => [
-                ['id' => 1, 'name' => 'User Read', 'type' => 'read', 'granted' => true],
-                ['id' => 2, 'name' => 'User Write', 'type' => 'write', 'granted' => true],
-                ['id' => 3, 'name' => 'User Delete', 'type' => 'delete', 'granted' => true],
-                ['id' => 4, 'name' => 'User Approval', 'type' => 'approval', 'granted' => false],
-            ],
-            'Contact Management' => [
-                ['id' => 5, 'name' => 'Contact Read', 'type' => 'read', 'granted' => true],
-                ['id' => 6, 'name' => 'Contact Write', 'type' => 'write', 'granted' => true],
-                ['id' => 7, 'name' => 'Contact Delete', 'type' => 'delete', 'granted' => true],
-                ['id' => 8, 'name' => 'Contact Approval', 'type' => 'approval', 'granted' => false],
-            ],
-            'Product Management' => [
-                ['id' => 9, 'name' => 'Product Read', 'type' => 'read', 'granted' => true],
-                ['id' => 10, 'name' => 'Product Write', 'type' => 'write', 'granted' => true],
-                ['id' => 11, 'name' => 'Product Delete', 'type' => 'delete', 'granted' => false],
-                ['id' => 12, 'name' => 'Product Approval', 'type' => 'approval', 'granted' => false],
-            ],
-            'Sales Management' => [
-                ['id' => 13, 'name' => 'Sales Read', 'type' => 'read', 'granted' => false],
-                ['id' => 14, 'name' => 'Sales Write', 'type' => 'write', 'granted' => false],
-                ['id' => 15, 'name' => 'Sales Delete', 'type' => 'delete', 'granted' => false],
-                ['id' => 16, 'name' => 'Sales Approval', 'type' => 'approval', 'granted' => false],
-            ]
-        ];
+        $permissions = app(PermissionService::class)->findAllBasedOnRole($roleId);
 
-        return response()->json($permissions);
+        $groupedData = [];
+        foreach ($permissions as $perm) {
+            $groupedData[$perm->module_name][] = [
+                'id' => $perm->id,
+                'name' => $perm->module_name . ' - ' . $perm->type,
+                'type' => $perm->type,
+                'granted' => (bool) $perm->granted,
+            ];
+        }
+
+        return response()->json($groupedData);
     }
 
     public function getUsersByRole($id)
