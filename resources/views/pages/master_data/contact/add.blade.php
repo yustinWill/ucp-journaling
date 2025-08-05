@@ -67,7 +67,7 @@
                     <label class="form-label" for="multicol-country">Jenis Identitas</label>
                     <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Jenis Identitas</option>
-                        @foreach($identity_types as $identity_type)
+                        @foreach ($identity_types as $identity_type)
                             <option value="{{ $identity_type['value'] }}">{{ $identity_type['label'] }}</option>
                         @endforeach
                     </select>
@@ -88,7 +88,7 @@
                     <label class="form-label">Sales Penanggung Jawab</label>
                     <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Sales</option>
-                        @foreach($sales_users as $sales_user)
+                        @foreach ($sales_users as $sales_user)
                             <option value="{{ $sales_user['value'] }}">{{ $sales_user['label'] }}</option>
                         @endforeach
                     </select>
@@ -181,7 +181,7 @@
                     <label class="form-label">Akun Hutang</label>
                     <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Akun Hutang</option>
-                        @foreach($payable_accounts as $account)
+                        @foreach ($payable_accounts as $account)
                             <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
                         @endforeach
                     </select>
@@ -190,7 +190,7 @@
                     <label class="form-label">Akun Piutang</label>
                     <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Akun Piutang</option>
-                        @foreach($receivable_accounts as $account)
+                        @foreach ($receivable_accounts as $account)
                             <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
                         @endforeach
                     </select>
@@ -199,27 +199,31 @@
                     <label class="form-label">Syarat Pembayaran</label>
                     <select class="global-select2 form-select" data-allow-clear="false">
                         <option value="">Pilih Syarat Pembayaran</option>
-                        @foreach($payment_terms as $payment_term)
+                        @foreach ($payment_terms as $payment_term)
                             <option value="{{ $payment_term['value'] }}">{{ $payment_term['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
-            
+
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tag</label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="contact-tags" multiple data-allow-clear="false">
-                                @foreach($tags as $tag)
-                                    <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}">{{ $tag['label'] }}</option>
+                            <select class="global-select2 form-select" id="contact-tags" multiple
+                                data-allow-clear="false">
+                                @foreach ($tags as $tag)
+                                    <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}">
+                                        {{ $tag['label'] }}</option>
                                 @endforeach
                             </select>
                         </div>
-                        @if($canAddTags)
+                        @if ($canAddTags)
                             <div class="col-auto">
-                                <a href="{{ route('master_data.tag.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" id="add-new-contact-tag" title="Tambah Tag Baru">
+                                <a href="{{ route('master_data.tag.add') }}" target="_blank"
+                                    class="btn btn-outline-primary d-flex align-items-center" id="add-new-contact-tag"
+                                    title="Tambah Tag Baru">
                                     <i class="icon-base ti tabler-plus"></i>
                                 </a>
                             </div>
@@ -232,66 +236,79 @@
                 </div>
             </div>
 
-            <hr class="my-6 mx-n6" />
-            <h6>7. Info Bank</h6>
-            <form class="form-repeater-bank w-100">
-                <div data-repeater-list="group-bank">
-                    <div data-repeater-item>
-                        <div class="row g-6">
-                            <div class="col-md-6">
-                                <label class="form-label">Nama Bank</label>
-                                <select class="global-select2 form-select" data-allow-clear="false">
-                                    <option value="">Pilih Bank</option>
-                                    @foreach($banks as $bank)
-                                        <option value="{{ $bank['value'] }}">{{ $bank['label'] }}</option>
-                                    @endforeach
-                                </select>
+            <span class="pelanggan-additional-form">
+                <hr class="my-6 mx-n6" />
+                <h6>7. Info Bank</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <span class="form-repeater-bank">
+                            <div data-repeater-list="user-acc-list">
+                                <div data-repeater-item>
+                                    <div class="row g-6">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Nama Bank <span style="color: red;">*</span></label>
+                                            <div class="position-relative">
+                                                <select class="select2Bank form-select" name="role_code"
+                                                    data-allow-clear="true">
+                                                    <option value="">Select</option>
+                                                    <option value="44">4</option>
+                                                    <option value="45">5</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Kantor Cabang <span
+                                                    style="color: red;">*</span></label>
+                                            <input type="text" name="email" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Pemegang Akun Bank <span
+                                                    style="color: red;">*</span></label>
+                                            <input type="text" name="user_name" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">No Rekening <span
+                                                    style="color: red;">*</span></label>
+                                            <input type="text" name="user_name" class="form-control" />
+                                        </div>
+                                        <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
+                                            <button class="btn btn-label-danger mt-xl-6" data-repeater-delete
+                                                type="button">
+                                                <i class="icon-base ti tabler-x me-1"></i>
+                                                <span class="align-middle">Hapus</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Kantor Cabang</label>
-                                <input type="text" class="form-control" placeholder="Masukkan Kantor Cabang" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Pemegang Akun Bank</label>
-                                <input type="text" class="form-control" placeholder="Masukkan Pemegang Akun Bank" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Nomor Rekening</label>
-                                <input type="text" class="form-control" placeholder="Masukkan Nomor Rekening" />
-                            </div>
-                            <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
-                                <button class="btn btn-label-danger mt-xl-6" data-repeater-delete type="button">
-                                    <i class="icon-base ti tabler-x me-1"></i>
-                                    <span class="align-middle">Hapus</span>
+                            <div class="mb-0">
+                                <button class="btn btn-primary" data-repeater-create type="button">
+                                    <i class="icon-base ti tabler-plus me-1"></i>
+                                    <span class="align-middle">Tambah Akun Bank Lain</span>
                                 </button>
                             </div>
-                        </div>
-                        <hr />
+                        </span>
                     </div>
                 </div>
-                <div class="mb-0">
-                    <button class="btn btn-primary" data-repeater-create type="button">
-                        <i class="icon-base ti tabler-plus me-1"></i>
-                        <span class="align-middle">Tambah Akun Bank Lain</span>
-                    </button>
-                </div>
-            </form>
+            </span>
 
             <span class="pelanggan-additional-form">
                 <hr class="my-6 mx-n6" />
                 <h6>8. Info Produk Dibeli</h6>
-                <form class="form-repeater-produk w-100">
+                <span class="form-repeater-product w-100">
                     <div data-repeater-list="group-produk">
                         <div data-repeater-item>
                             <div class="row g-6">
                                 <div class="col-md-6">
                                     <label class="form-label">Nama Produk</label>
-                                    <select class="global-select2 form-select" data-allow-clear="false">
-                                        <option value="">Pilih Produk</option>
-                                        @foreach($products as $product)
-                                            <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="position-relative">
+                                        <select class="select2Product form-select" data-allow-clear="false">
+                                            <option value="">Pilih Produk</option>
+                                            @foreach ($products as $product)
+                                                <option value="{{ $product['value'] }}">{{ $product['label'] }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Harga Satuan</label>
@@ -314,8 +331,10 @@
                             <span class="align-middle">Tambah Produk</span>
                         </button>
                     </div>
-                </form>
+                </span>
             </span>
+
+
             <div class="pt-6 text-end">
                 <button id="submit-btn" class="btn btn-primary me-4" type="button">Simpan Data</button>
             </div>
@@ -326,68 +345,106 @@
 @section('js_script')
     <script>
         $(function() {
-            initCleaveCurrency(document);
-            
-            // Initialize select2 for repeater elements
-            function initRepeaterSelect2(container) {
-                $(container).find('.global-select2').select2({
+            $('select.select2Bank').each(function() {
+                $(this).select2({
+                    placeholder: "Select value",
                     allowClear: true,
+                    dropdownParent: $(this).parent(),
                     width: '100%'
                 });
-            }
-            
-            // Info Bank repeater
+            });
+
             $('.form-repeater-bank').repeater({
                 show: function() {
-                    $(this).slideDown();
-                    initRepeaterSelect2(this);
+                    $(this).slideDown(() => {
+                        $(this).find('.select2-container').remove();
+                        $(this).find('select.select2Bank').removeClass(
+                            'select2-hidden-accessible').removeAttr(
+                            'data-select2-id tabindex aria-hidden');
+                        $(this).find('select.select2Bank').each(function() {
+                            if ($.fn.select2 && $(this).data('select2')) {
+                                alert('Destroying existing Select2 instance');
+                                $(this).select2('destroy');
+                            }
+                            $(this).select2({
+                                placeholder: "Select value",
+                                allowClear: true,
+                                dropdownParent: $(this).parent(),
+                                width: '100%'
+                            });
+                        });
+                    });
                 },
-                hide: function(e) {
-                    confirm('Are you sure you want to delete this element?') && $(this).slideUp(e);
+                hide: function(remove) {
+                    $(this).slideUp(remove);
                 }
             });
 
-            // Produk repeater
-            $('.form-repeater-produk').repeater({
+            $('select.select2Product').each(function() {
+                $(this).select2({
+                    placeholder: "Select value",
+                    allowClear: true,
+                    dropdownParent: $(this).parent(),
+                    width: '100%'
+                });
+            });
+
+            $('.form-repeater-product').repeater({
                 show: function() {
-                    $(this).slideDown();
-                    initRepeaterSelect2(this);
-                    initCleaveCurrency(this);
+                    $(this).slideDown(() => {
+                        $(this).find('.select2-container').remove();
+                        $(this).find('select.select2Product').removeClass(
+                            'select2-hidden-accessible').removeAttr(
+                            'data-select2-id tabindex aria-hidden');
+                        $(this).find('select.select2Product').each(function() {
+                            if ($.fn.select2 && $(this).data('select2')) {
+                                alert('Destroying existing Select2 instance');
+                                $(this).select2('destroy');
+                            }
+                            $(this).select2({
+                                placeholder: "Select value",
+                                allowClear: true,
+                                dropdownParent: $(this).parent(),
+                                width: '100%'
+                            });
+                        });
+                    });
                 },
-                hide: function(e) {
-                    confirm('Are you sure you want to delete this element?') && $(this).slideUp(e);
+                hide: function(remove) {
+                    $(this).slideUp(remove);
                 }
             });
 
+            // initCleaveCurrency(document);
 
             // SweetAlert for submit
-            $('#submit-btn').click(function(e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Simpan Data?',
-                    text: "Cek kembali data yang sudah diisi!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Simpan Data!',
-                    customClass: {
-                        confirmButton: 'btn btn-primary',
-                        cancelButton: 'btn btn-label-secondary'
-                    },
-                    buttonsStyling: false
-                }).then(function(result) {
-                    if (result.value) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Data berhasil disimpan.',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                                cancelButton: 'btn btn-label-secondary'
-                            },
-                        });
-                    }
-                })
-            });
+            // $('#submit-btn').click(function(e) {
+            //     e.preventDefault();
+            //     Swal.fire({
+            //         title: 'Simpan Data?',
+            //         text: "Cek kembali data yang sudah diisi!",
+            //         icon: 'warning',
+            //         showCancelButton: true,
+            //         confirmButtonText: 'Ya, Simpan Data!',
+            //         customClass: {
+            //             confirmButton: 'btn btn-primary',
+            //             cancelButton: 'btn btn-label-secondary'
+            //         },
+            //         buttonsStyling: false
+            //     }).then(function(result) {
+            //         if (result.value) {
+            //             Swal.fire({
+            //                 icon: 'success',
+            //                 title: 'Berhasil!',
+            //                 text: 'Data berhasil disimpan.',
+            //                 customClass: {
+            //                     confirmButton: 'btn btn-primary',
+            //                     cancelButton: 'btn btn-label-secondary'
+            //                 },
+            //             });
+            //         }
+            //     })
+            // });
 
             // Show/hide pelanggan-additional-form
             function togglePelangganForm() {
