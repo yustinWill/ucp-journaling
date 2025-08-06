@@ -2,6 +2,7 @@
 
 namespace App\Domains\Coa\Services;
 
+use App\Enums\GeneralStatuses;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -129,5 +130,22 @@ class CoaService
             abort(404);
         }
         return $data;
+    }
+
+    public function findAll()
+    {
+        return DB::table($this->table_name . ' as t')
+            ->select([
+                't.id',
+                't.code',
+                't.name',
+                't.level',
+                't.type',
+                't.note'
+            ])
+            ->where('t.company_code', session('user_company_code'))
+            ->where('t.status', GeneralStatuses::ACTIVE)
+            ->orderBy('t.code', 'ASC')
+            ->get();
     }
 }

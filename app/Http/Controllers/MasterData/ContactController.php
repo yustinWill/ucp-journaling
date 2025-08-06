@@ -2,8 +2,29 @@
 
 namespace App\Http\Controllers\MasterData;
 
+//Main
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+//Actions
+use App\Domains\Contact\Actions\CreateContactAction;
+use App\Domains\Contact\Actions\UpdateContactAction;
+
+//Services
+use App\Domains\IdentityTypes\Services\IdentityTypesService;
+use App\Domains\Coa\Services\CoaService;
+use App\Domains\Bank\Services\BankService;
+use App\Domains\PaymentTerm\Services\PaymentTermService;
+use App\Domains\Tag\Services\TagService;
+
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
+
 
 class ContactController extends Controller
 {
@@ -98,47 +119,24 @@ class ContactController extends Controller
 
     public function add()
     {
+        $identity_types = app(IdentityTypesService::class)->findAll();
+        $coa_accounts = app(CoaService::class)->findAll();
+        $banks = app(BankService::class)->findAll();
+        $payment_terms = app(PaymentTermService::class)->findAll();
+        $tags = app(TagService::class)->findAll();
+
         $selectData = [
-            'identity_types' => [
-                ['value' => 'KTP', 'label' => 'KTP'],
-                ['value' => 'SIM', 'label' => 'SIM'],
-                ['value' => 'Passport', 'label' => 'Passport'],
-                ['value' => 'NPWP', 'label' => 'NPWP']
-            ],
+            'identity_types' => $identity_types,
             'sales_users' => [
                 ['value' => 'sales_a', 'label' => 'Sales A'],
                 ['value' => 'sales_b', 'label' => 'Sales B'],
                 ['value' => 'sales_c', 'label' => 'Sales C'],
                 ['value' => 'sales_d', 'label' => 'Sales D']
             ],
-            'payable_accounts' => [
-                ['value' => '2-20100', 'label' => '(2-20100) Hutang'],
-                ['value' => '2-20200', 'label' => '(2-20200) Hutang Jangka Panjang'],
-                ['value' => '2-20300', 'label' => '(2-20300) Hutang Bank'],
-                ['value' => '2-20400', 'label' => '(2-20400) Hutang Pajak']
-            ],
-            'receivable_accounts' => [
-                ['value' => '1-20100', 'label' => '(1-20100) Piutang'],
-                ['value' => '1-20200', 'label' => '(1-20200) Piutang Jangka Panjang'],
-                ['value' => '1-20300', 'label' => '(1-20300) Piutang Lain-lain'],
-                ['value' => '1-20400', 'label' => '(1-20400) Piutang Karyawan']
-            ],
-            'payment_terms' => [
-                ['value' => 'Net 15', 'label' => 'Net 15'],
-                ['value' => 'Net 30', 'label' => 'Net 30'],
-                ['value' => 'Net 45', 'label' => 'Net 45'],
-                ['value' => 'Net 60', 'label' => 'Net 60'],
-                ['value' => 'COD', 'label' => 'Cash on Delivery'],
-                ['value' => 'Immediate', 'label' => 'Immediate']
-            ],
-            'banks' => [
-                ['value' => 'BCA', 'label' => 'Bank Central Asia (BCA)'],
-                ['value' => 'BRI', 'label' => 'Bank Rakyat Indonesia (BRI)'],
-                ['value' => 'MANDIRI', 'label' => 'Bank Mandiri'],
-                ['value' => 'BNI', 'label' => 'Bank Negara Indonesia (BNI)'],
-                ['value' => 'CIMB', 'label' => 'CIMB Niaga'],
-                ['value' => 'MEGA', 'label' => 'Bank Mega']
-            ],
+            'payable_accounts' => $coa_accounts,
+            'receivable_accounts' => $coa_accounts,
+            'payment_terms' => $payment_terms,
+            'banks' => $banks,
             'products' => [
                 ['value' => 'prod_a', 'label' => 'Produk A'],
                 ['value' => 'prod_b', 'label' => 'Produk B'],
@@ -146,17 +144,84 @@ class ContactController extends Controller
                 ['value' => 'prod_d', 'label' => 'Produk D'],
                 ['value' => 'prod_e', 'label' => 'Produk E']
             ],
-            'tags' => [
-                ['value' => 'CUSTOMER', 'label' => 'CUSTOMER - Customer', 'color' => 'success'],
-                ['value' => 'SUPPLIER', 'label' => 'SUPPLIER - Supplier', 'color' => 'info'],
-                ['value' => 'INTERNAL', 'label' => 'INTERNAL - Internal', 'color' => 'secondary'],
-                ['value' => 'VIP', 'label' => 'VIP - VIP Customer', 'color' => 'warning'],
-                ['value' => 'PRIORITY', 'label' => 'PRIORITY - Priority Contact', 'color' => 'primary']
-            ],
+            'tags' => $tags,
             'canAddTags' => true // Mock permission check
         ];
-        
+
         return view('pages.master_data.contact.add', $selectData);
+    }
+
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'contact_name' => 'required|string|max:255',
+                'group_name' => 'nullable|string|max:255',
+                'contact_type' => 'required|in:CUSTOMER,SUPPLIER,EMPLOYEE,OTHERS',
+                'contact_status' => 'required|in:ACTIVE,INACTIVE',
+                'identity_type' => 'required|string|exists:m_identity_types,code',
+                'identity_number' => 'required|string|max:16',
+                'email' => 'nullable|email|max:64',
+                'phone' => 'nullable|string|max:20',
+                'sales_user' => 'required|string|max:64',
+                'company_name' => 'required|string|max:255',
+                'npwp' => 'nullable|string|max:16',
+                'company_phone' => 'nullable|string|max:20',
+                'company_fax' => 'nullable|string|max:20',
+                'billing_province' => 'nullable|string|max:255',
+                'billing_city' => 'nullable|string|max:255',
+                'billing_district' => 'nullable|string|max:255',
+                'billing_subdistrict' => 'nullable|string|max:255',
+                'billing_address' => 'required|string|max:255',
+                'billing_postal_code' => 'nullable|string|max:5',
+                'shipping_province' => 'nullable|string|max:255',
+                'shipping_city' => 'nullable|string|max:255',
+                'shipping_district' => 'nullable|string|max:255',
+                'shipping_subdistrict' => 'nullable|string|max:255',
+                'shipping_address' => 'required|string|max:255',
+                'shipping_postal_code' => 'nullable|string|max:5',
+                'payable_account' => 'required|exists:m_coas,code',
+                'receivable_account' => 'required|exists:m_coas,code',
+                'payment_term' => 'required|exists:m_payment_terms,code',
+                'tags' => 'nullable|array',
+                'tags.*' => 'nullable|exists:m_tags,id',
+
+                // Bank repeater
+                'bank_accounts' => 'required|array',
+                'bank_accounts.*.bank_code' => 'required|exists:m_banks,code',
+                'bank_accounts.*.branch_office' => 'required|string|max:255',
+                'bank_accounts.*.account_holder' => 'required|string|max:255',
+                'bank_accounts.*.account_number' => 'required|string|max:255',
+
+                // Produk repeater
+                'products' => 'nullable|array',
+                'products.*.product' => 'nullable|string|max:64',
+                'products.*.price' => 'nullable|numeric|min:0',
+            ]);
+
+            app(CreateContactAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_CONTACT_SUCCESS->message()
+            ], SuccessCodes::CREATE_CONTACT_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function edit($id)
@@ -185,7 +250,7 @@ class ContactController extends Controller
             'receivable_account' => '(1-20100) Piutang',
             'payment_terms' => 'Net 30'
         ];
-        
+
         $selectData = [
             'contact_groups' => [
                 ['value' => 'vip', 'label' => 'VIP Customer'],

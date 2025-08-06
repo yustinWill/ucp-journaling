@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index');
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table');
         Route::get($base_segment . $contact_segment . '/add', 'add')->name('master_data.contact.add');
+        Route::post($base_segment . $contact_segment . '/save', 'save')->name('master_data.contact.save');
         Route::get($base_segment . $contact_segment . '/edit/{id}', 'edit')->name('master_data.contact.edit');
         Route::get($base_segment . $contact_segment . '/detail/{id}', 'detail')->name('master_data.contact.detail');
         Route::get($base_segment . $contact_segment . '/detail_profil_data/{id}', 'getProfilData')->name('master_data.contact.detail_profil_data');

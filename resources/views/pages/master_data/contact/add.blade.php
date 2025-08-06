@@ -9,43 +9,45 @@
             <h6>1. Data Kontak</h6>
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label">Nama Kontak</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Nama Kontak" />
+                    <label class="form-label">Nama Kontak <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="contact_name" placeholder="Masukkan Nama Kontak"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Group Kontak</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Nama Kontak" />
+                    <input type="text" class="form-control" id="group_name" placeholder="Masukkan Nama Group"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Tipe Kontak</label>
+                    <label class="form-label">Tipe Kontak <span style="color: red;">*</span></label>
                     <div class="col mt-2">
                         <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="pelanggan"
+                            <input name="contact_type" class="form-check-input" type="radio" value="CUSTOMER"
                                 id="typePelanggan" checked>
                             <label class="form-check-label" for="typePelanggan">Pelanggan</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="supplier"
+                            <input name="contact_type" class="form-check-input" type="radio" value="SUPPLIER"
                                 id="typeSupplier">
                             <label class="form-check-label" for="typeSupplier">Supplier</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="karyawan"
+                            <input name="contact_type" class="form-check-input" type="radio" value="EMPLOYEE"
                                 id="typeKaryawan">
                             <label class="form-check-label" for="typeKaryawan">Karyawan</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="lainnya"
+                            <input name="contact_type" class="form-check-input" type="radio" value="OTHERS"
                                 id="typeLainnya">
                             <label class="form-check-label" for="typeLainnya">Lainnya</label>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Status Kontak</label>
+                    <label class="form-label">Status Kontak <span style="color: red;">*</span></label>
                     <div class="demo-inline-spacing">
                         <label class="switch switch-primary">
-                            <input type="checkbox" class="switch-input" checked>
+                            <input type="checkbox" id="status_contact" class="switch-input" checked>
                             <span class="switch-toggle-slider">
                                 <span class="switch-on">
                                     <i class="icon-base ti tabler-check"></i>
@@ -64,29 +66,31 @@
             <h6>2. Data Umum</h6>
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label" for="multicol-country">Jenis Identitas</label>
-                    <select class="global-select2 form-select" data-allow-clear="false">
+                    <label class="form-label" for="multicol-country">Jenis Identitas <span style="color: red;">*</span></label>
+                    <select class="global-select2 form-select" id="identity_type" data-allow-clear="false">
                         <option value="">Pilih Jenis Identitas</option>
                         @foreach ($identity_types as $identity_type)
-                            <option value="{{ $identity_type['value'] }}">{{ $identity_type['label'] }}</option>
+                            <option value="{{ $identity_type->code }}">{{ $identity_type->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">No Identitas</label>
-                    <input type="text" class="form-control" placeholder="Masukkan No Identitas" />
+                    <label class="form-label">No Identitas <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="identity_number" placeholder="Masukkan No Identitas"
+                        maxlength="16" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Email</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Email" />
+                    <input type="email" class="form-control" id="email" placeholder="Masukkan Email" maxlength="64" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">No Telepon</label>
-                    <input type="text" class="form-control" placeholder="Masukkan No Telepon" />
+                    <input type="text" class="form-control" id="phone" placeholder="Masukkan No Telepon"
+                        maxlength="20" />
                 </div>
                 <div class="col-md-6 pelanggan-additional-form">
-                    <label class="form-label">Sales Penanggung Jawab</label>
-                    <select class="global-select2 form-select" data-allow-clear="false">
+                    <label class="form-label">Sales Penanggung Jawab <span style="color: red;">*</span></label>
+                    <select class="global-select2 form-select" id="sales_user" data-allow-clear="false">
                         <option value="">Pilih Sales</option>
                         @foreach ($sales_users as $sales_user)
                             <option value="{{ $sales_user['value'] }}">{{ $sales_user['label'] }}</option>
@@ -99,20 +103,24 @@
             <h6>3. Data Perusahaan</h6>
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label">Nama Perusahaan</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Nama Perusahaan" />
+                    <label class="form-label">Nama Perusahaan <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="company_name" placeholder="Masukkan Nama Perusahaan"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">No NPWP</label>
-                    <input type="text" class="form-control" placeholder="Masukkan No NPWP" />
+                    <input type="text" class="form-control" id="npwp" placeholder="Masukkan No NPWP"
+                        maxlength="16" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">No Telepon Perusahaan</label>
-                    <input type="text" class="form-control" placeholder="Masukkan No Telepon Perusahaan" />
+                    <input type="text" class="form-control" id="company_phone"
+                        placeholder="Masukkan No Telepon Perusahaan" maxlength="20" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">No Fax</label>
-                    <input type="text" class="form-control" placeholder="Masukkan No Fax" />
+                    <input type="text" class="form-control" id="company_fax" placeholder="Masukkan No Fax"
+                        maxlength="20" />
                 </div>
             </div>
 
@@ -121,27 +129,32 @@
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label">Provinsi</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Provinsi" />
+                    <input type="text" class="form-control" id="billing_province" placeholder="Masukkan Provinsi"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kota</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kota" />
+                    <input type="text" class="form-control" id="billing_city" placeholder="Masukkan Kota"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kecamatan</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kecamatan" />
+                    <input type="text" class="form-control" id="billing_district" placeholder="Masukkan Kecamatan"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kelurahan</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kelurahan" />
+                    <input type="text" class="form-control" id="billing_subdistrict" placeholder="Masukkan Kelurahan"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Alamat</label>
-                    <textarea class="form-control" placeholder="Masukkan Alamat"></textarea>
+                    <label class="form-label">Alamat <span style="color: red;">*</span></label>
+                    <textarea class="form-control" id="billing_address" placeholder="Masukkan Alamat" maxlength="255"></textarea>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kode POS</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kode POS" />
+                    <input type="text" class="form-control" id="billing_postal_code" placeholder="Masukkan Kode POS"
+                        maxlength="5" />
                 </div>
             </div>
 
@@ -150,27 +163,31 @@
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label">Provinsi</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Provinsi" />
+                    <input type="text" class="form-control" id="shipping_province" placeholder="Masukkan Provinsi"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kota</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kota" />
+                    <input type="text" class="form-control" id="shipping_city" placeholder="Masukkan Kota"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kecamatan</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kecamatan" />
+                    <input type="text" class="form-control" id="shipping_district" placeholder="Masukkan Kecamatan"
+                        maxlength="255" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kelurahan</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kelurahan" />
+                    <input type="text" class="form-control" id="shipping_subdistrict"
+                        placeholder="Masukkan Kelurahan" maxlength="255" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Alamat</label>
-                    <textarea class="form-control" placeholder="Masukkan Alamat"></textarea>
+                    <label class="form-label">Alamat <span style="color: red;">*</span></label>
+                    <textarea class="form-control" id="shipping_address" placeholder="Masukkan Alamat" maxlength="255"></textarea>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kode POS</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kode POS" />
+                    <input type="text" class="form-control" placeholder="Masukkan Kode POS" id="shipping_postal_code" maxlength="5" />
                 </div>
             </div>
 
@@ -178,29 +195,29 @@
             <h6>6. Pemetaan Akun</h6>
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label">Akun Hutang</label>
-                    <select class="global-select2 form-select" data-allow-clear="false">
+                    <label class="form-label">Akun Hutang <span style="color: red;">*</span></label>
+                    <select class="global-select2 form-select" id="payable_account" data-allow-clear="false">
                         <option value="">Pilih Akun Hutang</option>
                         @foreach ($payable_accounts as $account)
-                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                            <option value="{{ $account->code }}">{{ $account->code }} - {{ $account->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Akun Piutang</label>
-                    <select class="global-select2 form-select" data-allow-clear="false">
+                    <label class="form-label">Akun Piutang <span style="color: red;">*</span></label>
+                    <select class="global-select2 form-select" id="receivable_account" data-allow-clear="false">
                         <option value="">Pilih Akun Piutang</option>
                         @foreach ($receivable_accounts as $account)
-                            <option value="{{ $account['value'] }}">{{ $account['label'] }}</option>
+                            <option value="{{ $account->code }}">{{ $account->code }} - {{ $account->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Syarat Pembayaran</label>
-                    <select class="global-select2 form-select" data-allow-clear="false">
+                    <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
+                    <select class="global-select2 form-select" id="payment_term" data-allow-clear="false">
                         <option value="">Pilih Syarat Pembayaran</option>
                         @foreach ($payment_terms as $payment_term)
-                            <option value="{{ $payment_term['value'] }}">{{ $payment_term['label'] }}</option>
+                            <option value="{{ $payment_term->code }}">{{ $payment_term->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -214,8 +231,8 @@
                             <select class="global-select2 form-select" id="contact-tags" multiple
                                 data-allow-clear="false">
                                 @foreach ($tags as $tag)
-                                    <option value="{{ $tag['value'] }}" data-color="{{ $tag['color'] }}">
-                                        {{ $tag['label'] }}</option>
+                                    <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}">
+                                        {{ $tag->code }} - {{ $tag->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -248,28 +265,28 @@
                                         <div class="col-md-6">
                                             <label class="form-label">Nama Bank <span style="color: red;">*</span></label>
                                             <div class="position-relative">
-                                                <select class="select2Bank form-select" name="role_code"
-                                                    data-allow-clear="true">
+                                                <select class="select2Bank form-select bank_code" data-allow-clear="true">
                                                     <option value="">Select</option>
-                                                    <option value="44">4</option>
-                                                    <option value="45">5</option>
+                                                    @foreach ($banks as $bank)
+                                                        <option value="{{ $bank->code }}">{{ $bank->name }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Kantor Cabang <span
                                                     style="color: red;">*</span></label>
-                                            <input type="text" name="email" class="form-control" />
+                                            <input type="text" class="form-control branch_office" maxlength="255" />
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Pemegang Akun Bank <span
                                                     style="color: red;">*</span></label>
-                                            <input type="text" name="user_name" class="form-control" />
+                                            <input type="text" class="form-control account_holder" maxlength="255" />
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">No Rekening <span
                                                     style="color: red;">*</span></label>
-                                            <input type="text" name="user_name" class="form-control" />
+                                            <input type="text" class="form-control account_number" maxlength="255" />
                                         </div>
                                         <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
                                             <button class="btn btn-label-danger mt-xl-6" data-repeater-delete
@@ -418,33 +435,138 @@
             // initCleaveCurrency(document);
 
             // SweetAlert for submit
-            // $('#submit-btn').click(function(e) {
-            //     e.preventDefault();
-            //     Swal.fire({
-            //         title: 'Simpan Data?',
-            //         text: "Cek kembali data yang sudah diisi!",
-            //         icon: 'warning',
-            //         showCancelButton: true,
-            //         confirmButtonText: 'Ya, Simpan Data!',
-            //         customClass: {
-            //             confirmButton: 'btn btn-primary',
-            //             cancelButton: 'btn btn-label-secondary'
-            //         },
-            //         buttonsStyling: false
-            //     }).then(function(result) {
-            //         if (result.value) {
-            //             Swal.fire({
-            //                 icon: 'success',
-            //                 title: 'Berhasil!',
-            //                 text: 'Data berhasil disimpan.',
-            //                 customClass: {
-            //                     confirmButton: 'btn btn-primary',
-            //                     cancelButton: 'btn btn-label-secondary'
-            //                 },
-            //             });
-            //         }
-            //     })
-            // });
+            $('#submit-btn').click(function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Simpan Data?',
+                    text: "Cek kembali data yang sudah diisi!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Simpan Data!',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-label-secondary'
+                    },
+                    buttonsStyling: false
+                }).then(function(result) {
+                    if (result.value) {
+                        if (result.value) {
+                            $('#submit-btn').prop('disabled', true).html(
+                                '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...'
+                            );
+                            if ($('#user-status').val() == 'on') {
+                                $('#user-status').val('ACTIVE');
+                            } else {
+                                $('#user-status').val('INACTIVE');
+                            }
+                            $.ajax({
+                                url: "{{ route('master_data.contact.save') }}",
+                                method: 'POST',
+                                data: {
+                                    _token: '{{ csrf_token() }}',
+                                    contact_name: $('#contact_name').val(),
+                                    group_name: $('#group_name').val(),
+                                    contact_type: $(
+                                        'input[name="contact_type"]:checked').val(),
+                                    contact_status: $('#status_contact').is(
+                                        ':checked') ? 'ACTIVE' : 'INACTIVE',
+                                    identity_type: $('#identity_type').val(),
+                                    identity_number: $('#identity_number').val(),
+                                    email: $('#email').val(),
+                                    phone: $('#phone').val(),
+                                    sales_user: $('#sales_user').val(),
+                                    company_name: $('#company_name').val(),
+                                    npwp: $('#npwp').val(),
+                                    company_phone: $('#company_phone').val(),
+                                    company_fax: $('#company_fax').val(),
+                                    billing_province: $('#billing_province').val(),
+                                    billing_city: $('#billing_city').val(),
+                                    billing_district: $('#billing_district').val(),
+                                    billing_subdistrict: $('#billing_subdistrict')
+                                        .val(),
+                                    billing_address: $('#billing_address').val(),
+                                    billing_postal_code: $('#billing_postal_code')
+                                        .val(),
+                                    shipping_province: $('#shipping_province').val(),
+                                    shipping_city: $('#shipping_city').val(),
+                                    shipping_district: $('#shipping_district').val(),
+                                    shipping_subdistrict: $('#shipping_subdistrict')
+                                        .val(),
+                                    shipping_address: $('#shipping_address').val(),
+                                    shipping_postal_code: $('#shipping_postal_code')
+                                        .val(),
+                                    payable_account: $('#payable_account').val(),
+                                    receivable_account: $('#receivable_account').val(),
+                                    payment_term: $('#payment_term').val(),
+                                    tags: $('#contact-tags').val(),
+                                    // Bank repeater
+                                    bank_accounts: $(
+                                            '.form-repeater-bank [data-repeater-item]')
+                                        .map(function() {
+                                            return {
+                                                bank_code: $(this).find(
+                                                    'select.bank_code').val(),
+                                                branch_office: $(this).find(
+                                                        'input.branch_office')
+                                                    .val(),
+                                                account_holder: $(this).find(
+                                                        'input.account_holder')
+                                                    .val(),
+                                                account_number: $(this).find(
+                                                        'input.account_number')
+                                                    .val()
+                                            };
+                                        }).get(),
+                                    // Product repeater
+                                    products: $(
+                                        '.form-repeater-product [data-repeater-item]'
+                                    ).map(function() {
+                                        return {
+                                            product: $(this).find(
+                                                    'select.select2Product')
+                                                .val(),
+                                            price: $(this).find(
+                                                    'input.currency-input')
+                                                .val()
+                                        };
+                                    }).get()
+                                },
+                                success: function(response) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil!',
+                                        text: 'User berhasil ditambahkan.',
+                                        customClass: {
+                                            confirmButton: 'btn btn-success'
+                                        },
+                                        buttonsStyling: false
+                                    }).then(function() {
+                                        window.location.href =
+                                            "{{ route('master_data.contact.index') }}";
+                                    });
+                                },
+                                error: function(xhr) {
+                                    const res = xhr.responseJSON;
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal menyimpan',
+                                        html: res?.message ||
+                                            'Terjadi kesalahan saat menyimpan data.',
+                                        customClass: {
+                                            confirmButton: 'btn btn-primary'
+                                        },
+                                        buttonsStyling: false
+                                    });
+                                },
+                                complete: function() {
+                                    $('#submit-btn').prop('disabled', false).html(
+                                        'Simpan Data');
+                                }
+                            });
+                        }
+                    }
+                })
+            });
 
             // Show/hide pelanggan-additional-form
             function togglePelangganForm() {
