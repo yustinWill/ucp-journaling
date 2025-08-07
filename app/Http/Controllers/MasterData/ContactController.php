@@ -17,109 +17,41 @@ use App\Domains\Contact\Actions\UpdateContactAction;
 use App\Domains\IdentityTypes\Services\IdentityTypesService;
 use App\Domains\Coa\Services\CoaService;
 use App\Domains\Bank\Services\BankService;
+use App\Domains\Contact\Services\ContactAddressService;
+use App\Domains\Contact\Services\ContactBankService;
+use App\Domains\Contact\Services\ContactProductService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
 use App\Domains\Tag\Services\TagService;
+use App\Domains\Contact\Services\ContactService;
+use App\Domains\Contact\Services\ContactTypeService;
+use App\Domains\Contact\Services\ContactAuditLogService;
 
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Enums\AuditLogTypes;
-
+use App\Enums\ContactAddressTypes;
 
 class ContactController extends Controller
 {
     public function index()
     {
-        $selectData = $this->getIndexSelectData();
-        return view('pages.master_data.contact.index', $selectData);
+        $contact_types = app(ContactTypeService::class)->findAll();
+        return view('pages.master_data.contact.index', [
+            'contact_types' => $contact_types
+        ]);
     }
 
     public function index_data_table()
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "contact_name" => "Ahmad Wijaya",
-                    "type" => "Pelanggan",
-                    "company_name" => "Warung Segar Bogor",
-                    "phone" => "0812-3456-7890",
-                    "email" => "ahmad.wijaya@warungs.com",
-                    "group_text" => "Customer Warung",
-                    "tags" => [
-                        ["name" => "CUSTOMER", "color" => "success"],
-                        ["name" => "VIP", "color" => "warning"]
-                    ],
-                ],
-                [
-                    "id" => 2,
-                    "contact_name" => "Siti Rahma",
-                    "type" => "Pelanggan",
-                    "company_name" => "Minimarket Berkah Jaya",
-                    "phone" => "0857-1234-5678",
-                    "email" => "siti.rahma@berkahj.com",
-                    "group_text" => "Customer Retail",
-                    "tags" => [
-                        ["name" => "CUSTOMER", "color" => "success"]
-                    ],
-                ],
-                [
-                    "id" => 3,
-                    "contact_name" => "Budi Santoso",
-                    "type" => "Supplier",
-                    "company_name" => "PT. Plastik Prima Indonesia",
-                    "phone" => "021-8765-4321",
-                    "email" => "budi.santoso@plastikprima.co.id",
-                    "group_text" => "Supplier Kemasan",
-                    "tags" => [
-                        ["name" => "SUPPLIER", "color" => "info"],
-                        ["name" => "PRIORITY", "color" => "primary"]
-                    ],
-                ],
-                [
-                    "id" => 4,
-                    "contact_name" => "Maria Susanti",
-                    "type" => "Supplier",
-                    "company_name" => "CV. Teknisi Ahli Mesin",
-                    "phone" => "0274-987-6543",
-                    "email" => "maria.susanti@teknisiahli.com",
-                    "group_text" => "Supplier Maintenance",
-                    "tags" => [
-                        ["name" => "SUPPLIER", "color" => "info"]
-                    ],
-                ],
-                [
-                    "id" => 5,
-                    "contact_name" => "Rahmat Hidayat",
-                    "type" => "Supplier",
-                    "company_name" => "CV. Ekspedisi Maju",
-                    "phone" => "0813-2468-1357",
-                    "email" => "rahmat.hidayat@ekspedisimaju.id",
-                    "group_text" => "Supplier Logistik",
-                    "tags" => [
-                        ["name" => "SUPPLIER", "color" => "info"]
-                    ],
-                ],
-                [
-                    "id" => 6,
-                    "contact_name" => "Dewi Kartika",
-                    "type" => "Karyawan",
-                    "company_name" => "RIYO Water",
-                    "phone" => "0896-5432-1098",
-                    "email" => "dewi.kartika@riyowater.com",
-                    "group_text" => "Quality Control",
-                    "tags" => [
-                        ["name" => "INTERNAL", "color" => "secondary"]
-                    ],
-                ],
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(ContactService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
     {
         $identity_types = app(IdentityTypesService::class)->findAll();
+        $contact_types = app(ContactTypeService::class)->findAll();
         $coa_accounts = app(CoaService::class)->findAll();
         $banks = app(BankService::class)->findAll();
         $payment_terms = app(PaymentTermService::class)->findAll();
@@ -137,6 +69,7 @@ class ContactController extends Controller
             'receivable_accounts' => $coa_accounts,
             'payment_terms' => $payment_terms,
             'banks' => $banks,
+            'contact_types' => $contact_types,
             'products' => [
                 ['value' => 'prod_a', 'label' => 'Produk A'],
                 ['value' => 'prod_b', 'label' => 'Produk B'],
@@ -336,33 +269,28 @@ class ContactController extends Controller
 
     public function detail($id)
     {
-        // Mock contact data - in real app, fetch from database
-        $contact = [
-            'id' => $id,
-            'contact_name' => 'Anwar',
-            'company_name' => 'PT Maju Jaya Sentosa',
-            'type' => 'Pelanggan',
-            'group' => '',
-            'email' => 'pelanggan1@example.com',
-            'phone' => '081234567890',
-            'identity_type' => 'KTP',
-            'identity_number' => '3175091203940000.00',
-            'billing_address' => '',
-            'shipping_address' => 'Ciomas, Bogor',
-            'other_info' => '-',
-            'landline' => '',
-            'fax' => '',
-            'npwp' => '01.234.567.8-999.000',
-            'bank_name' => 'Bank Central Asia',
-            'bank_branch' => 'Bogor',
-            'account_holder' => 'Anwar',
-            'account_number' => '541-002-7891',
-            'debt_account' => '(2-20100) Hutang',
-            'receivable_account' => '(1-20100) Piutang',
-            'payment_terms' => ''
-        ];
+        $contact_header = app(ContactService::class)->findOne($id);
 
-        return view('pages.master_data.contact.detail', ['contact' => $contact]);
+        if ($contact_header == null) {
+            abort(404);
+        }
+
+        $contact_bank = app(ContactBankService::class)->findAllBasedOnContactId($id);
+        $contact_product = app(ContactProductService::class)->findAllBasedOnContactId($id);
+        $billing_contact_address = app(ContactAddressService::class)->findOneBasedOnContactIdAndType($id, ContactAddressTypes::BILLING);
+        $shipping_contact_address = app(ContactAddressService::class)->findOneBasedOnContactIdAndType($id, ContactAddressTypes::SHIPPING);
+
+        $audit_log_data = app(ContactAuditLogService::class)->findAllBasedOnContactId($id);
+
+        return view('pages.master_data.contact.detail', [
+            'contact' => $contact_header,
+            'contact_bank' => $contact_bank,
+            'contact_product' => $contact_product,
+            'billing_contact_address' => $billing_contact_address,
+            'shipping_contact_address' => $shipping_contact_address,
+            'audit_log_data' => $audit_log_data,
+            'auditLogType' => AuditLogTypes::MASTER_DATA_CONTACT->code()
+        ]);
     }
 
     public function getProfilData($id)

@@ -17,4 +17,12 @@ class ContactAddressService
         }
         return DB::table($this->table_name)->insert($data);
     }
+
+    public function findOneBasedOnContactIdAndType($id, $type)
+    {
+        return DB::table($this->table_name)
+            ->where('f_contact_id', $id)
+            ->where('type', $type)
+            ->first();
+    }
 }

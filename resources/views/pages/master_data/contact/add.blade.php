@@ -21,26 +21,13 @@
                 <div class="col-md-6">
                     <label class="form-label">Tipe Kontak <span style="color: red;">*</span></label>
                     <div class="col mt-2">
-                        <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="CUSTOMER"
-                                id="typePelanggan" checked>
-                            <label class="form-check-label" for="typePelanggan">Pelanggan</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="SUPPLIER"
-                                id="typeSupplier">
-                            <label class="form-check-label" for="typeSupplier">Supplier</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="EMPLOYEE"
-                                id="typeKaryawan">
-                            <label class="form-check-label" for="typeKaryawan">Karyawan</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input name="contact_type" class="form-check-input" type="radio" value="OTHERS"
-                                id="typeLainnya">
-                            <label class="form-check-label" for="typeLainnya">Lainnya</label>
-                        </div>
+                        @foreach ($contact_types as $item)
+                            <div class="form-check form-check-inline">
+                                <input name="contact_type" class="form-check-input" type="radio"
+                                    value="{{ $item->code }}" id="type{{ $item->code }}">
+                                <label class="form-check-label" for="type{{ $item->code }}">{{ $item->name }}</label>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -66,7 +53,8 @@
             <h6>2. Data Umum</h6>
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label" for="multicol-country">Jenis Identitas <span style="color: red;">*</span></label>
+                    <label class="form-label" for="multicol-country">Jenis Identitas <span
+                            style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="identity_type" data-allow-clear="false">
                         <option value="">Pilih Jenis Identitas</option>
                         @foreach ($identity_types as $identity_type)
@@ -187,7 +175,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kode POS</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kode POS" id="shipping_postal_code" maxlength="5" />
+                    <input type="text" class="form-control" placeholder="Masukkan Kode POS" id="shipping_postal_code"
+                        maxlength="5" />
                 </div>
             </div>
 

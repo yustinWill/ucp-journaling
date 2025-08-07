@@ -61,38 +61,35 @@
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Nama Kontak:</label>
                                 <input type="text" class="form-control dt-input dt-full-name" data-column="1"
-                                    placeholder="Cari Berdasarkan Nama Kontak" data-column-index="0" />
+                                    placeholder="Cari Berdasarkan Nama Kontak" id="contact-name" data-column-index="0" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Nama Perusahaan:</label>
                                 <input type="text" class="form-control dt-input" data-column="2"
-                                    placeholder="Cari Berdasarkan Nama Perusahaan" data-column-index="1" />
+                                    placeholder="Cari Berdasarkan Nama Perusahaan" id="contact-company"
+                                    data-column-index="1" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Email:</label>
                                 <input type="text" class="form-control dt-input" data-column="3"
-                                    placeholder="Cari Berdasarkan Email" data-column-index="2" />
+                                    placeholder="Cari Berdasarkan Email" id="contact-email" data-column-index="2" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Phone:</label>
                                 <input type="text" class="form-control dt-input" data-column="4"
-                                    placeholder="Cari Berdasarkan Phone" data-column-index="3" />
+                                    placeholder="Cari Berdasarkan Phone" id="contact-phone" data-column-index="3" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Group:</label>
-                                <select class="global-select2 form-select" data-allow-clear="false">
-                                    <option value="">Semua Group</option>
-                                    @foreach($groupFilters as $group)
-                                        <option value="{{ $group['value'] }}">{{ $group['label'] }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" class="form-control dt-input" data-column="4"
+                                    placeholder="Cari Berdasarkan Group" id="contact-group" data-column-index="3" />
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Tipe:</label>
-                                <select class="global-select2 form-select" data-allow-clear="false">
+                                <select class="global-select2 form-select" id="contact-type" data-allow-clear="true">
                                     <option value="">Semua Tipe</option>
-                                    @foreach($typeFilters as $type)
-                                        <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>
+                                    @foreach ($contact_types as $type)
+                                        <option value="{{ $type->code }}">{{ $type->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -113,7 +110,7 @@
                             </label>
                         </div>
                     </div>
-                    
+
                     <div class="d-flex gap-2">
                         <a href="{{ route('master_data.contact.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -156,7 +153,19 @@
 
             if (main_table) {
                 dt_adv_filter = new DataTable(main_table, {
-                    ajax: `{{ route('master_data.contact.index_data_table') }}`,
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: `{{ route('master_data.contact.index_data_table') }}`,
+                        data: function(d) {
+                            d.contact_name = $('#contact-name').val();
+                            d.company_name = $('#contact-company').val();
+                            d.email = $('#contact-email').val();
+                            d.phone = $('#contact-phone').val();
+                            d.group_name = $('#contact-group').val();
+                            d.type = $('#contact-type').val();
+                        }
+                    },
                     columns: [{
                             data: 'contact_name',
                             responsivePriority: 3
@@ -174,17 +183,19 @@
                             responsivePriority: 6
                         },
                         {
-                            data: 'group_text',
+                            data: 'group_name',
                             responsivePriority: 8
                         },
                         {
                             data: 'tags',
                             responsivePriority: 5,
                             render: function(data, type, row) {
-                                if (!data || data.length === 0) return '-';
-                                return data.map(tag => {
-                                    const colorClass = `bg-label-${tag.color}`;
-                                    return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
+                                let tags = JSON.parse(data);
+                                return tags.map(tag => {
+                                    if (tag.code == null) {
+                                        return ``;
+                                    }
+                                    return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
                                 }).join('');
                             }
                         },
@@ -210,8 +221,10 @@
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row, meta) {
-                                const detailUrl = "{{ route('master_data.contact.detail', ':id') }}".replace(':id', row.id);
-                                const editUrl = "{{ route('master_data.contact.edit', ':id') }}".replace(':id', row.id);
+                                const detailUrl = "{{ route('master_data.contact.detail', ':id') }}"
+                                    .replace(':id', row.id);
+                                const editUrl = "{{ route('master_data.contact.edit', ':id') }}"
+                                    .replace(':id', row.id);
                                 return `
                                 <div class="d-flex gap-2">
                                     <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
@@ -261,6 +274,17 @@
             const initialTagVisibility = $('#toggleTagColumn').is(':checked');
             dt_adv_filter.column(5).visible(initialTagVisibility);
 
+            let searchTimeout;
+            $('#contact-name, #contact-company, #contact-email, #contact-group, #contact-phone, #contact-type').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (dt_adv_filter) {
+                            dt_adv_filter.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
         });
     </script>
 @endsection

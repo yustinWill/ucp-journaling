@@ -2,75 +2,114 @@
 
 namespace App\Domains\Contact\Services;
 
+use App\Enums\GeneralStatuses;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class ContactService
 {
     private $table_name = 'm_contacts';
-    // public function findAllDatatable()
-    // {
-    //     $query = DB::table('m_contacts as c')
-    //         ->select([
-    //             'c.id',
-    //             'c.name as contact_name',
-    //             'c.type as contact_type',
-    //             'c.type as category_type',
-    //             'c.status',
-    //             'c.description',
-    //             'c.created_at'
-    //         ]);
 
-    //     $query->where('c.company_code', session('user_company_code'));
-    //     // Filter by status
-    //     if ($status = request()->input('status_filter')) {
-    //         $query->where('c.status', $status);
-    //     }
+    public function findAllDatatable()
+    {
+        $query = DB::table('m_contacts as c')
+            ->select([
+                'c.id',
+                'c.name as contact_name',
+                'c.company_name as company_name',
+                'c.email as email',
+                'c.phone AS phone',
+                'c.group_contact_name AS group_name',
+                'c.type AS type',
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+            ])->leftJoin(DB::raw("JSON_TABLE(c.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
+            ->where('c.company_code', session('user_company_code'))
+            ->where('c.status', '=', GeneralStatuses::ACTIVE);
 
-    //     // Filter by category type
-    //     if ($type = request()->input('category_type_filter')) { 
-    //         $query->where('c.type', $type);
-    //     }
+        // Filter by status
+        if ($name = request()->input('contact_name')) {
+            $query->where('c.name', 'LIKE', "%{$name}%");
+        }
 
-    //     // Search functionality
-    //     if ($search = request()->input('search.value')) {
-    //         $query->where(function($q) use ($search) {
-    //             $q->where('c.name', 'LIKE', "%{$search}%")
-    //               ->orWhere('c.code', 'LIKE', "%{$search}%");
-    //         });
-    //     }
+        if ($name = request()->input('company_name')) {
+            $query->where('c.company_name', 'LIKE', "%{$name}%");
+        }
 
-    //     // DataTable pagination
-    //     $draw = (int) request()->input('draw', 1);
-    //     $recordsTotal = DB::table('m_categories')->count();
-    //     $filteredQuery = clone $query;
-    //     $start = (int) request()->input('start', 0);
-    //     $length = (int) request()->input('length', 10);
-    //     $query->skip($start)->take($length);
-    //     $recordsFiltered = $filteredQuery->count();
-    //     $query->orderBy('c.created_at', 'DESC');
+        if ($email = request()->input('email')) {
+            $query->where('c.email', 'LIKE', "%{$email}%");
+        }
 
-    //     $data = $query->get()->map(function($row) {
-    //         // Add product_count calculation
-    //         $row->product_count = rand(0, 50); // TODO: Calculate actual product count
-    //         return $row;
-    //     });
+        if ($phone = request()->input('phone')) {
+            $query->where('c.phone', 'LIKE', "%{$phone}%");
+        }
 
-    //     return [
-    //         'draw' => $draw,
-    //         'recordsTotal' => $recordsTotal,
-    //         'recordsFiltered' => $recordsFiltered,
-    //         'data' => $data
-    //     ];
-    // }
+        if ($groupName = request()->input('group_name')) {
+            $query->where('c.group_contact_name', 'LIKE', "%{$groupName}%");
+        }
 
-    // public function findOne($id)
-    // {
-    //     return DB::table($this->table_name)
-    //         ->where('id', $id)
-    //         ->where('company_code', session('user_company_code'))
-    //         ->first();
-    // }
+        if ($type = request()->input('type')) {
+            $query->where('c.type', 'LIKE', "%{$type}%");
+        }
+
+         $query->groupBy('c.id');
+
+
+        // DataTable pagination
+        $draw = (int) request()->input('draw', 1);
+        $recordsTotal = DB::table($this->table_name)->count();
+        $filteredQuery = clone $query;
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
+        $query->skip($start)->take($length);
+        $recordsFiltered = $filteredQuery->count();
+        $query->orderBy('c.created_at', 'DESC');
+
+        $data = $query->get();
+
+        return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data
+        ];
+    }
+
+    public function findOne($id)
+    {
+        return DB::table($this->table_name.' AS t')
+            ->select([
+                't.id',
+                't.name',
+                't.group_contact_name',
+                't.type',
+                't.status',
+                't.f_identity_type_code',
+                't.identity_number',
+                't.email',
+                't.phone',
+                't.f_sales_pic_id',
+                't.company_name',
+                't.company_npwp',
+                't.company_phone',
+                't.company_fax_no',
+                'f_coa_account_payable',
+                'coa_payable.name AS coa_account_payable_name',
+                'f_coa_account_receivable',
+                'coa_receivable.name AS coa_account_receivable_name',
+                'f_payment_terms_id',
+                'payment_terms.name AS payment_terms_name',
+            ])
+            ->leftJoin('m_coas as coa_payable', 'coa_payable.code', '=', 'f_coa_account_payable')
+            ->leftJoin('m_coas as coa_receivable', 'coa_receivable.code', '=', 'f_coa_account_receivable')
+            ->leftJoin('m_payment_terms as payment_terms', 'payment_terms.id', '=', 'f_payment_terms_id')
+            ->where('t.id', $id)
+            ->where('t.company_code', session('user_company_code'))
+            ->first();
+    }
 
     // public function findAll()
     // {

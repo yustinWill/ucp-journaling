@@ -28,4 +28,12 @@ class ContactProductService
         }
         return DB::table($this->table_name)->insert($data);
     }
+
+    public function findAllBasedOnContactId($id)
+    {
+        return DB::table($this->table_name)
+            ->where('f_contact_id', $id)
+            ->orderBy('id', 'asc')
+            ->get();
+    }
 }

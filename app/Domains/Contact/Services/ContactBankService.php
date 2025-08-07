@@ -17,4 +17,14 @@ class ContactBankService
         }
         return DB::table($this->table_name)->insert($data);
     }
+
+    public function findAllBasedOnContactId($id)
+    {
+        return DB::table($this->table_name . ' AS t')
+            ->select('f_bank_code', 'branch_office', 'account_holder', 'account_number', 'm_banks.name AS bank_name')
+            ->join('m_banks', 'm_banks.code', '=', 't.f_bank_code')
+            ->where('t.f_contact_id', $id)
+            ->orderBy('t.id', 'asc')
+            ->get();
+    }
 }
