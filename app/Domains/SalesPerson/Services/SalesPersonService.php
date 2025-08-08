@@ -4,6 +4,7 @@ namespace App\Domains\SalesPerson\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\GeneralStatuses;
 
 class SalesPersonService
 {
@@ -122,9 +123,9 @@ class SalesPersonService
     public function findAll()
     {
         return DB::table($this->table_name . ' as sp')
-            ->leftJoin('contacts as c', 'sp.f_employee_contact_id', '=', 'c.id')
+            ->join('m_contacts as c', 'sp.f_employee_contact_id', '=', 'c.id')
             ->select(['sp.*', 'c.name as employee_name'])
-            ->where('sp.status', 'ACTIVE')
+            ->where('sp.status', GeneralStatuses::ACTIVE)
             ->get();
     }
 

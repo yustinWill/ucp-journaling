@@ -86,7 +86,8 @@
                     <select class="global-select2 form-select" id="sales_user" data-allow-clear="false">
                         <option value="">Pilih Sales</option>
                         @foreach ($sales_users as $sales_user)
-                            <option value="{{ $sales_user['value'] }}">{{ $sales_user['label'] }}</option>
+                            <option value="{{ $sales_user->id }}" @if ($sales_user->id == $contact->f_sales_pic_id) selected @endif>
+                                {{ $sales_user->code }} - {{ $sales_user->employee_name }}</option>
                         @endforeach
                     </select>
                 </div>

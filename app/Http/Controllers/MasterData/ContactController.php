@@ -25,6 +25,7 @@ use App\Domains\Tag\Services\TagService;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\Contact\Services\ContactTypeService;
 use App\Domains\Contact\Services\ContactAuditLogService;
+use App\Domains\SalesPerson\Services\SalesPersonService;
 
 //Enums
 use App\Enums\ErrorCodes;
@@ -56,15 +57,11 @@ class ContactController extends Controller
         $banks = app(BankService::class)->findAll();
         $payment_terms = app(PaymentTermService::class)->findAll();
         $tags = app(TagService::class)->findAll();
+        $sales_users = app(SalesPersonService::class)->findAll();
 
         $selectData = [
             'identity_types' => $identity_types,
-            'sales_users' => [
-                ['value' => 'sales_a', 'label' => 'Sales A'],
-                ['value' => 'sales_b', 'label' => 'Sales B'],
-                ['value' => 'sales_c', 'label' => 'Sales C'],
-                ['value' => 'sales_d', 'label' => 'Sales D']
-            ],
+            'sales_users' => $sales_users,
             'payable_accounts' => $coa_accounts,
             'receivable_accounts' => $coa_accounts,
             'payment_terms' => $payment_terms,
@@ -177,13 +174,7 @@ class ContactController extends Controller
         $banks = app(BankService::class)->findAll();
         $payment_terms = app(PaymentTermService::class)->findAll();
         $tags = app(TagService::class)->findAll();
-
-        $sales_users = [
-            ['value' => 'sales_a', 'label' => 'Sales A'],
-            ['value' => 'sales_b', 'label' => 'Sales B'],
-            ['value' => 'sales_c', 'label' => 'Sales C'],
-            ['value' => 'sales_d', 'label' => 'Sales D']
-        ];
+        $sales_users = app(SalesPersonService::class)->findAll();
 
         $product =  [
             ['value' => 'prod_a', 'label' => 'Produk A'],
