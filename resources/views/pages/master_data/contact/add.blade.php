@@ -492,19 +492,25 @@
                                     bank_accounts: $(
                                             '.form-repeater-bank [data-repeater-item]')
                                         .map(function() {
-                                            return {
-                                                bank_code: $(this).find(
-                                                    'select.bank_code').val(),
-                                                branch_office: $(this).find(
-                                                        'input.branch_office')
-                                                    .val(),
-                                                account_holder: $(this).find(
-                                                        'input.account_holder')
-                                                    .val(),
-                                                account_number: $(this).find(
-                                                        'input.account_number')
-                                                    .val()
-                                            };
+                                            const bank_code = $(this).find(
+                                                'select.bank_code').val();
+                                            const branch_office = $(this).find(
+                                                'input.branch_office').val();
+                                            const account_holder = $(this).find(
+                                                'input.account_holder').val();
+                                            const account_number = $(this).find(
+                                                'input.account_number').val();
+
+                                            // Only return if all fields are filled
+                                            if (bank_code && branch_office &&
+                                                account_holder && account_number) {
+                                                return {
+                                                    bank_code,
+                                                    branch_office,
+                                                    account_holder,
+                                                    account_number
+                                                };
+                                            }
                                         }).get(),
                                     // Product repeater
                                     products: $(

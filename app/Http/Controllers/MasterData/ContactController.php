@@ -96,7 +96,7 @@ class ContactController extends Controller
                 'identity_number' => 'required|string|max:16',
                 'email' => 'nullable|email|max:64',
                 'phone' => 'nullable|string|max:20',
-                'sales_user' => 'required|string|max:64',
+                'sales_user' => 'required_if:contact_type,CUSTOMER|max:64',
                 'company_name' => 'required|string|max:255',
                 'npwp' => 'nullable|string|max:16',
                 'company_phone' => 'nullable|string|max:20',
@@ -120,11 +120,11 @@ class ContactController extends Controller
                 'tags.*' => 'nullable|exists:m_tags,id',
 
                 // Bank repeater
-                'bank_accounts' => 'required|array',
-                'bank_accounts.*.bank_code' => 'required|exists:m_banks,code',
-                'bank_accounts.*.branch_office' => 'required|string|max:255',
-                'bank_accounts.*.account_holder' => 'required|string|max:255',
-                'bank_accounts.*.account_number' => 'required|string|max:255',
+                'bank_accounts' => 'required_if:contact_type,CUSTOMER|array',
+                'bank_accounts.*.bank_code' => 'required_if:contact_type,CUSTOMER|exists:m_banks,code',
+                'bank_accounts.*.branch_office' => 'required_if:contact_type,CUSTOMER|string|max:255',
+                'bank_accounts.*.account_holder' => 'required_if:contact_type,CUSTOMER|string|max:255',
+                'bank_accounts.*.account_number' => 'required_if:contact_type,CUSTOMER|string|max:255',
 
                 // Produk repeater
                 'products' => 'nullable|array',
@@ -226,7 +226,7 @@ class ContactController extends Controller
                 'identity_number' => 'required|string|max:16',
                 'email' => 'nullable|email|max:64',
                 'phone' => 'nullable|string|max:20',
-                'sales_user' => 'required|string|max:64',
+                'sales_user' => 'required_if:contact_type,CUSTOMER|max:64',
                 'company_name' => 'required|string|max:255',
                 'npwp' => 'nullable|string|max:16',
                 'company_phone' => 'nullable|string|max:20',
@@ -250,12 +250,12 @@ class ContactController extends Controller
                 'tags.*' => 'nullable|exists:m_tags,id',
 
                 // Bank repeater
-                'bank_accounts' => 'required|array',
-                'bank_accounts.*.bank_id' => 'nullable|exists:m_contact_banks,id',
-                'bank_accounts.*.bank_code' => 'required|exists:m_banks,code',
-                'bank_accounts.*.branch_office' => 'required|string|max:255',
-                'bank_accounts.*.account_holder' => 'required|string|max:255',
-                'bank_accounts.*.account_number' => 'required|string|max:255',
+                'bank_accounts' => 'required_if:contact_type,CUSTOMER|array',
+                'bank_accounts.*.bank_id' => 'required_if:contact_type,CUSTOMER|exists:m_contact_banks,id',
+                'bank_accounts.*.bank_code' => 'required_if:contact_type,CUSTOMER|exists:m_banks,code',
+                'bank_accounts.*.branch_office' => 'required_if:contact_type,CUSTOMER|string|max:255',
+                'bank_accounts.*.account_holder' => 'required_if:contact_type,CUSTOMER|string|max:255',
+                'bank_accounts.*.account_number' => 'required_if:contact_type,CUSTOMER|string|max:255',
 
                 // Produk repeater
                 'products' => 'nullable|array',

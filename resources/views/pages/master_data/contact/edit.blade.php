@@ -478,7 +478,7 @@
                             'select2-hidden-accessible').removeAttr(
                             'data-select2-id tabindex aria-hidden');
 
-                              // Remove selected attribute from all options
+                        // Remove selected attribute from all options
                         $(this).find('select.select2Product option').removeAttr('selected');
                         // Reset value for new item
                         $(this).find('select.select2Product').val('').trigger('change');
@@ -699,21 +699,28 @@
                                     bank_accounts: $(
                                             '.form-repeater-bank [data-repeater-item]')
                                         .map(function() {
-                                            return {
-                                                bank_id: $(this).find('input.bank_id')
-                                                    .val(),
-                                                bank_code: $(this).find(
-                                                    'select.bank_code').val(),
-                                                branch_office: $(this).find(
-                                                        'input.branch_office')
-                                                    .val(),
-                                                account_holder: $(this).find(
-                                                        'input.account_holder')
-                                                    .val(),
-                                                account_number: $(this).find(
-                                                        'input.account_number')
-                                                    .val()
-                                            };
+                                            const bank_id = $(this).find('input.bank_id')
+                                                    .val();
+                                            const bank_code = $(this).find(
+                                                'select.bank_code').val();
+                                            const branch_office = $(this).find(
+                                                'input.branch_office').val();
+                                            const account_holder = $(this).find(
+                                                'input.account_holder').val();
+                                            const account_number = $(this).find(
+                                                'input.account_number').val();
+
+                                            // Only return if all fields are filled
+                                            if (bank_id && bank_code && branch_office &&
+                                                account_holder && account_number) {
+                                                return {
+                                                    bank_id,
+                                                    bank_code,
+                                                    branch_office,
+                                                    account_holder,
+                                                    account_number
+                                                };
+                                            }
                                         }).get(),
                                     // Product repeater
                                     products: $(
