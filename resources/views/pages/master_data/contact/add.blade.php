@@ -524,7 +524,7 @@
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Berhasil!',
-                                        text: 'User berhasil ditambahkan.',
+                                        text: 'Kontak berhasil ditambahkan.',
                                         customClass: {
                                             confirmButton: 'btn btn-success'
                                         },

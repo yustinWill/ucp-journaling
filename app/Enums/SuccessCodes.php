@@ -21,6 +21,7 @@ enum SuccessCodes: string
     case CREATE_ROLE_SUCCESS = 'CREATE_ROLE_SUCCESS';
     case UPDATE_ROLE_SUCCESS = 'UPDATE_ROLE_SUCCESS';
     case CREATE_CONTACT_SUCCESS = 'CREATE_CONTACT_SUCCESS';
+    case UPDATE_CONTACT_SUCCESS = 'UPDATE_CONTACT_SUCCESS';
 
     public function message(): string
     {
@@ -40,6 +41,7 @@ enum SuccessCodes: string
             self::CREATE_ROLE_SUCCESS => 'Role berhasil dibuat.',
             self::UPDATE_ROLE_SUCCESS => 'Role berhasil diperbarui.',
             self::CREATE_CONTACT_SUCCESS => 'Kontak berhasil dibuat.',
+            self::UPDATE_CONTACT_SUCCESS => 'Kontak berhasil diperbarui.',
         };
     }
 
@@ -61,6 +63,7 @@ enum SuccessCodes: string
             self::CREATE_ROLE_SUCCESS => self::OK,
             self::UPDATE_ROLE_SUCCESS => self::OK,
             self::CREATE_CONTACT_SUCCESS => self::OK,
+            self::UPDATE_CONTACT_SUCCESS => self::OK,
         };
     }
 

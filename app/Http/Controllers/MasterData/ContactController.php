@@ -159,78 +159,134 @@ class ContactController extends Controller
 
     public function edit($id)
     {
-        // Mock contact data - in real app, fetch from database
-        $contact = [
-            'id' => $id,
-            'contact_name' => 'Anwar',
-            'company_name' => 'PT Maju Jaya Sentosa',
-            'type' => 'Pelanggan',
-            'group' => 'VIP Customer',
-            'email' => 'pelanggan1@example.com',
-            'phone' => '081234567890',
-            'landline' => '021-12345678',
-            'fax' => '021-12345679',
-            'identity_type' => 'KTP',
-            'identity_number' => '3175091203940000',
-            'npwp' => '01.234.567.8-999.000',
-            'billing_address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
-            'shipping_address' => 'Ciomas, Bogor',
-            'bank_name' => 'Bank Central Asia',
-            'bank_branch' => 'Bogor',
-            'account_holder' => 'Anwar',
-            'account_number' => '541-002-7891',
-            'debt_account' => '(2-20100) Hutang',
-            'receivable_account' => '(1-20100) Piutang',
-            'payment_terms' => 'Net 30'
+        $contact_header = app(ContactService::class)->findOne($id);
+
+        if ($contact_header == null) {
+            abort(404);
+        }
+
+        $contact_bank = app(ContactBankService::class)->findAllBasedOnContactId($id);
+        $contact_product = app(ContactProductService::class)->findAllBasedOnContactId($id);
+
+        $billing_contact_address = app(ContactAddressService::class)->findOneBasedOnContactIdAndType($id, ContactAddressTypes::BILLING);
+        $shipping_contact_address = app(ContactAddressService::class)->findOneBasedOnContactIdAndType($id, ContactAddressTypes::SHIPPING);
+
+        $identity_types = app(IdentityTypesService::class)->findAll();
+        $contact_types = app(ContactTypeService::class)->findAll();
+        $coa_accounts = app(CoaService::class)->findAll();
+        $banks = app(BankService::class)->findAll();
+        $payment_terms = app(PaymentTermService::class)->findAll();
+        $tags = app(TagService::class)->findAll();
+
+        $sales_users = [
+            ['value' => 'sales_a', 'label' => 'Sales A'],
+            ['value' => 'sales_b', 'label' => 'Sales B'],
+            ['value' => 'sales_c', 'label' => 'Sales C'],
+            ['value' => 'sales_d', 'label' => 'Sales D']
         ];
 
-        $selectData = [
-            'contact_groups' => [
-                ['value' => 'vip', 'label' => 'VIP Customer'],
-                ['value' => 'regular', 'label' => 'Regular Customer'],
-                ['value' => 'wholesale', 'label' => 'Wholesale'],
-                ['value' => 'retail', 'label' => 'Retail'],
-                ['value' => 'premium', 'label' => 'Premium']
-            ],
-            'banks' => [
-                ['value' => 'BCA', 'label' => 'Bank Central Asia (BCA)'],
-                ['value' => 'BRI', 'label' => 'Bank Rakyat Indonesia (BRI)'],
-                ['value' => 'MANDIRI', 'label' => 'Bank Mandiri'],
-                ['value' => 'BNI', 'label' => 'Bank Negara Indonesia (BNI)'],
-                ['value' => 'CIMB', 'label' => 'CIMB Niaga'],
-                ['value' => 'MEGA', 'label' => 'Bank Mega']
-            ],
-            'payable_accounts' => [
-                ['value' => '2-20100', 'label' => '(2-20100) Hutang'],
-                ['value' => '2-20200', 'label' => '(2-20200) Hutang Jangka Panjang'],
-                ['value' => '2-20300', 'label' => '(2-20300) Hutang Bank'],
-                ['value' => '2-20400', 'label' => '(2-20400) Hutang Pajak']
-            ],
-            'receivable_accounts' => [
-                ['value' => '1-20100', 'label' => '(1-20100) Piutang'],
-                ['value' => '1-20200', 'label' => '(1-20200) Piutang Jangka Panjang'],
-                ['value' => '1-20300', 'label' => '(1-20300) Piutang Lain-lain'],
-                ['value' => '1-20400', 'label' => '(1-20400) Piutang Karyawan']
-            ],
-            'payment_terms' => [
-                ['value' => 'Net 15', 'label' => 'Net 15'],
-                ['value' => 'Net 30', 'label' => 'Net 30'],
-                ['value' => 'Net 45', 'label' => 'Net 45'],
-                ['value' => 'Net 60', 'label' => 'Net 60'],
-                ['value' => 'COD', 'label' => 'Cash on Delivery'],
-                ['value' => 'Immediate', 'label' => 'Immediate']
-            ],
-            'tags' => [
-                ['value' => 'CUSTOMER', 'label' => 'CUSTOMER - Customer', 'color' => 'success'],
-                ['value' => 'SUPPLIER', 'label' => 'SUPPLIER - Supplier', 'color' => 'info'],
-                ['value' => 'INTERNAL', 'label' => 'INTERNAL - Internal', 'color' => 'secondary'],
-                ['value' => 'VIP', 'label' => 'VIP - VIP Customer', 'color' => 'warning'],
-                ['value' => 'PRIORITY', 'label' => 'PRIORITY - Priority Contact', 'color' => 'primary']
-            ],
-            'canAddTags' => true // Mock permission check
+        $product =  [
+            ['value' => 'prod_a', 'label' => 'Produk A'],
+            ['value' => 'prod_b', 'label' => 'Produk B'],
+            ['value' => 'prod_c', 'label' => 'Produk C'],
+            ['value' => 'prod_d', 'label' => 'Produk D'],
+            ['value' => 'prod_e', 'label' => 'Produk E']
         ];
 
-        return view('pages.master_data.contact.edit', compact('contact') + $selectData);
+        return view('pages.master_data.contact.edit', [
+            'contact' => $contact_header,
+            'contact_bank' => $contact_bank,
+            'contact_product' => $contact_product,
+            'billing_contact_address' => $billing_contact_address,
+            'shipping_contact_address' => $shipping_contact_address,
+            'identity_types' => $identity_types,
+            'contact_types' => $contact_types,
+            'coa_accounts' => $coa_accounts,
+            'banks' => $banks,
+            'payment_terms' => $payment_terms,
+            'tags' => $tags,
+            'sales_users' => $sales_users,
+            'payable_accounts' => $coa_accounts,
+            'receivable_accounts' => $coa_accounts,
+            'canAddTags' => true, // Mock permission check
+            'products' => $product
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'contact_id' => 'required|exists:m_contacts,id',
+                'contact_name' => 'required|string|max:255',
+                'group_name' => 'nullable|string|max:255',
+                'contact_type' => 'required|in:CUSTOMER,SUPPLIER,EMPLOYEE,OTHERS',
+                'contact_status' => 'required|in:ACTIVE,INACTIVE',
+                'identity_type' => 'required|string|exists:m_identity_types,code',
+                'identity_number' => 'required|string|max:16',
+                'email' => 'nullable|email|max:64',
+                'phone' => 'nullable|string|max:20',
+                'sales_user' => 'required|string|max:64',
+                'company_name' => 'required|string|max:255',
+                'npwp' => 'nullable|string|max:16',
+                'company_phone' => 'nullable|string|max:20',
+                'company_fax' => 'nullable|string|max:20',
+                'billing_province' => 'nullable|string|max:255',
+                'billing_city' => 'nullable|string|max:255',
+                'billing_district' => 'nullable|string|max:255',
+                'billing_subdistrict' => 'nullable|string|max:255',
+                'billing_address' => 'required|string|max:255',
+                'billing_postal_code' => 'nullable|string|max:5',
+                'shipping_province' => 'nullable|string|max:255',
+                'shipping_city' => 'nullable|string|max:255',
+                'shipping_district' => 'nullable|string|max:255',
+                'shipping_subdistrict' => 'nullable|string|max:255',
+                'shipping_address' => 'required|string|max:255',
+                'shipping_postal_code' => 'nullable|string|max:5',
+                'payable_account' => 'required|exists:m_coas,code',
+                'receivable_account' => 'required|exists:m_coas,code',
+                'payment_term' => 'required|exists:m_payment_terms,code',
+                'tags' => 'nullable|array',
+                'tags.*' => 'nullable|exists:m_tags,id',
+
+                // Bank repeater
+                'bank_accounts' => 'required|array',
+                'bank_accounts.*.bank_id' => 'nullable|exists:m_contact_banks,id',
+                'bank_accounts.*.bank_code' => 'required|exists:m_banks,code',
+                'bank_accounts.*.branch_office' => 'required|string|max:255',
+                'bank_accounts.*.account_holder' => 'required|string|max:255',
+                'bank_accounts.*.account_number' => 'required|string|max:255',
+
+                // Produk repeater
+                'products' => 'nullable|array',
+                'products.*.product_id' => 'nullable|exists:m_contact_products,id',
+                'products.*.product' => 'nullable|string|max:64',
+                'products.*.price' => 'nullable|numeric|min:0',
+            ]);
+
+            app(UpdateContactAction::class)->execute($request->contact_id, $validated);
+
+            return response()->json([
+                'message' => SuccessCodes::UPDATE_CONTACT_SUCCESS->message()
+            ], SuccessCodes::UPDATE_CONTACT_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function export()

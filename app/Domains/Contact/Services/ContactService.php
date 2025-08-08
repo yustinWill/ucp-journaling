@@ -27,8 +27,7 @@ class ContactService
             })
             ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
-            ->where('c.company_code', session('user_company_code'))
-            ->where('c.status', '=', GeneralStatuses::ACTIVE);
+            ->where('c.company_code', session('user_company_code'));
 
         // Filter by status
         if ($name = request()->input('contact_name')) {
@@ -55,8 +54,7 @@ class ContactService
             $query->where('c.type', 'LIKE', "%{$type}%");
         }
 
-         $query->groupBy('c.id');
-
+        $query->groupBy('c.id');
 
         // DataTable pagination
         $draw = (int) request()->input('draw', 1);
@@ -80,7 +78,7 @@ class ContactService
 
     public function findOne($id)
     {
-        return DB::table($this->table_name.' AS t')
+        return DB::table($this->table_name . ' AS t')
             ->select([
                 't.id',
                 't.name',
@@ -145,18 +143,28 @@ class ContactService
         ]);
     }
 
-    // public function update(int $id, array $data): int
-    // {
-    //     return DB::table($this->table_name)
-    //         ->where('id', $id)
-    //         ->where('company_code', session('user_company_code'))
-    //         ->update([
-    //             'name' => $data['name'],
-    //             'type' => $data['type'],
-    //             'status' => $data['status'],
-    //             'description' => $data['description'] ?? '',
-    //             'updated_at' => now(),
-    //             'updated_by' => Auth::id()
-    //         ]);
-    // }
+    public function update(int $id, array $data): int
+    {
+        return DB::table($this->table_name)->where('id', $id)->update([
+            'name' => $data['contact_name'],
+            'group_contact_name' => $data['group_name'] ?? null,
+            'type' => $data['contact_type'],
+            'status' => $data['contact_status'],
+            'f_identity_type_code' => $data['identity_type'],
+            'identity_number' => $data['identity_number'],
+            'email' => $data['email'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'f_sales_pic_id' => $data['sales_user'],
+            'company_name' => $data['company_name'],
+            'company_npwp' => $data['npwp'] ?? null,
+            'company_phone' => $data['company_phone'] ?? null,
+            'company_fax_no' => $data['company_fax'] ?? null,
+            'f_coa_account_payable' => $data['payable_account'],
+            'f_coa_account_receivable' => $data['receivable_account'],
+            'f_payment_terms_id' => $data['payment_term'],
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
+            'updated_at' => now(),
+            'updated_by' => Auth::id(),
+        ]);
+    }
 }

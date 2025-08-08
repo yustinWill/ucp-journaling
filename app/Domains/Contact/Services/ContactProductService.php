@@ -20,6 +20,15 @@ class ContactProductService
         ]);
     }
 
+    public function update(array $data)
+    {
+        $data['updated_by'] = Auth::id();
+        $data['updated_at'] = now();
+        return DB::table($this->table_name)
+            ->where('id', $data['id'])
+            ->update($data);
+    }
+
     public function createMany(array $data)
     {
         foreach ($data as &$item) {
@@ -35,5 +44,13 @@ class ContactProductService
             ->where('f_contact_id', $id)
             ->orderBy('id', 'asc')
             ->get();
+    }
+
+    public function delete($contact_id, $id)
+    {
+        return DB::table($this->table_name)
+            ->where('f_contact_id', $contact_id)
+            ->where('id', $id)
+            ->delete();
     }
 }

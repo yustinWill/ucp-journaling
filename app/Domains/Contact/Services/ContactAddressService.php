@@ -18,11 +18,28 @@ class ContactAddressService
         return DB::table($this->table_name)->insert($data);
     }
 
+    public function update($id, array $data)
+    {
+        $data['updated_by'] = Auth::id();
+        $data['updated_at'] = now();
+        return DB::table($this->table_name)
+            ->where('f_contact_id', $id)
+            ->where('type', $data['type'])
+            ->update($data);
+    }
+
     public function findOneBasedOnContactIdAndType($id, $type)
     {
         return DB::table($this->table_name)
             ->where('f_contact_id', $id)
             ->where('type', $type)
             ->first();
+    }
+
+    public function findAllBasedOnContactId($id)
+    {
+        return DB::table($this->table_name)
+            ->where('f_contact_id', $id)
+            ->get();
     }
 }
