@@ -25,6 +25,9 @@ use App\Domains\User\Services\UserService;
 use App\Domains\Role\Services\RoleAuditLogService;
 use App\Domains\Role\Services\RoleService;
 
+use App\Domains\Contact\Services\ContactAuditLogService;
+use App\Domains\Contact\Services\ContactService;
+
 
 class AuditLogController extends Controller
 {
@@ -71,6 +74,12 @@ class AuditLogController extends Controller
                 $header_data = app(RoleService::class)->findOne($log_data->f_role_id);
                 $form_title = AuditLogTypes::MASTER_DATA_ROLE->label() . ' -> ' . $header_data->name;
                 $form_type = AuditLogTypes::MASTER_DATA_ROLE->label();
+                break;
+            case AuditLogTypes::MASTER_DATA_CONTACT->code():
+                $log_data = app(ContactAuditLogService::class)->findOneBasedOnId($id);
+                $header_data = app(ContactService::class)->findOne($log_data->f_contact_id);
+                $form_title = AuditLogTypes::MASTER_DATA_CONTACT->label() . ' -> ' . $header_data->name;
+                $form_type = AuditLogTypes::MASTER_DATA_CONTACT->label();
                 break;
         }
 
