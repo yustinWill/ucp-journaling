@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment . $journal_segment . '/index', 'index')->name('main_transaction.journal.index');
         Route::get($base_segment . $journal_segment . '/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table');
         Route::get($base_segment . $journal_segment . '/add', 'add')->name('main_transaction.journal.add');
+        Route::post($base_segment . $journal_segment . '/save', 'save')->name('main_transaction.journal.save');
         Route::get($base_segment . $journal_segment . '/import', 'import')->name('main_transaction.journal.import');
         Route::get($base_segment . $journal_segment . '/export', 'export')->name('main_transaction.journal.export');
         Route::get($base_segment . $journal_segment . '/detail/{id}', 'detail')->name('main_transaction.journal.detail');

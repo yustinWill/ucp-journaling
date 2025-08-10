@@ -168,4 +168,17 @@ class UserService
         }
         return $data;
     }
+
+    public function findAll()
+    {
+        return DB::table($this->table_name . ' as t')
+            ->select([
+                't.id',
+                't.name',
+            ])
+            ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
+            ->where('uc.f_company_code', session('user_company_code'))
+            ->orderBy('t.name', 'ASC')
+            ->get();
+    }
 }

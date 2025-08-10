@@ -3,17 +3,25 @@
 namespace App\Http\Controllers\MainTransaction;
 
 use App\Http\Controllers\Controller;
+use App\Enums\SuccessCodes;
 use Illuminate\Http\Request;
+use App\Domains\AccountingJournal\Services\AccountingJournalService;
+use App\Domains\Coa\Services\CoaService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\User\Services\UserService;
+use App\Helpers\PermissionHelper;
+use App\Domains\AccountingJournal\Actions\CreateAccountingJournalAction;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+use App\Exceptions\AppException;
+use Illuminate\Validation\ValidationException;
+use App\Enums\ErrorCodes;
 
 class JournalController extends Controller
 {
     public function index()
     {
-        $createdByUsers = [
-            ['value' => 'USR-001', 'label' => 'USR-001 - Yustinus Komunal (Finance Manager)'],
-            ['value' => 'USR-002', 'label' => 'USR-002 - Ahmad Rizki (Accounting Staff)'],
-            ['value' => 'USR-003', 'label' => 'USR-003 - Siti Nurhaliza (Admin Keuangan)']
-        ];
+        $createdByUsers = app(UserService::class)->findAll();
 
         return view('pages.main_transaction.journal.index', [
             'createdByUsers' => $createdByUsers
@@ -22,92 +30,77 @@ class JournalController extends Controller
 
     public function index_data_table()
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "date" => "2025-07-01",
-                    "reference_no" => "JE-2025-001",
-                    "notes" => "Penjualan RIYO Water 330ml - CV Berkah Sentosa",
-                    "tags" => ["PENJUALAN", "KEUANGAN"],
-                    "amount" => 12500000,
-                    "created_by" => "Yustinus Komunal",
-                    "created_at" => "2025-07-01 08:30:00",
-                ],
-                [
-                    "id" => 2,
-                    "date" => "2025-07-02",
-                    "reference_no" => "JE-2025-002",
-                    "notes" => "Pembelian bahan baku plastik untuk kemasan",
-                    "tags" => ["PEMBELIAN", "OPERASIONAL"],
-                    "amount" => 25000000,
-                    "created_by" => "Ahmad Rizki",
-                    "created_at" => "2025-07-02 09:15:00",
-                ],
-                [
-                    "id" => 3,
-                    "date" => "2025-07-03",
-                    "reference_no" => "JE-2025-003",
-                    "notes" => "Pembayaran gaji karyawan produksi bulan Juli",
-                    "tags" => ["OPERASIONAL"],
-                    "amount" => 85000000,
-                    "created_by" => "Siti Nurhaliza",
-                    "created_at" => "2025-07-03 14:20:00",
-                ],
-                [
-                    "id" => 4,
-                    "date" => "2025-07-04",
-                    "reference_no" => "JE-2025-004",
-                    "notes" => "Biaya maintenance mesin produksi dan quality control",
-                    "tags" => ["OPERASIONAL", "INVESTASI"],
-                    "amount" => 15500000,
-                    "created_by" => "Ahmad Rizki",
-                    "created_at" => "2025-07-04 11:45:00",
-                ],
-                [
-                    "id" => 5,
-                    "date" => "2025-07-05",
-                    "reference_no" => "JE-2025-005",
-                    "notes" => "Penerimaan pembayaran dari Supermarket Maju Jaya",
-                    "tags" => ["PENJUALAN", "KEUANGAN"],
-                    "amount" => 22500000,
-                    "created_by" => "Yustinus Komunal",
-                    "created_at" => "2025-07-05 16:10:00",
-                ]
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(AccountingJournalService::class)->findAllDatatable();
+
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
+    }
+
+    public function generate_reference_no($date)
+    {
+        $data = app(AccountingJournalService::class)->generateReferenceNo($date);
+
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
     {
-        // Sample accounts for select options with code-name format
-        $accounts = [
-            ['code' => '1101', 'name' => 'Kas', 'label' => '1101 - Kas'],
-            ['code' => '1102', 'name' => 'Bank BCA', 'label' => '1102 - Bank BCA'],
-            ['code' => '1201', 'name' => 'Piutang Dagang', 'label' => '1201 - Piutang Dagang'],
-            ['code' => '1301', 'name' => 'Persediaan Barang Dagang', 'label' => '1301 - Persediaan Barang Dagang'],
-            ['code' => '4001', 'name' => 'Penjualan Barang Dagang', 'label' => '4001 - Penjualan Barang Dagang'],
-            ['code' => '5001', 'name' => 'Pembelian Barang Dagang', 'label' => '5001 - Pembelian Barang Dagang'],
-            ['code' => '6001', 'name' => 'Biaya Operasional', 'label' => '6001 - Biaya Operasional']
-        ];
+        $tags = app(TagService::class)->findAll();
+        $coas = app(CoaService::class)->findAll();
+        $referenceNo = app(AccountingJournalService::class)->generateReferenceNo(date('Y-m-d'));
+        $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
-        // Sample tags loaded from master data with dynamic colors
-        $availableTags = [
-            ['code' => 'PENJUALAN', 'name' => 'Transaksi Penjualan', 'label' => 'PENJUALAN - Transaksi Penjualan', 'color' => 'success'],
-            ['code' => 'PEMBELIAN', 'name' => 'Transaksi Pembelian', 'label' => 'PEMBELIAN - Transaksi Pembelian', 'color' => 'info'],
-            ['code' => 'OPERASIONAL', 'name' => 'Biaya Operasional', 'label' => 'OPERASIONAL - Biaya Operasional', 'color' => 'warning'],
-            ['code' => 'INVESTASI', 'name' => 'Investasi & Aset', 'label' => 'INVESTASI - Investasi & Aset', 'color' => 'primary'],
-            ['code' => 'KEUANGAN', 'name' => 'Transaksi Keuangan', 'label' => 'KEUANGAN - Transaksi Keuangan', 'color' => 'secondary'],
-            ['code' => 'PAJAK', 'name' => 'Transaksi Pajak', 'label' => 'PAJAK - Transaksi Pajak', 'color' => 'danger'],
-            ['code' => 'KOREKSI', 'name' => 'Koreksi & Penyesuaian', 'label' => 'KOREKSI - Koreksi & Penyesuaian', 'color' => 'dark']
-        ];
-
-        // Permission check for adding new tags (mock from user session/role)
-        $canAddTags = true; // Mock: In real app, check user permissions
-
-        return view('pages.main_transaction.journal.add', compact('accounts', 'availableTags', 'canAddTags'));
+        return view('pages.main_transaction.journal.add', [
+            'today' => date('Y-m-d'),
+            'canAddTags' => $canAddTags,
+            'tags' => $tags,
+            'coas' => $coas,
+            'referenceNo' => $referenceNo
+        ]);
     }
+
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'reference_no' => 'required|string|unique:t_accounting_journals,reference_no',
+                'date' => 'required|date_format:Y-m-d',
+                'description' => 'nullable|string|max:255',
+                'memo' => 'nullable|string|max:255',
+                // 'amount' => 'required|numeric|min:0',
+                'tags' => 'nullable|array',
+                'journals' => 'required|array|min:1',
+                'journals.*.account_code' => 'required|string|max:20',
+                'journals.*.description' => 'nullable|string|max:255',
+                'journals.*.debit_amount' => 'nullable|numeric|min:0',
+                'journals.*.credit_amount' => 'nullable|numeric|min:0'
+            ]);
+
+            app(CreateAccountingJournalAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_ACCOUNTING_JOURNAL_SUCCESS->message()
+            ], SuccessCodes::CREATE_ACCOUNTING_JOURNAL_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            dd('bbb');
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            dd($e);
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
 
     public function import()
     {
