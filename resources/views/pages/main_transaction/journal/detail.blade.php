@@ -15,7 +15,7 @@
                 <div class="col-md-4">
                     <div class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('main_transaction.journal.edit', $journal['id']) }}"
+                            <a href="{{ route('main_transaction.journal.edit', $journal['reference_no']) }}"
                                 class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-edit me-2"></i>
                                 Edit

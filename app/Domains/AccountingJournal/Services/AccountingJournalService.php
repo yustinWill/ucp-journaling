@@ -18,7 +18,7 @@ class AccountingJournalService
                 't.date',
                 't.reference_no',
                 't.description',
-                't.amount',
+                DB::raw("SUM(t.amount)/2 as amount"),
                 't.created_at',
                 'users.name as created_by',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
@@ -45,7 +45,6 @@ class AccountingJournalService
             $query->where('t.created_by', 'like', "%{$created_by}%");
         }
 
-
         if ($date = request()->input('date')) {
             [$from, $to] = array_map('trim', explode('-', $date));
             $from = DateTime::createFromFormat('m/d/Y', $from)->format('Y-m-d');
@@ -53,7 +52,7 @@ class AccountingJournalService
             $query->whereBetween('t.date', [$from, $to]);
         }
 
-        $query->groupBy('t.reference_no', 't.date', 't.description', 't.amount', 't.created_at', 't.created_by');
+        $query->groupBy('t.reference_no', 't.date', 't.description', 't.created_at', 't.created_by');
 
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
@@ -108,6 +107,7 @@ class AccountingJournalService
 
     public function create($data)
     {
+        $now = now();
         $inserted_ids = [];
         foreach ($data as $row) {
             $inserted_ids[] = DB::table($this->table_name)->insertGetId([
@@ -125,7 +125,7 @@ class AccountingJournalService
                 "f_tag_codes" => json_encode($row['f_tag_codes']),
                 "status" => $row['status'],
                 "is_locked" => false,
-                'created_at' => now(),
+                'created_at' => $now,
                 'created_by' => Auth::id()
             ]);
         }
@@ -144,8 +144,21 @@ class AccountingJournalService
             ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
             ->where('reference_no', $reference_no)
+            ->where('t.status', GeneralStatuses::ACTIVE)
             ->orderBy('id', 'ASC')
             ->groupBy('t.id', 't.reference_no', 't.date', 't.description', 't.amount', 't.created_at', 't.created_by', 'm_coas.name')
             ->get();
     }
+
+    public function updateSetInactive($reference_no)
+    {
+        return DB::table($this->table_name)
+            ->where('reference_no', $reference_no)
+            ->update([
+                'status' => GeneralStatuses::INACTIVE,
+                'updated_at' => now(),
+                'updated_by' => Auth::id()
+            ]);
+    }
+
 }

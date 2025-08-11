@@ -34,26 +34,27 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment . $journal_segment . '/export', 'export')->name('main_transaction.journal.export');
         Route::get($base_segment . $journal_segment . '/detail/{id}', 'detail')->name('main_transaction.journal.detail');
         Route::get($base_segment . $journal_segment . '/edit/{id}', 'edit')->name('main_transaction.journal.edit');
+        Route::post($base_segment . $journal_segment . '/update', 'update')->name('main_transaction.journal.update');
     });
 
     Route::controller(PurchaseController::class)->group(function () use ($base_segment, $purchase_segment) {
         Route::get($base_segment . $purchase_segment . '/index', 'index')->name('main_transaction.purchase.index');
         Route::get($base_segment . $purchase_segment . '/index_data_table', 'index_data_table')->name('main_transaction.purchase.index_data_table');
-        
+
         // Purchase Order routes
         Route::get($base_segment . $purchase_segment . '/add_po', 'purchaseOrderAdd')->name('main_transaction.purchase.add.po');
-        
+
         // Purchase Delivery routes
         Route::get($base_segment . $purchase_segment . '/add_pd', 'purchaseDeliveryAdd')->name('main_transaction.purchase.add.pd');
-        
+
         // Purchase Invoice routes
         Route::get($base_segment . $purchase_segment . '/add_pi', 'purchaseInvoiceAdd')->name('main_transaction.purchase.add.pi');
-        
+
         // Detail and Edit routes
         Route::get($base_segment . $purchase_segment . '/detail/{id}', 'detail')->name('main_transaction.purchase.detail');
         Route::get($base_segment . $purchase_segment . '/edit/{id}', 'edit')->name('main_transaction.purchase.edit');
         Route::post($base_segment . $purchase_segment . '/update', 'update')->name('main_transaction.purchase.update');
-        
+
         // Import/Export routes
         Route::get($base_segment . $purchase_segment . '/import', 'import')->name('main_transaction.purchase.import');
         Route::get($base_segment . $purchase_segment . '/download_template', 'downloadTemplate')->name('main_transaction.purchase.download_template');
@@ -124,20 +125,20 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
     Route::controller(SalesController::class)->group(function () use ($base_segment, $sales_segment) {
         Route::get($base_segment . $sales_segment . '/index', 'index')->name('main_transaction.sales.index');
         Route::get($base_segment . $sales_segment . '/index_data_table', 'index_data_table')->name('main_transaction.sales.index_data_table');
-        
+
         // Sales Order routes
         Route::get($base_segment . $sales_segment . '/add_so', 'salesOrderAdd')->name('main_transaction.sales.add.so');
-        
+
         // Sales Delivery routes
         Route::get($base_segment . $sales_segment . '/add_sd', 'salesDeliveryAdd')->name('main_transaction.sales.add.sd');
-        
+
         // Sales Invoice routes
         Route::get($base_segment . $sales_segment . '/add_si', 'salesInvoiceAdd')->name('main_transaction.sales.add.si');
-        
+
         // Detail and Edit routes
         Route::get($base_segment . $sales_segment . '/detail/{id}', 'detail')->name('main_transaction.sales.detail');
         Route::get($base_segment . $sales_segment . '/edit/{id}', 'edit')->name('main_transaction.sales.edit');
-        
+
         // Import/Export routes
         Route::get($base_segment . $sales_segment . '/import', 'import')->name('main_transaction.sales.import');
         Route::get($base_segment . $sales_segment . '/download_template', 'downloadTemplate')->name('main_transaction.sales.download_template');

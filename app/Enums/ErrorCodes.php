@@ -14,6 +14,7 @@ enum ErrorCodes: string
     case NOT_AUTHORIZED = 'NOT_AUTHORIZED';
     case USER_NO_PERMISSIONS = 'USER_NO_PERMISSIONS';
     case USER_NO_COMPANY = 'USER_NO_COMPANY';
+    case JOURNAL_IS_LOCKED = 'JOURNAL_IS_LOCKED';
 
     public function message(): string
     {
@@ -24,6 +25,7 @@ enum ErrorCodes: string
             self::NOT_AUTHORIZED => 'Terjadi kesalahan pada server.',
             self::USER_NO_PERMISSIONS => 'User tidak memiliki hak akses apapun.',
             self::USER_NO_COMPANY => 'User tidak memiliki perusahaan yang ditetapkan.',
+            self::JOURNAL_IS_LOCKED => 'Jurnal ini sudah terkunci / dilakukan closing.',
         };
     }
 
@@ -36,6 +38,7 @@ enum ErrorCodes: string
             self::NOT_AUTHORIZED => self::UNAUTHORIZED,
             self::USER_NO_PERMISSIONS => self::UNAUTHORIZED,
             self::USER_NO_COMPANY => self::UNAUTHORIZED,
+            self::JOURNAL_IS_LOCKED => self::BAD_REQUEST,
         };
     }
 
