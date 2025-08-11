@@ -132,4 +132,20 @@ class AccountingJournalService
 
         return $inserted_ids;
     }
+
+    public function findOne($reference_no)
+    {
+        return DB::table($this->table_name . ' as t')
+            ->select('t.*', 'm_coas.name as coa_name', DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"))
+            ->join('m_coas', 'm_coas.code', '=', 't.f_coa_code')
+            ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
+            ->where('reference_no', $reference_no)
+            ->orderBy('id', 'ASC')
+            ->groupBy('t.id', 't.reference_no', 't.date', 't.description', 't.amount', 't.created_at', 't.created_by', 'm_coas.name')
+            ->get();
+    }
 }

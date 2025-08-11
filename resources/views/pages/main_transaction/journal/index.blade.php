@@ -179,10 +179,10 @@
                             render: function(data, type, row, meta) {
                                 const editUrl =
                                     `{{ route('main_transaction.journal.edit', ':id') }}`.replace(
-                                        ':id', row.id);
+                                        ':id', row.reference_no);
                                 const detailUrl =
                                     `{{ route('main_transaction.journal.detail', ':id') }}`.replace(
-                                        ':id', row.id);
+                                        ':id', row.reference_no);
 
                                 return `
                                 <div class="d-flex gap-2">

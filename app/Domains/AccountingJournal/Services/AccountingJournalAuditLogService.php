@@ -26,7 +26,7 @@ class AccountingJournalAuditLogService
     {
         return DB::table($this->table_name . ' as t')
             ->select([
-                't.f_coa_id',
+                't.f_accounting_journal_id',
                 't.action_type',
                 't.description',
                 't.metadata',
@@ -35,7 +35,7 @@ class AccountingJournalAuditLogService
                 'usr.name AS user_name'
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
-            ->where('t.f_coa_id', $id)
+            ->where('t.f_accounting_journal_id', $id)
             ->orderBy('t.created_at', 'DESC')
             ->get();
     }
