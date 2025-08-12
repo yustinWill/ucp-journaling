@@ -141,6 +141,34 @@
                 <div data-i18n="Chat">Daftar Akun</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*'])) active open @endif">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-list"></i>
+                <div data-i18n="Chat">Laporan Keuangan</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*'])) active @endif">
+                    <a href="{{ route('report.jurnal_umum.index') }}" class="menu-link">
+                        <div data-i18n="Tax">Jurnal Umum</div>
+                    </a>
+                </li>
+                {{-- <li class="menu-item @if (request()->routeIs(['master_data.unit.*'])) active @endif">
+                    <a href="{{ route('master_data.unit.index') }}" class="menu-link">
+                        <div data-i18n="Unit">Buku Besar</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.category.*'])) active @endif">
+                    <a href="{{ route('master_data.category.index') }}" class="menu-link">
+                        <div data-i18n="Category">Neraca</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.tag.*'])) active @endif">
+                    <a href="{{ route('master_data.tag.index') }}" class="menu-link">
+                        <div data-i18n="Tags">Laba Rugi</div>
+                    </a>
+                </li> --}}
+            </ul>
+        </li>
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Sistem & Pengaturan</span>
         </li>
