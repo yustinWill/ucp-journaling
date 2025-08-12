@@ -148,4 +148,22 @@ class CoaService
             ->orderBy('t.code', 'ASC')
             ->get();
     }
+
+    public function findAllWhereInCode($coa_codes)
+    {
+        return DB::table($this->table_name . ' as t')
+            ->select([
+                't.id',
+                't.code',
+                't.name',
+                't.level',
+                't.type',
+                't.note'
+            ])
+            ->where('t.company_code', session('user_company_code'))
+            ->whereIn('t.code', $coa_codes)
+            ->where('t.status', GeneralStatuses::ACTIVE)
+            ->orderBy('t.code', 'ASC')
+            ->get();
+    }
 }

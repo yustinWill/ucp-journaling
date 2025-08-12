@@ -141,7 +141,7 @@
                 <div data-i18n="Chat">Daftar Akun</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*'])) active open @endif">
+        <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*','report.buku_besar.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
                 <div data-i18n="Chat">Laporan Keuangan</div>
@@ -149,15 +149,15 @@
             <ul class="menu-sub">
                 <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*'])) active @endif">
                     <a href="{{ route('report.jurnal_umum.index') }}" class="menu-link">
-                        <div data-i18n="Tax">Jurnal Umum</div>
+                        <div>Jurnal Umum</div>
                     </a>
                 </li>
-                {{-- <li class="menu-item @if (request()->routeIs(['master_data.unit.*'])) active @endif">
-                    <a href="{{ route('master_data.unit.index') }}" class="menu-link">
-                        <div data-i18n="Unit">Buku Besar</div>
+                <li class="menu-item @if (request()->routeIs(['report.buku_besar.*'])) active @endif">
+                    <a href="{{ route('report.buku_besar.index') }}" class="menu-link">
+                        <div>Buku Besar</div>
                     </a>
                 </li>
-                <li class="menu-item @if (request()->routeIs(['master_data.category.*'])) active @endif">
+                {{-- <li class="menu-item @if (request()->routeIs(['master_data.category.*'])) active @endif">
                     <a href="{{ route('master_data.category.index') }}" class="menu-link">
                         <div data-i18n="Category">Neraca</div>
                     </a>
