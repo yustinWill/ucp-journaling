@@ -124,6 +124,22 @@
                                         </td>
                                     </tr>
                                 </tbody>
+                                <tfoot>
+                                    <tr class="table-info">
+                                        <th></th>
+                                        <th>Total</th>
+                                        <th class="text-end" id="total-debit">0</th>
+                                        <th class="text-end" id="total-credit">0</th>
+                                        <th></th>
+                                    </tr>
+                                    <tr>
+                                        <th></th>
+                                        <th>Selisih</th>
+                                        <th class="text-end" id="difference">0</th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
                             </table>
                             <div class="mb-0">
                                 <button class="btn btn-primary" data-repeater-create type="button">
@@ -278,7 +294,30 @@
                     return;
                 }
 
-                if ($('.journal-entry-row').length === 0) {
+                let journal_data = $('.form-repeater-journal [data-repeater-item]').map(function() {
+                    const account_code = $(this).find(
+                        'select.coa-select').val();
+                    const description = $(this).find(
+                        'input.description').val();
+                    const debit_amount = $(this).find(
+                        'input.debit-amount').val().replace(
+                        /[^0-9]/g, '');
+                    const credit_amount = $(this).find(
+                            'input.credit-amount').val()
+                        .replace(/[^0-9]/g, '');
+
+                    // Only return if all fields are filled
+                    if (account_code && (debit_amount ||
+                            credit_amount)) {
+                        return {
+                            account_code,
+                            description,
+                            debit_amount,
+                            credit_amount
+                        };
+                    }
+                }).get()
+                if (journal_data.length === 0) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Validasi Gagal',
@@ -318,32 +357,7 @@
                                     description: $('#description').val(),
                                     memo: $('#memo').val(),
                                     tags: $('#journal-tags').val(),
-                                    journals: $(
-                                            '.form-repeater-journal [data-repeater-item]')
-                                        .map(function() {
-
-                                            const account_code = $(this).find(
-                                                'select.coa-select').val();
-                                            const description = $(this).find(
-                                                'input.description').val();
-                                            const debit_amount = $(this).find(
-                                                'input.debit-amount').val().replace(
-                                                /[^0-9]/g, '');
-                                            const credit_amount = $(this).find(
-                                                    'input.credit-amount').val()
-                                                .replace(/[^0-9]/g, '');
-
-                                            // Only return if all fields are filled
-                                            if (account_code && (debit_amount ||
-                                                    credit_amount)) {
-                                                return {
-                                                    account_code,
-                                                    description,
-                                                    debit_amount,
-                                                    credit_amount
-                                                };
-                                            }
-                                        }).get(),
+                                    journals: journal_data,
                                 },
                                 success: function(response) {
                                     Swal.fire({

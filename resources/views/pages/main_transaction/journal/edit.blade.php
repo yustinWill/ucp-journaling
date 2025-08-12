@@ -67,7 +67,7 @@
                             <select class="global-select2 form-select" id="tags" multiple data-allow-clear="true">
                                 @foreach ($tags as $tag)
                                     <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}"
-                                        @if (isset($journal['f_tag_codes']) && in_array($tag->id, $journal['f_tag_codes'])) selected @endif >{{ $tag->code }} -
+                                        @if (isset($journal['f_tag_codes']) && in_array($tag->id, $journal['f_tag_codes'])) selected @endif>{{ $tag->code }} -
                                         {{ $tag->name }}</option>
                                 @endforeach
                             </select>
@@ -124,7 +124,8 @@
                                                     value="{{ $entry['description'] }}">
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control currency-input debit-amount text-end"
+                                                <input type="text"
+                                                    class="form-control currency-input debit-amount text-end"
                                                     value="{{ $entry['debit_amount'] }}">
                                             </td>
                                             <td>
@@ -157,10 +158,12 @@
                                             <input type="text" class="form-control description">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control currency-input debit-amount text-end">
+                                            <input type="text"
+                                                class="form-control currency-input debit-amount text-end">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control currency-input credit-amount text-end">
+                                            <input type="text"
+                                                class="form-control currency-input credit-amount text-end">
                                         </td>
                                         <td>
                                             <button class="btn btn-sm btn-danger remove-entry" data-repeater-delete
@@ -293,6 +296,111 @@
 
             $('#submit-btn').click(function(e) {
                 e.preventDefault();
+
+                // Validate required fields
+                if (!$('#journal-date').val()) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Tanggal jurnal harus diisi.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                if (!$('#description').val()) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Deskripsi jurnal harus diisi.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                // Validate totals balance
+                const totalDebit = parseInt($('#total-debit').text().replace(/[^0-9]/g, '') || 0);
+                const totalCredit = parseInt($('#total-credit').text().replace(/[^0-9]/g, '') || 0);
+
+                if (totalDebit !== totalCredit) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Total debit dan kredit harus seimbang.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                let journals = [];
+
+                // Collect data from visible .existing-entry rows
+                $('.journal-entry-row.existing-entry:visible').each(function() {
+                    const journal_id = $(this).find('input.journal-id').val();
+                    const account_code = $(this).find('select.account-code')
+                        .val();
+                    const description = $(this).find('input.description').val();
+                    const debit_amount = $(this).find('input.debit-amount').val()
+                        .replace(/[^0-9]/g, '');
+                    const credit_amount = $(this).find('input.credit-amount').val()
+                        .replace(/[^0-9]/g, '');
+
+                    if (journal_id && account_code && (
+                            debit_amount || credit_amount)) {
+                        journals.push({
+                            journal_id,
+                            account_code,
+                            description,
+                            debit_amount,
+                            credit_amount
+                        });
+                    }
+                });
+
+                // Collect data from visible repeater rows (excluding .existing-entry)
+                $('.form-repeater-journal [data-repeater-item]:visible:not(.existing-entry)')
+                    .each(function() {
+                        const account_code = $(this).find('select.account-code')
+                            .val();
+                        const description = $(this).find('input.description').val();
+                        const debit_amount = $(this).find('input.debit-amount')
+                            .val().replace(/[^0-9]/g, '');
+                        const credit_amount = $(this).find('input.credit-amount')
+                            .val().replace(/[^0-9]/g, '');
+
+                        if (account_code && (
+                                debit_amount || credit_amount)) {
+                            journals.push({
+                                account_code,
+                                description,
+                                debit_amount,
+                                credit_amount
+                            });
+                        }
+                    });
+
+                if (journals.length === 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Minimal harus ada satu entri jurnal.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
                 Swal.fire({
                     title: 'Simpan Data?',
                     text: "Cek kembali data yang sudah diisi!",
@@ -306,55 +414,6 @@
                     buttonsStyling: false
                 }).then(function(result) {
                     if (result.value) {
-                        let journals = [];
-
-                        // Collect data from visible .existing-entry rows
-                        $('.journal-entry-row.existing-entry:visible').each(function() {
-                            const journal_id = $(this).find('input.journal-id').val();
-                            const account_code = $(this).find('select.account-code')
-                                .val();
-                            const description = $(this).find('input.description').val();
-                            const debit_amount = $(this).find('input.debit-amount').val()
-                                .replace(/[^0-9]/g, '');
-                            const credit_amount = $(this).find('input.credit-amount').val()
-                                .replace(/[^0-9]/g, '');
-
-                            if (journal_id && account_code && (
-                                    debit_amount || credit_amount)) {
-                                journals.push({
-                                    journal_id,
-                                    account_code,
-                                    description,
-                                    debit_amount,
-                                    credit_amount
-                                });
-                            }
-                        });
-
-                        // Collect data from visible repeater rows (excluding .existing-entry)
-                        $('.form-repeater-journal [data-repeater-item]:visible:not(.existing-entry)')
-                            .each(function() {
-                                const account_code = $(this).find('select.account-code')
-                                    .val();
-                                const description = $(this).find('input.description').val();
-                                const debit_amount = $(this).find('input.debit-amount')
-                                    .val().replace(/[^0-9]/g, '');
-                                const credit_amount = $(this).find('input.credit-amount')
-                                    .val().replace(/[^0-9]/g, '');
-
-                                if (account_code && (
-                                        debit_amount || credit_amount)) {
-                                    journals.push({
-                                        account_code,
-                                        description,
-                                        debit_amount,
-                                        credit_amount
-                                    });
-                                }
-                            });
-
-                        console.log(journals)
-
                         $('#submit-btn').prop('disabled', true).html(
                             '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...'
                         );
