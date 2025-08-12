@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Tambah Stock Adjustment Baru</h5>
-        <form class="card-body" id="stockAdjustmentForm">
+        <form class="card-body" id="stockAdjustmentForm" autocomplete="off">
             <!-- Basic Information Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Dasar</h6>

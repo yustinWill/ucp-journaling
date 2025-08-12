@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit Purchase Order - {{ $purchaseOrder['reference_no'] }}</h4>
-        <form class="card-body" id="purchase-order-form">
+        <form class="card-body" id="purchase-order-form" autocomplete="off">
             <input type="hidden" id="purchase-order-id" value="{{ $purchaseOrder['id'] }}">
             @csrf
             @method('POST')

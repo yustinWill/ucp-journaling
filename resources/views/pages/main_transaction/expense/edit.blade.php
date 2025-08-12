@@ -6,7 +6,7 @@
     <!-- Main Content Card -->
     <div class="card mb-6">
         <h4 class="card-header">Edit Biaya Pengeluaran #{{ $expense->transaction_number }}</h4>
-        <form class="card-body" id="expense-form" method="POST" enctype="multipart/form-data">
+        <form class="card-body" id="expense-form" method="POST" enctype="multipart/form-data" autocomplete="off">
             <input type="hidden" id="expense-id" value="{{ $expense->id }}">
             @csrf
                 

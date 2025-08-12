@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Tambah Stock Opname</h4>
-        <form class="card-body" id="stockOpnameForm">
+        <form class="card-body" id="stockOpnameForm" autocomplete="off">
             <!-- Informasi Dasar Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Dasar</h6>

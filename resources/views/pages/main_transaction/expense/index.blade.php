@@ -55,7 +55,7 @@
         <h4 class="card-header">List Pengeluaran</h4>
         <div class="card-body">
             <!-- Advanced Search Form -->
-            <form class="dt_adv_search" method="GET">
+            <form class="dt_adv_search" method="GET" autocomplete="off">
                 <div class="row">
                     <div class="col-12">
                         <div class="row g-3">

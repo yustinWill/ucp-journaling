@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Buat Kredit Memo</h5>
-        <form class="card-body" id="creditMemoForm">
+        <form class="card-body" id="creditMemoForm" autocomplete="off">
             <!-- Informasi Transaksi Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Transaksi</h6>

@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Tambah Role</h4>
-        <form class="card-body" id="roleForm">
+        <form class="card-body" id="roleForm" autocomplete="off">
             <!-- Role Information Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Role</h6>

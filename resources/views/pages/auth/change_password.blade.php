@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Change Password</h5>
-        <form class="card-body" id="changePasswordForm">
+        <form class="card-body" id="changePasswordForm" autocomplete="off">
             @csrf
             <div class="row g-3">
                 <div class="col-md-12">

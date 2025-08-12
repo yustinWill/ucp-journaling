@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Edit Stock Opname - {{ $stockOpname['opname_number'] }}</h5>
-        <form class="card-body" id="stockOpnameForm">
+        <form class="card-body" id="stockOpnameForm" autocomplete="off">
             <!-- Informasi Dasar Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Dasar</h6>

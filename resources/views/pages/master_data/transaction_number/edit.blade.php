@@ -6,7 +6,7 @@
 @section('content')
 <div class="card mb-6">
     <h4 class="card-header">Edit Konfigurasi - {{ $transactionNumber->module_display_name }}</h4>
-    <form class="card-body" id="transaction-number-form">
+    <form class="card-body" id="transaction-number-form" autocomplete="off">
         <input type="hidden" id="transaction-number-id" value="{{ $transactionNumber->id }}">
         <input type="hidden" id="module-initial" value="{{ $transactionNumber->module_initial }}">
         <input type="hidden" id="module-name" value="{{ $transactionNumber->module_name }}">

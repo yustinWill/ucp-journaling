@@ -11,7 +11,7 @@
                     <h6>Import Configuration</h6>
                     <p class="text-muted">Upload a file containing role data to import into the system.</p>
                     
-                    <form id="importForm" enctype="multipart/form-data">
+                    <form id="importForm" enctype="multipart/form-data" autocomplete="off">
                         <div class="row g-3 mb-4">
                             <div class="col-md-12">
                                 <label class="form-label">Select File <span style="color: red;">*</span></label>

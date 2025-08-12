@@ -100,6 +100,7 @@ class JournalController extends Controller
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
@@ -201,8 +202,8 @@ class JournalController extends Controller
                 'account_code' => $row->f_coa_code,
                 'account_name' => $row->coa_name,
                 'description' => $row->coa_description,
-                'debit_amount' => $row->debit_credit == 'D' ? 'Rp ' . number_format($row->amount, 0, ',', '.') : null,
-                'credit_amount' => $row->debit_credit == 'C' ? 'Rp ' . number_format($row->amount, 0, ',', '.') : null
+                'debit_amount' => $row->debit_credit == 'D' ? $row->amount : null,
+                'credit_amount' => $row->debit_credit == 'C' ? $row->amount : null
             ];
         }
         $header = $data[0];
@@ -267,6 +268,7 @@ class JournalController extends Controller
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }

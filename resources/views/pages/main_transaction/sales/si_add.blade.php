@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Buat Faktur Penjualan</h5>
-        <form class="card-body" id="salesInvoiceForm">
+        <form class="card-body" id="salesInvoiceForm" autocomplete="off">
             <!-- Transaction Information Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Transaksi</h6>

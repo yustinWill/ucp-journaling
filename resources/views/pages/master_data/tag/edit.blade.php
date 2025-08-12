@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit Tag</h4>
-        <form class="card-body" id="tagEditForm">
+        <form class="card-body" id="tagEditForm" autocomplete="off">
             <input type="hidden" id="tag_id" value="{{ $tag->id }}">
             <!-- Info Tag Section -->
             <div class="section-header mt-12">

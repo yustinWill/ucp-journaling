@@ -5,7 +5,10 @@ function initCleaveCurrency(context) {
         if (!this.cleave) {
             this.cleave = new Cleave(this, {
                 numeral: true,
-                numeralThousandsGroupStyle: 'thousand'
+                numeralThousandsGroupStyle: 'thousand',
+                prefix: 'Rp ',
+                noImmediatePrefix: false,
+                rawValueTrimPrefix: true
             });
         }
     });

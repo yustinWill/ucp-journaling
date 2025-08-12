@@ -99,7 +99,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div> 
                     @endif
-                    <form id="formAuthentication" class="mb-6" action="{{ route('authenticate') }}" method="POST">
+                    <form id="formAuthentication" class="mb-6" action="{{ route('authenticate') }}" method="POST" autocomplete="off">
                         @csrf
                         <div class="mb-6 form-control-validation">
                             <label for="email" class="form-label">Email</label>

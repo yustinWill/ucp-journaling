@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit Pajak</h4>
-        <form class="card-body" id="tax-form" action="#" method="POST">
+        <form class="card-body" id="tax-form" action="#" method="POST" autocomplete="off">
             <input type="hidden" id="tax-id" value="{{ $tax->id }}">
             @csrf
             @method('POST')

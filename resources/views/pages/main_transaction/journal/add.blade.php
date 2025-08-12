@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Tambah Jurnal Baru</h5>
-        <form class="card-body" id="journalAddForm">
+        <form class="card-body" id="journalAddForm" autocomplete="off">
             <!-- Info Jurnal Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Jurnal</h6>
@@ -21,7 +21,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Total Amount</label>
-                    <input type="text" class="form-control text-end curr-mask" id="total-amount" value="Rp 0"
+                    <input type="text" class="form-control text-end currency-input" id="total-amount" value="Rp 0"
                         disabled />
                 </div>
             </div>
@@ -110,10 +110,11 @@
                                             <input type="text" class="form-control description">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control curr-mask debit-amount text-end">
+                                            <input type="text" class="form-control currency-input debit-amount text-end">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control curr-mask credit-amount text-end">
+                                            <input type="text"
+                                                class="form-control currency-input credit-amount text-end">
                                         </td>
                                         <td>
                                             <button class="btn btn-sm btn-danger remove-entry" data-repeater-delete
@@ -147,6 +148,8 @@
 @section('js_script')
     <script>
         $(function() {
+            initCleaveCurrency(document);
+
             $('select.select2Coa').each(function() {
                 $(this).select2({
                     placeholder: "Select value",
@@ -175,6 +178,7 @@
                                 width: '100%'
                             });
                         });
+                        initCleaveCurrency(document);
                     });
                 },
                 hide: function(remove) {

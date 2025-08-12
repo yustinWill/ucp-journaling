@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Export Stock Adjustment</h5>
-        <form class="card-body" id="exportForm">
+        <form class="card-body" id="exportForm" autocomplete="off">
             <!-- Export Configuration Section -->
             <div class="section-header mt-12">
                 <h6>Konfigurasi Export</h6>

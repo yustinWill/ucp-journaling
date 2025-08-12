@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit Role</h4>
-        <form class="card-body" id="roleEditForm">
+        <form class="card-body" id="roleEditForm" autocomplete="off">
             <input type="hidden" name="role_id" id="role-id" value="{{ $role->id }}">
             <!-- Role Information Section -->
             <div class="section-header mt-12">

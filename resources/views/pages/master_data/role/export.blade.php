@@ -11,7 +11,7 @@
                     <h6>Export Configuration</h6>
                     <p class="text-muted">Configure your export settings and download the role data in your preferred format.</p>
                     
-                    <form id="exportForm">
+                    <form id="exportForm" autocomplete="off">
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Export Format</label>

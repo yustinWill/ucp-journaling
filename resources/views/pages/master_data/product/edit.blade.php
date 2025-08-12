@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit Produk</h4>
-        <form class="card-body" id="productForm">
+        <form class="card-body" id="productForm" autocomplete="off">
             <!-- Info Produk Section -->
             <div class="section-header mt-12">
                 <h6>Info Produk</h6>

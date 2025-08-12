@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Tambah Kategori Produk</h4>
-        <form class="card-body" id="category-form" action="#" method="POST">
+        <form class="card-body" id="category-form" action="#" method="POST" autocomplete="off">
                 @csrf
                 
                 <!-- Info Kategori Section -->

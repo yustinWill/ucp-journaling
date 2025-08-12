@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit Syarat Pembayaran</h4>
-        <form class="card-body" id="payment-term-form">
+        <form class="card-body" id="payment-term-form" autocomplete="off">
             @csrf
             <input type="hidden" id="payment-term-id" name="id" value="{{ $paymentTerm->id }}">
             

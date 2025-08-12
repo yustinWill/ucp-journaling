@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Tambah User</h4>
-        <form class="card-body" id="userForm">
+        <form class="card-body" id="userForm" autocomplete="off">
             <!-- Data User Section -->
             <div class="section-header mt-12">
                 <h6>Data User</h6>

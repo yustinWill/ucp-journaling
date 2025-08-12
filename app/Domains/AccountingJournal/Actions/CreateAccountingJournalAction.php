@@ -37,7 +37,7 @@ class CreateAccountingJournalAction
                     "coa_description" => $row['description'],
                     "amount" => $amount,
                     "debit_credit" => $debit_credit,
-                    "f_tag_codes" => $data['tags'],
+                    "f_tag_codes" => isset($data['tags']) ? $data['tags'] : null,
                     "status" => GeneralStatuses::ACTIVE,
                 ];
             }

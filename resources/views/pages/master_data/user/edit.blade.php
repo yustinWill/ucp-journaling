@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit User</h4>
-        <form class="card-body" id="userEditForm">
+        <form class="card-body" id="userEditForm" autocomplete="off">
             <input type="text" id="user-id" value="{{ $user->id }}" hidden />
             <!-- Data User Section -->
             <div class="section-header mt-12">

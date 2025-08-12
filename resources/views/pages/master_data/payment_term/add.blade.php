@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Tambah Syarat Pembayaran</h4>
-        <form class="card-body" id="payment-term-form">
+        <form class="card-body" id="payment-term-form" autocomplete="off">
             @csrf
             
             <!-- Info Payment Term Section -->

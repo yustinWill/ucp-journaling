@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Edit Jurnal {{ $journal['reference_no'] }}</h5>
-        <form class="card-body" id="journalEditForm">
+        <form class="card-body" id="journalEditForm" autocomplete="off">
             <input type="hidden" id="journal-id" value="{{ $journal['reference_no'] }}">
             <!-- Info Jurnal Section -->
             <div class="section-header mt-12">
@@ -26,7 +26,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Total Amount</label>
-                    <input type="text" class="form-control text-end curr-mask" id="total-amount"
+                    <input type="text" class="form-control text-end currency-input" id="total-amount"
                         value="{{ $journal['total_debit'] }}" disabled />
                 </div>
             </div>
@@ -124,12 +124,12 @@
                                                     value="{{ $entry['description'] }}">
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control curr-mask debit-amount text-end"
+                                                <input type="text" class="form-control currency-input debit-amount text-end"
                                                     value="{{ $entry['debit_amount'] }}">
                                             </td>
                                             <td>
                                                 <input type="text"
-                                                    class="form-control curr-mask credit-amount text-end"
+                                                    class="form-control currency-input credit-amount text-end"
                                                     value="{{ $entry['credit_amount'] }}">
                                             </td>
                                             <td>
@@ -157,10 +157,10 @@
                                             <input type="text" class="form-control description">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control curr-mask debit-amount text-end">
+                                            <input type="text" class="form-control currency-input debit-amount text-end">
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control curr-mask credit-amount text-end">
+                                            <input type="text" class="form-control currency-input credit-amount text-end">
                                         </td>
                                         <td>
                                             <button class="btn btn-sm btn-danger remove-entry" data-repeater-delete
@@ -210,6 +210,8 @@
 @section('js_script')
     <script>
         $(function() {
+            initCleaveCurrency(document);
+
             $('select.select2Coa').each(function() {
                 $(this).select2({
                     placeholder: "Select value",
@@ -238,6 +240,7 @@
                                 width: '100%'
                             });
                         });
+                        initCleaveCurrency(document);
                     });
                 },
                 hide: function(remove) {

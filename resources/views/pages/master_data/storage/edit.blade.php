@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit Gudang</h4>
-        <form class="card-body form-repeater">
+        <form class="card-body form-repeater" autocomplete="off">
             <h6>1. Data Gudang</h6>
             <div class="row g-6">
                 <div class="col-md-6">

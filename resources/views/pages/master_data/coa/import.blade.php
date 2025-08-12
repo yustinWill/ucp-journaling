@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Impor COA</h4>
-        <form class="card-body">
+        <form class="card-body" autocomplete="off">
             <div class="row gy-3 mt-0">
                 <div class="col-md-12">
                     <div class="alert alert-primary alert-dismissible d-flex" role="alert">

@@ -7,7 +7,7 @@
     <div class="card">
         <h5 class="card-header">Buat Biaya Pengeluaran</h5>
         <div class="card-body">
-            <form id="expenseForm" method="POST" enctype="multipart/form-data">
+            <form id="expenseForm" method="POST" enctype="multipart/form-data" autocomplete="off">
                 @csrf
                 
                 <!-- Section 1: Transaction Information -->

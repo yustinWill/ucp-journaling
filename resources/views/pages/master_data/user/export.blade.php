@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Ekspor COA</h5>
-        <form class="card-body form-repeater">
+        <form class="card-body form-repeater" autocomplete="off">
             <h6>1. Pilih Jenis Format</h6>
             <div class="row gy-3 mt-0">
                 <div

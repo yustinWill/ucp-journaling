@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Edit Unit</h4>
-        <form class="card-body" id="unit-form" action="#" method="POST">
+        <form class="card-body" id="unit-form" action="#" method="POST" autocomplete="off">
             <input type="hidden" id="unit-id" value="{{ $unit->id }}">
             @csrf
             @method('POST')

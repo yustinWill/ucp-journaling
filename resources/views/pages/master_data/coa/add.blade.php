@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Tambah COA Baru</h4>
-        <form class="card-body form-repeater">
+        <form class="card-body form-repeater" autocomplete="off">
             <!-- Informasi COA Section -->
             <div class="section-header mt-12">
                 <h6>Informasi COA</h6>

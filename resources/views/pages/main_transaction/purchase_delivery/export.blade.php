@@ -5,7 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h5 class="card-header">Export Purchase Delivery</h5>
-        <form class="card-body" id="exportForm">
+        <form class="card-body" id="exportForm" autocomplete="off">
             <!-- Instructions Section -->
             <div class="row gy-3 mt-0">
                 <div class="col-md-12">

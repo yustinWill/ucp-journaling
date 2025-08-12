@@ -6,7 +6,7 @@
 @section('content')
 <div class="card mb-6">
     <h4 class="card-header">Buat Purchase Delivery</h4>
-    <form class="card-body" id="purchase-delivery-form">
+    <form class="card-body" id="purchase-delivery-form" autocomplete="off">
         @csrf
         
         <!-- Informasi Dasar Transaksi Section -->
