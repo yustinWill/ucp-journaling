@@ -18,6 +18,7 @@ enum SuccessCodes: string
     case CREATE_CATEGORY_SUCCESS = 'CREATE_CATEGORY_SUCCESS';
     case UPDATE_CATEGORY_SUCCESS = 'UPDATE_CATEGORY_SUCCESS';
     case CREATE_COA_SUCCESS = 'CREATE_COA_SUCCESS';
+    case UPDATE_COA_SUCCESS = 'UPDATE_COA_SUCCESS';
     case CREATE_ROLE_SUCCESS = 'CREATE_ROLE_SUCCESS';
     case UPDATE_ROLE_SUCCESS = 'UPDATE_ROLE_SUCCESS';
     case CREATE_CONTACT_SUCCESS = 'CREATE_CONTACT_SUCCESS';
@@ -41,6 +42,7 @@ enum SuccessCodes: string
             self::UPDATE_CATEGORY_SUCCESS => 'Kategori berhasil diubah.',
             self::GENERAL_SUCCESS => 'Berhasil',
             self::CREATE_COA_SUCCESS => 'COA berhasil dibuat.',
+            self::UPDATE_COA_SUCCESS => 'COA berhasil diperbarui.',
             self::CREATE_ROLE_SUCCESS => 'Role berhasil dibuat.',
             self::UPDATE_ROLE_SUCCESS => 'Role berhasil diperbarui.',
             self::CREATE_CONTACT_SUCCESS => 'Kontak berhasil dibuat.',
@@ -65,6 +67,7 @@ enum SuccessCodes: string
             self::UPDATE_CATEGORY_SUCCESS => self::OK,
             self::GENERAL_SUCCESS => self::OK,
             self::CREATE_COA_SUCCESS => self::OK,
+            self::UPDATE_COA_SUCCESS => self::OK,
             self::CREATE_ROLE_SUCCESS => self::OK,
             self::UPDATE_ROLE_SUCCESS => self::OK,
             self::CREATE_CONTACT_SUCCESS => self::OK,

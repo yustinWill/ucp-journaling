@@ -48,9 +48,12 @@ class CoaController extends Controller
         $tags = app(TagService::class)->findAll();
 
         $statuses = $this->statuses;
+        $coa_accounts = app(CoaService::class)->findAll();
+
         return view('pages.master_data.coa.add', [
             'tags' => $tags,
-            'statuses' => $statuses
+            'statuses' => $statuses,
+            'coa_accounts' => $coa_accounts
         ]);
     }
 
@@ -59,9 +62,9 @@ class CoaController extends Controller
         try {
             $validated = $request->validate([
                 'code' => 'required|string|max:255|unique:m_coas,code',
+                'parent_coa_code' => 'required|exists:m_coas,code',
                 'name' => 'required|string|max:255',
-                'level' => 'required|numeric',
-                'type' => 'required|string|in:HEADER,DETAIL',
+                'type' => 'required|string|in:I,D',
                 'note' => 'nullable|string|max:255',
                 'status' => [
                     'required',
@@ -127,6 +130,56 @@ class CoaController extends Controller
         $tags = app(TagService::class)->findAll();
 
         $statuses = $this->statuses;
-        return view('pages.master_data.coa.edit', ['id' => $id]);
+        $coa_accounts = app(CoaService::class)->findAll();
+        $coa = app(CoaService::class)->findOne($id);
+
+        return view('pages.master_data.coa.edit', [
+            'id' => $id,
+            'tags' => $tags,
+            'statuses' => $statuses,
+            'coa_accounts' => $coa_accounts,
+            'coa' => $coa
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:m_coas,id',
+                'parent_coa_code' => 'required|exists:m_coas,code',
+                'name' => 'required|string|max:255',
+                'type' => 'required|string|in:I,D',
+                'note' => 'nullable|string|max:255',
+                'status' => [
+                    'required',
+                    Rule::in(array_column($this->statuses, 'value'))
+                ],
+                'tags' => 'nullable|array',
+            ]);
+
+            app(UpdateCoaAction::class)->execute($validated['id'], $validated);
+
+            return response()->json([
+                'message' => SuccessCodes::UPDATE_COA_SUCCESS->message()
+            ], SuccessCodes::UPDATE_COA_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 }

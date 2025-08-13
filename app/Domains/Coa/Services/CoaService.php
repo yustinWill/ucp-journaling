@@ -16,11 +16,13 @@ class CoaService
             'company_code' => session('user_company_code'),
             'code' => $data['code'],
             'name' => $data['name'],
-            'level' => $data['level'],
+            'f_parent_coa_code' => $data['parent_coa_code'],
+            'level' => 0,
             'note' => $data['note'],
             'status' => $data['status'],
             'type' => $data['type'],
-            'f_tag_codes' => json_encode($data['tags']),
+            'group_type' => substr($data['code'], 0, 1),
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'current_balance' => 0,
             'created_at' => now(),
             'created_by' => Auth::id()
@@ -31,10 +33,12 @@ class CoaService
     {
         $updateData = [
             'name' => $data['name'],
-            'level' => $data['level'],
+            'f_parent_coa_code' => $data['parent_coa_code'],
+            'level' => 0,
             'note' => $data['note'],
             'status' => $data['status'],
             'type' => $data['type'],
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'updated_at' => now(),
             'updated_by' => Auth::id()
         ];
@@ -95,7 +99,7 @@ class CoaService
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
-        $recordsFiltered = $filteredQuery->count();
+        $recordsFiltered = $filteredQuery->get()->count();
         $query->orderBy('code', 'ASC');
         $data = $query->get();
 
@@ -113,10 +117,12 @@ class CoaService
             ->select([
                 't.id',
                 't.code',
+                't.f_parent_coa_code AS parent_coa_code',
                 't.name',
                 't.level',
                 't.type',
                 't.note',
+                't.f_tag_codes',
                 't.status as status',
                 't.created_at as created_at',
                 't.updated_at as updated_at',
@@ -129,6 +135,7 @@ class CoaService
         if ($data == null) {
             abort(404);
         }
+        $data->f_tag_codes = json_decode($data->f_tag_codes, true);
         return $data;
     }
 

@@ -18,7 +18,7 @@ class UserService
             'phone' => $data['phone'],
             'status' => $data['status'],
             'role_id' => $data['role'],
-            'f_tag_codes' => json_encode($data['tags']),
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'password' => bcrypt($data['password']),
             'created_at' => now(),
             'created_by' => Auth::id()
@@ -33,7 +33,7 @@ class UserService
             'phone' => $data['phone'],
             'status' => $data['status'],
             'role_id' => $data['role'],
-            'f_tag_codes' => json_encode($data['tags']),
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'updated_at' => now(),
             'updated_by' => Auth::id()
         ];
@@ -102,7 +102,7 @@ class UserService
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
-        $recordsFiltered = $filteredQuery->count();
+        $recordsFiltered = $filteredQuery->get()->count();
         $query->orderBy('name', 'ASC');
         $data = $query->get();
 

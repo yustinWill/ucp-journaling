@@ -13,23 +13,28 @@
             </div>
             <div class="row g-6 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Kode COA</label>
+                    <label class="form-label">Kode COA <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" placeholder="Masukkan Kode COA" id="coa-code" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Nama COA</label>
+                    <label class="form-label">Nama COA <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" placeholder="Masukkan Nama COA" id="coa-name" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Level COA</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Level COA" id="coa-level" />
+                    <label class="form-label">Parent COA <span style="color: red;">*</span></label>
+                    <select class="global-select2 form-select" id="parent-coa-code" data-allow-clear="false">
+                        <option value="">Pilih Parent COA</option>
+                        @foreach ($coa_accounts as $account)
+                            <option value="{{ $account->code }}">{{ $account->code }} - {{ $account->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Jenis COA</label>
+                    <label class="form-label">Jenis COA <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" data-allow-clear="false" id="coa-type">
                         <option value="">Pilih Jenis COA</option>
-                        <option value="HEADER">Header</option>
-                        <option value="DETAIL">Detail</option>
+                        <option value="I">Induk</option>
+                        <option value="D">Detail</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -37,7 +42,7 @@
                     <input type="text" class="form-control" placeholder="Masukkan Note COA" id="coa-note" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">Status <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="coa-status" data-allow-clear="false">
                         @foreach ($statuses as $status)
                             <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -101,7 +106,7 @@
                                 _token: '{{ csrf_token() }}',
                                 code: $('#coa-code').val(),
                                 name: $('#coa-name').val(),
-                                level: $('#coa-level').val(),
+                                parent_coa_code: $('#parent-coa-code').val(),
                                 type: $('#coa-type').val(),
                                 note: $('#coa-note').val(),
                                 status: $('#coa-status').val(),

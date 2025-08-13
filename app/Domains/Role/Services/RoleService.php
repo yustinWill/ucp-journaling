@@ -173,7 +173,7 @@ class RoleService
         return DB::table($this->table_name)->insertGetId([
             'name' => $data['name'],
             'description' => $data['description'],
-            'f_tag_codes' => json_encode($data['tags']),
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'is_active' => $data['is_active'] ?? true,
             'created_at' => now(),
         ]);
@@ -186,7 +186,7 @@ class RoleService
             ->update([
                 'name' => $data['name'],
                 'description' => $data['description'],
-                'f_tag_codes' => json_encode($data['tags']),
+                'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
                 'is_active' => $data['is_active'] ?? true,
                 'updated_at' => now()
             ]);
