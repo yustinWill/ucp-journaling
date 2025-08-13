@@ -21,22 +21,10 @@
     <div class="card mb-6">
         <div class="card-body">
             <!-- COA Title -->
-            <h2>{{ $coa->name }}</h2>
+            <h2>{{ $coa->code }} - {{ $coa->name }}</h2>
             <span>
                 <h6>Data akun berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
             </span>
-            <hr class="my-6 mx-n6" />
-
-            <div class="row g-6">
-                <div class="col-md-6">
-                    <label class="form-label">Kode Akun</label>
-                    <input type="text" class="form-control" value="{{ $coa->code }}" disabled />
-                </div>
-                {{-- <div class="col-md-6">
-                    <label class="form-label">Kategori</label>
-                    <input type="text" class="form-control" value="{{ $coa->category }}" disabled />
-                </div> --}}
-            </div>
             <hr class="my-6 mx-n6" />
 
             <div class="col-lg-12">
