@@ -118,7 +118,6 @@ class CoaController extends Controller
 
         $audit_log_data = app(CoaAuditLogService::class)->findAllBasedOnId($id);
 
-        // dd($audit_log_data);
         return view('pages.master_data.coa.detail', compact('coa', 'audit_log_data'));
     }
 

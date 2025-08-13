@@ -110,6 +110,7 @@ class UnitController extends Controller
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
@@ -179,6 +180,7 @@ class UnitController extends Controller
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
