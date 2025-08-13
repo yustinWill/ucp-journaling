@@ -3,8 +3,10 @@
 namespace App\Traits;
 
 use App\Enums\GeneralStatuses;
+use App\Enums\GlobalConfig;
 use Illuminate\Support\Facades\DB;
 use App\Traits\DateTime;
+
 
 trait AccountingReportingLogic
 {
@@ -15,7 +17,7 @@ trait AccountingReportingLogic
             ->select([
                 'value'
             ])
-            ->where('code', '=', 'CUSTOM_CLOSING_ACCOUNTING_DATE')
+            ->where('code', '=', GlobalConfig::CUSTOM_CLOSING_ACCOUNTING_DATE)
             ->first();
 
         if ($custom_closing_date->value != '') {
@@ -64,7 +66,7 @@ trait AccountingReportingLogic
         return $last_date;
     }
 
-    public function get_coa_list($start_date, $coa_group_list)
+    public function get_coa_list(string $start_date, array $coa_group_list)
     {
         $company_code = session('user_company_code');
         $last_date = $this->get_date($start_date, $company_code);
@@ -114,14 +116,27 @@ trait AccountingReportingLogic
         return $branch;
     }
 
-    public function printTree(&$html, &$revenue_amount, &$expense_amount, array $tree, $indent = 0){
+    public function printTree(&$html, &$asset_amount, &$liability_amount, &$equity_amount, &$revenue_amount, &$expense_amount, array $tree, $indent = 0)
+    {
         foreach ($tree as $node) {
             $separator = str_repeat('&emsp;', $indent);
             if ($node['coa_type'] == "D") {
-                if ($node['coa_group_type'] == 4) {
+                if ($node['coa_group_type'] == 1) {
+                    $asset_amount += $node['amount'];
+                } else if ($node['coa_group_type'] == 2) {
+                    $liability_amount += $node['amount'];
+                } else if ($node['coa_group_type'] == 3) {
+                    if ($node['coa_code'] !== session(GlobalConfig::LABA_RUGI_BERJALAN_COA)) {
+                        $equity_amount += $node['amount'];
+                    }
+                } else if ($node['coa_group_type'] == 4) {
                     $revenue_amount += $node['amount'];
                 } else if ($node['coa_group_type'] >= 5) {
                     $expense_amount += $node['amount'];
+                }
+
+                if ($node['coa_group_type'] == 2 || $node['coa_group_type'] == 3) {
+                    $node['amount'] = $node['amount'] * -1;
                 }
                 $html .= '<tr><td><b>' . $separator . $node['coa_code'] . " - " . $node['coa_name'] . '</b></td><td dir="rtl">Rp. ' . number_format($node['amount'], 2, '.', ',') . '</td></tr>';
             } else {
@@ -129,12 +144,12 @@ trait AccountingReportingLogic
             }
 
             if (isset($node['children'])) {
-                $this->printTree($html, $revenue_amount, $expense_amount, $node['children'], $indent + 1);
+                $this->printTree($html, $asset_amount, $liability_amount, $equity_amount, $revenue_amount, $expense_amount, $node['children'], $indent + 1);
             }
         }
     }
 
-    public function get_coa_sum_data($from, $to, $report_data)
+    public function get_coa_sum_data(string $from, string $to, $report_data)
     {
         $company_code = session('user_company_code');
         $coa_codes = [];

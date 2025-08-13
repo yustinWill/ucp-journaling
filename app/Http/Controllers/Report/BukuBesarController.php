@@ -26,10 +26,7 @@ class BukuBesarController extends Controller
         $from = null;
         $to = null;
         if ($date_range != null) {
-            [$from, $to] = array_map('trim', explode('-', $date_range));
-            $from = DateTime::createFromFormat('m/d/Y', $from)->format('Y-m-d');
-            $to = DateTime::createFromFormat('m/d/Y', $to)->format('Y-m-d');
-
+            [$from, $to] = array_map('trim', explode(' - ', $date_range));
             if ($coa_code_filter) {
                 $coa_list = $coas->whereIn('code', $coa_code_filter);
             } else {

@@ -25,17 +25,17 @@ class LabaRugiController extends Controller
         $from = null;
         $to = null;
         $html = "";
+        $asset_amount = 0;
+        $liability_amount = 0;
+        $equity_amount = 0;
         $revenue_amount = 0;
         $expense_amount = 0;
 
         if ($date_range != null) {
-            [$from, $to] = array_map('trim', explode('-', $date_range));
-            $from = DateTime::createFromFormat('m/d/Y', $from)->format('Y-m-d');
-            $to = DateTime::createFromFormat('m/d/Y', $to)->format('Y-m-d');
-
+            [$from, $to] = array_map('trim', explode(' - ', $date_range));
             $report_data = $this->get_data_logic($from, $to);
             $tree = $this->buildTree($report_data);
-            $this->printTree($html, $revenue_amount, $expense_amount, $tree);
+            $this->printTree($html, $asset_amount, $liability_amount, $equity_amount, $revenue_amount, $expense_amount, $tree);
         }
 
         return view('pages.report.laba_rugi.index', [
