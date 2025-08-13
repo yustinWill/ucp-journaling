@@ -71,22 +71,23 @@
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Kode COA</label>
-                                    <input type="text" class="form-control" value="{{ $coa->code }}" readonly />
+                                    <input type="text" class="form-control" value="{{ $coa->code }}" disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Nama COA</label>
-                                    <input type="text" class="form-control" value="{{ $coa->name }}" readonly />
+                                    <input type="text" class="form-control" value="{{ $coa->name }}" disabled />
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label">Level</label>
-                                    <input type="text" class="form-control" value="{{ $coa->level }}" readonly />
+                                    <label class="form-label">Parent COA</label>
+                                    <input type="text" class="form-control" value="{{ $coa->parent_coa_code }}"
+                                        disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Jenis Akun</label>
-                                    <input type="text" class="form-control" value="{{ $coa->type }}" readonly />
+                                    <input type="text" class="form-control" value="{{ $coa->type }}" disabled />
                                 </div>
                             </div>
 
@@ -102,18 +103,19 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Posisi Normal</label>
-                                    <input type="text" class="form-control" value="{{ $coa->normal_position }}" readonly />
+                                    <input type="text" class="form-control" value="{{ $coa->normal_position }}"
+                                        disabled />
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Deskripsi</label>
-                                    <textarea class="form-control" rows="3" readonly>{{ $coa->note }}</textarea>
+                                    <textarea class="form-control" rows="3" disabled>{{ $coa->note }}</textarea>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Terakhir Diupdate</label>
-                                    <input type="text" class="form-control" value="{{ $coa->updated_at }}" readonly />
+                                    <input type="text" class="form-control" value="{{ $coa->updated_at }}" disabled />
                                 </div>
                             </div>
                         </div>
@@ -122,7 +124,7 @@
                         <div class="tab-pane fade" id="transactions-tab" role="tabpanel">
                             <h5>Riwayat Transaksi</h5>
                             <!-- Summary Cards -->
-                            <div class="row mb-4">
+                            {{-- <div class="row mb-4">
                                 <div class="col-lg-3 col-sm-6">
                                     <div class="card card-border-shadow-primary h-100">
                                         <div class="card-body">
@@ -183,7 +185,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
                             <!-- Advanced Search Form -->
                             {{-- <form class="dt_adv_search" method="GET">
@@ -222,76 +224,36 @@
                             </form> --}}
 
                             <hr class="my-6 mx-n6" />
+                            <div class="card-datatable">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>No Referensi</th>
+                                            <th>Jenis</th>
+                                            <th>Deskripsi</th>
+                                            <th>Debit</th>
+                                            <th>Kredit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2025-01-20</td>
+                                            <td>JU-2025-001</td>
+                                            {{-- <td><a href="{{ route('main_transaction.journal.detail', ['id' => 'JU-2025-001']) }}" class="text-primary fw-semibold">JU-2025-001</a></td> --}}
+                                            <td><span class="badge bg-label-info">Jurnal</span></td>
+                                            <td>Penerimaan kas dari penjualan produk</td>
+                                            <td class="text-end">Rp 15,500,000</td>
+                                            <td class="text-end">-</td>
+                                        </tr>
+                                       
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <!-- Data Table -->
-                        <div class="card-datatable mx-n6">
-                            <table class="table table-bordered" id="transactions-table">
-                                <thead>
-                                    <tr>
-                                        <th>Tanggal</th>
-                                        <th>No Referensi</th>
-                                        <th>Jenis</th>
-                                        <th>Deskripsi</th>
-                                        <th>Debit</th>
-                                        <th>Kredit</th>
-                                        <th>Saldo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>2025-01-20</td>
-                                        <td>JU-2025-001</td>
-                                        {{-- <td><a href="{{ route('main_transaction.journal.detail', ['id' => 'JU-2025-001']) }}" class="text-primary fw-semibold">JU-2025-001</a></td> --}}
-                                        <td><span class="badge bg-label-info">Jurnal</span></td>
-                                        <td>Penerimaan kas dari penjualan produk</td>
-                                        <td class="text-end">Rp 15,500,000</td>
-                                        <td class="text-end">-</td>
-                                        <td class="text-end">Rp 93,000,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2025-01-19</td>
-                                        <td>SI-2025-028</td>
-                                        {{-- <td><a href="{{ route('main_transaction.sales.detail', ['id' => 'SI-2025-028']) }}" class="text-primary fw-semibold">SI-2025-028</a></td> --}}
-                                        <td><span class="badge bg-label-success">Penjualan</span></td>
-                                        <td>Penjualan air mineral ke distributor</td>
-                                        <td class="text-end">Rp 8,750,000</td>
-                                        <td class="text-end">-</td>
-                                        <td class="text-end">Rp 77,500,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2025-01-18</td>
-                                        <td>EX-2025-015</td>
-                                        {{-- <td><a href="{{ route('main_transaction.expense.detail', ['id' => 'EX-2025-015']) }}" class="text-primary fw-semibold">EX-2025-015</a></td> --}}
-                                        <td><span class="badge bg-label-warning">Biaya</span></td>
-                                        <td>Pembayaran biaya operasional</td>
-                                        <td class="text-end">-</td>
-                                        <td class="text-end">Rp 3,250,000</td>
-                                        <td class="text-end">Rp 68,750,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2025-01-17</td>
-                                        <td>PI-2025-012</td>
-                                        {{-- <td><a href="{{ route('main_transaction.purchase.detail', ['id' => 'PI-2025-012']) }}" class="text-primary fw-semibold">PI-2025-012</a></td> --}}
-                                        <td><span class="badge bg-label-primary">Pembelian</span></td>
-                                        <td>Pembayaran supplier bahan baku</td>
-                                        <td class="text-end">-</td>
-                                        <td class="text-end">Rp 12,500,000</td>
-                                        <td class="text-end">Rp 72,000,000</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2025-01-16</td>
-                                        <td>JU-2025-002</td>
-                                        {{-- <td><a href="{{ route('main_transaction.journal.detail', ['id' => 'JU-2025-002']) }}" class="text-primary fw-semibold">JU-2025-002</a></td> --}}
-                                        <td><span class="badge bg-label-info">Jurnal</span></td>
-                                        <td>Setoran modal dari investor</td>
-                                        <td class="text-end">Rp 25,000,000</td>
-                                        <td class="text-end">-</td>
-                                        <td class="text-end">Rp 84,500,000</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+
                     </div>
 
                     <!-- Audit Log Tab -->
