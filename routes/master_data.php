@@ -77,6 +77,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
     Route::controller(CoaController::class)->group(function () use ($base_segment, $coa_segment) {
         Route::get($base_segment . $coa_segment . '/index', 'index')->name('master_data.coa.index');
         Route::get($base_segment . $coa_segment . '/index_data_table', 'index_data_table')->name('master_data.coa.index_data_table');
+        Route::get($base_segment . $coa_segment . '/journal_log_per_coa_data_table', 'journal_log_per_coa_data_table')->name('master_data.coa.journal_log_per_coa_data_table');
         Route::get($base_segment . $coa_segment . '/add', 'add')->name('master_data.coa.add');
         Route::post($base_segment . $coa_segment . '/save', 'save')->name('master_data.coa.save');
         Route::get($base_segment . $coa_segment . '/detail/{id}', 'detail')->name('master_data.coa.detail');

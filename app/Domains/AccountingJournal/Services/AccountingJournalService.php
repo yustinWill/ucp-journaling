@@ -86,6 +86,59 @@ class AccountingJournalService
         ];
     }
 
+    public function findAllPerCoaDatatable()
+    {
+        $query = DB::table($this->table_name . ' as t')
+            ->select([
+                't.date',
+                't.reference_no',
+                'm_accounting_features.name as type',
+                't.description',
+                't.amount',
+                't.debit_credit',
+                't.created_at',
+                'users.name as created_by',
+            ])
+            ->join('users', 't.created_by', '=', 'users.id')
+            ->join('m_accounting_features', 't.f_accounting_feature_code', '=', 'm_accounting_features.code')
+            ->where('t.status', '=', GeneralStatuses::ACTIVE)
+            ->where('t.f_coa_code', '=', request()->input('coa_code'))
+            ->where('t.company_code', '=', session('user_company_code'));
+
+        // Filter by status
+        $query->where('t.company_code', session('user_company_code'));
+        if ($description_journal = request()->input('description_journal')) {
+            $query->where('t.description', 'like', "%{$description_journal}%");
+        }
+
+        if ($reference_no = request()->input('reference_no')) {
+            $query->where('t.reference_no', 'like', "%{$reference_no}%");
+        }
+
+        $draw = (int) request()->input('draw', 1);
+        $recordsTotal = DB::table($this->table_name)
+            ->where('status', GeneralStatuses::ACTIVE)
+            ->where('company_code', session('user_company_code'))
+            ->where('f_coa_code', '=', request()->input('coa_code'))
+            ->count();
+        $filteredQuery = clone $query;
+
+        // Pagination
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
+        $query->skip($start)->take($length);
+        $recordsFiltered = $filteredQuery->get()->count();
+        $query->orderBy('created_at', 'DESC');
+        $data = $query->get();
+
+        return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ];
+    }
+
     public function findOneByReferenceId($referenceId)
     {
         return DB::table($this->table_name)
@@ -160,5 +213,4 @@ class AccountingJournalService
                 'updated_by' => Auth::id()
             ]);
     }
-
 }

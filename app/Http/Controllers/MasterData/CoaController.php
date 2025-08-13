@@ -17,6 +17,7 @@ use App\Domains\Coa\Actions\UpdateCoaAction;
 
 //Services
 use App\Domains\Coa\Services\CoaService;
+use App\Domains\AccountingJournal\Services\AccountingJournalService;
 use App\Domains\Coa\Services\CoaAuditLogService;
 use App\Domains\Tag\Services\TagService;
 
@@ -40,6 +41,12 @@ class CoaController extends Controller
     public function index_data_table()
     {
         $data = app(CoaService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
+    }
+
+    public function journal_log_per_coa_data_table()
+    {
+        $data = app(AccountingJournalService::class)->findAllPerCoaDatatable();
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 

@@ -59,7 +59,8 @@
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Kode COA</label>
-                                    <input type="text" class="form-control" value="{{ $coa->code }}" disabled />
+                                    <input type="text" class="form-control" id="coa-code" value="{{ $coa->code }}"
+                                        disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Nama COA</label>
@@ -212,8 +213,34 @@
                             </form> --}}
 
                             <hr class="my-6 mx-n6" />
+
+
+                            <div class="card-body">
+                                <!-- Advanced Search Form -->
+                                <form class="dt_adv_search" method="GET" autocomplete="off">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="row g-3">
+                                                <div class="col-12 col-sm-6 col-lg-3">
+                                                    <label class="form-label">No Referensi:</label>
+                                                    <input type="text" class="form-control dt-input dt-full-name"
+                                                        placeholder="Cari Berdasarkan No Referensi" id="reference-no" />
+                                                </div>
+                                                <div class="col-12 col-sm-6 col-lg-3">
+                                                    <label class="form-label">Deskripsi Jurnal:</label>
+                                                    <input type="text" class="form-control dt-input dt-full-name"
+                                                        placeholder="Cari Berdasarkan Deskripsi Jurnal"
+                                                        id="description-journal" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                                <hr class="my-6 mx-n6" />
+                            </div>
+                            <!-- Data Table -->
                             <div class="card-datatable">
-                                <table class="table table-bordered">
+                                <table id="main-table" class="table table-bordered">
                                     <thead>
                                         <tr>
                                             <th>Tanggal</th>
@@ -224,18 +251,6 @@
                                             <th>Kredit</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>2025-01-20</td>
-                                            <td>JU-2025-001</td>
-                                            {{-- <td><a href="{{ route('main_transaction.journal.detail', ['id' => 'JU-2025-001']) }}" class="text-primary fw-semibold">JU-2025-001</a></td> --}}
-                                            <td><span class="badge bg-label-info">Jurnal</span></td>
-                                            <td>Penerimaan kas dari penjualan produk</td>
-                                            <td class="text-end">Rp 15,500,000</td>
-                                            <td class="text-end">-</td>
-                                        </tr>
-                                       
-                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -282,29 +297,6 @@
 @section('js_script')
     <script>
         $(function() {
-            // Initialize DataTables for transactions and audit log
-            $('#transactions-table').DataTable({
-                scrollX: true,
-                responsive: true,
-                orderCellsTop: true,
-                order: [
-                    [0, 'desc']
-                ], // Sort by date descending
-                pageLength: 25,
-                columnDefs: [{
-                    targets: [4, 5, 6], // Debit, Credit, Saldo columns
-                    className: 'text-end'
-                }],
-                language: {
-                    paginate: {
-                        next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                        previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                        first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                        last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                    }
-                }
-            });
-
             $('#audit-log-table').DataTable({
                 responsive: true,
                 orderCellsTop: true,
@@ -316,18 +308,101 @@
                 ] // Sort by date descending
             });
 
-            // Search functionality
-            $('#reference-search').on('keyup', function() {
-                $('#transactions-table').DataTable().column(1).search(this.value).draw();
-            });
+            const main_table = document.querySelector('#main-table');
+            let dt_adv_filter;
 
-            $('#description-search').on('keyup', function() {
-                $('#transactions-table').DataTable().column(3).search(this.value).draw();
-            });
+            if (main_table) {
+                dt_adv_filter = new DataTable(main_table, {
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: `{{ route('master_data.coa.journal_log_per_coa_data_table') }}`,
+                        data: function(d) {
+                            d.description_journal = $('#description-journal').val();
+                            d.reference_no = $('#reference-no').val();
+                            d.coa_code = $('#coa-code').val();
+                        }
+                    },
+                    columns: [{
+                            data: 'date',
+                        },
+                        {
+                            data: 'reference_no',
+                            responsivePriority: 2,
+                            render: function(data, type, row) {
+                                const detailUrl = `{{ route('master_data.coa.detail', ':id') }}`
+                                    .replace(':id', data);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
+                        },
+                        {
+                            data: 'type',
+                        },
+                        {
+                            data: 'description',
+                        },
+                        {
+                            data: 'amount',
+                            createdCell: function(td, cellData, rowData, row, col) {
+                                $(td).addClass('text-end');
+                            },
+                            render: function(data, type, row) {
+                                if (row.debit_credit == 'D') {
+                                    let formatted = 'Rp. ' + parseFloat(data).toLocaleString(
+                                        'id-ID');
+                                    return formatted;
+                                }
+                                return '-'
+                            },
+                        },
+                        {
+                            data: 'amount',
+                            createdCell: function(td, cellData, rowData, row, col) {
+                                $(td).addClass('text-end');
+                            },
+                            render: function(data, type, row) {
+                                if (row.debit_credit == 'C') {
+                                    let formatted = 'Rp. ' + parseFloat(data).toLocaleString(
+                                        'id-ID');
+                                    return formatted;
+                                }
+                                return '-'
+                            },
+                        },
+                    ],
+                    layout: {
+                        topStart: {
+                            rowClass: 'm-0',
+                            features: []
+                        },
+                        topEnd: {},
+                        bottomStart: {
+                            rowClass: 'row mx-3 justify-content-between',
+                            features: ['info']
+                        },
+                        bottomEnd: 'paging'
+                    },
+                    language: {
+                        paginate: {
+                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                        }
+                    },
+                    // scrollX: true,
+                    // responsive: true,
+                    // orderCellsTop: true
+                });
+            }
 
-            $('#transaction-type-filter').on('change', function() {
-                $('#transactions-table').DataTable().column(2).search(this.value).draw();
-            });
+            // Search functionality with debounce (500ms)
+            $('#description-journal, #reference-no').on('keyup', debounce(function() {
+                if (dt_adv_filter) {
+                    dt_adv_filter.search(this.value).draw();
+                }
+            }, 1000));
+
         });
     </script>
 @endsection
