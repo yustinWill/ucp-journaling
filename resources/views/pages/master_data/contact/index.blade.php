@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <!-- Summary Cards -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-lg-4 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
@@ -47,7 +47,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Main Content Card -->
     <div class="card mt-6">
@@ -275,7 +275,8 @@
             dt_adv_filter.column(5).visible(initialTagVisibility);
 
             let searchTimeout;
-            $('#contact-name, #contact-company, #contact-email, #contact-group, #contact-phone, #contact-type').on('keyup change',
+            $('#contact-name, #contact-company, #contact-email, #contact-group, #contact-phone, #contact-type').on(
+                'keyup change',
                 function() {
                     clearTimeout(searchTimeout);
                     const input = this;
