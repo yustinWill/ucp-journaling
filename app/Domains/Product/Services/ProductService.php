@@ -20,6 +20,11 @@ class ProductService
             ->get();
     }
 
+    function getValueWithBundlePrefix($data, $key)
+    {
+        return $data["bundle_{$key}"] ?? $data[$key] ?? null;
+    }
+
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
@@ -31,19 +36,22 @@ class ProductService
             "f_category_id" => $data['category_id'],
             "main_image" => $data['image'] ?? null,
             "type" => $data['type'],
-            "is_item_purchased" => $data['purchase_enabled'] === "true" ? true : false,
-            "unit_purchase_price" => $data['purchase_price'] ?? null,
-            "f_purchase_coa_code" => $data['purchase_account'] ?? null,
-            "f_purchase_tax_id" => $data['purchase_tax'] ?? null,
-            "is_item_sold" => $data['sales_enabled'] === "true" ? true : false,
-            "unit_sell_price" => $data['sales_price'] ?? null,
-            "f_sell_coa_code" => $data['sales_account'] ?? null,
-            "f_sell_tax_id" => $data['sales_tax'] ?? null,
-            "monitor_stock" => $data['inventory_enabled'] === "true" ? true : false,
-            "minimum_stock" => $data['minimum_stock'] ?? null,
-            "f_inventory_coa_code" => $data['inventory_account'] ?? null,
-            "track_qty_only" => isset($data['track_quantity']) ? (bool) $data['track_quantity'] : false,
-            "track_batch" => isset($data['track_batch']) ? (bool) $data['track_batch'] : false,
+            "is_item_purchased" => $this->getValueWithBundlePrefix($data, 'purchase_enabled')  === "true" ? true : false,
+            "unit_purchase_price" => $this->getValueWithBundlePrefix($data, 'purchase_price'),
+            "f_purchase_coa_code" => $this->getValueWithBundlePrefix($data, 'purchase_account'),
+            "f_purchase_tax_id" => $this->getValueWithBundlePrefix($data, 'purchase_tax'),
+
+            "is_item_sold" => $this->getValueWithBundlePrefix($data, 'sales_enabled')  === "true" ? true : false,
+            "unit_sell_price" => $this->getValueWithBundlePrefix($data, 'sales_price'),
+            "f_sell_coa_code" => $this->getValueWithBundlePrefix($data, 'sales_account'),
+            "f_sell_tax_id" => $this->getValueWithBundlePrefix($data, 'sales_tax'),
+
+            "monitor_stock" => $this->getValueWithBundlePrefix($data, 'inventory_enabled') === "true" ? true : false,
+            "minimum_stock" => $this->getValueWithBundlePrefix($data, 'minimum_stock'),
+            "f_inventory_coa_code" => $this->getValueWithBundlePrefix($data, 'inventory_account'),
+
+            "track_qty_only" => isset($data['track_quantity']) && $data['track_quantity'] === "true" ? true : false,
+            "track_batch" => isset($data['track_batch']) && $data['track_batch'] === "true" ? true : false,
             "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
             "internal_memo" => $data['memo'] ?? '',
             "total_stock" => 0,

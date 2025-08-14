@@ -511,7 +511,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="bundle-components-tbody" data-repeater-list>
-                                        <tr data-repeater-item class="component-entry-row">
+                                        <tr data-repeater-item class="bundle-component-row">
                                             <td>
                                                 <div class="position-relative">
                                                     <select class="select2Product form-select component-product">
@@ -585,7 +585,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="bundle-accounts-tbody" data-repeater-list>
-                                        <tr data-repeater-item class="account-entry-row">
+                                        <tr data-repeater-item class="bundle-account-row">
                                             <td>
                                                 <div class="position-relative">
                                                     <select class="select2Coa form-select account-select">
@@ -1023,7 +1023,8 @@
 
                     const imageInput = $('#product-image')[0];
                     if (imageInput && imageInput.files.length) {
-                        data.image = imageInput && imageInput.files.length ? imageInput.files[0].name : null;
+                        data.image = imageInput && imageInput.files.length ? imageInput.files[0].name :
+                            null;
                     }
                     // Do NOT append 'image' if no file is selected
 
@@ -1069,31 +1070,30 @@
                             data.bundle_sales_tax = $('#bundle-sales-tax').val();
                         }
                         if (data.bundle_inventory_enabled) {
-                            data.bundle_minimum_stock = $('#bundle-minimum-stock').val();
+                            data.bundle_minimum_stock = $('#bundle-minimum-stock').val().replace(/[^0-9]/g, '');
                             data.bundle_inventory_account = $('#bundle-inventory-account').val();
                             data.bundle_track_quantity = $('#bundle-track-quantity').is(':checked');
                             data.bundle_track_batch = $('#bundle-track-batch').is(':checked');
                         }
 
-                        // Bundle components table
                         data.bundle_components = [];
                         $('#bundle-components-tbody tr.bundle-component-row').each(function() {
                             data.bundle_components.push({
                                 product_id: $(this).find('.component-product').val(),
-                                qty: $(this).find('.component-qty').val(),
+                                qty: $(this).find('.component-qty').val().replace(/[^0-9]/g, ''),
                                 unit: $(this).find('.component-unit').val(),
-                                price: $(this).find('.component-price').val()
+                                price: $(this).find('.component-price').val().replace(/[^0-9]/g, '')
                             });
                         });
 
-                        // Bundle accounts table
                         data.bundle_accounts = [];
                         $('#bundle-accounts-tbody tr.bundle-account-row').each(function() {
                             data.bundle_accounts.push({
                                 account: $(this).find('.account-select').val(),
-                                cost: $(this).find('.account-cost').val()
+                                cost: $(this).find('.account-cost').val().replace(/[^0-9]/g, '')
                             });
                         });
+                        console.log(data.bundle_accounts)
                     }
 
                     return data;
@@ -1120,17 +1120,19 @@
 
                         const formData = new FormData();
 
-                        // Append all product data
                         for (const key in product_data) {
-                            // if (Array.isArray(product_data[key])) {
-                            //     // For arrays, send as JSON string
-                            //     formData.append(key, JSON.stringify(product_data[key]));
-                            // } else {
-                            //     formData.append(key, product_data[key]);
-                            // }
-
                             if (Array.isArray(product_data[key])) {
-                                product_data[key].forEach(tag => formData.append('tags[]', tag));
+                                if (key === 'tags') {
+                                    product_data[key].forEach(tag => formData.append('tags[]',
+                                        tag));
+                                } else {
+                                    product_data[key].forEach((item, idx) => {
+                                        for (const field in item) {
+                                            formData.append(`${key}[${idx}][${field}]`,
+                                                item[field]);
+                                        }
+                                    });
+                                }
                             } else {
                                 formData.append(key, product_data[key]);
                             }
