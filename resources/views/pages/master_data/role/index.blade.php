@@ -162,14 +162,14 @@
     <script>
         $(function() {
 
-            let roleTable;
+            let dt_adv_filter;
 
             function initRoleTable() {
-                if (roleTable) {
-                    roleTable.destroy();
+                if (dt_adv_filter) {
+                    dt_adv_filter.destroy();
                 }
 
-                roleTable = new DataTable('#role-table', {
+                dt_adv_filter = new DataTable('#role-table', {
                     processing: true,
                     serverSide: true,
                     ajax: {
@@ -279,34 +279,30 @@
             // Initialize table
             initRoleTable();
 
-            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
-
-            // Search functionality
-            $('#role-search').on('keyup', function() {
-                if (roleTable) {
-                    roleTable.search(this.value).draw();
-                }
-            });
-
-            // Filter functionality
-            $('#role-status-filter, #role-user-filter').on('change', function() {
-                if (roleTable) {
-                    roleTable.draw();
-                }
-            });
-
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                if (roleTable) {
-                    const tagColumn = roleTable.column(5); // Tag column index (0-based)
+                if (dt_adv_filter) {
+                    const tagColumn = dt_adv_filter.column(5); // Tag column index (0-based)
                     tagColumn.visible(this.checked);
                 }
             });
 
+            let searchTimeout;
+            $('#role-search, #role-status-filter, #role-user-filter').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (dt_adv_filter) {
+                            dt_adv_filter.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
+
             // Initialize tag column visibility based on checkbox state
             const initialTagVisibility = $('#toggleTagColumn').is(':checked');
-            if (roleTable) {
-                roleTable.column(5).visible(initialTagVisibility);
+            if (dt_adv_filter) {
+                dt_adv_filter.column(5).visible(initialTagVisibility);
             }
         });
     </script>

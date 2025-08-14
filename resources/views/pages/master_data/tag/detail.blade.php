@@ -236,7 +236,7 @@
         $(function() {
             // Initialize DataTables for tag usage and audit log
             $('#tag-usage-table').DataTable({
-                responsive: true,
+                // responsive: true,
                 orderCellsTop: true,
                 searching: false,
                 paging: false,
@@ -256,7 +256,7 @@
             });
 
             $('#audit-log-table').DataTable({
-                responsive: true,
+                // responsive: true,
                 orderCellsTop: true,
                 searching: false,
                 paging: false,

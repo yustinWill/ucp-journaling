@@ -22,13 +22,13 @@
                                     Edit
                                 </a>
                             @endif
-                            @if ($canShowDeleteButton)
+                            {{-- @if ($canShowDeleteButton)
                                 <button class="btn btn-danger btn-md waves-effect waves-light"
                                     onclick="deleteItem({{ $unit->id }})">
                                     <i class="icon-base ti tabler-trash me-2"></i>
                                     Hapus
                                 </button>
-                            @endif
+                            @endif --}}
                         </div>
                     </div>
                 </div>
@@ -142,7 +142,8 @@
                                                 <td>{{ $log->description }}</td>
                                                 <td>
                                                     @if ($log->action_type == 'UPDATE')
-                                                        <a target="_blank" href="{{ route('audit_log.detail', ['id' => $log->id, 'audit_log_type' => $auditLogType]) }}"
+                                                        <a target="_blank"
+                                                            href="{{ route('audit_log.detail', ['id' => $log->id, 'audit_log_type' => $auditLogType]) }}"
                                                             class="btn btn-sm btn-primary waves-effect waves-light"
                                                             title="Detail">
                                                             <i class="icon-xs icon-base ti tabler-eye"></i>

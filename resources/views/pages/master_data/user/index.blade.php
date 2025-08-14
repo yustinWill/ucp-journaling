@@ -255,7 +255,8 @@
                         {
                             targets: [6], // Status column
                             render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
+                                    'bg-label-secondary';
                                 const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
@@ -297,19 +298,17 @@
             const initialTagVisibility = $('#toggleTagColumn').is(':checked');
             dt_adv_filter.column(5).visible(initialTagVisibility);
 
-            // Search functionality
-            $('#user-name, #user-email').on('keyup', function() {
-                if (dt_adv_filter) {
-                    dt_adv_filter.search(this.value).draw();
-                }
-            });
-
-            // Filter functionality
-            $('#user-role, #user-status').on('change', function() {
-                if (dt_adv_filter) {
-                    dt_adv_filter.draw();
-                }
-            });
+            let searchTimeout;
+            $('#user-name, #user-email, #user-role, #user-status').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (dt_adv_filter) {
+                            dt_adv_filter.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
         });
     </script>
 @endsection

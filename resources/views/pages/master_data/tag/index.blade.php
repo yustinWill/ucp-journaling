@@ -6,7 +6,7 @@
 
 @section('content')
     <!-- Summary Cards -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-lg-4 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
@@ -49,7 +49,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Main Content Card -->
     <div class="mt-6">
@@ -262,15 +262,17 @@
                 });
             }
 
-            // Text input filter
-            $('.dt-input').on('keyup change', function() {
-                dt_adv_filter.ajax.reload();
-            });
-
-            // Dropdown filters
-            $('.global-select2').on('change', function() {
-                dt_adv_filter.ajax.reload();
-            });
+            let searchTimeout;
+            $('.dt-input, .global-select2').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (dt_adv_filter) {
+                            dt_adv_filter.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
         });
     </script>
 @endsection

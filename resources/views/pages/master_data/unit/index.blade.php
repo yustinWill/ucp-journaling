@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <!-- Summary Cards -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-lg-3 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
@@ -61,7 +61,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Main Content Card -->
     <div class="mt-6">
@@ -77,7 +77,7 @@
                                     <label class="form-label">Status:</label>
                                     <select class="global-select2 form-select" id="status-filter" data-allow-clear="false">
                                         <option value="">Semua Status</option>
-                                        @foreach($statuses as $status)
+                                        @foreach ($statuses as $status)
                                             <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                                         @endforeach
                                     </select>
@@ -86,7 +86,7 @@
                                     <label class="form-label">Tipe Unit:</label>
                                     <select class="global-select2 form-select" id="type-filter" data-allow-clear="true">
                                         <option value="">Semua Tipe</option>
-                                        @foreach($unitTypes as $type)
+                                        @foreach ($unitTypes as $type)
                                             <option value="{{ $type->id }}">{{ $type->name }}</option>
                                         @endforeach
                                     </select>
@@ -99,24 +99,24 @@
                         </div>
                     </div>
                 </form>
-                
+
                 <hr class="my-6 mx-n6" />
-                
+
                 <!-- Action Buttons -->
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            @if($canShowImportButton)
+                            @if ($canShowImportButton)
                                 <a href="{{ route('master_data.unit.import') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
                             @endif
-                            @if($canShowExportButton)
+                            @if ($canShowExportButton)
                                 <a href="{{ route('master_data.unit.export') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                             @endif
-                            @if($canShowAddButton)
+                            @if ($canShowAddButton)
                                 <a href="{{ route('master_data.unit.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
@@ -125,7 +125,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Data Table -->
             <div class="card-datatable">
                 <table id="main-table" class="table table-bordered">
@@ -154,7 +154,7 @@
             const canDelete = @json($canDelete);
             const canShowEditButton = @json($canShowEditButton);
             const canShowDeleteButton = @json($canShowDeleteButton);
-            
+
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');
             let dt_adv_filter;
@@ -171,22 +171,28 @@
                             d.name = $('#search').val();
                         }
                     },
-                    columns: [
-                        { data: 'created_at', responsivePriority: 2 },
-                        { 
+                    columns: [{
+                            data: 'created_at',
+                            responsivePriority: 2
+                        },
+                        {
                             data: 'code',
                             responsivePriority: 3
                         },
-                        { data: 'name', responsivePriority: 4 },
-                        { 
+                        {
+                            data: 'name',
+                            responsivePriority: 4
+                        },
+                        {
                             data: 'unit_type_name',
                             responsivePriority: 5,
                         },
-                        { 
+                        {
                             data: 'status',
                             responsivePriority: 6,
                             render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
+                                    'bg-label-secondary';
                                 const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
@@ -198,37 +204,45 @@
                             responsivePriority: 1,
                             width: '120px',
                             render: function(data, type, row, meta) {
-                                const detailUrl = `{{ route('master_data.unit.detail', ':id') }}`.replace(':id', row.id);
-                                const editUrl = `{{ route('master_data.unit.edit', ':id') }}`.replace(':id', row.id);
+                                const detailUrl = `{{ route('master_data.unit.detail', ':id') }}`
+                                    .replace(':id', row.id);
+                                const editUrl = `{{ route('master_data.unit.edit', ':id') }}`
+                                    .replace(':id', row.id);
                                 let actions = '<div class="d-flex gap-2">';
-                                
+
                                 if (canRead) {
                                     actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-xs icon-base ti tabler-eye"></i>
                                     </a>`;
                                 }
-                                
+
                                 if (canShowEditButton) {
                                     actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-xs icon-base ti tabler-edit"></i>
                                     </a>`;
                                 }
-                                
-                                if (canShowDeleteButton) {
-                                    actions += `<button class="btn btn-sm btn-danger waves-effect waves-light" title="Hapus" onclick="deleteItem(${row.id})">
-                                        <i class="icon-xs icon-base ti tabler-trash"></i>
-                                    </button>`;
-                                }
-                                
+
+                                // if (canShowDeleteButton) {
+                                //     actions += `<button class="btn btn-sm btn-danger waves-effect waves-light" title="Hapus" onclick="deleteItem(${row.id})">
+                            //         <i class="icon-xs icon-base ti tabler-trash"></i>
+                            //     </button>`;
+                                // }
+
                                 actions += '</div>';
                                 return actions;
                             }
                         }
                     ],
                     layout: {
-                        topStart: { rowClass: 'm-0', features: [] },
+                        topStart: {
+                            rowClass: 'm-0',
+                            features: []
+                        },
                         topEnd: {},
-                        bottomStart: { rowClass: 'row mx-3 justify-content-between', features: ['info'] },
+                        bottomStart: {
+                            rowClass: 'row mx-3 justify-content-between',
+                            features: ['info']
+                        },
                         bottomEnd: 'paging'
                     },
                     language: {
@@ -246,19 +260,17 @@
                 });
             }
 
-            // Search functionality
-            $('#search').on('keyup', function() {
-                if (dt_adv_filter) {
-                    dt_adv_filter.search(this.value).draw();
-                }
-            });
-            
-            // Filter functionality
-            $('#status-filter, #type-filter').on('change', function() {
-                if (dt_adv_filter) {
-                    dt_adv_filter.draw();
-                }
-            });
+            let searchTimeout;
+            $('#search, #status-filter, #type-filter').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (dt_adv_filter) {
+                            dt_adv_filter.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
         });
     </script>
 @endsection

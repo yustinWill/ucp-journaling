@@ -10,37 +10,40 @@
                 <div class="col-md-8">
                     <h4 class="mb-3">Detail Pajak</h4>
                 </div>
-                
+
                 <!-- Action Panel -->
                 <div class="col-md-4">
                     <div class="text-end">
                         @php
                             $totalActions = 1; // Edit always present
                         @endphp
-                        
-                        @if($totalActions < 3)
+
+                        @if ($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.tax.edit', $tax->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                <a href="{{ route('master_data.tax.edit', $tax->id) }}"
+                                    class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
                             </div>
                         @else
                             <!-- Show dropdown for 3 or more actions -->
                             <div class="dropdown">
-                                <button type="button" class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle" data-bs-toggle="dropdown">
+                                <button type="button"
+                                    class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle"
+                                    data-bs-toggle="dropdown">
                                     Aksi
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{{ route('master_data.tax.edit', $tax->id) }}">
-                                        <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
+                                            <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
                                 </ul>
                             </div>
                         @endif
                     </div>
                 </div>
             </div>
-            
+
             <!-- Entity Title -->
             <h2>{{ $tax->name }}</h2>
             <span>
@@ -59,12 +62,12 @@
                     <input type="text" class="form-control" value="{{ $tax->rate }}%" disabled />
                 </div>
             </div>
-            
+
             <div class="row g-6 mt-3">
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
-                        @if($tax->status == 'ACTIVE')
+                        @if ($tax->status == 'ACTIVE')
                             <span class="badge bg-label-success">Aktif</span>
                         @else
                             <span class="badge bg-label-secondary">Inaktif</span>
@@ -76,7 +79,7 @@
                 </div>
             </div>
             <hr class="my-6 mx-n6" />
-            
+
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
@@ -97,17 +100,19 @@
                                 <h6>Detail Informasi Pajak</h6>
                                 <hr class="mx-n6">
                             </div>
-                            
+
                             <div class="row g-6">
                                 <div class="col-md-6">
                                     <label class="form-label">Tipe Pajak</label>
-                                    <input type="text" class="form-control" value="{{ $tax->type == 'PERCENTAGE' ? 'Persentase' : 'Nominal Tetap' }}" disabled />
+                                    <input type="text" class="form-control"
+                                        value="{{ $tax->type == 'PERCENTAGE' ? 'Persentase' : 'Nominal Tetap' }}"
+                                        disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <!-- Empty for alignment -->
                                 </div>
                             </div>
-                            
+
                             <div class="row g-6 mt-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Deskripsi</label>
@@ -135,26 +140,26 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($auditLogs as $log)
-                                        <tr>
-                                            <td>{{ $log->created_at }}</td>
-                                            <td>
-                                                <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" 
-                                                   class="text-primary fw-semibold">{{ $log->user_name }}</a>
-                                            </td>
-                                            <td>
-                                                @if($log->action_type == 'CREATE')
-                                                    <span class="badge bg-label-success">CREATE</span>
-                                                @elseif($log->action_type == 'UPDATE')
-                                                    <span class="badge bg-label-warning">UPDATE</span>
-                                                @elseif($log->action_type == 'DELETE')
-                                                    <span class="badge bg-label-danger">DELETE</span>
-                                                @else
-                                                    <span class="badge bg-label-info">{{ $log->action_type }}</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $log->description }}</td>
-                                        </tr>
+                                        @foreach ($auditLogs as $log)
+                                            <tr>
+                                                <td>{{ $log->created_at }}</td>
+                                                <td>
+                                                    <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}"
+                                                        class="text-primary fw-semibold">{{ $log->user_name }}</a>
+                                                </td>
+                                                <td>
+                                                    @if ($log->action_type == 'CREATE')
+                                                        <span class="badge bg-label-success">CREATE</span>
+                                                    @elseif($log->action_type == 'UPDATE')
+                                                        <span class="badge bg-label-warning">UPDATE</span>
+                                                    @elseif($log->action_type == 'DELETE')
+                                                        <span class="badge bg-label-danger">DELETE</span>
+                                                    @else
+                                                        <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $log->description }}</td>
+                                            </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -168,17 +173,19 @@
 @stop
 
 @section('js_script')
-<script>
-    $(function() {
-        // Initialize DataTables for tables inside tabs (no scrollX)
-        $('#audit-log-table').DataTable({
-            responsive: true,
-            orderCellsTop: true,
-            order: [[0, 'desc']], // Sort by date descending
-            searching: false,
-            paging: false,
-            info: false
+    <script>
+        $(function() {
+            // Initialize DataTables for tables inside tabs (no scrollX)
+            $('#audit-log-table').DataTable({
+                // responsive: true,
+                orderCellsTop: true,
+                order: [
+                    [0, 'desc']
+                ], // Sort by date descending
+                searching: false,
+                paging: false,
+                info: false
+            });
         });
-    });
-</script>
+    </script>
 @endsection
