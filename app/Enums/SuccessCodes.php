@@ -25,7 +25,8 @@ enum SuccessCodes: string
     case UPDATE_CONTACT_SUCCESS = 'UPDATE_CONTACT_SUCCESS';
     case CREATE_ACCOUNTING_JOURNAL_SUCCESS = 'CREATE_ACCOUNTING_JOURNAL_SUCCESS';
     case UPDATE_ACCOUNTING_JOURNAL_SUCCESS = 'UPDATE_ACCOUNTING_JOURNAL_SUCCESS';
-    
+    case CREATE_PRODUCT_SUCCESS = 'CREATE_PRODUCT_SUCCESS';
+    case UPDATE_PRODUCT_SUCCESS = 'UPDATE_PRODUCT_SUCCESS';
 
     public function message(): string
     {
@@ -49,6 +50,8 @@ enum SuccessCodes: string
             self::UPDATE_CONTACT_SUCCESS => 'Kontak berhasil diperbarui.',
             self::CREATE_ACCOUNTING_JOURNAL_SUCCESS => 'Jurnal Akuntansi berhasil dibuat.',
             self::UPDATE_ACCOUNTING_JOURNAL_SUCCESS => 'Jurnal Akuntansi berhasil diperbarui.',
+            self::CREATE_PRODUCT_SUCCESS => 'Produk berhasil dibuat.',
+            self::UPDATE_PRODUCT_SUCCESS => 'Produk berhasil diperbarui.',
         };
     }
 
@@ -74,6 +77,8 @@ enum SuccessCodes: string
             self::UPDATE_CONTACT_SUCCESS => self::OK,
             self::CREATE_ACCOUNTING_JOURNAL_SUCCESS => self::OK,
             self::UPDATE_ACCOUNTING_JOURNAL_SUCCESS => self::OK,
+            self::CREATE_PRODUCT_SUCCESS => self::OK,
+            self::UPDATE_PRODUCT_SUCCESS => self::OK,
         };
     }
 

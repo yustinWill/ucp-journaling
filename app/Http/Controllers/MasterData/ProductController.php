@@ -5,39 +5,41 @@ namespace App\Http\Controllers\MasterData;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use App\Domains\Product\Actions\CreateProductAction;
+use App\Domains\StockStatus\Services\StockStatusService;
+use App\Domains\Category\Services\CategoryService;
+use App\Domains\Unit\Services\UnitService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\Coa\Services\CoaService;
+use App\Domains\Tax\Services\TaxService;
+
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
+
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+
 class ProductController extends Controller
 {
     public function index()
     {
-        $productCategories = [
-            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
-            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
-            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
-            ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan']
-        ];
+        $productCategories = app(CategoryService::class)->findAll();
 
-        $stockStatuses = [
-            ['value' => 'AVAILABLE', 'label' => 'AVAILABLE - Stok Tersedia'],
-            ['value' => 'LOW_STOCK', 'label' => 'LOW_STOCK - Stok Segera Habis'],
-            ['value' => 'OUT_OF_STOCK', 'label' => 'OUT_OF_STOCK - Stok Habis']
-        ];
+        $stockStatuses = app(StockStatusService::class)->findAll();
 
-        $warehouseStatuses = [
+        $statuses = [
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
             ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
-        ];
-
-        $warehouseLocations = [
-            ['value' => 'GDG-JKT', 'label' => 'GDG-JKT - Gudang Jakarta'],
-            ['value' => 'GDG-BDG', 'label' => 'GDG-BDG - Gudang Bandung'],
-            ['value' => 'GDG-SBY', 'label' => 'GDG-SBY - Gudang Surabaya']
         ];
 
         return view('pages.master_data.product.index', [
             'productCategories' => $productCategories,
             'stockStatuses' => $stockStatuses,
-            'warehouseStatuses' => $warehouseStatuses,
-            'warehouseLocations' => $warehouseLocations
+            'statuses' => $statuses
         ]);
     }
 
@@ -213,53 +215,17 @@ class ProductController extends Controller
 
     public function add()
     {
-        $units = [
-            ['value' => 'pcs', 'label' => 'pcs'],
-            ['value' => 'kg', 'label' => 'kg'],
-            ['value' => 'meter', 'label' => 'meter'],
-            ['value' => 'liter', 'label' => 'liter'],
-            ['value' => 'rim', 'label' => 'rim'],
-            ['value' => 'box', 'label' => 'box'],
-            ['value' => 'set', 'label' => 'set'],
-            ['value' => 'roll', 'label' => 'roll'],
-            ['value' => 'pack', 'label' => 'pack']
-        ];
-
-        $categories = [
-            ['value' => 'Alat Tulis', 'label' => 'Alat Tulis'],
-            ['value' => 'Kertas', 'label' => 'Kertas'],
-            ['value' => 'Elektronik', 'label' => 'Elektronik'],
-            ['value' => 'Furniture', 'label' => 'Furniture'],
-            ['value' => 'Konsumsi', 'label' => 'Konsumsi']
-        ];
-
-        $accounts = [
-            ['value' => '1-10100', 'label' => '(1-10100) Kas dan Bank'],
-            ['value' => '1-20100', 'label' => '(1-20100) Piutang'],
-            ['value' => '1-30100', 'label' => '(1-30100) Persediaan'],
-            ['value' => '2-20100', 'label' => '(2-20100) Hutang'],
-            ['value' => '4-40100', 'label' => '(4-40100) Pendapatan Penjualan'],
-            ['value' => '5-50100', 'label' => '(5-50100) Beban Operasional']
-        ];
-
-        $taxes = [
-            ['value' => 'PPN', 'label' => 'PPN (11%)'],
-            ['value' => 'No Tax', 'label' => 'Tidak Ada Pajak']
-        ];
+        $categories = app(CategoryService::class)->findAll();
+        $tags = app(TagService::class)->findAll();
+        $units = app(UnitService::class)->findAll();
+        $accounts = app(CoaService::class)->findAll();
+        $taxes = app(TaxService::class)->findAll();
 
         $products = [
             ['value' => '1', 'label' => 'Pulpen Pilot G2', 'unit' => 'pcs', 'price' => 12000],
             ['value' => '2', 'label' => 'Kertas A4 80gsm', 'unit' => 'rim', 'price' => 50000],
             ['value' => '3', 'label' => 'Spidol Whiteboard', 'unit' => 'pcs', 'price' => 18000],
             ['value' => '4', 'label' => 'Buku Tulis 38 Lembar', 'unit' => 'pcs', 'price' => 6000]
-        ];
-
-        $tags = [
-            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Barang Jadi', 'color' => 'success'],
-            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku', 'color' => 'info'],
-            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan', 'color' => 'warning'],
-            ['value' => 'CONSUMABLES', 'label' => 'CONSUMABLES - Habis Pakai', 'color' => 'secondary'],
-            ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Perawatan', 'color' => 'danger']
         ];
 
         // Permission checks for adding new options
@@ -282,6 +248,60 @@ class ProductController extends Controller
             'canAddAccounts' => $canAddAccounts,
             'canAddTaxes' => $canAddTaxes
         ]);
+    }
+
+    public function save(Request $req)
+    {
+        try {
+            $validated = $req->validate([
+                'name' => 'required|string|max:255',
+                'unit_id' => 'required|integer|exists:m_units,id',
+                'code' => 'required|string|max:255|unique:m_products,code',
+                'category_id' => 'nullable|integer|exists:m_categories,id',
+                'description' => 'nullable|string|max:1000',
+                'memo' => 'nullable|string|max:1000',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+                'type' => 'required|in:single,bundle',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+                'purchase_enabled' => 'required|in:true,false',
+                'sales_enabled' => 'required|in:true,false',
+                'inventory_enabled' => 'required|in:true,false',
+                'purchase_price' => 'required_if:purchase_enabled,"true"|string|max:255', // If numeric: 'nullable|numeric|min:0'
+                'purchase_account' => 'required_if:purchase_enabled,"true"|string|max:255',
+                'purchase_tax' => 'required_if:purchase_enabled,"true"|string|max:255',
+                'sales_price' => 'required_if:sales_enabled,"true"|string|max:255', // If numeric: 'nullable|numeric|min:0'
+                'sales_account' => 'required_if:sales_enabled,"true"|string|max:255',
+                'sales_tax' => 'required_if:sales_enabled,"true"|string|max:255',
+                'minimum_stock' => 'required_if:inventory_enabled,"true"|integer|min:0',
+                'inventory_account' => 'required_if:inventory_enabled,"true"|string|max:255',
+                'track_quantity' => 'required_if:inventory_enabled,"true"|in:true,false',
+                'track_batch' => 'required_if:inventory_enabled,"true"|in:true,false',
+            ]);
+
+            app(CreateProductAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_PRODUCT_SUCCESS->message()
+            ], SuccessCodes::CREATE_PRODUCT_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function export()

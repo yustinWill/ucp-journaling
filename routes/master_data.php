@@ -68,6 +68,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $product_segment . '/index_data_table', 'index_data_table')->name('master_data.product.index_data_table');
         Route::get($base_segment . $product_segment . '/index_warehouse_data_table', 'index_warehouse_data_table')->name('master_data.product.index_warehouse_data_table');
         Route::get($base_segment . $product_segment . '/add', 'add')->name('master_data.product.add');
+        Route::post($base_segment . $product_segment . '/save', 'save')->name('master_data.product.save');
         Route::get($base_segment . $product_segment . '/detail/{id}', 'detail')->name('master_data.product.detail');
         Route::get($base_segment . $product_segment . '/edit/{id}', 'edit')->name('master_data.product.edit');
         Route::get($base_segment . $product_segment . '/export', 'export')->name('master_data.product.export');

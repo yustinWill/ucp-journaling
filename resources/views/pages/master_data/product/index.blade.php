@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <!-- Summary Cards -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-lg-3 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
@@ -61,122 +61,134 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Main Content Card -->
     <div class="mt-6">
-            <div class="card">
-                <h4 class="card-header">Kelola Produk</h4>
-                <div class="card-body">
-                    <!-- Advanced Search Form -->
-                    <form class="dt_adv_search" method="GET" autocomplete="off">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="row g-3">
-                                    <div class="col-12 col-sm-6 col-lg-4">
-                                        <label class="form-label">Kategori:</label>
-                                        <select class="global-select2 form-select" id="products-category-filter" data-allow-clear="false">
-                                            <option value="">Semua Kategori</option>
-                                            @foreach($productCategories as $category)
-                                                <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-12 col-sm-6 col-lg-4">
-                                        <label class="form-label">Status Stok:</label>
-                                        <select class="global-select2 form-select" id="products-stock-filter" data-allow-clear="false">
-                                            <option value="">Semua Status</option>
-                                            @foreach($stockStatuses as $status)
-                                                <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-12 col-sm-6 col-lg-4">
-                                        <label class="form-label">Pencarian:</label>
-                                        <input type="text" class="form-control" id="products-search" placeholder="Cari Produk">
-                                    </div>
+        <div class="card">
+            <h4 class="card-header">Kelola Produk</h4>
+            <div class="card-body">
+                <!-- Advanced Search Form -->
+                <form class="dt_adv_search" method="GET" autocomplete="off">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="row g-3">
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <label class="form-label">Kategori:</label>
+                                    <select class="global-select2 form-select" id="products-category-filter"
+                                        data-allow-clear="false">
+                                        <option value="">Semua Kategori</option>
+                                        @foreach ($productCategories as $category)
+                                            <option value="{{ $category->code }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                            </div>
-                        </div>
-                    </form>
-                    <hr class="my-6 mx-n6" />
-                    <!-- Action Buttons -->
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between">
-                            <!-- Column Toggle -->
-                            <div class="d-flex align-items-center">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
-                                    <label class="form-check-label" for="toggleTagColumn">
-                                        <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
-                                    </label>
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <label class="form-label">Status Stok:</label>
+                                    <select class="global-select2 form-select" id="products-stock-filter"
+                                        data-allow-clear="false">
+                                        <option value="">Semua Status</option>
+                                        @foreach ($stockStatuses as $status)
+                                            <option value="{{ $status->code }}">{{ $status->name }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                            </div>
-                            
-                            <div class="d-flex gap-2">
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-md btn-primary dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown">
-                                        <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#" id="btn-import-products">Produk Baru</a></li>
-                                        <li><a class="dropdown-item" href="#" id="btn-import-update">Update Produk</a></li>
-                                        <li><a class="dropdown-item" href="#" id="btn-import-bundle">Produk Bundle</a></li>
-                                    </ul>
+                                <div class="col-12 col-sm-6 col-lg-4">
+                                    <label class="form-label">Pencarian:</label>
+                                    <input type="text" class="form-control" id="products-search"
+                                        placeholder="Cari Produk">
                                 </div>
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-md btn-primary dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown">
-                                        <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#" id="btn-export-products">Semua Produk</a></li>
-                                        <li><a class="dropdown-item" href="#" id="btn-export-bundle">Produk Bundle & Komposisi</a></li>
-                                    </ul>
-                                </div>
-                                <button type="button" id="btn-add-products"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- Data Table -->
-                <div class="card-datatable">
-                    <table id="products-table" class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Nama Produk</th>
-                                <th>Kode Produk</th>
-                                <th>Kategori</th>
-                                <th>Tag</th>
-                                <th>Total Stok</th>
-                                <th>Qty Tersedia</th>
-                                <th>Batas Minimum</th>
-                                <th>Unit</th>
-                                <th>Harga Rata-Rata</th>
-                                <th>Harga Beli Terakhir</th>
-                                <th>Harga Beli</th>
-                                <th>Harga Jual</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                    </table>
+                </form>
+                <hr class="my-6 mx-n6" />
+                <!-- Action Buttons -->
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between">
+                        <!-- Column Toggle -->
+                        <div class="d-flex align-items-center">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <label class="form-check-label" for="toggleTagColumn">
+                                    <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button type="button"
+                                    class="btn btn-md btn-primary dropdown-toggle waves-effect waves-light"
+                                    data-bs-toggle="dropdown">
+                                    <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" id="btn-import-products">Produk Baru</a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#" id="btn-import-update">Update Produk</a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#" id="btn-import-bundle">Produk Bundle</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="dropdown">
+                                <button type="button"
+                                    class="btn btn-md btn-primary dropdown-toggle waves-effect waves-light"
+                                    data-bs-toggle="dropdown">
+                                    <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" id="btn-export-products">Semua Produk</a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#" id="btn-export-bundle">Produk Bundle &
+                                            Komposisi</a></li>
+                                </ul>
+                            </div>
+                            <button type="button" id="btn-add-products"
+                                class="btn btn-md btn-primary waves-effect waves-light"><span
+                                    class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <!-- Data Table -->
+            <div class="card-datatable">
+                <table id="products-table" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Nama Produk</th>
+                            <th>Kode Produk</th>
+                            <th>Kategori</th>
+                            <th>Tag</th>
+                            <th>Total Stok</th>
+                            <th>Qty Tersedia</th>
+                            <th>Batas Minimum</th>
+                            <th>Unit</th>
+                            <th>Harga Rata-Rata</th>
+                            <th>Harga Beli Terakhir</th>
+                            <th>Harga Beli</th>
+                            <th>Harga Jual</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
     </div>
 @stop
 @section('js_script')
     <script>
         $(function() {
             let productsTable;
-            
+
             // Initialize Products Table
             function initProductsTable() {
                 if (productsTable) {
                     productsTable.destroy();
                 }
-                
+
                 productsTable = new DataTable('#products-table', {
                     ajax: {
                         url: `{{ route('master_data.product.index_data_table') }}`,
@@ -188,13 +200,18 @@
                             return d;
                         }
                     },
-                    columns: [
-                        { 
+                    columns: [{
                             data: 'product_name',
                             responsivePriority: 3
                         },
-                        { data: 'product_code', responsivePriority: 4 },
-                        { data: 'category', responsivePriority: 5 },
+                        {
+                            data: 'product_code',
+                            responsivePriority: 4
+                        },
+                        {
+                            data: 'category',
+                            responsivePriority: 5
+                        },
                         {
                             data: 'tags',
                             responsivePriority: 6,
@@ -206,7 +223,7 @@
                                 }).join('');
                             }
                         },
-                        { 
+                        {
                             data: 'total_stock',
                             className: 'text-end',
                             responsivePriority: 7,
@@ -217,7 +234,7 @@
                                 return data ?? '0';
                             }
                         },
-                        { 
+                        {
                             data: 'available_qty',
                             className: 'text-end',
                             responsivePriority: 8,
@@ -228,7 +245,7 @@
                                 return data ?? '0';
                             }
                         },
-                        { 
+                        {
                             data: 'minimum',
                             className: 'text-end',
                             responsivePriority: 9,
@@ -239,8 +256,11 @@
                                 return data ?? '0';
                             }
                         },
-                        { data: 'unit', responsivePriority: 10 },
-                        { 
+                        {
+                            data: 'unit',
+                            responsivePriority: 10
+                        },
+                        {
                             data: 'average_price',
                             className: 'text-end',
                             responsivePriority: 11,
@@ -251,7 +271,7 @@
                                 return data ?? 'Rp 0';
                             }
                         },
-                        { 
+                        {
                             data: 'last_purchase_price',
                             className: 'text-end',
                             responsivePriority: 12,
@@ -262,7 +282,7 @@
                                 return data ?? 'Rp 0';
                             }
                         },
-                        { 
+                        {
                             data: 'purchase_price',
                             className: 'text-end',
                             responsivePriority: 13,
@@ -273,7 +293,7 @@
                                 return data ?? 'Rp 0';
                             }
                         },
-                        { 
+                        {
                             data: 'selling_price',
                             className: 'text-end',
                             responsivePriority: 14,
@@ -284,11 +304,12 @@
                                 return data ?? 'Rp 0';
                             }
                         },
-                        { 
+                        {
                             data: 'status',
                             responsivePriority: 5,
                             render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
+                                    'bg-label-secondary';
                                 const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
@@ -300,8 +321,10 @@
                             responsivePriority: 1,
                             width: '120px',
                             render: function(data, type, row, meta) {
-                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`.replace(':id', row.id);
-                                const editUrl = `{{ route('master_data.product.edit', ':id') }}`.replace(':id', row.id);
+                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`
+                                    .replace(':id', row.id);
+                                const editUrl = `{{ route('master_data.product.edit', ':id') }}`
+                                    .replace(':id', row.id);
                                 return `
                                 <div class="d-flex gap-2">
                                     <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
@@ -316,9 +339,15 @@
                         }
                     ],
                     layout: {
-                        topStart: { rowClass: 'm-0', features: [] },
+                        topStart: {
+                            rowClass: 'm-0',
+                            features: []
+                        },
                         topEnd: {},
-                        bottomStart: { rowClass: 'row mx-3 justify-content-between', features: ['info'] },
+                        bottomStart: {
+                            rowClass: 'row mx-3 justify-content-between',
+                            features: ['info']
+                        },
                         bottomEnd: 'paging'
                     },
                     language: {
@@ -333,42 +362,42 @@
                     responsive: true
                 });
             }
-            
+
             // Initialize table
             initProductsTable();
-            
+
             // Button click events - Products Tab
             $('#btn-add-products').on('click', function() {
                 window.location.href = "{{ route('master_data.product.add') }}";
             });
-            
+
             $('#btn-export-products').on('click', function() {
                 window.location.href = "{{ route('master_data.product.export') }}?type=products";
             });
-            
+
             $('#btn-export-bundle').on('click', function() {
                 window.location.href = "{{ route('master_data.product.export') }}?type=bundle";
             });
-            
+
             // Import button events
             $('#btn-import-products, #btn-import-update, #btn-import-bundle').on('click', function() {
                 window.location.href = "{{ route('master_data.product.import') }}";
             });
-            
+
             // Search functionality
             $('#products-search').on('keyup', function() {
                 if (productsTable) {
                     productsTable.search(this.value).draw();
                 }
             });
-            
+
             // Filter functionality
             $('#products-category-filter, #products-stock-filter').on('change', function() {
                 if (productsTable) {
                     productsTable.draw();
                 }
             });
-            
+
             // Tag Column Toggle Functionality (Products Table Only)
             $('#toggleTagColumn').on('change', function() {
                 if (productsTable) {

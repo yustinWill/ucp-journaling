@@ -2,6 +2,7 @@
 
 namespace App\Domains\Category\Services;
 
+use App\Enums\GeneralStatuses;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -75,7 +76,7 @@ class CategoryService
     public function findAll()
     {
         return DB::table($this->table_name)
-            ->where('status', 'ACTIVE')
+            ->where('status', GeneralStatuses::ACTIVE)
             ->where('company_code', session('user_company_code'))
             ->get();
     }

@@ -9,6 +9,19 @@ function initCleaveCurrency(context) {
                 prefix: 'Rp ',
                 noImmediatePrefix: false,
                 rawValueTrimPrefix: true
+
+            });
+        }
+    });
+
+    $(context).find('.numeric-input').each(function () {
+        if (!this.cleave) {
+            this.cleave = new Cleave(this, {
+                numeral: true,
+                numeralThousandsGroupStyle: 'thousand',
+                noImmediatePrefix: false,
+                rawValueTrimPrefix: true
+
             });
         }
     });

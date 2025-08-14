@@ -4,6 +4,7 @@ namespace App\Domains\Unit\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\GeneralStatuses;
 
 class UnitService
 {
@@ -109,4 +110,14 @@ class UnitService
             ->where('t.id', $id)
             ->first();
     }
+
+    public function findAll()
+    {
+        return DB::table($this->table_name)
+            ->select('id', 'name', 'code')
+            ->where('status', GeneralStatuses::ACTIVE)
+            ->where('company_code', session('user_company_code'))
+            ->orderBy('name', 'asc')
+            ->get();
+    }   
 }
