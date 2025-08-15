@@ -18,11 +18,13 @@ use App\Domains\Tag\Services\TagService;
 use App\Domains\Coa\Services\CoaService;
 use App\Domains\Tax\Services\TaxService;
 use App\Domains\Product\Services\ProductService;
+use App\Domains\Product\Services\ProductAuditLogService;
 
 
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
 
 class ProductController extends Controller
 {
@@ -480,36 +482,13 @@ class ProductController extends Controller
 
     public function detail($id)
     {
-        // Sample product data for the detail view
-        $product = [
-            'id' => $id,
-            'product_name' => 'Air Mineral RIYO 600ml',
-            'product_code' => 'PROD-2025-001',
-            'unit' => 'botol',
-            'category' => 'Minuman',
-            'description' => 'Air mineral premium dengan kualitas terbaik, dikemas dalam botol 600ml yang praktis untuk konsumsi sehari-hari.',
-            'product_type' => 'Single',
-            'purchase_price' => 'Rp 2,500',
-            'purchase_account' => '[5001] - Pembelian Barang Dagang',
-            'purchase_tax' => '[PPN11] - PPN 11%',
-            'selling_price' => 'Rp 4,000',
-            'sales_account' => '[4001] - Penjualan Barang Dagang',
-            'sales_tax' => '[PPN11] - PPN 11%',
-            'estimated_cogs' => 'Rp 2,750',
-            'profit_margin' => '31.25%',
-            'profit_per_unit' => 'Rp 1,250',
-            'minimum_stock' => '100',
-            'inventory_account' => '[1301] - Persediaan Barang Dagang',
-            'track_quantity' => true,
-            'track_batch' => false,
-            'image' => null,
-            'tags' => [
-                ['name' => 'FINISHED_GOODS', 'color' => 'success'],
-                ['name' => 'POPULAR', 'color' => 'primary']
-            ],
-            'memo' => 'Produk utama RIYO Water dengan tingkat penjualan tertinggi. Diproduksi dengan teknologi RO dan UV sterilization.',
-            'last_updated' => '2025-01-21 14:30:25'
-        ];
+        $product = app(ProductService::class)->findOne($id);
+
+        if ($product == null) {
+            abort(404);
+        }
+        
+        $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
 
         // Inventory data per warehouse from controller
         $inventoryData = [
@@ -545,32 +524,13 @@ class ProductController extends Controller
             ]
         ];
 
-        // Audit log data with standard 4-column structure
-        $auditLogs = [
-            [
-                'created_at' => '2025-01-20 14:30:25',
-                'user_id' => 'USR-001',
-                'user_name' => 'Admin User',
-                'action_type' => 'UPDATE',
-                'description' => 'Memperbarui harga jual dari Rp 3,800 menjadi Rp 4,000'
-            ],
-            [
-                'created_at' => '2025-01-18 09:15:10',
-                'user_id' => 'USR-002',
-                'user_name' => 'Manager Warehouse',
-                'action_type' => 'UPDATE',
-                'description' => 'Mengubah batas stok minimum dari 50 menjadi 100 unit'
-            ],
-            [
-                'created_at' => '2025-01-15 16:45:33',
-                'user_id' => 'USR-001',
-                'user_name' => 'Admin User',
-                'action_type' => 'CREATE',
-                'description' => 'Produk RIYO Water 600ml berhasil dibuat dengan kode PROD-2025-001'
-            ]
-        ];
+        $auditLogs =  app(ProductAuditLogService::class)->findAllBasedOnId($id);
 
-        return view('pages.master_data.product.detail', compact('product', 'inventoryData', 'auditLogs'));
+        return view('pages.master_data.product.detail', [
+            'product' => $product,
+            'inventoryData' => $inventoryData,
+            'auditLogs' => $auditLogs
+        ]);
     }
 
     public function edit($id)

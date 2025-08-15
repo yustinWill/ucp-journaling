@@ -12,6 +12,7 @@ enum AuditLogTypes: string
     case MASTER_DATA_ROLE = 'MASTER_DATA_ROLE';
     case MASTER_DATA_CONTACT = 'MASTER_DATA_CONTACT';
     case MAIN_TRANSACTION_JOURNAL = 'MAIN_TRANSACTION_JOURNAL';
+    case MASTER_DATA_PRODUCT = 'MASTER_DATA_PRODUCT';
 
     public function label(): string
     {
@@ -24,7 +25,7 @@ enum AuditLogTypes: string
             self::MASTER_DATA_ROLE => 'Master Data Role',
             self::MASTER_DATA_CONTACT => 'Master Data Kontak',
             self::MAIN_TRANSACTION_JOURNAL => 'Main Transaction Journal',
-
+            self::MASTER_DATA_PRODUCT => 'Master Data Produk',
         };
     }
 
@@ -39,6 +40,7 @@ enum AuditLogTypes: string
             self::MASTER_DATA_ROLE => 'MASTER_DATA_ROLE',
             self::MASTER_DATA_CONTACT => 'MASTER_DATA_CONTACT',
             self::MAIN_TRANSACTION_JOURNAL => 'MAIN_TRANSACTION_JOURNAL',
+            self::MASTER_DATA_PRODUCT => 'MASTER_DATA_PRODUCT',
         };
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\GeneralStatuses;
 use App\Enums\StockStatuses;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
@@ -22,11 +23,42 @@ class ProductService
 
     public function findOne($id)
     {
-        return DB::table($this->table_name . ' as m_products')
-            ->select('m_products.*', 'm_units.name as unit_name')
-            ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
+        $data = DB::table($this->table_name . ' as m_products')
+            ->select([
+                'm_products.*',
+                'mu.name as unit_name',
+                'mc.name as category_name',
+                'coa_purchase.name as purchase_coa_name',
+                'tax_purchase.name as purchase_tax_name',
+                'coa_sell.name as sell_coa_name',
+                'tax_sell.name as sell_tax_name',
+                'coa_inventory.name as inventory_coa_name',
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+            ])
+            ->join('m_categories as mc', 'm_products.f_category_id', '=', 'mc.id')
+            ->join('m_units as mu', 'm_products.f_unit_id', '=', 'mu.id')
+
+            ->leftJoin('m_coas as coa_purchase', 'm_products.f_purchase_coa_code', '=', 'coa_purchase.id')
+            ->leftJoin('m_taxes as tax_purchase', 'm_products.f_purchase_tax_id', '=', 'tax_purchase.id')
+            ->leftJoin('m_coas as coa_sell', 'm_products.f_sell_coa_code', '=', 'coa_sell.id')
+            ->leftJoin('m_taxes as tax_sell', 'm_products.f_sell_tax_id', '=', 'tax_sell.id')
+            ->leftJoin('m_coas as coa_inventory', 'm_products.f_inventory_coa_code', '=', 'coa_inventory.id')
+            ->leftJoin(DB::raw("JSON_TABLE(m_products.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
             ->where('m_products.id', $id)
+            ->groupBy('m_products.id')
             ->first();
+
+        if ($data->tags) {
+            $data->tags = json_decode($data->tags);
+        }
+        if ($data->main_image) {
+            $data->main_image = Storage::disk('public')->url($data->main_image);
+        }
+        return $data;
     }
 
     function getValueWithBundlePrefix($data, $key)
