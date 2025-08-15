@@ -5,6 +5,11 @@ namespace App\Http\Controllers\MasterData;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
 use App\Domains\Product\Actions\CreateProductAction;
 use App\Domains\StockStatus\Services\StockStatusService;
 use App\Domains\Category\Services\CategoryService;
@@ -12,11 +17,7 @@ use App\Domains\Unit\Services\UnitService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Coa\Services\CoaService;
 use App\Domains\Tax\Services\TaxService;
-
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
+use App\Domains\Product\Services\ProductService;
 
 
 //Enums
@@ -220,13 +221,7 @@ class ProductController extends Controller
         $units = app(UnitService::class)->findAll();
         $accounts = app(CoaService::class)->findAll();
         $taxes = app(TaxService::class)->findAll();
-
-        $products = [
-            ['value' => '1', 'label' => 'Pulpen Pilot G2', 'unit' => 'pcs', 'price' => 12000],
-            ['value' => '2', 'label' => 'Kertas A4 80gsm', 'unit' => 'rim', 'price' => 50000],
-            ['value' => '3', 'label' => 'Spidol Whiteboard', 'unit' => 'pcs', 'price' => 18000],
-            ['value' => '4', 'label' => 'Buku Tulis 38 Lembar', 'unit' => 'pcs', 'price' => 6000]
-        ];
+        $products = app(ProductService::class)->findAll();
 
         // Permission checks for adding new options
         $canAddTags = true; // Mock permission check
@@ -315,7 +310,6 @@ class ProductController extends Controller
                         }
                     }
                 ],
-
                 'sales_account' => [
                     'string',
                     function ($attribute, $value, $fail) use ($req) {
@@ -389,7 +383,6 @@ class ProductController extends Controller
                         }
                     }
                 ],
-
                 'bundle_purchase_enabled' => 'required_if:type,"bundle"|in:true,false',
                 'bundle_sales_enabled' => 'required_if:type,"bundle"|in:true,false',
                 'bundle_inventory_enabled' => 'required_if:type,"bundle"|in:true,false',
@@ -441,7 +434,6 @@ class ProductController extends Controller
                         }
                     }
                 ],
-
                 'bundle_sales_account' => [
                     'string',
                     function ($attribute, $value, $fail) use ($req) {
@@ -502,7 +494,6 @@ class ProductController extends Controller
                         }
                     }
                 ],
-
                 'bundle_track_batch' => [
                     'string',
                     function ($attribute, $value, $fail) use ($req) {
@@ -515,17 +506,43 @@ class ProductController extends Controller
                         }
                     }
                 ],
-
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|integer|min:1',
-                'bundle_components.*.unit' => 'required_if:type,"bundle"|required_with:bundle_components|string|max:255',
-                'bundle_components.*.price' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
-
                 // Bundle accounts
-                'bundle_accounts' => 'required_if:bundle_inventory_enabled,"true"|array',
-                'bundle_accounts.*.account' => 'required_with:bundle_accounts|string|max:255',
-                'bundle_accounts.*.cost' => 'required_with:bundle_accounts|integer|min:0',
+                'bundle_accounts' => [
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_accounts.*.account' => [
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_accounts.*.cost' => [
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
             ]);
 
             app(CreateProductAction::class)->execute($validated);

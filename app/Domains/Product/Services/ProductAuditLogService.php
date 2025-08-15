@@ -9,10 +9,10 @@ class ProductAuditLogService
 {
     private $table_name = 'm_product_audit_logs';
 
-    public function create(array $data, $tag_id)
+    public function create(array $data, $id)
     {
         return DB::table($this->table_name)->insertGetId([
-            'f_product_id' => $tag_id,
+            'f_product_id' => $id,
             'company_code' => session('user_company_code'),
             'action_type' => $data['action_type'],
             'description' => $data['description'],

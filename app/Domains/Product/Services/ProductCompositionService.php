@@ -2,7 +2,6 @@
 
 namespace App\Domains\Product\Services;
 
-use App\Enums\StockStatuses;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -12,13 +11,17 @@ class ProductCompositionService
 
     public function create(array $data)
     {
-        return DB::table($this->table_name)->insertGetId([
-            "f_product_id" => $data['product_id'],
-            "f_product_composition_product_id" => $data['composition_product_id'],
-            "qty" => $data['qty'],
-            "price" => $data['price'],
-            "created_by" => Auth::id(),
-            "created_at" => now()
-        ]);
+        $insert_data = [];
+        foreach ($data as $row) {
+            $insert_data[] = [
+                'f_product_id' => $row['f_product_id'],
+                'f_product_composition_product_id' => $row['f_product_composition_product_id'],
+                'qty' => $row['qty'],
+                'f_unit_id' => $row['f_unit_id'],
+                'created_by' => Auth::id(),
+                'created_at' => now()
+            ];
+        }
+        return DB::table($this->table_name)->insert($insert_data);
     }
 }

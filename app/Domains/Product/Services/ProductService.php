@@ -13,11 +13,20 @@ class ProductService
 
     public function findAll()
     {
-        return DB::table($this->table_name)
-            ->select('id', 'name', 'code')
-            ->where('status', GeneralStatuses::ACTIVE)
-            ->orderBy('name', 'asc')
+        return DB::table($this->table_name . ' as m_products')
+            ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name')
+            ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
+            ->orderBy('m_products.name', 'asc')
             ->get();
+    }
+
+     public function findOne($id)
+    {
+        return DB::table($this->table_name . ' as m_products')
+            ->select('m_products.*', 'm_units.name as unit_name')
+            ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
+            ->where('m_products.id', $id)
+            ->first();
     }
 
     function getValueWithBundlePrefix($data, $key)

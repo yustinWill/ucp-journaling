@@ -506,7 +506,6 @@
                                             <th>Nama Produk</th>
                                             <th>Qty</th>
                                             <th>Unit</th>
-                                            <th>Harga</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -517,10 +516,9 @@
                                                     <select class="select2Product form-select component-product">
                                                         <option value="">Pilih Produk</option>
                                                         @foreach ($products as $product)
-                                                            <option value="{{ $product['value'] }}"
-                                                                data-unit="{{ $product['unit'] ?? 'pcs' }}"
-                                                                data-price="{{ $product['price'] ?? 0 }}">
-                                                                {{ $product['label'] }}</option>
+                                                            <option value="{{ $product->id }}"
+                                                                data-unit="{{ $product->unit_name ?? 'pcs' }}">
+                                                                {{ $product->name }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
@@ -531,9 +529,6 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control component-unit" readonly>
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control component-price" readonly>
                                             </td>
                                             <td>
                                                 <button class="btn btn-label-danger" data-repeater-delete type="button">
@@ -549,19 +544,6 @@
                                         <i class="icon-base ti tabler-plus me-1"></i>
                                         <span class="align-middle">Tambah Komponen</span>
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 ms-auto">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between">
-                                            <strong>Total Harga:</strong>
-                                            <strong id="bundle-total-price">Rp 0</strong>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -812,13 +794,10 @@
                 $('#bundle-purchase-fields, #bundle-sales-fields, #bundle-inventory-fields').hide();
 
                 // Reset form values
-                $('#productForm input[type="text"], #productForm input[type="number"]').not('#product-code').val(
+                $('#productForm input[type="text"], #productForm input[type="number"]').not(
+                    '#product-code, #product-name').val(
                     '');
-                $('#productForm select').val('').trigger('change');
-
-                // Reset bundle tables
-                // $('#bundle-components-tbody, #bundle-accounts-tbody').empty();
-                updateBundleTotal();
+                $('#productForm select').not('#unit-select,#category-select').val('').trigger('change');
             }
 
             // Conditional field toggles - Single Product
@@ -901,7 +880,6 @@
                 // Find the closest row and update fields in that row
                 const $row = $(this).closest('tr');
                 $row.find('.component-unit').val(unit);
-                $row.find('.component-price').val(price);
                 updateComponentPriceRow($row);
             });
 
@@ -910,24 +888,11 @@
                 const selectedOption = $row.find('.component-product option:selected');
                 const unitPrice = parseFloat(selectedOption.data('price') || 0);
                 const totalPrice = unitPrice * qty;
-                $row.find('.component-price').val('Rp ' + totalPrice.toLocaleString('id-ID'));
-                updateBundleTotal();
             }
             $(document).on('input', '.component-qty', function() {
                 const $row = $(this).closest('tr');
                 updateComponentPriceRow($row);
             });
-
-            function updateBundleTotal() {
-                let total = 0;
-                $('.component-price').each(function() {
-                    const priceText = $(this).val().replace(/[^\d]/g, '');
-                    const price = parseFloat(priceText || 0);
-                    total += price;
-                });
-
-                $('#bundle-total-price').text('Rp ' + total.toLocaleString('id-ID'));
-            }
 
             $(document).on('click', '.remove-account', function() {
                 const id = $(this).data('id');
@@ -1070,28 +1035,68 @@
                             data.bundle_sales_tax = $('#bundle-sales-tax').val();
                         }
                         if (data.bundle_inventory_enabled) {
-                            data.bundle_minimum_stock = $('#bundle-minimum-stock').val().replace(/[^0-9]/g, '');
+                            data.bundle_minimum_stock = $('#bundle-minimum-stock').val().replace(/[^0-9]/g,
+                                '');
                             data.bundle_inventory_account = $('#bundle-inventory-account').val();
                             data.bundle_track_quantity = $('#bundle-track-quantity').is(':checked');
                             data.bundle_track_batch = $('#bundle-track-batch').is(':checked');
                         }
 
                         data.bundle_components = [];
+                        // $('#bundle-components-tbody tr.bundle-component-row').each(function() {
+                        //     data.bundle_components.push({
+                        //         product_id: $(this).find('.component-product').val(),
+                        //         qty: $(this).find('.component-qty').val().replace(/[^0-9]/g,
+                        //             '')
+                        //     });
+                        // });
+
                         $('#bundle-components-tbody tr.bundle-component-row').each(function() {
-                            data.bundle_components.push({
-                                product_id: $(this).find('.component-product').val(),
-                                qty: $(this).find('.component-qty').val().replace(/[^0-9]/g, ''),
-                                unit: $(this).find('.component-unit').val(),
-                                price: $(this).find('.component-price').val().replace(/[^0-9]/g, '')
-                            });
+                            const productId = $(this).find('.component-product').val();
+                            const qtyRaw = $(this).find('.component-qty').val();
+                            const qty = qtyRaw ? qtyRaw.replace(/[^0-9]/g, '') : null;
+
+                            if (productId && productId !== "null" && qty && qty !== "null") {
+                                data.bundle_components.push({
+                                    product_id: productId,
+                                    qty: qty
+                                });
+                            }
                         });
 
                         data.bundle_accounts = [];
+                        // $('#bundle-accounts-tbody tr.bundle-account-row').each(function() {
+                        //     if ($(this).find('.account-select').val() != null && $(this).find(
+                        //             '.account-select').val() != "null" && $(this).find(
+                        //             '.account-select').val() != "" && $(this).find('.account-cost')
+                        //         .val() != null && $(this).find('.account-cost').val() != "null" &&
+                        //         $(this).find('.account-cost').val() != "") {
+                        //         data.bundle_accounts.push({
+                        //             account: $(this).find('.account-select').val() == "" ||
+                        //                 $(this).find('.account-select').val() == "null" ?
+                        //                 null : $(this).find('.account-select').val(),
+                        //             cost: $(this).find('.account-cost').val().replace(
+                        //                     /[^0-9]/g,
+                        //                     '') == "" || $(this).find('.account-cost')
+                        //                 .val() == "null" ? null : $(this).find(
+                        //                     '.account-cost')
+                        //                 .val().replace(/[^0-9]/g, ''),
+                        //         });
+                        //     }
+
+                        // });
+
                         $('#bundle-accounts-tbody tr.bundle-account-row').each(function() {
-                            data.bundle_accounts.push({
-                                account: $(this).find('.account-select').val(),
-                                cost: $(this).find('.account-cost').val().replace(/[^0-9]/g, '')
-                            });
+                            const account = $(this).find('.account-select').val();
+                            const costRaw = $(this).find('.account-cost').val();
+                            const cost = costRaw ? costRaw.replace(/[^0-9]/g, '') : null;
+
+                            if (account && account !== "null" && cost && cost !== "null") {
+                                data.bundle_accounts.push({
+                                    account: account,
+                                    cost: cost
+                                });
+                            }
                         });
                         console.log(data.bundle_accounts)
                     }
