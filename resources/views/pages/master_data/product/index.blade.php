@@ -76,17 +76,17 @@
                                 <div class="col-12 col-sm-6 col-lg-4">
                                     <label class="form-label">Kategori:</label>
                                     <select class="global-select2 form-select" id="products-category-filter"
-                                        data-allow-clear="false">
+                                        data-allow-clear="true">
                                         <option value="">Semua Kategori</option>
                                         @foreach ($productCategories as $category)
-                                            <option value="{{ $category->code }}">{{ $category->name }}</option>
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-4">
                                     <label class="form-label">Status Stok:</label>
                                     <select class="global-select2 form-select" id="products-stock-filter"
-                                        data-allow-clear="false">
+                                        data-allow-clear="true">
                                         <option value="">Semua Status</option>
                                         @foreach ($stockStatuses as $status)
                                             <option value="{{ $status->code }}">{{ $status->name }}</option>
@@ -183,149 +183,147 @@
         $(function() {
             let productsTable;
 
-            // Initialize Products Table
-            function initProductsTable() {
-                if (productsTable) {
-                    productsTable.destroy();
-                }
-
-                productsTable = new DataTable('#products-table', {
-                    ajax: {
-                        url: `{{ route('master_data.product.index_data_table') }}`,
-                        data: function(d) {
-                            d.tab = 'products';
-                            d.category_filter = $('#category-filter').val();
-                            d.stock_status_filter = $('#stock-status-filter').val();
-                            d.warehouse_filter = $('#warehouse-filter').val();
-                            return d;
+            productsTable = new DataTable('#products-table', {
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: `{{ route('master_data.product.index_data_table') }}`,
+                    data: function(d) {
+                        d.category_filter = $('#products-category-filter').val();
+                        d.stock_status_filter = $('#products-stock-filter').val();
+                        d.search = $('#products-search').val();
+                        return d;
+                    }
+                },
+                columns: [{
+                        data: 'name',
+                        responsivePriority: 3
+                    },
+                    {
+                        data: 'code',
+                        responsivePriority: 4
+                    },
+                    {
+                        data: 'category_name',
+                        responsivePriority: 5
+                    },
+                    {
+                        data: 'tags',
+                        responsivePriority: 6,
+                        render: function(data, type, row) {
+                            let tags = JSON.parse(data);
+                            return tags.map(tag => {
+                                if (tag.code == null) {
+                                    return ``;
+                                }
+                                return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
+                            }).join('');
                         }
                     },
-                    columns: [{
-                            data: 'product_name',
-                            responsivePriority: 3
-                        },
-                        {
-                            data: 'product_code',
-                            responsivePriority: 4
-                        },
-                        {
-                            data: 'category',
-                            responsivePriority: 5
-                        },
-                        {
-                            data: 'tags',
-                            responsivePriority: 6,
-                            render: function(data, type, row) {
-                                if (!data || data.length === 0) return '-';
-                                return data.map(tag => {
-                                    const colorClass = `bg-label-${tag.color}`;
-                                    return `<span class="badge ${colorClass} me-1">${tag.name}</span>`;
-                                }).join('');
+                    {
+                        data: 'total_stock',
+                        className: 'text-end',
+                        responsivePriority: 7,
+                        render: function(data, type, row) {
+                            if (type === 'display' && data != null && !isNaN(data)) {
+                                return parseFloat(data).toLocaleString('id-ID');
                             }
-                        },
-                        {
-                            data: 'total_stock',
-                            className: 'text-end',
-                            responsivePriority: 7,
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? '0';
+                            return data ?? '0';
+                        }
+                    },
+                    {
+                        data: 'qty_available',
+                        className: 'text-end',
+                        responsivePriority: 8,
+                        render: function(data, type, row) {
+                            if (type === 'display' && data != null && !isNaN(data)) {
+                                return parseFloat(data).toLocaleString('id-ID');
                             }
-                        },
-                        {
-                            data: 'available_qty',
-                            className: 'text-end',
-                            responsivePriority: 8,
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? '0';
+                            return data ?? '0';
+                        }
+                    },
+                    {
+                        data: 'minimum_stock',
+                        className: 'text-end',
+                        responsivePriority: 9,
+                        render: function(data, type, row) {
+                            if (type === 'display' && data != null && !isNaN(data)) {
+                                return parseFloat(data).toLocaleString('id-ID');
                             }
-                        },
-                        {
-                            data: 'minimum',
-                            className: 'text-end',
-                            responsivePriority: 9,
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? '0';
+                            return data ?? '0';
+                        }
+                    },
+                    {
+                        data: 'unit_name',
+                        responsivePriority: 10
+                    },
+                    {
+                        data: 'average_price',
+                        className: 'text-end',
+                        responsivePriority: 11,
+                        render: function(data, type, row) {
+                            if (type === 'display' && data != null && !isNaN(data)) {
+                                return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
                             }
-                        },
-                        {
-                            data: 'unit',
-                            responsivePriority: 10
-                        },
-                        {
-                            data: 'average_price',
-                            className: 'text-end',
-                            responsivePriority: 11,
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? 'Rp 0';
+                            return data ?? 'Rp 0';
+                        }
+                    },
+                    {
+                        //TO DO
+                        data: 'unit_purchase_price',
+                        className: 'text-end',
+                        responsivePriority: 12,
+                        render: function(data, type, row) {
+                            if (type === 'display' && data != null && !isNaN(data)) {
+                                return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
                             }
-                        },
-                        {
-                            data: 'last_purchase_price',
-                            className: 'text-end',
-                            responsivePriority: 12,
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? 'Rp 0';
+                            return data ?? 'Rp 0';
+                        }
+                    },
+                    {
+                        data: 'unit_purchase_price',
+                        className: 'text-end',
+                        responsivePriority: 13,
+                        render: function(data, type, row) {
+                            if (type === 'display' && data != null && !isNaN(data)) {
+                                return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
                             }
-                        },
-                        {
-                            data: 'purchase_price',
-                            className: 'text-end',
-                            responsivePriority: 13,
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? 'Rp 0';
+                            return data ?? 'Rp 0';
+                        }
+                    },
+                    {
+                        data: 'unit_sell_price',
+                        className: 'text-end',
+                        responsivePriority: 14,
+                        render: function(data, type, row) {
+                            if (type === 'display' && data != null && !isNaN(data)) {
+                                return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
                             }
-                        },
-                        {
-                            data: 'selling_price',
-                            className: 'text-end',
-                            responsivePriority: 14,
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? 'Rp 0';
-                            }
-                        },
-                        {
-                            data: 'status',
-                            responsivePriority: 5,
-                            render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
-                                    'bg-label-secondary';
-                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
-                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
-                            }
-                        },
-                        {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            responsivePriority: 1,
-                            width: '120px',
-                            render: function(data, type, row, meta) {
-                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`
-                                    .replace(':id', row.id);
-                                const editUrl = `{{ route('master_data.product.edit', ':id') }}`
-                                    .replace(':id', row.id);
-                                return `
+                            return data ?? 'Rp 0';
+                        }
+                    },
+                    {
+                        data: 'status',
+                        responsivePriority: 5,
+                        render: function(data, type, row) {
+                            const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
+                                'bg-label-secondary';
+                            const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
+                            return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        responsivePriority: 1,
+                        width: '120px',
+                        render: function(data, type, row, meta) {
+                            const detailUrl = `{{ route('master_data.product.detail', ':id') }}`
+                                .replace(':id', row.id);
+                            const editUrl = `{{ route('master_data.product.edit', ':id') }}`
+                                .replace(':id', row.id);
+                            return `
                                 <div class="d-flex gap-2">
                                     <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
@@ -335,36 +333,32 @@
                                     </a>
                                 </div>
                                 `;
-                            }
                         }
-                    ],
-                    layout: {
-                        topStart: {
-                            rowClass: 'm-0',
-                            features: []
-                        },
-                        topEnd: {},
-                        bottomStart: {
-                            rowClass: 'row mx-3 justify-content-between',
-                            features: ['info']
-                        },
-                        bottomEnd: 'paging'
+                    }
+                ],
+                layout: {
+                    topStart: {
+                        rowClass: 'm-0',
+                        features: []
                     },
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                        }
+                    topEnd: {},
+                    bottomStart: {
+                        rowClass: 'row mx-3 justify-content-between',
+                        features: ['info']
                     },
-                    scrollX: true,
-                    responsive: true
-                });
-            }
-
-            // Initialize table
-            initProductsTable();
+                    bottomEnd: 'paging'
+                },
+                language: {
+                    paginate: {
+                        next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                        previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                        first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                        last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                    }
+                },
+                scrollX: true,
+                responsive: true
+            });
 
             // Button click events - Products Tab
             $('#btn-add-products').on('click', function() {
@@ -384,19 +378,19 @@
                 window.location.href = "{{ route('master_data.product.import') }}";
             });
 
-            // Search functionality
-            $('#products-search').on('keyup', function() {
-                if (productsTable) {
-                    productsTable.search(this.value).draw();
-                }
-            });
+            // // Search functionality
+            // $('#products-search').on('keyup', function() {
+            //     if (productsTable) {
+            //         productsTable.search(this.value).draw();
+            //     }
+            // });
 
-            // Filter functionality
-            $('#products-category-filter, #products-stock-filter').on('change', function() {
-                if (productsTable) {
-                    productsTable.draw();
-                }
-            });
+            // // Filter functionality
+            // $('#products-category-filter, #products-stock-filter').on('change', function() {
+            //     if (productsTable) {
+            //         productsTable.draw();
+            //     }
+            // });
 
             // Tag Column Toggle Functionality (Products Table Only)
             $('#toggleTagColumn').on('change', function() {
@@ -411,6 +405,18 @@
             if (productsTable) {
                 productsTable.column(3).visible(initialTagVisibility);
             }
+
+            let searchTimeout;
+            $('#products-stock-filter, #products-category-filter, #products-search').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (productsTable) {
+                            productsTable.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
         });
     </script>
 @endsection
