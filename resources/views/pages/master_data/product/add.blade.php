@@ -72,6 +72,16 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
+                    <label class="form-label">Status <span style="color: red;">*</span></label>
+                    <select class="global-select2 form-select" id="product-status" name="status" data-allow-clear="false"
+                        required>
+                        <option value="">Pilih Status</option>
+                        @foreach ($statuses as $status)
+                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6">
                     <label class="form-label">Deskripsi</label>
                     <textarea class="form-control" id="product-description" rows="3" placeholder="Deskripsi detail produk..."
                         maxlength="1000"></textarea>
@@ -107,7 +117,8 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-12">
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="product-type" id="type-single" value="single">
+                        <input class="form-check-input" type="radio" name="product-type" id="type-single"
+                            value="single">
                         <label class="form-check-label" for="type-single">
                             Single
                         </label>
@@ -977,6 +988,7 @@
                     data.category_id = $('#category-select').val();
                     data.description = $('#product-description').val();
                     data.memo = $('#product-memo').val();
+                    data.status = $('#product-status').val();
                     data.tags = $('#product-tags').val() || [];
 
                     // Product type

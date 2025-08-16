@@ -26,6 +26,7 @@ use App\Domains\Contact\Services\ContactService;
 use App\Domains\Contact\Services\ContactTypeService;
 use App\Domains\Contact\Services\ContactAuditLogService;
 use App\Domains\SalesPerson\Services\SalesPersonService;
+use App\Domains\Product\Services\ProductService;
 
 //Enums
 use App\Enums\ErrorCodes;
@@ -58,6 +59,7 @@ class ContactController extends Controller
         $payment_terms = app(PaymentTermService::class)->findAll();
         $tags = app(TagService::class)->findAll();
         $sales_users = app(SalesPersonService::class)->findAll();
+        $products = app(ProductService::class)->findAll();
 
         $selectData = [
             'identity_types' => $identity_types,
@@ -67,13 +69,7 @@ class ContactController extends Controller
             'payment_terms' => $payment_terms,
             'banks' => $banks,
             'contact_types' => $contact_types,
-            'products' => [
-                ['value' => 'prod_a', 'label' => 'Produk A'],
-                ['value' => 'prod_b', 'label' => 'Produk B'],
-                ['value' => 'prod_c', 'label' => 'Produk C'],
-                ['value' => 'prod_d', 'label' => 'Produk D'],
-                ['value' => 'prod_e', 'label' => 'Produk E']
-            ],
+            'products' => $products,
             'tags' => $tags,
             'canAddTags' => true // Mock permission check
         ];

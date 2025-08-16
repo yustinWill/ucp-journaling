@@ -99,7 +99,7 @@ class ProductService
             "qty_available" => 0,
             "average_price" => 0,
             "f_stock_status_code" => StockStatuses::OUT_OF_STOCK,
-            "status" => GeneralStatuses::ACTIVE,
+            "status" => $data['status'],
             "created_by" => Auth::id(),
             "created_at" => now()
         ]);
@@ -135,7 +135,6 @@ class ProductService
 
         // Filter by status
         $query->where('mc.company_code', session('user_company_code'));
-        $query->where('mc.status', GeneralStatuses::ACTIVE);
 
         if ($category_filter = request()->input('category_filter')) {
             $query->where('t.f_category_id', $category_filter);

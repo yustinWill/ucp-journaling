@@ -117,6 +117,11 @@ class ProductController extends Controller
         $canAddAccounts = true; // Mock permission check
         $canAddTaxes = true; // Mock permission check
 
+        $statuses = [
+            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
+        ];
+
         return view('pages.master_data.product.add', [
             'units' => $units,
             'categories' => $categories,
@@ -124,6 +129,7 @@ class ProductController extends Controller
             'taxes' => $taxes,
             'products' => $products,
             'tags' => $tags,
+            'statuses' => $statuses,
             'canAddTags' => $canAddTags,
             'canAddUnits' => $canAddUnits,
             'canAddCategories' => $canAddCategories,
@@ -142,6 +148,7 @@ class ProductController extends Controller
                 'category_id' => 'nullable|integer|exists:m_categories,id',
                 'description' => 'nullable|string|max:1000',
                 'memo' => 'nullable|string|max:1000',
+                'status' => 'required|in:ACTIVE,INACTIVE',
                 'tags' => 'nullable|array',
                 'tags.*' => 'integer|exists:m_tags,id',
                 'type' => 'required|in:single,bundle',
@@ -487,7 +494,7 @@ class ProductController extends Controller
         if ($product == null) {
             abort(404);
         }
-        
+
         $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
 
         // Inventory data per warehouse from controller
