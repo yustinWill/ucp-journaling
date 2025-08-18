@@ -542,78 +542,76 @@ class ProductController extends Controller
 
     public function edit($id)
     {
-        $units = [
-            ['value' => 'btl', 'label' => 'BTL - Botol'],
-            ['value' => 'dus', 'label' => 'DUS - Dus'],
-            ['value' => 'kg', 'label' => 'KG - Kilogram'],
-            ['value' => 'ltr', 'label' => 'LTR - Liter'],
-            ['value' => 'pcs', 'label' => 'PCS - Pieces']
+        $product = app(ProductService::class)->findOne($id);
+
+        if ($product == null) {
+            abort(404);
+        }
+
+        $categories = app(CategoryService::class)->findAll();
+        $tags = app(TagService::class)->findAll();
+        $units = app(UnitService::class)->findAll();
+        $accounts = app(CoaService::class)->findAll();
+        $taxes = app(TaxService::class)->findAll();
+        $products = app(ProductService::class)->findAll();
+
+        $statuses = [
+            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
         ];
 
-        $categories = [
-            ['value' => 'finished_goods', 'label' => 'FINISHED_GOODS - Produk Jadi'],
-            ['value' => 'raw_materials', 'label' => 'RAW_MATERIALS - Bahan Baku'],
-            ['value' => 'packaging', 'label' => 'PACKAGING - Kemasan'],
-            ['value' => 'chemicals', 'label' => 'CHEMICALS - Bahan Kimia']
-        ];
 
-        $accounts = [
-            ['value' => '5001', 'label' => '[5001] - Pembelian Barang Dagang'],
-            ['value' => '4001', 'label' => '[4001] - Penjualan Barang Dagang'],
-            ['value' => '1003', 'label' => '[1003] - Persediaan Barang Dagang'],
-            ['value' => '5002', 'label' => '[5002] - Biaya Pembelian']
-        ];
+         // Permission checks for adding new options
+        $canAddTags = true; // Mock permission check
+        $canAddUnits = true; // Mock permission check
+        $canAddCategories = true; // Mock permission check
+        $canAddAccounts = true; // Mock permission check
+        $canAddTaxes = true; // Mock permission check
 
-        $taxes = [
-            ['value' => 'ppn_11', 'label' => '[PPN11] - PPN 11%'],
-            ['value' => 'ppn_0', 'label' => '[PPN0] - PPN 0%'],
-            ['value' => 'no_tax', 'label' => '[NOTAX] - Tanpa Pajak']
-        ];
-
-        $tags = [
-            ['value' => 'finished_goods', 'label' => 'FINISHED_GOODS - Produk Jadi', 'color' => 'success'],
-            ['value' => 'retail', 'label' => 'RETAIL - Produk Retail', 'color' => 'info'],
-            ['value' => 'premium', 'label' => 'PREMIUM - Produk Premium', 'color' => 'warning'],
-            ['value' => 'popular', 'label' => 'POPULAR - Produk Populer', 'color' => 'primary']
-        ];
 
         // Sample product data for editing
-        $product = [
-            'id' => $id,
-            'name' => 'RIYO Water 600ml',
-            'unit' => 'btl',
-            'code' => 'PROD-2025-001',
-            'category' => 'finished_goods',
-            'description' => 'Air minum dalam kemasan botol 600ml berkualitas tinggi dengan proses filtrasi canggih',
-            'image' => '/custom_assets/images/riyo-water-600ml.jpg',
-            'type' => 'single',
-            'enable_purchase' => true,
-            'purchase_price' => 'Rp 1,200',
-            'purchase_account' => '5001',
-            'purchase_tax' => 'ppn_11',
-            'enable_sales' => true,
-            'sales_price' => 'Rp 2,500',
-            'sales_account' => '4001',
-            'sales_tax' => 'ppn_11',
-            'enable_inventory' => true,
-            'minimum_stock' => '1000',
-            'inventory_account' => '1003',
-            'track_quantity' => true,
-            'track_batch' => false,
-            'tags' => ['finished_goods', 'retail'],
-            'memo' => 'Produk utama RIYO Water dengan margin keuntungan terbaik'
-        ];
+        // $product = [
+        //     'id' => $id,
+        //     'name' => 'RIYO Water 600ml',
+        //     'unit' => 'btl',
+        //     'code' => 'PROD-2025-001',
+        //     'category' => 'finished_goods',
+        //     'description' => 'Air minum dalam kemasan botol 600ml berkualitas tinggi dengan proses filtrasi canggih',
+        //     'image' => '/custom_assets/images/riyo-water-600ml.jpg',
+        //     'type' => 'single',
+        //     'enable_purchase' => true,
+        //     'purchase_price' => 'Rp 1,200',
+        //     'purchase_account' => '5001',
+        //     'purchase_tax' => 'ppn_11',
+        //     'enable_sales' => true,
+        //     'sales_price' => 'Rp 2,500',
+        //     'sales_account' => '4001',
+        //     'sales_tax' => 'ppn_11',
+        //     'enable_inventory' => true,
+        //     'minimum_stock' => '1000',
+        //     'inventory_account' => '1003',
+        //     'track_quantity' => true,
+        //     'track_batch' => false,
+        //     'tags' => ['finished_goods', 'retail'],
+        //     'memo' => 'Produk utama RIYO Water dengan margin keuntungan terbaik'
+        // ];
 
-        $canAddTags = true; // Permission-based flag
+        // $canAddTags = true; // Permission-based flag
 
         return view('pages.master_data.product.edit', [
             'units' => $units,
             'categories' => $categories,
             'accounts' => $accounts,
             'taxes' => $taxes,
+            'products' => $products,
             'tags' => $tags,
-            'product' => $product,
-            'canAddTags' => $canAddTags
+            'statuses' => $statuses,
+            'canAddTags' => $canAddTags,
+            'canAddUnits' => $canAddUnits,
+            'canAddCategories' => $canAddCategories,
+            'canAddAccounts' => $canAddAccounts,
+            'canAddTaxes' => $canAddTaxes,
+            'product' => $product
         ]);
     }
 }
