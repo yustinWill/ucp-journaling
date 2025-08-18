@@ -6,7 +6,7 @@
     <div class="card mb-6">
         <h4 class="card-header">Edit Produk</h4>
         <form class="card-body" id="productForm" autocomplete="off">
-            <input type="hidden" name="product-id" value="{{ $product->id ?? '' }}">
+            <input type="hidden" id="product-id" value="{{ $product->id }}">
             <!-- Info Produk Section -->
             <div class="section-header mt-12">
                 <h6>Info Produk</h6>
@@ -51,7 +51,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Kode Produk <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" id="product-code" name="product-code"
-                        value="{{ old('product-code', $product->code ?? '') }}" />
+                        value="{{ old('product-code', $product->code ?? '') }}"  disabled/>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kategori Produk</label>
@@ -701,8 +701,6 @@
         $(function() {
             initCleaveCurrency(document);
 
-
-
             let currentProductType = null;
             let bundleComponentCounter = 0;
             let bundleAccountCounter = 0;
@@ -1229,7 +1227,7 @@
 
 
                         $.ajax({
-                            url: "{{ route('master_data.product.save') }}",
+                            url: "{{ route('master_data.product.update') }}",
                             method: 'POST',
                             data: formData,
                             processData: false,
@@ -1238,7 +1236,7 @@
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Berhasil!',
-                                    text: 'Produk berhasil ditambahkan.',
+                                    text: 'Produk berhasil diubah.',
                                     customClass: {
                                         confirmButton: 'btn btn-success'
                                     },

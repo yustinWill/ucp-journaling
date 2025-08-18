@@ -94,7 +94,7 @@ class ProductService
             "track_qty_only" => isset($data['track_quantity']) && $data['track_quantity'] === "true" ? true : false,
             "track_batch" => isset($data['track_batch']) && $data['track_batch'] === "true" ? true : false,
             "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
-            "internal_memo" => $data['memo'] ?? '',
+            "internal_memo" => $data['memo'] ?? null,
             "total_stock" => 0,
             "qty_available" => 0,
             "average_price" => 0,
@@ -103,6 +103,43 @@ class ProductService
             "created_by" => Auth::id(),
             "created_at" => now()
         ]);
+    }
+
+    public function update(int $id, array $data): int
+    {
+        $update_data = [
+            "name" => $data['name'],
+            "description" => $data['description'] ?? null,
+            "f_unit_id" => $data['unit_id'],
+            "f_category_id" => $data['category_id'],
+            "main_image" => $data['image'] ?? null,
+            "type" => $data['type'],
+            "is_item_purchased" => $this->getValueWithBundlePrefix($data, 'purchase_enabled')  === "true" ? true : false,
+            "unit_purchase_price" => $this->getValueWithBundlePrefix($data, 'purchase_price'),
+            "f_purchase_coa_code" => $this->getValueWithBundlePrefix($data, 'purchase_account'),
+            "f_purchase_tax_id" => $this->getValueWithBundlePrefix($data, 'purchase_tax'),
+
+            "is_item_sold" => $this->getValueWithBundlePrefix($data, 'sales_enabled')  === "true" ? true : false,
+            "unit_sell_price" => $this->getValueWithBundlePrefix($data, 'sales_price'),
+            "f_sell_coa_code" => $this->getValueWithBundlePrefix($data, 'sales_account'),
+            "f_sell_tax_id" => $this->getValueWithBundlePrefix($data, 'sales_tax'),
+
+            "monitor_stock" => $this->getValueWithBundlePrefix($data, 'inventory_enabled') === "true" ? true : false,
+            "minimum_stock" => $this->getValueWithBundlePrefix($data, 'minimum_stock'),
+            "f_inventory_coa_code" => $this->getValueWithBundlePrefix($data, 'inventory_account'),
+
+            "track_qty_only" => isset($data['track_quantity']) && $data['track_quantity'] === "true" ? true : false,
+            "track_batch" => isset($data['track_batch']) && $data['track_batch'] === "true" ? true : false,
+            "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
+            "internal_memo" => $data['memo'] ?? null,
+            "status" => $data['status'],
+            "updated_by" => Auth::id(),
+            "updated_at" => now()
+        ];
+
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->update($update_data);
     }
 
     public function findAllDatatable()

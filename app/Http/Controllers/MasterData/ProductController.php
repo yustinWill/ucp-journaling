@@ -11,6 +11,7 @@ use App\Helpers\ValidationHelper;
 use App\Helpers\DiscordNotifier;
 
 use App\Domains\Product\Actions\CreateProductAction;
+use App\Domains\Product\Actions\UpdateProductAction;
 use App\Domains\StockStatus\Services\StockStatusService;
 use App\Domains\Category\Services\CategoryService;
 use App\Domains\Unit\Services\UnitService;
@@ -561,42 +562,12 @@ class ProductController extends Controller
         ];
 
 
-         // Permission checks for adding new options
+        // Permission checks for adding new options
         $canAddTags = true; // Mock permission check
         $canAddUnits = true; // Mock permission check
         $canAddCategories = true; // Mock permission check
         $canAddAccounts = true; // Mock permission check
         $canAddTaxes = true; // Mock permission check
-
-
-        // Sample product data for editing
-        // $product = [
-        //     'id' => $id,
-        //     'name' => 'RIYO Water 600ml',
-        //     'unit' => 'btl',
-        //     'code' => 'PROD-2025-001',
-        //     'category' => 'finished_goods',
-        //     'description' => 'Air minum dalam kemasan botol 600ml berkualitas tinggi dengan proses filtrasi canggih',
-        //     'image' => '/custom_assets/images/riyo-water-600ml.jpg',
-        //     'type' => 'single',
-        //     'enable_purchase' => true,
-        //     'purchase_price' => 'Rp 1,200',
-        //     'purchase_account' => '5001',
-        //     'purchase_tax' => 'ppn_11',
-        //     'enable_sales' => true,
-        //     'sales_price' => 'Rp 2,500',
-        //     'sales_account' => '4001',
-        //     'sales_tax' => 'ppn_11',
-        //     'enable_inventory' => true,
-        //     'minimum_stock' => '1000',
-        //     'inventory_account' => '1003',
-        //     'track_quantity' => true,
-        //     'track_batch' => false,
-        //     'tags' => ['finished_goods', 'retail'],
-        //     'memo' => 'Produk utama RIYO Water dengan margin keuntungan terbaik'
-        // ];
-
-        // $canAddTags = true; // Permission-based flag
 
         return view('pages.master_data.product.edit', [
             'units' => $units,
@@ -613,5 +584,332 @@ class ProductController extends Controller
             'canAddTaxes' => $canAddTaxes,
             'product' => $product
         ]);
+    }
+
+     public function update(Request $req)
+    {
+        try {
+            $validated = $req->validate([
+                'id' => 'required|exists:m_products,id',
+                'name' => 'required|string|max:255',
+                'unit_id' => 'required|integer|exists:m_units,id',
+                'code' => 'required|string|max:255|exists:m_products,code',
+                'category_id' => 'nullable|integer|exists:m_categories,id',
+                'description' => 'nullable|string|max:1000',
+                'memo' => 'nullable|string|max:1000',
+                'status' => 'required|in:ACTIVE,INACTIVE',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+                'type' => 'required|in:single,bundle',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+                'purchase_enabled' => 'required_if:type,"single"|in:true,false',
+                'sales_enabled' => 'required_if:type,"single"|in:true,false',
+                'inventory_enabled' => 'required_if:type,"single"|in:true,false',
+                'purchase_price' => [
+                    'integer',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('purchase_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The purchase price field is required when type is single and purchase enabled is true.');
+                        }
+                    }
+                ],
+                'purchase_account' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('purchase_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The purchase account field is required when type is single and purchase enabled is true.');
+                        }
+                    }
+                ],
+                'purchase_tax' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('purchase_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The purchase tax field is required when type is single and purchase enabled is true.');
+                        }
+                    }
+                ],
+                'sales_price' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('sales_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The sales price field is required when type is single and sales enabled is true.');
+                        }
+                    }
+                ],
+                'sales_account' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('sales_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The sales price field is required when type is single and sales enabled is true.');
+                        }
+                    }
+                ],
+                'sales_tax' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('sales_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The sales price field is required when type is single and sales enabled is true.');
+                        }
+                    }
+                ],
+                'minimum_stock' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The minimum stock field is required when type is single and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'inventory_account' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The inventory account field is required when type is single and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'track_quantity' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track quantity field is required when type is single and inventory enabled is true.');
+                        }
+                    }
+                ],
+
+                'track_batch' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'single' &&
+                            $req->input('inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track batch field is required when type is single and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_purchase_enabled' => 'required_if:type,"bundle"|in:true,false',
+                'bundle_sales_enabled' => 'required_if:type,"bundle"|in:true,false',
+                'bundle_inventory_enabled' => 'required_if:type,"bundle"|in:true,false',
+                'bundle_purchase_price' => [
+                    'integer',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_purchase_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The purchase price field is required when type is bundle and purchase enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_purchase_account' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_purchase_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The purchase account field is required when type is bundle and purchase enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_purchase_tax' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_purchase_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The purchase tax field is required when type is bundle and purchase enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_sales_price' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_sales_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The sales price field is required when type is bundle and sales enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_sales_account' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_sales_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The sales price field is required when type is bundle and sales enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_sales_tax' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_sales_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The sales price field is required when type is bundle and sales enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_minimum_stock' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The minimum stock field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_inventory_account' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The inventory account field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_track_quantity' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track quantity field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_track_batch' => [
+                    'string',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_components' => 'required_if:type,"bundle"|array',
+                'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
+                'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|integer|min:1',
+                // Bundle accounts
+                'bundle_accounts' => [
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_accounts.*.account' => [
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_accounts.*.cost' => [
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+            ]);
+
+            app(UpdateProductAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::UPDATE_PRODUCT_SUCCESS->message()
+            ], SuccessCodes::UPDATE_PRODUCT_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 }
