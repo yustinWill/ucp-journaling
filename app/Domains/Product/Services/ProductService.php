@@ -112,7 +112,6 @@ class ProductService
             "description" => $data['description'] ?? null,
             "f_unit_id" => $data['unit_id'],
             "f_category_id" => $data['category_id'],
-            "main_image" => $data['image'] ?? null,
             "type" => $data['type'],
             "is_item_purchased" => $this->getValueWithBundlePrefix($data, 'purchase_enabled')  === "true" ? true : false,
             "unit_purchase_price" => $this->getValueWithBundlePrefix($data, 'purchase_price'),
@@ -136,6 +135,10 @@ class ProductService
             "updated_by" => Auth::id(),
             "updated_at" => now()
         ];
+
+        if (isset($data['image'])) {
+            $update_data['main_image'] = $data['image'];
+        }
 
         return DB::table($this->table_name)
             ->where('id', $id)
