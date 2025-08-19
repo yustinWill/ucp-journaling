@@ -51,7 +51,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Kode Produk <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" id="product-code" name="product-code"
-                        value="{{ old('product-code', $product->code ?? '') }}"  disabled/>
+                        value="{{ old('product-code', $product->code ?? '') }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kategori Produk</label>
@@ -379,7 +379,8 @@
                         <!-- Purchase Section -->
                         <div class="mb-4">
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="bundle-enable-purchase">
+                                <input class="form-check-input" type="checkbox" id="bundle-enable-purchase"
+                                    {{ !empty(old('enable-purchase', $product->is_item_purchased == true)) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="bundle-enable-purchase">
                                     Saya beli produk ini
                                 </label>
@@ -390,7 +391,8 @@
                                     <div class="col-md-6">
                                         <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
                                         <input type="text" class="form-control currency-input text-end"
-                                            id="bundle-purchase-price" placeholder="Rp 0" />
+                                            id="bundle-purchase-price" placeholder="Rp 0"
+                                            value="{{ old('bundle-purchase-price', $product->unit_purchase_price ?? '') }}" />
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Akun Pembelian <span
@@ -399,7 +401,9 @@
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
                                             @foreach ($accounts as $account)
-                                                <option value="{{ $account->code }}">{{ $account->code }} -
+                                                <option value="{{ $account->code }}"
+                                                    {{ old('bundle-purchase-account', $product->f_purchase_coa_code ?? '') == $account->code ? 'selected' : '' }}>
+                                                    {{ $account->code }} -
                                                     {{ $account->name }}</option>
                                             @endforeach
                                         </select>
@@ -413,7 +417,9 @@
                                             data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
                                             @foreach ($taxes as $tax)
-                                                <option value="{{ $tax->id }}">{{ $tax->name }}</option>
+                                                <option value="{{ $tax->id }}"
+                                                    {{ old('bundle-purchase-tax', $product->f_purchase_tax_id ?? '') == $tax->id ? 'selected' : '' }}>
+                                                    {{ $tax->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -427,7 +433,8 @@
                         <!-- Sales Section -->
                         <div class="mb-4">
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="bundle-enable-sales">
+                                <input class="form-check-input" type="checkbox" id="bundle-enable-sales"
+                                    {{ !empty(old('bundle-enable-sales', $product->is_item_sold == true)) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="bundle-enable-sales">
                                     Saya jual produk ini
                                 </label>
@@ -438,7 +445,8 @@
                                     <div class="col-md-6">
                                         <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
                                         <input type="text" class="form-control currency-input text-end"
-                                            id="bundle-sales-price" placeholder="Rp 0" />
+                                            id="bundle-sales-price" placeholder="Rp 0"
+                                            value="{{ old('bundle-sales-price', $product->unit_sell_price ?? '') }}" />
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Akun Penjualan <span
@@ -447,7 +455,9 @@
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
                                             @foreach ($accounts as $account)
-                                                <option value="{{ $account->code }}">{{ $account->code }} -
+                                                <option value="{{ $account->code }}"
+                                                    {{ old('bundle-sales-account', $product->f_sell_coa_code ?? '') == $account->code ? 'selected' : '' }}>
+                                                    {{ $account->code }} -
                                                     {{ $account->name }}</option>
                                             @endforeach
                                         </select>
@@ -461,7 +471,9 @@
                                             data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
                                             @foreach ($taxes as $tax)
-                                                <option value="{{ $tax->id }}">{{ $tax->name }}</option>
+                                                <option value="{{ $tax->id }}"
+                                                    {{ old('bundle-sales-tax', $product->f_sell_tax_id ?? '') == $tax->id ? 'selected' : '' }}>
+                                                    {{ $tax->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -475,7 +487,8 @@
                         <!-- Inventory Section -->
                         <div class="mb-4">
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="bundle-enable-inventory">
+                                <input class="form-check-input" type="checkbox" id="bundle-enable-inventory"
+                                    {{ !empty(old('bundle-enable-inventory', $product->monitor_stock == true)) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="bundle-enable-inventory">
                                     Monitoring Persediaan Barang
                                 </label>
@@ -487,7 +500,8 @@
                                         <label class="form-label">Batas stok minimum <span
                                                 style="color: red;">*</span></label>
                                         <input type="text" class="form-control numeric-input text-end"
-                                            id="bundle-minimum-stock" placeholder="0" />
+                                            id="bundle-minimum-stock" placeholder="0"
+                                            value="{{ old('bundle-minimum-stock', $product->minimum_stock ?? '') }}" />
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Akun Persediaan Default <span
@@ -496,7 +510,9 @@
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
                                             @foreach ($accounts as $account)
-                                                <option value="{{ $account->code }}">{{ $account->code }} -
+                                                <option value="{{ $account->code }}"
+                                                    {{ old('bundle-inventory-account', $product->f_inventory_coa_code ?? '') == $account->code ? 'selected' : '' }}>
+                                                    {{ $account->code }} -
                                                     {{ $account->name }}</option>
                                             @endforeach
                                         </select>
@@ -511,7 +527,8 @@
                                         <div class="col-md-6">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox"
-                                                    id="bundle-track-quantity" checked>
+                                                    id="bundle-track-quantity"
+                                                    {{ !empty(old('bundle-track-quantity', $product->track_qty_only == true)) ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="bundle-track-quantity">
                                                     Hanya lacak kuantitas
                                                 </label>
@@ -519,7 +536,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="bundle-track-batch">
+                                                <input class="form-check-input" type="checkbox" id="bundle-track-batch"
+                                                    {{ !empty(old('bundle-track-batch', $product->track_batch == true)) ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="bundle-track-batch">
                                                     Batch
                                                 </label>
@@ -553,33 +571,69 @@
                                         </tr>
                                     </thead>
                                     <tbody id="bundle-components-tbody" data-repeater-list>
-                                        <tr data-repeater-item class="bundle-component-row">
-                                            <td>
-                                                <div class="position-relative">
-                                                    <select class="select2Product form-select component-product">
-                                                        <option value="">Pilih Produk</option>
-                                                        @foreach ($products as $product)
-                                                            <option value="{{ $product->id }}"
-                                                                data-unit="{{ $product->unit_name ?? 'pcs' }}">
-                                                                {{ $product->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control numeric-input component-qty"
-                                                    id="minimum-stock" min="1" value="1" />
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control component-unit" readonly>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-label-danger" data-repeater-delete type="button">
-                                                    <i class="icon-base ti tabler-x me-1"></i>
-                                                    <span class="align-middle">Hapus</span>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        @if ($productCompositions->isEmpty())
+                                            <tr data-repeater-item class="bundle-component-row">
+                                                <td>
+                                                    <div class="position-relative">
+                                                        <select class="select2Product form-select component-product">
+                                                            <option value="">Pilih Produk</option>
+                                                            @foreach ($products as $product)
+                                                                <option value="{{ $product->id }}"
+                                                                    data-unit="{{ $product->unit_name ?? 'pcs' }}">
+                                                                    {{ $product->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control numeric-input component-qty"
+                                                        id="minimum-stock" min="1" value="1" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control component-unit" readonly>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-label-danger" data-repeater-delete
+                                                        type="button">
+                                                        <i class="icon-base ti tabler-x me-1"></i>
+                                                        <span class="align-middle">Hapus</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                        @foreach ($productCompositions as $row)
+                                            <tr data-repeater-item class="bundle-component-row">
+                                                <input type="hidden" class="form-control composition_id"
+                                                    value="{{ $row->id }}" />
+                                                <td>
+                                                    <div class="position-relative">
+                                                        <select class="select2Product form-select component-product">
+                                                            <option value="">Pilih Produk</option>
+                                                            @foreach ($products as $product)
+                                                                <option value="{{ $product->id }}"
+                                                                    data-unit="{{ $product->unit_name ?? 'pcs' }}"
+                                                                    {{ $row->f_product_composition_product_id == $product->id ? 'selected' : '' }}>
+                                                                    {{ $product->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control numeric-input component-qty"
+                                                        id="minimum-stock" min="1" value="{{ $row->qty }}" />
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control component-unit" readonly>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-label-danger" data-repeater-delete
+                                                        type="button">
+                                                        <i class="icon-base ti tabler-x me-1"></i>
+                                                        <span class="align-middle">Hapus</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                                 <div class="mb-0">
@@ -610,30 +664,66 @@
                                         </tr>
                                     </thead>
                                     <tbody id="bundle-accounts-tbody" data-repeater-list>
-                                        <tr data-repeater-item class="bundle-account-row">
-                                            <td>
-                                                <div class="position-relative">
-                                                    <select class="select2Coa form-select account-select">
-                                                        <option value="">Pilih Akun</option>
-                                                        @foreach ($accounts as $account)
-                                                            <option value="{{ $account->code }}">{{ $account->code }} -
-                                                                {{ $account->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input type="text"
-                                                    class="form-control currency-input text-end account-cost"
-                                                    placeholder="Rp 0">
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-label-danger" data-repeater-delete type="button">
-                                                    <i class="icon-base ti tabler-x me-1"></i>
-                                                    <span class="align-middle">Hapus</span>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        @if ($productExpenses->isEmpty())
+                                            <tr data-repeater-item class="bundle-account-row">
+                                                <td>
+                                                    <div class="position-relative">
+                                                        <select class="select2Coa form-select account-select">
+                                                            <option value="">Pilih Akun</option>
+                                                            @foreach ($accounts as $account)
+                                                                <option value="{{ $account->code }}">{{ $account->code }}
+                                                                    -
+                                                                    {{ $account->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="text"
+                                                        class="form-control currency-input text-end account-cost"
+                                                        placeholder="Rp 0">
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-label-danger" data-repeater-delete
+                                                        type="button">
+                                                        <i class="icon-base ti tabler-x me-1"></i>
+                                                        <span class="align-middle">Hapus</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                        @foreach ($productExpenses as $row)
+                                            <tr data-repeater-item class="bundle-account-row">
+                                                <input type="hidden" class="form-control expense_id"
+                                                    value="{{ $row->id }}" />
+                                                <td>
+                                                    <div class="position-relative">
+                                                        <select class="select2Coa form-select account-select">
+                                                            <option value="">Pilih Akun</option>
+                                                            @foreach ($accounts as $account)
+                                                                <option value="{{ $account->code }}"
+                                                                    {{ $row->f_expense_coa_code == $account->code ? 'selected' : '' }}>
+                                                                    {{ $account->code }} -
+                                                                    {{ $account->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="text"
+                                                        class="form-control currency-input text-end account-cost"
+                                                        value="{{ $row->expense_price ?? '0' }}">
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-label-danger" data-repeater-delete
+                                                        type="button">
+                                                        <i class="icon-base ti tabler-x me-1"></i>
+                                                        <span class="align-middle">Hapus</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+
                                     </tbody>
                                 </table>
                                 <div class="mb-0">
@@ -732,7 +822,6 @@
                             'data-select2-id tabindex aria-hidden');
                         $(this).find('select.select2Product').each(function() {
                             if ($.fn.select2 && $(this).data('select2')) {
-                                alert('Destroying existing Select2 instance');
                                 $(this).select2('destroy');
                             }
                             $(this).select2({
@@ -759,7 +848,6 @@
                             'data-select2-id tabindex aria-hidden');
                         $(this).find('select.select2Coa').each(function() {
                             if ($.fn.select2 && $(this).data('select2')) {
-                                alert('Destroying existing Select2 instance');
                                 $(this).select2('destroy');
                             }
                             $(this).select2({
@@ -858,6 +946,9 @@
                     if (isEnableBundleInventoryChecked === true) {
                         $('#bundle-enable-inventory').prop('checked', true);
                         $('#bundle-inventory-fields').show();
+
+                        $('#bundle-inventory-fields').toggle(this.checked);
+                        $('#bundle-account-mapping').toggle(this.checked);
                     }
                 }
 
@@ -950,16 +1041,25 @@
                 }
             });
 
-            // Bundle component events
-            $(document).on('change', '.component-product', function() {
-                const selectedOption = $(this).find(':selected');
+            function onComponentProductChanbge(thisvar) {
+                const selectedOption = $(thisvar).find(':selected');
                 const unit = selectedOption.data('unit') || 'pcs';
                 const price = selectedOption.data('price') || 0;
 
                 // Find the closest row and update fields in that row
-                const $row = $(this).closest('tr');
+                const $row = $(thisvar).closest('tr');
                 $row.find('.component-unit').val(unit);
                 updateComponentPriceRow($row);
+            }
+
+            // Bundle component events
+            $(document).on('change', '.component-product', function() {
+                onComponentProductChanbge(this)
+            });
+
+
+            $('.component-product').each(function(index, element) {
+                onComponentProductChanbge(this)
             });
 
             function updateComponentPriceRow($row) {
@@ -1074,17 +1174,17 @@
                         data.inventory_enabled = $('#enable-inventory').is(':checked');
 
                         if (data.purchase_enabled) {
-                            data.purchase_price = $('#purchase-price').val().replace(/[^0-9]/g, '');
+                            data.purchase_price = $('#purchase-price').val().replace(/[^0-9.]/g, '');
                             data.purchase_account = $('#purchase-account').val();
                             data.purchase_tax = $('#purchase-tax').val();
                         }
                         if (data.sales_enabled) {
-                            data.sales_price = $('#sales-price').val().replace(/[^0-9]/g, '');
+                            data.sales_price = $('#sales-price').val().replace(/[^0-9.]/g, '');
                             data.sales_account = $('#sales-account').val();
                             data.sales_tax = $('#sales-tax').val();
                         }
                         if (data.inventory_enabled) {
-                            data.minimum_stock = $('#minimum-stock').val().replace(/[^0-9]/g, '');;
+                            data.minimum_stock = $('#minimum-stock').val().replace(/[^0-9.]/g, '');
                             data.inventory_account = $('#inventory-account').val();
                             data.track_quantity = $('#track-quantity').is(':checked');
                             data.track_batch = $('#track-batch').is(':checked');
@@ -1099,17 +1199,17 @@
 
                         if (data.bundle_purchase_enabled) {
                             data.bundle_purchase_price = $('#bundle-purchase-price').val().replace(
-                                /[^0-9]/g, '');
+                                /[^0-9.]/g, '');
                             data.bundle_purchase_account = $('#bundle-purchase-account').val();
                             data.bundle_purchase_tax = $('#bundle-purchase-tax').val();
                         }
                         if (data.bundle_sales_enabled) {
-                            data.bundle_sales_price = $('#bundle-sales-price').val().replace(/[^0-9]/g, '');
+                            data.bundle_sales_price = $('#bundle-sales-price').val().replace(/[^0-9.]/g, '');
                             data.bundle_sales_account = $('#bundle-sales-account').val();
                             data.bundle_sales_tax = $('#bundle-sales-tax').val();
                         }
                         if (data.bundle_inventory_enabled) {
-                            data.bundle_minimum_stock = $('#bundle-minimum-stock').val().replace(/[^0-9]/g,
+                            data.bundle_minimum_stock = $('#bundle-minimum-stock').val().replace(/[^0-9.]/g,
                                 '');
                             data.bundle_inventory_account = $('#bundle-inventory-account').val();
                             data.bundle_track_quantity = $('#bundle-track-quantity').is(':checked');
@@ -1117,62 +1217,38 @@
                         }
 
                         data.bundle_components = [];
-                        // $('#bundle-components-tbody tr.bundle-component-row').each(function() {
-                        //     data.bundle_components.push({
-                        //         product_id: $(this).find('.component-product').val(),
-                        //         qty: $(this).find('.component-qty').val().replace(/[^0-9]/g,
-                        //             '')
-                        //     });
-                        // });
 
                         $('#bundle-components-tbody tr.bundle-component-row').each(function() {
                             const productId = $(this).find('.component-product').val();
+                            const compositionId = $(this).find('.composition_id').val();
                             const qtyRaw = $(this).find('.component-qty').val();
-                            const qty = qtyRaw ? qtyRaw.replace(/[^0-9]/g, '') : null;
+                            const qty = qtyRaw ? qtyRaw.replace(/[^0-9.]/g, '') : null;
 
                             if (productId && productId !== "null" && qty && qty !== "null") {
                                 data.bundle_components.push({
                                     product_id: productId,
+                                    composition_id: compositionId,
                                     qty: qty
                                 });
                             }
                         });
 
                         data.bundle_accounts = [];
-                        // $('#bundle-accounts-tbody tr.bundle-account-row').each(function() {
-                        //     if ($(this).find('.account-select').val() != null && $(this).find(
-                        //             '.account-select').val() != "null" && $(this).find(
-                        //             '.account-select').val() != "" && $(this).find('.account-cost')
-                        //         .val() != null && $(this).find('.account-cost').val() != "null" &&
-                        //         $(this).find('.account-cost').val() != "") {
-                        //         data.bundle_accounts.push({
-                        //             account: $(this).find('.account-select').val() == "" ||
-                        //                 $(this).find('.account-select').val() == "null" ?
-                        //                 null : $(this).find('.account-select').val(),
-                        //             cost: $(this).find('.account-cost').val().replace(
-                        //                     /[^0-9]/g,
-                        //                     '') == "" || $(this).find('.account-cost')
-                        //                 .val() == "null" ? null : $(this).find(
-                        //                     '.account-cost')
-                        //                 .val().replace(/[^0-9]/g, ''),
-                        //         });
-                        //     }
-
-                        // });
 
                         $('#bundle-accounts-tbody tr.bundle-account-row').each(function() {
+                            const expenseId = $(this).find('.expense_id').val();
                             const account = $(this).find('.account-select').val();
                             const costRaw = $(this).find('.account-cost').val();
-                            const cost = costRaw ? costRaw.replace(/[^0-9]/g, '') : null;
+                            const cost = costRaw ? costRaw.replace(/[^0-9.]/g, '') : null;
 
                             if (account && account !== "null" && cost && cost !== "null") {
                                 data.bundle_accounts.push({
                                     account: account,
+                                    expense_id: expenseId,
                                     cost: cost
                                 });
                             }
                         });
-                        console.log(data.bundle_accounts)
                     }
 
                     return data;
@@ -1290,6 +1366,89 @@
                     }
                 });
             });
+
+            const repeaterList = document.querySelector('.form-repeater-component [data-repeater-list]');
+            if (repeaterList) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.matches(
+                                    '[data-repeater-item]')) {
+
+                                $(node).find('.select2-container').remove();
+                                // Remove select2 classes and attributes from select
+                                $(node).find('select.select2Product')
+                                    .removeClass('select2-hidden-accessible')
+                                    .removeAttr('data-select2-id tabindex aria-hidden');
+                                // Remove selected attribute from all options in new item
+                                $(node).find('select.select2Product option').removeAttr(
+                                    'selected');
+                                $(node).find('select.select2Product').val('').trigger(
+                                    'change');
+                                // Destroy and re-init Select2
+                                $(node).find('select.select2Product').each(function() {
+                                    if ($(this).data('select2')) {
+                                        $(this).select2('destroy');
+                                    }
+                                    $(this).select2({
+                                        placeholder: "Select value",
+                                        allowClear: true,
+                                        dropdownParent: $(this).parent(),
+                                        width: '100%'
+                                    });
+                                });
+                                $(node).find('.component-qty').val('0');
+                                $(node).find('.component-unit').val('');
+                                $(node).find('.composition_id').val(null);
+                            }
+                        });
+                    });
+                });
+                observer.observe(repeaterList, {
+                    childList: true
+                });
+            }
+
+            const repeaterListAccounts = document.querySelector('.form-repeater-accounts [data-repeater-list]');
+            if (repeaterListAccounts) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1 && node.matches(
+                                    '[data-repeater-item]')) {
+
+                                $(node).find('.select2-container').remove();
+                                // Remove select2 classes and attributes from select
+                                $(node).find('select.select2Coa')
+                                    .removeClass('select2-hidden-accessible')
+                                    .removeAttr('data-select2-id tabindex aria-hidden');
+                                // Remove selected attribute from all options in new item
+                                $(node).find('select.select2Coa option').removeAttr(
+                                    'selected');
+                                $(node).find('select.select2Coa').val('').trigger(
+                                    'change');
+                                // Destroy and re-init Select2
+                                $(node).find('select.select2Coa').each(function() {
+                                    if ($(this).data('select2')) {
+                                        $(this).select2('destroy');
+                                    }
+                                    $(this).select2({
+                                        placeholder: "Select value",
+                                        allowClear: true,
+                                        dropdownParent: $(this).parent(),
+                                        width: '100%'
+                                    });
+                                });
+                                $(node).find('.account-cost').val('0');
+                                $(node).find('.expense_id').val(null);
+                            }
+                        });
+                    });
+                });
+                observer.observe(repeaterListAccounts, {
+                    childList: true
+                });
+            }
         });
     </script>
 @endsection

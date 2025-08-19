@@ -31,32 +31,79 @@ class UpdateProductAction
 
             app(ProductService::class)->update($product_id, $data);
 
-            // if (isset($data['bundle_components'])) {
-            //     $bundle_components = [];
-            //     foreach ($data['bundle_components'] as $row) {
-            //         $product_data = app(ProductService::class)->findOne($row['product_id']);
-            //         $bundle_components[] = [
-            //             'f_product_id' => $product_id,
-            //             'f_product_composition_product_id' => $row['product_id'],
-            //             'qty' => $row['qty'],
-            //             'f_unit_id' => $product_data->f_unit_id,
-            //         ];
-            //     }
-            //     app(ProductCompositionService::class)->create($bundle_components);
-            // }
+            $current_composition = app(ProductCompositionService::class)->findAllBasedOnProductId($product_id);
 
-            // if (isset($data['bundle_accounts'])) {
-            //     $bundle_accounts = [];
-            //     foreach ($data['bundle_accounts'] as $row) {
-            //         $bundle_accounts[] = [
-            //             'f_product_id' => $product_id,
-            //             'f_expense_coa_code' => $row['account'],
-            //             'expense_price' => $row['cost'],
-            //         ];
-            //     }
-            //     app(ProductExpenseService::class)->create($bundle_accounts);
-            // }
+            $current_composition_ids = [];
+            foreach ($current_composition as $row) {
+                $current_composition_ids[] = $row->id;
+            }
 
+            if (isset($data['bundle_components'])) {
+                $submitted_composition_ids = [];
+                foreach ($data['bundle_components'] as $composition) {
+                    $product_data = app(ProductService::class)->findOne($composition['product_id']);
+                    if (isset($composition['composition_id'])) {
+
+
+                        app(ProductCompositionService::class)->update($composition['composition_id'], [
+                            'f_product_composition_product_id' => $composition['product_id'],
+                            'qty' => $composition['qty'],
+                            'f_unit_id' => $product_data->f_unit_id,
+                        ]);
+
+                        $submitted_composition_ids[] = $composition['composition_id'];
+                    } else {
+                        app(ProductCompositionService::class)->create([
+                            [
+                                'f_product_id' => $product_id,
+                                'f_product_composition_product_id' => $composition['product_id'],
+                                'qty' => $composition['qty'],
+                                'f_unit_id' => $product_data->f_unit_id,
+                            ]
+                        ]);
+                    }
+                }
+
+                $composition_ids_to_delete = array_diff($current_composition_ids, $submitted_composition_ids);
+                foreach ($composition_ids_to_delete as $delete_id) {
+                    app(ProductCompositionService::class)->delete($product_id, $delete_id);
+                }
+            }
+
+
+            $current_account = app(ProductExpenseService::class)->findAllBasedOnProductId($product_id);
+
+            $current_account_ids = [];
+            foreach ($current_account as $row) {
+                $current_account_ids[] = $row->id;
+            }
+
+            if (isset($data['bundle_accounts'])) {
+                $submitted_account_ids = [];
+                foreach ($data['bundle_accounts'] as $account) {
+                    if (isset($account['expense_id'])) {
+                        app(ProductExpenseService::class)->update($account['expense_id'], [
+                            'f_expense_coa_code' => $account['account'],
+                            'expense_price' => $account['cost']
+                        ]);
+
+                        $submitted_account_ids[] = $account['expense_id'];
+                    } else {
+                        app(ProductExpenseService::class)->create([
+                            [
+                                'f_product_id' => $product_id,
+                                'f_expense_coa_code' => $account['account'],
+                                'expense_price' => $account['cost']
+                            ]
+                        ]);
+                    }
+                }
+
+                $account_ids_to_delete = array_diff($current_account_ids, $submitted_account_ids);
+                foreach ($account_ids_to_delete as $delete_id) {
+                    app(ProductExpenseService::class)->delete($product_id, $delete_id);
+                }
+            }
 
             $this->insertAuditLog($product_id, $old_data, $data, $new_data_master);
         });

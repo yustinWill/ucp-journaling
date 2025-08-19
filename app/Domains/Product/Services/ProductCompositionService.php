@@ -24,4 +24,28 @@ class ProductCompositionService
         }
         return DB::table($this->table_name)->insert($insert_data);
     }
+
+    public function update($id, array $data)
+    {
+        return DB::table($this->table_name)->where('id', $id)->update([
+            'f_product_composition_product_id' => $data['f_product_composition_product_id'],
+            'qty' => $data['qty'],
+            'f_unit_id' => $data['f_unit_id'],
+            'updated_by' => Auth::id(),
+            'updated_at' => now()
+        ]);
+    }
+
+    public function findAllBasedOnProductId($product_id)
+    {
+        return DB::table($this->table_name . ' as t')
+            ->select('t.*')
+            ->where('t.f_product_id', $product_id)
+            ->get();
+    }
+
+    public function delete($product_id, $id)
+    {
+        return DB::table($this->table_name)->where('id', $id)->where('f_product_id', $product_id)->delete();
+    }
 }
