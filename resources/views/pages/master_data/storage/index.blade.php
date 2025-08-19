@@ -72,34 +72,31 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="row g-3">
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <label class="form-label">Kode Gudang:</label>
-                                <input type="text" class="form-control dt-input dt-full-name" data-column="1"
-                                    placeholder="Cari Berdasarkan Kode Gudang" data-column-index="0" />
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <label class="form-label">Nama Gudang:</label>
-                                <input type="text" class="form-control dt-input" data-column="2"
-                                    placeholder="Cari Berdasarkan Nama Gudang" data-column-index="1" />
-                            </div>
-                            <div class="col-12 col-sm-6 col-lg-3">
+                            <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" data-allow-clear="false">
+                                <select class="global-select2 form-select" id="storage-status-filter"
+                                    data-allow-clear="true">
                                     <option value="">Semua Status</option>
                                     @foreach($storageStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <label class="form-label">Penanggung Jawab:</label>
-                                <select class="global-select2 form-select" data-allow-clear="true" multiple>
-                                    @foreach($picUsers as $user)
-                                        <option value="{{ $user['value'] }}">{{ $user['label'] }}</option>
+                            <div class="col-12 col-sm-6 col-lg-4">
+                                <label class="form-label">Tag:</label>
+                                <select class="global-select2 form-select" id="storage-tag-filter"
+                                    data-allow-clear="true">
+                                    <option value="">Semua Tag</option>
+                                    @foreach($availableTags as $tag)
+                                        <option value="{{ $tag['value'] }}">{{ $tag['label'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
-
+                            <div class="col-12 col-sm-6 col-lg-4">
+                                <label class="form-label">Pencarian:</label>
+                                <input type="text" class="form-control" id="storage-search"
+                                    placeholder="Cari Gudang">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -107,7 +104,17 @@
             <hr class="my-6 mx-n6" />
             <!-- Action Buttons -->
             <div class="mt-4">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-between">
+                    <!-- Column Toggle -->
+                    <div class="d-flex align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                            <label class="form-check-label" for="toggleTagColumn">
+                                <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="d-flex gap-2">
                         <a href="{{ route('master_data.storage.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -124,7 +131,7 @@
         </div>
         <!-- Data Table -->
         <div class="card-datatable">
-            <table id="main-table" class="table table-bordered">
+            <table id="storage-table" class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Kode Gudang</th>
@@ -132,6 +139,7 @@
                         <th>Penanggung Jawab</th>
                         <th>Alamat</th>
                         <th>Status</th>
+                        <th>Tag</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -142,56 +150,71 @@
 @section('js_script')
     <script>
         $(function() {
-            //DataTable
-            const main_table = document.querySelector('#main-table');
-            let dt_adv_filter;
+            let storageTable;
 
-            if (main_table) {
-                dt_adv_filter = new DataTable(main_table, {
-                    ajax: `{{ route('master_data.storage.index_data_table') }}`,
-                    columns: [{
-                            data: 'storage_code',
-                            responsivePriority: 3
-                        },
-                        {
-                            data: 'storage_name',
-                            responsivePriority: 2
-                        },
-                        {
-                            data: 'pic_names',
-                            responsivePriority: 4
-                        },
-                        {
-                            data: 'address',
-                            responsivePriority: 6
-                        },
-                        {
-                            data: 'status',
-                            responsivePriority: 5
-                        },
-                        {
-                            data: null,
-                            responsivePriority: 1,
-                            width: '120px'
+            storageTable = new DataTable('#storage-table', {
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: `{{ route('master_data.storage.index_data_table') }}`,
+                    data: function(d) {
+                        d.status_filter = $('#storage-status-filter').val();
+                        d.tag_filter = $('#storage-tag-filter').val();
+                        d.search = $('#storage-search').val();
+                        return d;
+                    }
+                },
+                columns: [{
+                        data: 'code',
+                        responsivePriority: 2
+                    },
+                    {
+                        data: 'name',
+                        responsivePriority: 3
+                    },
+                    {
+                        data: 'pic_names',
+                        responsivePriority: 4
+                    },
+                    {
+                        data: 'address',
+                        responsivePriority: 5
+                    },
+                    {
+                        data: 'status',
+                        responsivePriority: 6,
+                        render: function(data, type, row) {
+                            const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 
+                                (data === 'MAINTENANCE' ? 'bg-label-warning' : 'bg-label-secondary');
+                            return `<span class="badge ${badgeClass}">${data}</span>`;
                         }
-                    ],
-                    columnDefs: [{
-                            orderable: false,
-                            targets: -2,
-                            render: function(data, type, full, meta) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
-                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
-                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
-                            }
-                        },
-                        {
-                            targets: -1,
-                            orderable: false,
-                            searchable: false,
-                            render: function(data, type, row, meta) {
-                                const detailUrl = `{{ route('master_data.storage.detail', ':id') }}`.replace(':id', row.id);
-                                const editUrl = `{{ route('master_data.storage.edit', ':id') }}`.replace(':id', row.id);
-                                return `
+                    },
+                    {
+                        data: 'tags',
+                        responsivePriority: 7,
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            let tags = JSON.parse(data);
+                            return tags.map(tag => {
+                                if (tag.code == null) {
+                                    return ``;
+                                }
+                                return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
+                            }).join('');
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        responsivePriority: 1,
+                        width: '120px',
+                        render: function(data, type, row, meta) {
+                            const detailUrl = `{{ route('master_data.storage.detail', ':id') }}`
+                                .replace(':id', row.id);
+                            const editUrl = `{{ route('master_data.storage.edit', ':id') }}`
+                                .replace(':id', row.id);
+                            return `
                                 <div class="d-flex gap-2">
                                     <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
@@ -200,37 +223,59 @@
                                         <i class="icon-base ti tabler-edit"></i>
                                     </a>
                                 </div>
-                            `;
-                            }
+                                `;
                         }
-                    ],
-                    layout: {
-                        topStart: {
-                            rowClass: 'm-0',
-                            features: []
-                        },
-                        topEnd: {},
-                        bottomStart: {
-                            rowClass: 'row mx-3 justify-content-between',
-                            features: ['info']
-                        },
-                        bottomEnd: 'paging'
+                    }
+                ],
+                layout: {
+                    topStart: {
+                        rowClass: 'm-0',
+                        features: []
                     },
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                        }
+                    topEnd: {},
+                    bottomStart: {
+                        rowClass: 'row mx-3 justify-content-between',
+                        features: ['info']
                     },
-                    scrollX: true,
-                    responsive: true,
-                    orderCellsTop: true
-                });
+                    bottomEnd: 'paging'
+                },
+                language: {
+                    paginate: {
+                        next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                        previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                        first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                        last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                    }
+                },
+                scrollX: true,
+                responsive: true
+            });
+
+            // Tag Column Toggle Functionality
+            $('#toggleTagColumn').on('change', function() {
+                if (storageTable) {
+                    const tagColumn = storageTable.column(5); // Tag column index (0-based)
+                    tagColumn.visible(this.checked);
+                }
+            });
+
+            // Initialize tag column visibility based on checkbox state
+            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
+            if (storageTable) {
+                storageTable.column(5).visible(initialTagVisibility);
             }
 
-            // Navigation buttons now use direct <a> elements with href - no JavaScript needed
+            let searchTimeout;
+            $('#storage-status-filter, #storage-tag-filter, #storage-search').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (storageTable) {
+                            storageTable.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
         });
     </script>
 @endsection

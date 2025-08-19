@@ -5,75 +5,106 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Tambah Gudang</h4>
-        <form class="card-body form-repeater" autocomplete="off">
-            <h6>1. Data Gudang</h6>
-            <div class="row g-6">
+        <form class="card-body" id="storage-form" autocomplete="off">
+            <!-- Data Gudang Section -->
+            <div class="section-header mt-12">
+                <h6>Data Gudang</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <!-- Row 1: Basic Information -->
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Kode Gudang</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kode Gudang" />
+                    <label class="form-label">Kode Gudang <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="storage-code" name="code" placeholder="GDG-2025-001" required />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Nama Gudang</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Nama Gudang" />
+                    <label class="form-label">Nama Gudang <span style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="storage-name" name="name" placeholder="Masukkan nama gudang" required />
                 </div>
+            </div>
+
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Penanggung Jawab</label>
-                    <select class="global-select2 form-select" data-allow-clear="false" multiple>
+                    <select class="global-select2 form-select" id="storage-pic" name="pic_users[]" data-allow-clear="false" multiple>
                         @foreach($picUsers as $user)
                             <option value="{{ $user['value'] }}">{{ $user['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Status Gudang</label>
-                    <div class="demo-inline-spacing">
-                        <label class="switch switch-primary">
-                            <input type="checkbox" class="switch-input" checked="">
-                            <span class="switch-toggle-slider">
-                                <span class="switch-on">
-                                    <i class="icon-base ti tabler-check"></i>
-                                </span>
-                                <span class="switch-off">
-                                    <i class="icon-base ti tabler-x"></i>
-                                </span>
-                            </span>
-                            <span class="switch-label">Aktif</span>
-                        </label>
-                    </div>
+                    <label class="form-label">Status <span style="color: red;">*</span></label>
+                    <select class="global-select2 form-select" id="storage-status" name="status" data-allow-clear="false" required>
+                        <option value="">Pilih Status</option>
+                        @foreach($storageStatuses as $status)
+                            <option value="{{ $status['value'] }}" {{ $status['value'] == 'ACTIVE' ? 'selected' : '' }}>{{ $status['label'] }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 
-            <hr class="my-6 mx-n6" />
-            <h6>2. Alamat Gudang</h6>
-            <div class="row g-6">
+            <!-- Alamat Section -->
+            <div class="section-header mt-12">
+                <h6>Alamat Gudang</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Provinsi</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Provinsi" />
+                    <input type="text" class="form-control" id="storage-province" name="province" placeholder="Masukkan provinsi" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kota</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kota" />
+                    <input type="text" class="form-control" id="storage-city" name="city" placeholder="Masukkan kota" />
                 </div>
+            </div>
+
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Kecamatan</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kecamatan" />
+                    <input type="text" class="form-control" id="storage-district" name="district" placeholder="Masukkan kecamatan" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kelurahan</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kelurahan" />
+                    <input type="text" class="form-control" id="storage-sub-district" name="sub_district" placeholder="Masukkan kelurahan" />
                 </div>
+            </div>
+
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Alamat</label>
-                    <textarea class="form-control" placeholder="Masukkan Alamat"></textarea>
+                    <label class="form-label">Alamat Lengkap</label>
+                    <textarea class="form-control" id="storage-address" name="address" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kode POS</label>
-                    <input type="text" class="form-control" placeholder="Masukkan Kode POS" />
+                    <input type="text" class="form-control" id="storage-postal-code" name="postal_code" placeholder="50000" />
                 </div>
-
             </div>
+
+            <!-- Informasi Tambahan Section -->
+            <div class="section-header mt-12">
+                <h6>Informasi Tambahan</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <select class="global-select2 form-select" id="storage-tags" name="tags[]" multiple data-allow-clear="false">
+                        @foreach($availableTags as $tag)
+                            <option value="{{ $tag['value'] }}">{{ $tag['label'] }}</option>
+                        @endforeach
+                    </select>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi gudang</small>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
             <div class="pt-6 text-end">
-                <button id="submit-btn" class="btn btn-primary me-4">Simpan Data</button>
+                <button type="button" class="btn btn-label-danger me-3" id="cancel-btn">Batalkan</button>
+                <button type="button" class="btn btn-success" id="submit-btn">Simpan</button>
             </div>
         </form>
     </div>
@@ -81,59 +112,143 @@
 @section('js_script')
     <script>
         $(function() {
-            const formRepeater = $('.form-repeater');
-            if (formRepeater.length) {
-                var row = 2;
-                var col = 1;
-                formRepeater.on('submit', function(e) {
-                    e.preventDefault();
-                });
-                formRepeater.repeater({
-                    show: function() {
-                        $(this).slideDown();
-                        //     $(this).find(".bank-select2").select2({
-                        //               allowClear: true,
-                        // width: '100%'
-                        //     });
-                    },
-                    hide: function(e) {
-                        confirm('Are you sure you want to delete this element?') && $(this).slideUp(e);
+            // Initialize form
+            generateStorageCode();
+
+            function generateStorageCode() {
+                const year = new Date().getFullYear();
+                const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                $('#storage-code').val(`GDG-${year}-${randomNum}`);
+            }
+
+            // Form submission
+            $('#submit-btn').click(function(e) {
+                e.preventDefault();
+
+                // Validate required fields
+                let isValid = true;
+                const requiredFields = ['storage-code', 'storage-name', 'storage-status'];
+
+                requiredFields.forEach(function(fieldId) {
+                    const field = $('#' + fieldId);
+                    if (!field.val() || field.val().trim() === '') {
+                        field.addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        field.removeClass('is-invalid');
                     }
                 });
 
-                // Initialize select2 for existing elements on page load
-                // $('.bank-select2').select2({
-                //     allowClear: true,
-                //     width: '100%'
-                // });
-            }
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Mohon lengkapi semua field yang wajib diisi.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
 
-            $('#submit-btn').click(function(e) {
-                e.preventDefault();
+                function getStorageFormData() {
+                    const data = {
+                        code: $('#storage-code').val(),
+                        name: $('#storage-name').val(),
+                        pic_users: $('#storage-pic').val() || [],
+                        status: $('#storage-status').val(),
+                        province: $('#storage-province').val(),
+                        city: $('#storage-city').val(),
+                        district: $('#storage-district').val(),
+                        sub_district: $('#storage-sub-district').val(),
+                        address: $('#storage-address').val(),
+                        postal_code: $('#storage-postal-code').val(),
+                        tags: $('#storage-tags').val() || []
+                    };
+                    return data;
+                }
+
                 Swal.fire({
-                    title: 'Simpan Data?',
-                    text: "Cek kembali data yang sudah diisi!",
+                    title: 'Simpan Gudang?',
+                    text: 'Cek kembali data yang sudah diisi!',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Ya, Simpan Data!',
+                    confirmButtonText: 'Ya, Simpan!',
                     customClass: {
-                        confirmButton: 'btn btn-primary',
+                        confirmButton: 'btn btn-success',
                         cancelButton: 'btn btn-label-secondary'
                     },
                     buttonsStyling: false
                 }).then(function(result) {
                     if (result.value) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Data berhasil disimpan.',
-                            customClass: {
-                                confirmButton: 'btn btn-primary',
-                                cancelButton: 'btn btn-label-secondary'
+                        $('#submit-btn').prop('disabled', true).html(
+                            '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...'
+                        );
+
+                        const storageData = getStorageFormData();
+
+                        $.ajax({
+                            url: "{{ route('master_data.storage.store') }}",
+                            method: 'POST',
+                            data: {
+                                ...storageData,
+                                _token: '{{ csrf_token() }}'
                             },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Gudang berhasil ditambahkan.',
+                                    customClass: {
+                                        confirmButton: 'btn btn-success'
+                                    },
+                                    buttonsStyling: false
+                                }).then(function() {
+                                    window.location.href = "{{ route('master_data.storage.index') }}";
+                                });
+                            },
+                            error: function(xhr) {
+                                const res = xhr.responseJSON;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal menyimpan',
+                                    html: res?.message || 'Terjadi kesalahan saat menyimpan data.',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary'
+                                    },
+                                    buttonsStyling: false
+                                });
+                            },
+                            complete: function() {
+                                $('#submit-btn').prop('disabled', false).html('Simpan');
+                            }
                         });
                     }
-                })
+                });
+            });
+
+            // Cancel button
+            $('#cancel-btn').click(function(e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Batalkan Pembuatan?',
+                    text: 'Data yang sudah diisi akan hilang!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Batalkan!',
+                    cancelButtonText: 'Tidak',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-label-secondary'
+                    },
+                    buttonsStyling: false
+                }).then(function(result) {
+                    if (result.value) {
+                        window.location.href = "{{ route('master_data.storage.index') }}";
+                    }
+                });
             });
         });
     </script>

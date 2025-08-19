@@ -21,7 +21,7 @@
                         @if($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.storage.edit', 1) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                <a href="{{ route('master_data.storage.edit', $storage->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
                             </div>
@@ -31,72 +31,167 @@
             </div>
             
             <!-- Storage Title -->
-            <h2>Gudang Utama</h2>
+            <h2>{{ $storage->name }}</h2>
             <span>
-                <h6>Data di bawah berdasarkan tanggal 2025-07-07 14:35:21</h6>
+                <h6>Data gudang berdasarkan tanggal {{ $storage->updated_at }}</h6>
             </span>
             <hr class="my-6 mx-n6" />
 
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label">Kode Gudang</label>
-                    <input type="text" class="form-control" value="STG01" disabled />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Nama Gudang</label>
-                    <input type="text" class="form-control" value="Gudang Utama" disabled />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Penanggung Jawab</label>
-                    <select class="global-select2 form-select" multiple disabled>
-                        <option value="AK" selected>William</option>
-                        <option value="HI">Winona</option>
-                        <option value="HI" selected>Akbar</option>
-                        <option value="CA">Tono</option>
-                    </select>
+                    <input type="text" class="form-control" value="{{ $storage->code }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
-                        <span class="badge bg-label-success">ACTIVE</span>
+                        @if($storage->status == 'ACTIVE')
+                            <span class="badge bg-label-success">{{ $storage->status }}</span>
+                        @elseif($storage->status == 'MAINTENANCE')
+                            <span class="badge bg-label-warning">{{ $storage->status }}</span>
+                        @else
+                            <span class="badge bg-label-secondary">{{ $storage->status }}</span>
+                        @endif
                     </div>
                 </div>
             </div>
             <hr class="my-6 mx-n6" />
+            
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
-                        <a class="list-group-item list-group-item-action waves-effect active" id="home-list-item"
-                            data-bs-toggle="list" href="#horizontal-daftar-produk" aria-selected="true" role="tab">
+                        <a class="list-group-item list-group-item-action waves-effect active" id="storage-info-list-item"
+                            data-bs-toggle="list" href="#horizontal-storage-info" aria-selected="true" role="tab">
+                            <i class="icon-base ti tabler-info-circle me-2"></i>
+                            <b>Informasi Detail</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="inventory-list-item"
+                            data-bs-toggle="list" href="#horizontal-inventory" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-package me-2"></i>
-                            <b>Daftar Produk</b>
+                            <b>Persediaan</b>
                         </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="profile-list-item"
-                            data-bs-toggle="list" href="#horizontal-daftar-transaksi" aria-selected="false" role="tab">
-                            <i class="icon-base ti tabler-receipt-2 me-2"></i>
-                            <b>Daftar Transaksi</b>
-                        </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="messages-list-item"
-                            data-bs-toggle="list" href="#horizontal-daftar-batch" aria-selected="false" role="tab">
-                            <i class="icon-base ti tabler-stack me-2"></i>
-                            <b>Daftar Batch</b>
-                        </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="audit-list-item"
+                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>
                             <b>Audit Log</b>
                         </a>
                     </div>
                     <div class="tab-content px-0 mt-0">
-                        <div class="tab-pane fade show active" id="horizontal-daftar-produk" role="tabpanel"
-                            aria-labelledby="home-list-item">
+                        <div class="tab-pane fade show active" id="horizontal-storage-info" role="tabpanel">
+                            <!-- Info Gudang Section -->
+                            <div class="section-header mt-12">
+                                <h6>Info Gudang</h6>
+                                <hr class="mx-n6">
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nama Gudang</label>
+                                    <input type="text" class="form-control" value="{{ $storage->name }}" disabled />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Kode Gudang</label>
+                                    <input type="text" class="form-control" value="{{ $storage->code }}" disabled />
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Penanggung Jawab</label>
+                                    <input type="text" class="form-control" value="{{ $storage->pic_names ?? '-' }}" disabled />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Status</label>
+                                    <div class="form-control-plaintext">
+                                        @if($storage->status == 'ACTIVE')
+                                            <span class="badge bg-label-success">{{ $storage->status }}</span>
+                                        @elseif($storage->status == 'MAINTENANCE')
+                                            <span class="badge bg-label-warning">{{ $storage->status }}</span>
+                                        @else
+                                            <span class="badge bg-label-secondary">{{ $storage->status }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alamat Section -->
+                            <div class="section-header mt-12">
+                                <h6>Alamat Gudang</h6>
+                                <hr class="mx-n6">
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Provinsi</label>
+                                    <input type="text" class="form-control" value="{{ $storage->province ?? '-' }}" disabled />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Kota</label>
+                                    <input type="text" class="form-control" value="{{ $storage->city ?? '-' }}" disabled />
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Kecamatan</label>
+                                    <input type="text" class="form-control" value="{{ $storage->district ?? '-' }}" disabled />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Kelurahan</label>
+                                    <input type="text" class="form-control" value="{{ $storage->sub_district ?? '-' }}" disabled />
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Alamat Lengkap</label>
+                                    <textarea class="form-control" rows="3" disabled>{{ $storage->address ?? '-' }}</textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Kode POS</label>
+                                    <input type="text" class="form-control" value="{{ $storage->postal_code ?? '-' }}" disabled />
+                                </div>
+                            </div>
+
+                            <!-- Tags Section -->
+                            <div class="section-header mt-12">
+                                <h6>Informasi Tambahan</h6>
+                                <hr class="mx-n6">
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tag</label>
+                                    <div class="form-control-plaintext">
+                                        @if($storage->tags)
+                                            @php
+                                                $tags = json_decode($storage->tags, true);
+                                            @endphp
+                                            @if($tags && count($tags) > 0)
+                                                @foreach($tags as $tag)
+                                                    @if($tag['code'])
+                                                        <span class="badge {{ $tag['preview'] ?? 'bg-label-primary' }} me-1">{{ $tag['code'] }}</span>
+                                                    @endif
+                                                @endforeach
+                                            @else
+                                                -
+                                            @endif
+                                        @else
+                                            -
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="horizontal-inventory" role="tabpanel">
                             <div class="card-datatable">
                                 <table id="product-table" class="table table-bordered">
                                     <thead>
                                         <tr>
                                             <th>Kode Produk</th>
                                             <th>Nama Produk</th>
-                                            <th>Kategori Produk </th>
+                                            <th>Kategori Produk</th>
                                             <th>Total Stok</th>
                                             <th>Qty Tersedia</th>
                                             <th>Batas Minimum</th>
@@ -105,46 +200,6 @@
                                             <th>Harga Beli Terakhir</th>
                                             <th>Harga Beli</th>
                                             <th>Harga Jual</th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="horizontal-daftar-transaksi" role="tabpanel"
-                            aria-labelledby="profile-list-item">
-                            <div class="card-datatable">
-                                <table id="transaction-table" class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Tanggal</th>
-                                            <th>No. Transaksi</th>
-                                            <th>Kontak</th>
-                                            <th>Tgl Jatuh Tempo</th>
-                                            <th>Status</th>
-                                            <th>Jumlah DP</th>
-                                            <th>Total</th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="horizontal-daftar-batch" role="tabpanel"
-                            aria-labelledby="messages-list-item">
-                            <div class="card-datatable">
-                                <table id="batch-table" class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Kode Batch</th>
-                                            <th>Nama Produk</th>
-                                            <th>Tanggal Masuk</th>
-                                            <th>Tanggal Kadaluarsa</th>
-                                            <th>Stok Tersisa</th>
-                                            <th>Harga/Unit</th>
-                                            <th>Status</th>
-                                            <th>Sumber Transaksi</th>
-                                            <th>Nomor Transaksi</th>
-                                            <th>Catatan</th>
-                                            <th>Tgl Update Terakhir</th>
                                         </tr>
                                     </thead>
                                 </table>
@@ -167,18 +222,28 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>2025-01-21 14:30:00</td>
-                                            <td><a href="#" class="text-primary fw-semibold">Admin Gudang</a></td>
-                                            <td><span class="badge bg-label-info">UPDATE</span></td>
-                                            <td>Update status gudang dan penanggung jawab untuk RIYO Water</td>
-                                        </tr>
-                                        <tr>
-                                            <td>2025-01-20 10:15:30</td>
-                                            <td><a href="#" class="text-primary fw-semibold">System Administrator</a></td>
-                                            <td><span class="badge bg-label-success">CREATE</span></td>
-                                            <td>Gudang utama dibuat untuk operasional RIYO Water</td>
-                                        </tr>
+                                        @forelse($auditLogs as $log)
+                                            <tr>
+                                                <td>{{ $log->created_at }}</td>
+                                                <td><a href="#" class="text-primary fw-semibold">{{ $log->user_name ?? 'System' }}</a></td>
+                                                <td>
+                                                    @if($log->action_type == 'CREATE')
+                                                        <span class="badge bg-label-success">{{ $log->action_type }}</span>
+                                                    @elseif($log->action_type == 'UPDATE') 
+                                                        <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                                    @elseif($log->action_type == 'DELETE')
+                                                        <span class="badge bg-label-danger">{{ $log->action_type }}</span>
+                                                    @else
+                                                        <span class="badge bg-label-secondary">{{ $log->action_type }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $log->description }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center">Tidak ada log audit yang tersedia</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -186,14 +251,13 @@
                     </div>
                 </div>
             </div>
-
-        </form>
+        </div>
     </div>
 @endsection
 @section('js_script')
     <script>
         $(function() {
-            //DataTable
+            //DataTable for inventory
             const product_table = document.querySelector('#product-table');
 
             if (product_table) {
@@ -243,172 +307,8 @@
                             return data ?? '';
                         }
                     }],
-                    layout: {
-                        topStart: {
-                            rowClass: 'm-0',
-                            features: []
-                        },
-                        topEnd: {},
-                        bottomStart: {
-                            rowClass: 'row mx-3 justify-content-between',
-                            features: ['info']
-                        },
-                        bottomEnd: 'paging'
-                    },
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                        }
-                    },
-                    orderCellsTop: true
-                });
-            }
-
-            const transaction_table = document.querySelector('#transaction-table');
-
-            if (transaction_table) {
-                let dt_adv_filter = new DataTable(transaction_table, {
-                    ajax: `{{ route('master_data.storage.detail_transaction_data_table') }}`,
-                    columns: [{
-                            data: 'transaction_date'
-                        },
-                        {
-                            data: 'transaction_code'
-                        },
-                        {
-                            data: 'contact'
-                        },
-                        {
-                            data: 'due_date'
-                        },
-                        {
-                            data: 'status'
-                        },
-                        {
-                            data: 'down_payment_amount'
-                        },
-                        {
-                            data: 'total_amount'
-                        },
-                    ],
-                    columnDefs: [{
-                            targets: [-1, -2],
-                            className: 'text-end',
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? '';
-                            }
-                        },
-                        {
-                            orderable: false,
-                            targets: -3,
-                            render: function(data, type, full, meta) {
-                                if (data == 'Belum Dibayar') {
-                                    return `<span class="badge bg-danger">${data}</span>`;
-                                } else {
-                                    return `<span class="badge bg-danger">${data}</span>`;
-                                }
-                            }
-                        }
-                    ],
-                    layout: {
-                        topStart: {
-                            rowClass: 'm-0',
-                            features: []
-                        },
-                        topEnd: {},
-                        bottomStart: {
-                            rowClass: 'row mx-3 justify-content-between',
-                            features: ['info']
-                        },
-                        bottomEnd: 'paging'
-                    },
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                        }
-                    },
-                    orderCellsTop: true
-                });
-            }
-
-            const batch_table = document.querySelector('#batch-table');
-
-            if (batch_table) {
-                let dt_adv_filter = new DataTable(batch_table, {
-                    ajax: `{{ route('master_data.storage.detail_batch_data_table') }}`,
-                    columns: [{
-                            data: 'batch_code'
-                        },
-                        {
-                            data: 'product_name'
-                        },
-                        {
-                            data: 'received_date'
-                        },
-                        {
-                            data: 'expired_date'
-                        },
-                        {
-                            data: 'remaining_qty'
-                        },
-                        {
-                            data: 'price_per_unit'
-                        },
-                        {
-                            data: 'status'
-                        },
-                        {
-                            data: 'transaction_source'
-                        },
-                        {
-                            data: 'transaction_code'
-                        },
-                        {
-                            data: 'notes'
-                        },
-                        {
-                            data: 'last_updated'
-                        }
-                    ],
-                    columnDefs: [{
-                        targets: [-6],
-                        className: 'text-end',
-                        render: function(data, type, row) {
-                            if (type === 'display' && data != null && !isNaN(data)) {
-                                return parseFloat(data).toLocaleString('id-ID');
-                            }
-                            return data ?? '';
-                        }
-                    }],
-                    layout: {
-                        topStart: {
-                            rowClass: 'm-0',
-                            features: []
-                        },
-                        topEnd: {},
-                        bottomStart: {
-                            rowClass: 'row mx-3 justify-content-between',
-                            features: ['info']
-                        },
-                        bottomEnd: 'paging'
-                    },
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                        }
-                    },
+                    scrollX: true,
+                    responsive: true,
                     orderCellsTop: true
                 });
             }

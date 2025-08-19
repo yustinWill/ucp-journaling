@@ -157,10 +157,9 @@
                 <table id="products-table" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Nama Produk</th>
                             <th>Kode Produk</th>
+                            <th>Nama Produk</th>
                             <th>Kategori</th>
-                            <th>Tag</th>
                             <th>Total Stok</th>
                             <th>Qty Tersedia</th>
                             <th>Batas Minimum</th>
@@ -170,6 +169,7 @@
                             <th>Harga Beli</th>
                             <th>Harga Jual</th>
                             <th>Status</th>
+                            <th>Tag</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -196,34 +196,21 @@
                     }
                 },
                 columns: [{
+                        data: 'code',
+                        responsivePriority: 2
+                    },
+                    {
                         data: 'name',
                         responsivePriority: 3
                     },
                     {
-                        data: 'code',
-                        responsivePriority: 4
-                    },
-                    {
                         data: 'category_name',
-                        responsivePriority: 5
-                    },
-                    {
-                        data: 'tags',
-                        responsivePriority: 6,
-                        render: function(data, type, row) {
-                            let tags = JSON.parse(data);
-                            return tags.map(tag => {
-                                if (tag.code == null) {
-                                    return ``;
-                                }
-                                return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
-                            }).join('');
-                        }
+                        responsivePriority: 4
                     },
                     {
                         data: 'total_stock',
                         className: 'text-end',
-                        responsivePriority: 7,
+                        responsivePriority: 5,
                         render: function(data, type, row) {
                             if (type === 'display' && data != null && !isNaN(data)) {
                                 return parseFloat(data).toLocaleString('id-ID');
@@ -234,7 +221,7 @@
                     {
                         data: 'qty_available',
                         className: 'text-end',
-                        responsivePriority: 8,
+                        responsivePriority: 6,
                         render: function(data, type, row) {
                             if (type === 'display' && data != null && !isNaN(data)) {
                                 return parseFloat(data).toLocaleString('id-ID');
@@ -245,7 +232,7 @@
                     {
                         data: 'minimum_stock',
                         className: 'text-end',
-                        responsivePriority: 9,
+                        responsivePriority: 7,
                         render: function(data, type, row) {
                             if (type === 'display' && data != null && !isNaN(data)) {
                                 return parseFloat(data).toLocaleString('id-ID');
@@ -255,12 +242,12 @@
                     },
                     {
                         data: 'unit_name',
-                        responsivePriority: 10
+                        responsivePriority: 8
                     },
                     {
                         data: 'average_price',
                         className: 'text-end',
-                        responsivePriority: 11,
+                        responsivePriority: 9,
                         render: function(data, type, row) {
                             if (type === 'display' && data != null && !isNaN(data)) {
                                 return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -272,7 +259,7 @@
                         //TO DO
                         data: 'unit_purchase_price',
                         className: 'text-end',
-                        responsivePriority: 12,
+                        responsivePriority: 10,
                         render: function(data, type, row) {
                             if (type === 'display' && data != null && !isNaN(data)) {
                                 return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -283,7 +270,7 @@
                     {
                         data: 'unit_purchase_price',
                         className: 'text-end',
-                        responsivePriority: 13,
+                        responsivePriority: 11,
                         render: function(data, type, row) {
                             if (type === 'display' && data != null && !isNaN(data)) {
                                 return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -294,7 +281,7 @@
                     {
                         data: 'unit_sell_price',
                         className: 'text-end',
-                        responsivePriority: 14,
+                        responsivePriority: 12,
                         render: function(data, type, row) {
                             if (type === 'display' && data != null && !isNaN(data)) {
                                 return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -304,12 +291,25 @@
                     },
                     {
                         data: 'status',
-                        responsivePriority: 5,
+                        responsivePriority: 13,
                         render: function(data, type, row) {
                             const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
                                 'bg-label-secondary';
                             const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                             return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                        }
+                    },
+                    {
+                        data: 'tags',
+                        responsivePriority: 14,
+                        render: function(data, type, row) {
+                            let tags = JSON.parse(data);
+                            return tags.map(tag => {
+                                if (tag.code == null) {
+                                    return ``;
+                                }
+                                return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
+                            }).join('');
                         }
                     },
                     {
@@ -395,7 +395,7 @@
             // Tag Column Toggle Functionality (Products Table Only)
             $('#toggleTagColumn').on('change', function() {
                 if (productsTable) {
-                    const tagColumn = productsTable.column(3); // Tag column index (0-based)
+                    const tagColumn = productsTable.column(12); // Tag column index (0-based, now at position 12)
                     tagColumn.visible(this.checked);
                 }
             });
@@ -403,7 +403,7 @@
             // Initialize tag column visibility based on checkbox state
             const initialTagVisibility = $('#toggleTagColumn').is(':checked');
             if (productsTable) {
-                productsTable.column(3).visible(initialTagVisibility);
+                productsTable.column(12).visible(initialTagVisibility);
             }
 
             let searchTimeout;
