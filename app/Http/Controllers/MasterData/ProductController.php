@@ -20,8 +20,8 @@ use App\Domains\Coa\Services\CoaService;
 use App\Domains\Tax\Services\TaxService;
 use App\Domains\Product\Services\ProductService;
 use App\Domains\Product\Services\ProductAuditLogService;
-
-
+use App\Domains\Product\Services\ProductCompositionService;
+use App\Domains\Product\Services\ProductExpenseService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -397,7 +397,7 @@ class ProductController extends Controller
                             $req->input('bundle_inventory_enabled') === 'true' &&
                             empty($value)
                         ) {
-                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                            $fail('The track batchs field is required when type is bundle and inventory enabled is true.');
                         }
                     }
                 ],
@@ -412,7 +412,7 @@ class ProductController extends Controller
                             $req->input('bundle_inventory_enabled') === 'true' &&
                             empty($value)
                         ) {
-                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                            $fail('The bundle account field is required when type is bundle and inventory enabled is true.');
                         }
                     }
                 ],
@@ -423,7 +423,7 @@ class ProductController extends Controller
                             $req->input('bundle_inventory_enabled') === 'true' &&
                             empty($value)
                         ) {
-                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                            $fail('The bundle account acc field is required when type is bundle and inventory enabled is true.');
                         }
                     }
                 ],
@@ -434,7 +434,7 @@ class ProductController extends Controller
                             $req->input('bundle_inventory_enabled') === 'true' &&
                             empty($value)
                         ) {
-                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                            $fail('The bundle account cost field is required when type is bundle and inventory enabled is true.');
                         }
                     }
                 ],
@@ -549,6 +549,9 @@ class ProductController extends Controller
             abort(404);
         }
 
+        $productCompositions = app(ProductCompositionService::class)->findAllBasedOnProductId($id);
+        $productExpenses = app(ProductExpenseService::class)->findAllBasedOnProductId($id);
+
         $categories = app(CategoryService::class)->findAll();
         $tags = app(TagService::class)->findAll();
         $units = app(UnitService::class)->findAll();
@@ -560,7 +563,6 @@ class ProductController extends Controller
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
             ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
         ];
-
 
         // Permission checks for adding new options
         $canAddTags = true; // Mock permission check
@@ -582,11 +584,13 @@ class ProductController extends Controller
             'canAddCategories' => $canAddCategories,
             'canAddAccounts' => $canAddAccounts,
             'canAddTaxes' => $canAddTaxes,
-            'product' => $product
+            'product' => $product,
+            'productCompositions' => $productCompositions,
+            'productExpenses' => $productExpenses
         ]);
     }
 
-     public function update(Request $req)
+    public function update(Request $req)
     {
         try {
             $validated = $req->validate([
@@ -606,7 +610,7 @@ class ProductController extends Controller
                 'sales_enabled' => 'required_if:type,"single"|in:true,false',
                 'inventory_enabled' => 'required_if:type,"single"|in:true,false',
                 'purchase_price' => [
-                    'integer',
+                    'numeric',
                     function ($attribute, $value, $fail) use ($req) {
                         if (
                             $req->input('type') === 'single' &&
@@ -730,7 +734,7 @@ class ProductController extends Controller
                 'bundle_sales_enabled' => 'required_if:type,"bundle"|in:true,false',
                 'bundle_inventory_enabled' => 'required_if:type,"bundle"|in:true,false',
                 'bundle_purchase_price' => [
-                    'integer',
+                    'numeric',
                     function ($attribute, $value, $fail) use ($req) {
                         if (
                             $req->input('type') === 'bundle' &&
@@ -850,8 +854,19 @@ class ProductController extends Controller
                     }
                 ],
                 'bundle_components' => 'required_if:type,"bundle"|array',
+                'bundle_components.*.composition_id' => [
+                    'nullable',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            empty($value)
+                        ) {
+                            $fail('The bundle account component composition id field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
-                'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|integer|min:1',
+                'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric|min:1',
                 // Bundle accounts
                 'bundle_accounts' => [
                     function ($attribute, $value, $fail) use ($req) {
@@ -860,7 +875,19 @@ class ProductController extends Controller
                             $req->input('bundle_inventory_enabled') === 'true' &&
                             empty($value)
                         ) {
-                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                            $fail('The bundle account field is required when type is bundle and inventory enabled is true.');
+                        }
+                    }
+                ],
+                'bundle_accounts.*.expense_id' => [
+                    'nullable',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            $req->input('bundle_inventory_enabled') === 'true' &&
+                            empty($value)
+                        ) {
+                            $fail('The bundle account expense id field is required when type is bundle and inventory enabled is true.');
                         }
                     }
                 ],
@@ -871,7 +898,7 @@ class ProductController extends Controller
                             $req->input('bundle_inventory_enabled') === 'true' &&
                             empty($value)
                         ) {
-                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                            $fail('The bundle account account field is required when type is bundle and inventory enabled is true.');
                         }
                     }
                 ],
@@ -882,7 +909,7 @@ class ProductController extends Controller
                             $req->input('bundle_inventory_enabled') === 'true' &&
                             empty($value)
                         ) {
-                            $fail('The track batch field is required when type is bundle and inventory enabled is true.');
+                            $fail('The bundle account cost field is required when type is bundle and inventory enabled is true.');
                         }
                     }
                 ],

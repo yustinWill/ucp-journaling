@@ -806,7 +806,7 @@
 
                 // Reset form values
                 $('#productForm input[type="text"], #productForm input[type="number"]').not(
-                    '#product-code, #product-name').val(
+                    '#product-code, #product-name, #product-status').val(
                     '');
                 $('#productForm select').not('#unit-select,#category-select').val('').trigger('change');
             }
