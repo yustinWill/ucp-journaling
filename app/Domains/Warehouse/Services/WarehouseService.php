@@ -37,7 +37,7 @@ class WarehouseService
         if ($data && $data->tags) {
             $data->tags = json_decode($data->tags);
         }
-        
+
         // Get PIC user names if exists
         if ($data && $data->f_pic_ids) {
             $pic_ids = json_decode($data->f_pic_ids);
@@ -49,7 +49,7 @@ class WarehouseService
                 $data->pic_users = $pic_users;
             }
         }
-        
+
         return $data;
     }
 
@@ -126,10 +126,10 @@ class WarehouseService
         }
 
         if ($search = request()->input('search')) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('t.name', 'like', "%{$search}%")
-                  ->orWhere('t.code', 'like', "%{$search}%")
-                  ->orWhere('t.address', 'like', "%{$search}%");
+                    ->orWhere('t.code', 'like', "%{$search}%")
+                    ->orWhere('t.address', 'like', "%{$search}%");
             });
         }
 
@@ -147,6 +147,12 @@ class WarehouseService
         $query->orderBy('t.id', 'ASC');
         $data = $query->get();
 
+        foreach ($data as $row) {
+            if ($row->tags) {
+                $tags = json_decode($row->tags, true);
+                $row->tags = collect($tags)->unique('code')->values()->all();
+            }
+        }
         return [
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,

@@ -27,6 +27,8 @@ enum SuccessCodes: string
     case UPDATE_ACCOUNTING_JOURNAL_SUCCESS = 'UPDATE_ACCOUNTING_JOURNAL_SUCCESS';
     case CREATE_PRODUCT_SUCCESS = 'CREATE_PRODUCT_SUCCESS';
     case UPDATE_PRODUCT_SUCCESS = 'UPDATE_PRODUCT_SUCCESS';
+    case CREATE_WEARHOUSE_SUCCESS = 'CREATE_WEARHOUSE_SUCCESS';
+    case UPDATE_WEARHOUSE_SUCCESS = 'UPDATE_WEARHOUSE_SUCCESS';
 
     public function message(): string
     {
@@ -52,6 +54,8 @@ enum SuccessCodes: string
             self::UPDATE_ACCOUNTING_JOURNAL_SUCCESS => 'Jurnal Akuntansi berhasil diperbarui.',
             self::CREATE_PRODUCT_SUCCESS => 'Produk berhasil dibuat.',
             self::UPDATE_PRODUCT_SUCCESS => 'Produk berhasil diperbarui.',
+            self::CREATE_WEARHOUSE_SUCCESS => 'Gudang berhasil dibuat.',
+            self::UPDATE_WEARHOUSE_SUCCESS => 'Gudang berhasil diperbarui.',
         };
     }
 
@@ -79,6 +83,8 @@ enum SuccessCodes: string
             self::UPDATE_ACCOUNTING_JOURNAL_SUCCESS => self::OK,
             self::CREATE_PRODUCT_SUCCESS => self::OK,
             self::UPDATE_PRODUCT_SUCCESS => self::OK,
+            self::CREATE_WEARHOUSE_SUCCESS => self::OK,
+            self::UPDATE_WEARHOUSE_SUCCESS => self::OK,
         };
     }
 

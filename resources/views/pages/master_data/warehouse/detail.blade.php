@@ -164,13 +164,13 @@
                                     <label class="form-label">Tag</label>
                                     <div class="form-control-plaintext">
                                         @if($warehouse->tags)
-                                            @php
+                                            {{-- @php
                                                 $tags = json_decode($warehouse->tags, true);
-                                            @endphp
-                                            @if($tags && count($tags) > 0)
-                                                @foreach($tags as $tag)
-                                                    @if($tag['code'])
-                                                        <span class="badge {{ $tag['preview'] ?? 'bg-label-primary' }} me-1">{{ $tag['code'] }}</span>
+                                            @endphp --}}
+                                            @if($warehouse->tags && count($warehouse->tags) > 0)
+                                                @foreach($warehouse->tags as $tag)
+                                                    @if($tag->code)
+                                                        <span class="badge {{ $tag->preview ?? 'bg-label-primary' }} me-1">{{ $tag->code }}</span>
                                                     @endif
                                                 @endforeach
                                             @else

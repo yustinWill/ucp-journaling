@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <!-- Summary Cards -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-lg-3 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
@@ -61,7 +61,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Main Content Card -->
     <div class="card mt-6">
@@ -88,7 +88,7 @@
                                     data-allow-clear="true">
                                     <option value="">Semua Tag</option>
                                     @foreach($availableTags as $tag)
-                                        <option value="{{ $tag['value'] }}">{{ $tag['label'] }}</option>
+                                        <option value="{{ $tag->code }}">{{ $tag->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -193,9 +193,7 @@
                         data: 'tags',
                         responsivePriority: 7,
                         render: function(data, type, row) {
-                            if (!data) return '-';
-                            let tags = JSON.parse(data);
-                            return tags.map(tag => {
+                            return data.map(tag => {
                                 if (tag.code == null) {
                                     return ``;
                                 }

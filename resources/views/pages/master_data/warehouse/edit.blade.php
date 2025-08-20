@@ -29,9 +29,9 @@
                     <label class="form-label">Penanggung Jawab</label>
                     <select class="global-select2 form-select" id="warehouse-pic" name="pic_users[]" data-allow-clear="false" multiple>
                         @foreach($picUsers as $user)
-                            <option value="{{ $user['value'] }}" 
-                                {{ in_array($user['value'], json_decode($warehouse->f_pic_ids ?? '[]')) ? 'selected' : '' }}>
-                                {{ $user['label'] }}
+                            <option value="{{ $user->id }}" 
+                                {{ in_array($user->id, json_decode($warehouse->f_pic_ids ?? '[]')) ? 'selected' : '' }}>
+                                {{ $user->name }}
                             </option>
                         @endforeach
                     </select>
@@ -97,9 +97,9 @@
                     <label class="form-label">Tag</label>
                     <select class="global-select2 form-select" id="warehouse-tags" name="tags[]" multiple data-allow-clear="false">
                         @foreach($availableTags as $tag)
-                            <option value="{{ $tag['value'] }}" 
-                                {{ in_array($tag['value'], json_decode($warehouse->f_tag_codes ?? '[]')) ? 'selected' : '' }}>
-                                {{ $tag['label'] }}
+                            <option value="{{ $tag->id }}" 
+                                {{ in_array($tag->id, json_decode($warehouse->f_tag_codes ?? '[]')) ? 'selected' : '' }}>
+                                {{ $tag->name }}
                             </option>
                         @endforeach
                     </select>

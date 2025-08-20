@@ -29,7 +29,7 @@
                     <label class="form-label">Penanggung Jawab</label>
                     <select class="global-select2 form-select" id="warehouse-pic" name="pic_users[]" data-allow-clear="false" multiple>
                         @foreach($picUsers as $user)
-                            <option value="{{ $user['value'] }}">{{ $user['label'] }}</option>
+                            <option value="{{ $user->id }}">{{ $user->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -94,7 +94,7 @@
                     <label class="form-label">Tag</label>
                     <select class="global-select2 form-select" id="warehouse-tags" name="tags[]" multiple data-allow-clear="false">
                         @foreach($availableTags as $tag)
-                            <option value="{{ $tag['value'] }}">{{ $tag['label'] }}</option>
+                            <option value="{{ $tag->id }}">{{ $tag->name }}</option>
                         @endforeach
                     </select>
                     <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi gudang</small>

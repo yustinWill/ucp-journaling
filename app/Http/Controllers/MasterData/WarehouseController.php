@@ -4,12 +4,22 @@ namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\Warehouse\Services\WarehouseAuditLogService;
 use App\Domains\Warehouse\Actions\CreateWarehouseAction;
 use App\Domains\Warehouse\Actions\UpdateWarehouseAction;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\User\Services\UserService;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
+
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
 
 class WarehouseController extends Controller
 {
@@ -21,24 +31,12 @@ class WarehouseController extends Controller
             ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Maintenance']
         ];
 
-        // Get PIC users from database
-        $picUsers = DB::table('users')
-            ->select('id as value', DB::raw("CONCAT(id, ' - ', name) as label"))
-            ->where('status', 'ACTIVE')
-            ->get()
-            ->toArray();
-
         // Get available tags
-        $availableTags = DB::table('m_tags')
-            ->select('id as value', DB::raw("CONCAT(code, ' - ', name) as label"))
-            ->where('status', 'ACTIVE')
-            ->get()
-            ->toArray();
+        $tags = app(TagService::class)->findAll();
 
         return view('pages.master_data.warehouse.index', [
             'warehouseStatuses' => $warehouseStatuses,
-            'picUsers' => $picUsers,
-            'availableTags' => $availableTags
+            'availableTags' => $tags
         ]);
     }
 
@@ -56,18 +54,10 @@ class WarehouseController extends Controller
         ];
 
         // Get PIC users from database
-        $picUsers = DB::table('users')
-            ->select('id as value', DB::raw("CONCAT(id, ' - ', name) as label"))
-            ->where('status', 'ACTIVE')
-            ->get()
-            ->toArray();
+        $picUsers = app(UserService::class)->findAll();
 
         // Get available tags
-        $availableTags = DB::table('m_tags')
-            ->select('id as value', DB::raw("CONCAT(code, ' - ', name) as label"))
-            ->where('status', 'ACTIVE')
-            ->get()
-            ->toArray();
+        $availableTags = app(TagService::class)->findAll();
 
         return view('pages.master_data.warehouse.add', [
             'warehouseStatuses' => $warehouseStatuses,
@@ -85,18 +75,10 @@ class WarehouseController extends Controller
         ];
 
         // Get PIC users from database
-        $picUsers = DB::table('users')
-            ->select('id as value', DB::raw("CONCAT(id, ' - ', name) as label"))
-            ->where('status', 'ACTIVE')
-            ->get()
-            ->toArray();
+        $picUsers = app(UserService::class)->findAll();
 
         // Get available tags
-        $availableTags = DB::table('m_tags')
-            ->select('id as value', DB::raw("CONCAT(code, ' - ', name) as label"))
-            ->where('status', 'ACTIVE')
-            ->get()
-            ->toArray();
+        $availableTags = app(TagService::class)->findAll();
 
         // Get warehouse data from database
         $warehouse = app(WarehouseService::class)->findOne($id);
@@ -126,19 +108,28 @@ class WarehouseController extends Controller
                 'tags' => $request->tags ?? []
             ];
 
-            $result = app(CreateWarehouseAction::class)->execute($data);
+            app(CreateWarehouseAction::class)->execute($data);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Warehouse berhasil ditambahkan',
-                'data' => $result
-            ], 201);
-
-        } catch (\Exception $e) {
+                'message' => SuccessCodes::CREATE_WEARHOUSE_SUCCESS->message()
+            ], SuccessCodes::CREATE_WEARHOUSE_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Gagal menambahkan warehouse: ' . $e->getMessage()
-            ], 500);
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
@@ -159,19 +150,28 @@ class WarehouseController extends Controller
                 'tags' => $request->tags ?? []
             ];
 
-            $result = app(UpdateWarehouseAction::class)->execute($id, $data);
+            app(UpdateWarehouseAction::class)->execute($id, $data);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Warehouse berhasil diperbarui',
-                'data' => $result
-            ], 200);
-
-        } catch (\Exception $e) {
+                'message' => SuccessCodes::UPDATE_WEARHOUSE_SUCCESS->message()
+            ], SuccessCodes::UPDATE_WEARHOUSE_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Gagal memperbarui warehouse: ' . $e->getMessage()
-            ], 500);
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
@@ -196,7 +196,7 @@ class WarehouseController extends Controller
     {
         $warehouse = app(WarehouseService::class)->findOne($id);
         $auditLogs = app(WarehouseAuditLogService::class)->findAllBasedOnId($id);
-        
+
         return view('pages.master_data.warehouse.detail', compact('warehouse', 'auditLogs'));
     }
 
