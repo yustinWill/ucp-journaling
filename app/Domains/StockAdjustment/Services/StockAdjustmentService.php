@@ -3,6 +3,7 @@
 namespace App\Domains\StockAdjustment\Services;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class StockAdjustmentService
 {
@@ -18,15 +19,18 @@ class StockAdjustmentService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name)
-            ->where('id', $id)
-            ->where('company_code', session('user_company_code'))
+        $data = DB::table($this->table_name . ' as t')
+            ->select('t.*', 'w.name as warehouse_name', 'u.name as pic_name')
+            ->leftJoin('m_warehouses as w', 't.warehouse_id', '=', 'w.id')
+            ->leftJoin('users as u', 't.pic_id', '=', 'u.id')
+            ->where('t.id', $id)
+            ->where('t.company_code', session('user_company_code'))
             ->first();
-            
-        if ($data && $data->tags) {
-            $data->tags = json_decode($data->tags); // Returns objects for view compatibility
+
+        if ($data && $data->f_tag_codes) {
+            $data->f_tag_codes = json_decode($data->f_tag_codes); // Returns objects for view compatibility
         }
-        
+
         return $data;
     }
 
@@ -42,12 +46,12 @@ class StockAdjustmentService
             'status' => $data['status'],
             'description' => $data['description'],
             'memo' => $data['memo'] ?? null,
-            'tags' => json_encode($data['tags'] ?? []),
+            'f_tag_codes' => json_encode($data['f_tag_codes'] ?? []),
             'reference_number' => $data['reference_number'] ?? null,
             'total_items' => $data['total_items'] ?? 0,
             'total_adjustment_qty' => $data['total_adjustment_qty'] ?? 0,
             'total_adjustment_value' => $data['total_adjustment_value'] ?? 0,
-            'created_by' => auth()->id(),
+            'created_by' => Auth::id(),
             'created_at' => now()
         ];
 
@@ -69,7 +73,7 @@ class StockAdjustmentService
             'total_items' => $data['total_items'] ?? 0,
             'total_adjustment_qty' => $data['total_adjustment_qty'] ?? 0,
             'total_adjustment_value' => $data['total_adjustment_value'] ?? 0,
-            'updated_by' => auth()->id(),
+            'updated_by' => Auth::id(),
             'updated_at' => now()
         ];
 
@@ -89,6 +93,7 @@ class StockAdjustmentService
                 'sa.adjustment_number',
                 'sa.adjustment_date',
                 'sa.adjustment_type',
+                'sa.warehouse_id',
                 'sa.status',
                 'sa.description',
                 'sa.total_items',
@@ -194,7 +199,7 @@ class StockAdjustmentService
         if ($search_filter) {
             $query->where(function ($q) use ($search_filter) {
                 $q->where('p.code', 'like', "%{$search_filter}%")
-                  ->orWhere('p.name', 'like', "%{$search_filter}%");
+                    ->orWhere('p.name', 'like', "%{$search_filter}%");
             });
         }
 
@@ -205,7 +210,7 @@ class StockAdjustmentService
     {
         $today = now()->format('Ymd');
         $prefix = 'SA-' . $today . '-';
-        
+
         $lastNumber = DB::table($this->table_name)
             ->where('company_code', session('user_company_code'))
             ->where('adjustment_number', 'like', $prefix . '%')

@@ -21,7 +21,7 @@ class CreateStockAdjustmentAction
                 'status' => $data['status'] ?? 'DRAFT',
                 'description' => $data['description'],
                 'memo' => $data['memo'] ?? null,
-                'tags' => $data['tags'] ?? [],
+                'f_tag_codes' => $data['tags'] ?? [],
                 'reference_number' => $data['reference_number'] ?? null,
                 'total_items' => count($data['products'] ?? []),
                 'total_adjustment_qty' => $this->calculateTotalQty($data['products'] ?? []),

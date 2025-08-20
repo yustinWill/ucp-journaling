@@ -5,16 +5,23 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Http\Controllers\Controller;
 use App\Helpers\PermissionHelper;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
+use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Actions\CreateStockAdjustmentAction;
 use App\Domains\StockAdjustment\Actions\UpdateStockAdjustmentAction;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\Category\Services\CategoryService;
-use App\Enums\ErrorCodes;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
 
 class StockAdjustmentController extends Controller
 {
@@ -24,10 +31,10 @@ class StockAdjustmentController extends Controller
         if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
         }
-        
+
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_stock_adjustment');
-        
+
         // Map permissions to view variables
         $canAddStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
         $canImportStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
@@ -84,7 +91,7 @@ class StockAdjustmentController extends Controller
             'canEditStockAdjustment' => $canEditStockAdjustment,
             'canDeleteStockAdjustment' => $canDeleteStockAdjustment
         ];
-        
+
         return view('pages.main_transaction.stock_adjustment.index', array_merge($data, $permissionData));
     }
 
@@ -98,7 +105,6 @@ class StockAdjustmentController extends Controller
 
             $result = app(StockAdjustmentService::class)->findAllDatatable();
             return response()->json($result);
-            
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -199,7 +205,7 @@ class StockAdjustmentController extends Controller
         if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
         }
-        
+
         // Get stock adjustment data from service
         $stockAdjustment = app(StockAdjustmentService::class)->findOne($id);
         if (!$stockAdjustment) {
@@ -295,7 +301,7 @@ class StockAdjustmentController extends Controller
         if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
         }
-        
+
         // Permission checks for detail page actions
         $canEditStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
         $canApproveStockAdjustment = PermissionHelper::canApprove('main_transaction_stock_adjustment');
@@ -310,6 +316,7 @@ class StockAdjustmentController extends Controller
 
         // Get adjustment items from service
         $adjustmentItems = app(StockAdjustmentService::class)->getAdjustmentItems($id);
+        $auditLog = app(StockAdjustmentAuditLogService::class)->findByStockAdjustmentId($id);
 
         return view('pages.main_transaction.stock_adjustment.detail', [
             'stockAdjustment' => $stockAdjustment,
@@ -317,7 +324,8 @@ class StockAdjustmentController extends Controller
             'canEditStockAdjustment' => $canEditStockAdjustment,
             'canApproveStockAdjustment' => $canApproveStockAdjustment,
             'canRejectStockAdjustment' => $canRejectStockAdjustment,
-            'canApplyStockAdjustment' => $canApplyStockAdjustment
+            'canApplyStockAdjustment' => $canApplyStockAdjustment,
+            'auditLog' => $auditLog
         ]);
     }
 
@@ -387,7 +395,7 @@ class StockAdjustmentController extends Controller
         $format = $request->input('format');
         $columns = json_decode($request->input('columns'), true);
         $filters = json_decode($request->input('filters'), true);
-        
+
         // Mock data for stock adjustments
         $stockAdjustments = collect([
             [
@@ -419,14 +427,14 @@ class StockAdjustmentController extends Controller
                 'description' => 'Koreksi stok botol 330ml'
             ]
         ]);
-        
+
         // Apply filters (similar to StockOpnameController)
         if (!empty($filters['date_from'])) {
-            $stockAdjustments = $stockAdjustments->filter(function($item) use ($filters) {
+            $stockAdjustments = $stockAdjustments->filter(function ($item) use ($filters) {
                 return $item['adjustment_date'] >= $filters['date_from'];
             });
         }
-        
+
         switch ($format) {
             case 'excel':
                 return $this->exportToExcel($stockAdjustments, $columns);
@@ -443,7 +451,7 @@ class StockAdjustmentController extends Controller
     {
         $filename = 'stock_adjustment_export_' . date('Y-m-d_H-i-s') . '.xlsx';
         $content = "Mock Excel content for Stock Adjustment export with " . count($data) . " records";
-        
+
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -453,7 +461,7 @@ class StockAdjustmentController extends Controller
     {
         $filename = 'stock_adjustment_export_' . date('Y-m-d_H-i-s') . '.csv';
         $content = "Mock CSV content for Stock Adjustment export";
-        
+
         return response($content)
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -463,7 +471,7 @@ class StockAdjustmentController extends Controller
     {
         $filename = 'stock_adjustment_export_' . date('Y-m-d_H-i-s') . '.pdf';
         $content = "Mock PDF content for Stock Adjustment export";
-        
+
         return response($content)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -486,7 +494,7 @@ class StockAdjustmentController extends Controller
         }
         $filename = 'stock_adjustment_import_template.xlsx';
         $content = "Mock Excel template for Stock Adjustment import";
-        
+
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -543,7 +551,7 @@ class StockAdjustmentController extends Controller
                     ]
                 ]
             ];
-            
+
             return response()->json([
                 'success' => true,
                 'total_count' => $mockData['total_count'],
@@ -552,7 +560,6 @@ class StockAdjustmentController extends Controller
                 'success_data' => $mockData['success_data'],
                 'error_data' => $mockData['error_data']
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -570,13 +577,12 @@ class StockAdjustmentController extends Controller
         try {
             $data = $request->input('data');
             $importedCount = count($data);
-            
+
             return response()->json([
                 'success' => true,
                 'imported_count' => $importedCount,
                 'message' => 'Data stock adjustment berhasil diimport'
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -588,11 +594,6 @@ class StockAdjustmentController extends Controller
     public function save(Request $request)
     {
         try {
-            // Check write permission
-            if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-
             $validated = $request->validate([
                 'adjustment_date' => 'required|date',
                 'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,PRODUCT_RETURN,DAMAGE_LOSS,EXPIRY_DISPOSAL,WAREHOUSE_TRANSFER',
@@ -613,24 +614,27 @@ class StockAdjustmentController extends Controller
                 'products.*.reason' => 'nullable|string|max:200'
             ]);
 
-            $stockAdjustmentId = app(CreateStockAdjustmentAction::class)->execute($validated);
+            app(CreateStockAdjustmentAction::class)->execute($validated);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Stock adjustment berhasil dibuat',
-                'stock_adjustment_id' => $stockAdjustmentId
-            ]);
-
+                'message' => SuccessCodes::CREATE_STOCK_ADJUSTMENT_SUCCESS->message()
+            ], SuccessCodes::CREATE_STOCK_ADJUSTMENT_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-                'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
             ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
         } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
@@ -638,11 +642,6 @@ class StockAdjustmentController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            // Check write permission
-            if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-
             $validated = $request->validate([
                 'adjustment_date' => 'required|date',
                 'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,PRODUCT_RETURN,DAMAGE_LOSS,EXPIRY_DISPOSAL,WAREHOUSE_TRANSFER',
@@ -666,30 +665,75 @@ class StockAdjustmentController extends Controller
             app(UpdateStockAdjustmentAction::class)->execute($id, $validated);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Stock adjustment berhasil diperbarui'
-            ]);
-
+                'message' => SuccessCodes::UPDATE_STOCK_ADJUSTMENT_SUCCESS->message()
+            ], SuccessCodes::UPDATE_STOCK_ADJUSTMENT_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-                'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
             ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
         } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
+        // try {
+        //     // Check write permission
+        //     if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
+        //         return response()->json(['error' => 'Unauthorized'], 403);
+        //     }
+
+        //     $validated = $request->validate([
+        //         'adjustment_date' => 'required|date',
+        //         'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,PRODUCT_RETURN,DAMAGE_LOSS,EXPIRY_DISPOSAL,WAREHOUSE_TRANSFER',
+        //         'warehouse_id' => 'required|integer|exists:m_warehouses,id',
+        //         'pic_id' => 'required|integer|exists:users,id',
+        //         'status' => 'required|string|in:DRAFT,WAITING_APPROVAL,APPROVED,CANCELLED',
+        //         'description' => 'required|string|max:1000',
+        //         'memo' => 'nullable|string|max:500',
+        //         'tags' => 'nullable|array',
+        //         'products' => 'required|array|min:1',
+        //         'products.*.product_id' => 'required|integer',
+        //         'products.*.product_code' => 'required|string',
+        //         'products.*.product_name' => 'required|string',
+        //         'products.*.unit' => 'required|string',
+        //         'products.*.stock_before' => 'required|numeric',
+        //         'products.*.adjustment_qty' => 'required|numeric|not_in:0',
+        //         'products.*.unit_cost' => 'nullable|numeric|min:0',
+        //         'products.*.reason' => 'nullable|string|max:200'
+        //     ]);
+
+        //     app(UpdateStockAdjustmentAction::class)->execute($id, $validated);
+
+        //     return response()->json([
+        //         'success' => true,
+        //         'message' => 'Stock adjustment berhasil diperbarui'
+        //     ]);
+        // } catch (ValidationException $e) {
+        //     return response()->json([
+        //         'message' => 'Validation failed',
+        //         'errors' => $e->errors(),
+        //         'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
+        //     ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        // } catch (\Throwable $e) {
+        //     return response()->json([
+        //         'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+        //         'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+        //     ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        // }
     }
 
     public function getWarehouseProducts(Request $request)
     {
         try {
-            // Debug: Log the request
-            Log::info('getWarehouseProducts called with params: ', $request->all());
-            
             // Check read permission
             if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
                 return response()->json(['error' => 'Unauthorized'], 403);
@@ -702,30 +746,23 @@ class StockAdjustmentController extends Controller
                 'search_filter' => 'nullable|string'
             ]);
 
-            Log::info('Validation passed, calling service...');
-
             $products = app(StockAdjustmentService::class)->getProductsInWarehouse(
                 $request->warehouse_id,
                 $request->category_filter,
                 $request->search_filter
             );
 
-            Log::info('Service returned ' . count($products) . ' products');
-
             return response()->json([
                 'success' => true,
                 'data' => $products
             ]);
-
         } catch (ValidationException $e) {
-            \Log::error('Validation error in getWarehouseProducts: ', $e->errors());
             return response()->json([
                 'message' => 'Validation failed',
                 'errors' => $e->errors(),
                 'error' => 'VALIDATION_ERROR'
             ], 422);
         } catch (\Throwable $e) {
-            \Log::error('Error in getWarehouseProducts: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
             return response()->json([
                 'message' => 'Error: ' . $e->getMessage(),
                 'error' => 'INTERNAL_SERVER_ERROR',
@@ -747,11 +784,11 @@ class StockAdjustmentController extends Controller
             $currentDate = date('Y-m-d');
             $year = date('Y');
             $month = date('m');
-            
+
             // Get the latest sequence number for this month
             $latestRecord = app(StockAdjustmentService::class)->getLatestByMonth($year, $month);
-            $sequence = $latestRecord ? ($latestRecord->sequence + 1) : 1;
-            
+            $sequence = $latestRecord ? ($latestRecord->id + 1) : 1;
+
             // Format: SA-YYYY-MMDD-XXX (SA = Stock Adjustment)
             $transactionNumber = sprintf('SA-%s-%s%s-%03d', $year, $month, date('d'), $sequence);
 
@@ -759,11 +796,11 @@ class StockAdjustmentController extends Controller
                 'success' => true,
                 'transaction_number' => $transactionNumber
             ]);
-
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+               'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }

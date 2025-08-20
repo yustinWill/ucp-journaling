@@ -1,6 +1,6 @@
 @extends('layouts.default')
 @section('page_title')
-    Detail Stock Adjustment - {{ $stockAdjustment['adjustment_number'] }}
+    Detail Stock Adjustment - {{ $stockAdjustment->adjustment_number }}
 @stop
 @section('content')
     <div class="card mb-6">
@@ -13,10 +13,10 @@
                 <div class="col-md-4">
                     @php
                         $totalActions = 1; // Edit always present
-                        if($stockAdjustment['status'] === 'PENDING_APPROVAL') {
+                        if($stockAdjustment->status === 'PENDING_APPROVAL') {
                             $totalActions += 2; // Approve and Reject
                         }
-                        if($stockAdjustment['status'] === 'APPROVED') {
+                        if($stockAdjustment->status === 'APPROVED') {
                             $totalActions++; // Apply action
                         }
                     @endphp
@@ -24,11 +24,11 @@
                     @if($totalActions < 3)
                         <!-- Show buttons directly when less than 3 actions -->
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('main_transaction.stock_adjustment.edit', $stockAdjustment['id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                            <a href="{{ route('main_transaction.stock_adjustment.edit', $stockAdjustment->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-edit me-2"></i>
                                 Edit
                             </a>
-                            @if($stockAdjustment['status'] === 'APPROVED')
+                            @if($stockAdjustment->status === 'APPROVED')
                                 <button type="button" class="btn btn-success btn-md waves-effect waves-light" id="apply-adjustment-btn">
                                     <i class="icon-base ti tabler-check me-2"></i>
                                     Terapkan ke Stok
@@ -38,7 +38,7 @@
                     @else
                         <!-- Show dropdown for 3 or more actions -->
                         <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ route('main_transaction.stock_adjustment.detail', $stockAdjustment['id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                            <a href="{{ route('main_transaction.stock_adjustment.detail', $stockAdjustment->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-eye me-2"></i>
                                 Detail
                             </a>
@@ -48,11 +48,11 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('main_transaction.stock_adjustment.edit', $stockAdjustment['id']) }}">
+                                        <a class="dropdown-item" href="{{ route('main_transaction.stock_adjustment.edit', $stockAdjustment->id) }}">
                                             <i class="icon-base ti tabler-edit me-2"></i>Edit
                                         </a>
                                     </li>
-                                    @if($stockAdjustment['status'] === 'PENDING_APPROVAL')
+                                    @if($stockAdjustment->status === 'PENDING_APPROVAL')
                                         <li>
                                             <a class="dropdown-item" href="javascript:void(0);" id="approve-adjustment-btn">
                                                 <i class="icon-base ti tabler-check me-2"></i>Setujui
@@ -64,7 +64,7 @@
                                             </a>
                                         </li>
                                     @endif
-                                    @if($stockAdjustment['status'] === 'APPROVED')
+                                    @if($stockAdjustment->status === 'APPROVED')
                                         <li>
                                             <a class="dropdown-item" href="javascript:void(0);" id="apply-adjustment-btn">
                                                 <i class="icon-base ti tabler-check me-2"></i>Terapkan ke Stok
@@ -79,7 +79,7 @@
             </div>
 
             <!-- Entity Title -->
-            <h2>{{ $stockAdjustment['adjustment_number'] }}</h2>
+            <h2>{{ $stockAdjustment->adjustment_number }}</h2>
             <span>
                 <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
             </span>
@@ -89,37 +89,37 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Adjustment</label>
-                    <input type="text" class="form-control" value="{{ $stockAdjustment['adjustment_date'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $stockAdjustment->adjustment_date }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tipe Adjustment</label>
-                    <input type="text" class="form-control" value="{{ $stockAdjustment['adjustment_type'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $stockAdjustment->adjustment_type }}" disabled />
                 </div>
             </div>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Gudang</label>
-                    <input type="text" class="form-control" value="{{ $stockAdjustment['warehouse_name'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $stockAdjustment->warehouse_name }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Penanggung Jawab</label>
-                    <input type="text" class="form-control" value="{{ $stockAdjustment['pic_name'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $stockAdjustment->pic_name }}" disabled />
                 </div>
             </div>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
-                    <input type="text" class="form-control" value="{{ $stockAdjustment['status'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $stockAdjustment->status }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Nomor Referensi</label>
-                    <input type="text" class="form-control" value="{{ $stockAdjustment['reference_number'] ?: '-' }}" disabled />
+                    <input type="text" class="form-control" value="{{ $stockAdjustment->reference_number ?: '-' }}" disabled />
                 </div>
             </div>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Deskripsi</label>
-                    <textarea class="form-control" rows="3" disabled>{{ $stockAdjustment['description'] }}</textarea>
+                    <textarea class="form-control" rows="3" disabled>{{ $stockAdjustment->description }}</textarea>
                 </div>
             </div>
             <hr class="my-6 mx-n6" />
@@ -129,25 +129,25 @@
                 <div class="col-md-3">
                     <div class="summary-card primary">
                         <h6>Total Item</h6>
-                        <h4>{{ $stockAdjustment['total_items'] }}</h4>
+                        <h4>{{ $stockAdjustment->total_items }}</h4>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="summary-card {{ $stockAdjustment['total_adjustment_qty'] > 0 ? 'success' : ($stockAdjustment['total_adjustment_qty'] < 0 ? 'danger' : 'warning') }}">
+                    <div class="summary-card {{ $stockAdjustment->total_adjustment_qty > 0 ? 'success' : ($stockAdjustment->total_adjustment_qty < 0 ? 'danger' : 'warning') }}">
                         <h6>Qty Adjustment</h6>
-                        <h4>{{ $stockAdjustment['total_adjustment_qty'] > 0 ? '+' : '' }}{{ number_format($stockAdjustment['total_adjustment_qty'], 0, ',', '.') }}</h4>
+                        <h4>{{ $stockAdjustment->total_adjustment_qty > 0 ? '+' : '' }}{{ number_format($stockAdjustment->total_adjustment_qty, 0, ',', '.') }}</h4>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="summary-card {{ $stockAdjustment['total_adjustment_value'] > 0 ? 'success' : ($stockAdjustment['total_adjustment_value'] < 0 ? 'danger' : 'warning') }}">
+                    <div class="summary-card {{ $stockAdjustment->total_adjustment_value > 0 ? 'success' : ($stockAdjustment->total_adjustment_value < 0 ? 'danger' : 'warning') }}">
                         <h6>Nilai Adjustment</h6>
-                        <h4>{{ $stockAdjustment['total_adjustment_value'] > 0 ? '+' : ($stockAdjustment['total_adjustment_value'] < 0 ? '-' : '') }}Rp {{ number_format(abs($stockAdjustment['total_adjustment_value']), 0, ',', '.') }}</h4>
+                        <h4>{{ $stockAdjustment->total_adjustment_value > 0 ? '+' : ($stockAdjustment->total_adjustment_value < 0 ? '-' : '') }}Rp {{ number_format(abs($stockAdjustment->total_adjustment_value), 0, ',', '.') }}</h4>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="summary-card {{ $stockAdjustment['status'] === 'APPLIED' ? 'success' : ($stockAdjustment['status'] === 'PENDING_APPROVAL' ? 'warning' : 'primary') }}">
+                    <div class="summary-card {{ $stockAdjustment->status === 'APPLIED' ? 'success' : ($stockAdjustment->status === 'PENDING_APPROVAL' ? 'warning' : 'primary') }}">
                         <h6>Status</h6>
-                        <h4>{{ $stockAdjustment['status'] }}</h4>
+                        <h4>{{ $stockAdjustment->status }}</h4>
                     </div>
                 </div>
             </div>
@@ -180,8 +180,8 @@
                                         <div class="card-body">
                                             <h6 class="card-title text-success">Adjustment Positif</h6>
                                             <p class="card-text">
-                                                <strong>Total Qty:</strong> +{{ max(0, $stockAdjustment['total_adjustment_qty']) }}<br>
-                                                <strong>Estimasi Nilai:</strong> {{ $stockAdjustment['total_adjustment_value'] > 0 ? '+Rp ' . number_format($stockAdjustment['total_adjustment_value'], 0, ',', '.') : 'Rp 0' }}
+                                                <strong>Total Qty:</strong> +{{ max(0, $stockAdjustment->total_adjustment_qty) }}<br>
+                                                <strong>Estimasi Nilai:</strong> {{ $stockAdjustment->total_adjustment_value > 0 ? '+Rp ' . number_format($stockAdjustment->total_adjustment_value, 0, ',', '.') : 'Rp 0' }}
                                             </p>
                                             <small class="text-muted">Penambahan stok ke sistem</small>
                                         </div>
@@ -192,8 +192,8 @@
                                         <div class="card-body">
                                             <h6 class="card-title text-danger">Adjustment Negatif</h6>
                                             <p class="card-text">
-                                                <strong>Total Qty:</strong> {{ min(0, $stockAdjustment['total_adjustment_qty']) }}<br>
-                                                <strong>Estimasi Nilai:</strong> {{ $stockAdjustment['total_adjustment_value'] < 0 ? '-Rp ' . number_format(abs($stockAdjustment['total_adjustment_value']), 0, ',', '.') : 'Rp 0' }}
+                                                <strong>Total Qty:</strong> {{ min(0, $stockAdjustment->total_adjustment_qty) }}<br>
+                                                <strong>Estimasi Nilai:</strong> {{ $stockAdjustment->total_adjustment_value < 0 ? '-Rp ' . number_format(abs($stockAdjustment->total_adjustment_value), 0, ',', '.') : 'Rp 0' }}
                                             </p>
                                             <small class="text-muted">Pengurangan stok dari sistem</small>
                                         </div>
@@ -223,36 +223,36 @@
                                         @foreach($adjustmentItems as $item)
                                         <tr>
                                             <td>
-                                                <a href="{{ route('master_data.product.detail', $item['product_code']) }}" class="text-primary fw-semibold" title="Lihat detail produk">
-                                                    <strong>{{ $item['product_code'] }}</strong>
+                                                <a href="{{ route('master_data.product.detail', $item->product_code) }}" class="text-primary fw-semibold" title="Lihat detail produk">
+                                                    <strong>{{ $item->product_code }}</strong>
                                                 </a>
                                             </td>
-                                            <td>{{ $item['product_name'] }}</td>
-                                            <td>{{ $item['unit'] }}</td>
-                                            <td class="text-end">{{ number_format($item['current_stock'], 0, ',', '.') }}</td>
+                                            <td>{{ $item->product_name }}</td>
+                                            <td>{{ $item->unit }}</td>
+                                            <td class="text-end">{{ number_format($item->stock_before, 0, ',', '.') }}</td>
                                             <td class="text-end">
-                                                @if($item['adjustment_qty'] > 0)
-                                                    <span class="text-success">+{{ number_format($item['adjustment_qty'], 0, ',', '.') }}</span>
-                                                @elseif($item['adjustment_qty'] < 0)
-                                                    <span class="text-danger">{{ number_format($item['adjustment_qty'], 0, ',', '.') }}</span>
+                                                @if($item->adjustment_qty > 0)
+                                                    <span class="text-success">+{{ number_format($item->adjustment_qty, 0, ',', '.') }}</span>
+                                                @elseif($item->adjustment_qty < 0)
+                                                    <span class="text-danger">{{ number_format($item->adjustment_qty, 0, ',', '.') }}</span>
                                                 @else
                                                     <span class="text-muted">0</span>
                                                 @endif
                                             </td>
-                                            <td class="text-end">Rp {{ number_format($item['unit_cost'], 0, ',', '.') }}</td>
+                                            <td class="text-end">Rp {{ number_format($item->unit_cost, 0, ',', '.') }}</td>
                                             <td class="text-end">
-                                                @if($item['total_value'] > 0)
-                                                    <span class="text-success">+Rp {{ number_format($item['total_value'], 0, ',', '.') }}</span>
-                                                @elseif($item['total_value'] < 0)
-                                                    <span class="text-danger">-Rp {{ number_format(abs($item['total_value']), 0, ',', '.') }}</span>
+                                                @if($item->total_value > 0)
+                                                    <span class="text-success">+Rp {{ number_format($item->total_value, 0, ',', '.') }}</span>
+                                                @elseif($item->total_value < 0)
+                                                    <span class="text-danger">-Rp {{ number_format(abs($item->total_value), 0, ',', '.') }}</span>
                                                 @else
                                                     <span class="text-muted">Rp 0</span>
                                                 @endif
                                             </td>
                                             <td>
-                                                <div class="mb-1"><strong>Alasan:</strong> {{ $item['reason'] ?? '-' }}</div>
-                                                @if(isset($item['batch_number']) && $item['batch_number'])
-                                                    <small class="text-muted">Batch: {{ $item['batch_number'] }}</small>
+                                                <div class="mb-1"><strong>Alasan:</strong> {{ $item->reason ?? '-' }}</div>
+                                                @if(isset($item->batch_number) && $item->batch_number)
+                                                    <small class="text-muted">Batch: {{ $item->batch_number }}</small>
                                                 @endif
                                             </td>
                                         </tr>
@@ -278,58 +278,16 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if(isset($stockAdjustment['audit_logs']))
-                                            @foreach($stockAdjustment['audit_logs'] as $log)
+                                        @if(isset($auditLog))
+                                            @foreach($auditLog as $log)
                                                 <tr>
-                                                    <td>{{ $log['created_at'] }}</td>
-                                                    <td><a href="{{ route('master_data.user.detail', ['id' => $log['user_id']]) }}" class="text-primary fw-semibold">{{ $log['user_name'] }}</a></td>
-                                                    <td><span class="badge bg-label-{{ $log['action_type'] === 'CREATE' ? 'primary' : 'warning' }}">{{ $log['action_type'] }}</span></td>
-                                                    <td>{{ $log['description'] }}</td>
+                                                    <td>{{ $log->created_at }}</td>
+                                                    <td><a href="{{ route('master_data.user.detail', ['id' => $log->created_by]) }}" class="text-primary fw-semibold">{{ $log->user_name }}</a></td>
+                                                    <td><span class="badge bg-label-{{ $log->action_type === 'CREATE' ? 'primary' : 'warning' }}">{{ $log->action_type }}</span></td>
+                                                    <td>{{ $log->description }}</td>
                                                 </tr>
                                             @endforeach
                                         @else
-                                            <tr>
-                                                <td>2025-01-15 14:30:25</td>
-                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-001']) }}" class="text-primary fw-semibold">Yustinus Komunal</a></td>
-                                                <td><span class="badge bg-label-warning">UPDATE</span></td>
-                                                <td>Stock adjustment SA-2025-001 diterapkan ke sistem inventory dengan 3 produk</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-15 13:45:12</td>
-                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-001']) }}" class="text-primary fw-semibold">Yustinus Komunal</a></td>
-                                                <td><span class="badge bg-label-warning">UPDATE</span></td>
-                                                <td>Stock adjustment SA-2025-001 disetujui untuk diterapkan</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-15 11:20:08</td>
-                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-002']) }}" class="text-primary fw-semibold">Ririn Safitri</a></td>
-                                                <td><span class="badge bg-label-warning">UPDATE</span></td>
-                                                <td>Stock adjustment SA-2025-001 disubmit untuk persetujuan dengan total qty +2</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-15 10:15:45</td>
-                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-002']) }}" class="text-primary fw-semibold">Ririn Safitri</a></td>
-                                                <td><span class="badge bg-label-warning">UPDATE</span></td>
-                                                <td>Menambahkan produk AIR-1500 ke adjustment dengan qty 0</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-15 10:12:33</td>
-                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-002']) }}" class="text-primary fw-semibold">Ririn Safitri</a></td>
-                                                <td><span class="badge bg-label-warning">UPDATE</span></td>
-                                                <td>Menambahkan produk AIR-600 ke adjustment dengan qty 0</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-15 10:08:21</td>
-                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-002']) }}" class="text-primary fw-semibold">Ririn Safitri</a></td>
-                                                <td><span class="badge bg-label-warning">UPDATE</span></td>
-                                                <td>Menambahkan produk AIR-330 ke adjustment dengan qty +2</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-15 09:00:15</td>
-                                                <td><a href="{{ route('master_data.user.detail', ['id' => 'USR-001']) }}" class="text-primary fw-semibold">Yustinus Komunal</a></td>
-                                                <td><span class="badge bg-label-primary">CREATE</span></td>
-                                                <td>Stock adjustment SA-2025-001 dibuat dengan tipe STOCK_OPNAME untuk gudang GDG-001</td>
-                                            </tr>
                                         @endif
                                     </tbody>
                                 </table>

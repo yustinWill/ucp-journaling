@@ -31,6 +31,7 @@ class StockAdjustmentAuditLogService
                 'sal.description',
                 'sal.metadata',
                 'sal.created_at',
+                'sal.created_by',
                 'u.name as user_name'
             ])
             ->leftJoin('users as u', 'sal.created_by', '=', 'u.id')

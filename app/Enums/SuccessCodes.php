@@ -29,6 +29,8 @@ enum SuccessCodes: string
     case UPDATE_PRODUCT_SUCCESS = 'UPDATE_PRODUCT_SUCCESS';
     case CREATE_WEARHOUSE_SUCCESS = 'CREATE_WEARHOUSE_SUCCESS';
     case UPDATE_WEARHOUSE_SUCCESS = 'UPDATE_WEARHOUSE_SUCCESS';
+    case CREATE_STOCK_ADJUSTMENT_SUCCESS = 'CREATE_STOCK_ADJUSTMENT_SUCCESS';
+    case UPDATE_STOCK_ADJUSTMENT_SUCCESS = 'UPDATE_STOCK_ADJUSTMENT_SUCCESS';
 
     public function message(): string
     {
@@ -56,6 +58,8 @@ enum SuccessCodes: string
             self::UPDATE_PRODUCT_SUCCESS => 'Produk berhasil diperbarui.',
             self::CREATE_WEARHOUSE_SUCCESS => 'Gudang berhasil dibuat.',
             self::UPDATE_WEARHOUSE_SUCCESS => 'Gudang berhasil diperbarui.',
+            self::CREATE_STOCK_ADJUSTMENT_SUCCESS => 'Penyesuaian Stok berhasil dibuat.',
+            self::UPDATE_STOCK_ADJUSTMENT_SUCCESS => 'Penyesuaian Stok berhasil diperbarui.',
         };
     }
 
@@ -85,6 +89,8 @@ enum SuccessCodes: string
             self::UPDATE_PRODUCT_SUCCESS => self::OK,
             self::CREATE_WEARHOUSE_SUCCESS => self::OK,
             self::UPDATE_WEARHOUSE_SUCCESS => self::OK,
+            self::CREATE_STOCK_ADJUSTMENT_SUCCESS => self::OK,
+            self::UPDATE_STOCK_ADJUSTMENT_SUCCESS => self::OK,
         };
     }
 
