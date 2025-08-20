@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Domains\Storage\Actions;
+namespace App\Domains\Warehouse\Actions;
 
 use Illuminate\Support\Facades\DB;
 use App\Enums\ActionTypes;
 
-use App\Domains\Storage\Services\StorageService;
-use App\Domains\Storage\Services\StorageAuditLogService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Domains\Warehouse\Services\WarehouseAuditLogService;
 
-class UpdateStorageAction
+class UpdateWarehouseAction
 {
     public function execute(int $id, array $data)
     {
         return DB::transaction(function () use ($id, $data) {
             // Get original data for audit log
-            $original_data = app(StorageService::class)->findOne($id);
+            $original_data = app(WarehouseService::class)->findOne($id);
             
-            $result = app(StorageService::class)->update($id, $data);
+            $result = app(WarehouseService::class)->update($id, $data);
 
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
@@ -26,7 +26,7 @@ class UpdateStorageAction
                     'after' => $data,
                 ])
             ];
-            app(StorageAuditLogService::class)->create($log_data, $id);
+            app(WarehouseAuditLogService::class)->create($log_data, $id);
 
             return $result;
         });

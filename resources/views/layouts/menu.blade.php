@@ -105,10 +105,10 @@
                 <div data-i18n="Produk">Produk</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.storage.*'])) active @endif">
-            <a href="{{ route('master_data.storage.index') }}" class="menu-link">
+        <li class="menu-item @if (request()->routeIs(['master_data.warehouse.*'])) active @endif">
+            <a href="{{ route('master_data.warehouse.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-warehouse"></i>
-                <div data-i18n="Gudang">Gudang</div>
+                <div data-i18n="Warehouse">Warehouse</div>
             </a>
         </li>
         <li class="menu-item">

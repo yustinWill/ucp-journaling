@@ -79,16 +79,16 @@
                     <label class="form-label">Gudang Tujuan <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="purchase-delivery-storage" name="storage_id" data-allow-clear="false" required>
+                            <select class="global-select2 form-select" id="purchase-delivery-warehouse" name="warehouse_id" data-allow-clear="false" required>
                                 <option value="">Pilih Gudang</option>
-                                @foreach($storages as $storage)
-                                    <option value="{{ $storage['value'] }}" @if($purchaseDelivery['storage_id'] == $storage['value']) selected @endif>{{ $storage['label'] }}</option>
+                                @foreach($warehouses as $warehouse)
+                                    <option value="{{ $warehouse['value'] }}" @if($purchaseDelivery['warehouse_id'] == $warehouse['value']) selected @endif>{{ $warehouse['label'] }}</option>
                                 @endforeach
                             </select>
                         </div>
                         @if($canAddStorages)
                             <div class="col-auto">
-                                <a href="{{ route('master_data.storage.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
+                                <a href="{{ route('master_data.warehouse.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
                                     <i class="icon-base ti tabler-plus"></i>
                                 </a>
                             </div>
@@ -195,7 +195,7 @@ $(function() {
             tracking_number: $('#purchase-delivery-tracking').val(),
             total_items: $('#purchase-delivery-total-items').val(),
             delivered_items: $('#purchase-delivery-delivered-items').val(),
-            storage_id: $('#purchase-delivery-storage').val(),
+            warehouse_id: $('#purchase-delivery-warehouse').val(),
             received_by: $('#purchase-delivery-received-by').val(),
             delivery_notes: $('#purchase-delivery-notes').val()
         };

@@ -273,7 +273,7 @@ class StockAdjustmentController extends Controller
 
         // Permission checks for add buttons
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
-        $canAddWarehouses = PermissionHelper::canWrite('master_data_storage');
+        $canAddWarehouses = PermissionHelper::canWrite('master_data_warehouse');
         $canAddUsers = PermissionHelper::canWrite('master_data_user');
 
         return view('pages.main_transaction.stock_adjustment.add', [
@@ -380,7 +380,7 @@ class StockAdjustmentController extends Controller
 
         // Permission checks for add buttons
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
-        $canAddWarehouses = PermissionHelper::canWrite('master_data_storage');
+        $canAddWarehouses = PermissionHelper::canWrite('master_data_warehouse');
         $canAddUsers = PermissionHelper::canWrite('master_data_user');
 
         return view('pages.main_transaction.stock_adjustment.edit', [

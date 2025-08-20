@@ -127,16 +127,16 @@
                     <label class="form-label">Gudang <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="purchase-order-storage" name="storage_id" data-allow-clear="false" required>
+                            <select class="global-select2 form-select" id="purchase-order-warehouse" name="warehouse_id" data-allow-clear="false" required>
                                 <option value="">Pilih Gudang</option>
-                                @foreach($storages as $storage)
-                                    <option value="{{ $storage['value'] }}" @if($purchaseOrder['storage_id'] == $storage['value']) selected @endif>{{ $storage['label'] }}</option>
+                                @foreach($warehouses as $warehouse)
+                                    <option value="{{ $warehouse['value'] }}" @if($purchaseOrder['warehouse_id'] == $warehouse['value']) selected @endif>{{ $warehouse['label'] }}</option>
                                 @endforeach
                             </select>
                         </div>
                         @if($canAddStorages)
                             <div class="col-auto">
-                                <a href="{{ route('master_data.storage.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
+                                <a href="{{ route('master_data.warehouse.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
                                     <i class="icon-base ti tabler-plus"></i>
                                 </a>
                             </div>
@@ -391,8 +391,8 @@ $(function() {
         checkProductTableState();
     });
     
-    // Reset product table when storage changes
-    $('#purchase-order-storage').on('change', function() {
+    // Reset product table when warehouse changes
+    $('#purchase-order-warehouse').on('change', function() {
         resetProductTable();
         checkProductTableState();
     });
@@ -413,7 +413,7 @@ $(function() {
     
     function checkProductTableState() {
         const hasSupplier = $('#purchase-order-supplier').val();
-        const hasStorage = $('#purchase-order-storage').val();
+        const hasStorage = $('#purchase-order-warehouse').val();
         
         productTableEnabled = hasSupplier && hasStorage;
         
@@ -427,7 +427,7 @@ $(function() {
             });
             $('#add-product-row').prop('disabled', false);
             
-            // Load products for the selected supplier and storage
+            // Load products for the selected supplier and warehouse
             loadProducts();
         } else {
             // Show disabled message and disable controls
@@ -456,9 +456,9 @@ $(function() {
     
     function loadProducts() {
         const supplierId = $('#purchase-order-supplier').val();
-        const storageId = $('#purchase-order-storage').val();
+        const warehouseId = $('#purchase-order-warehouse').val();
         
-        if (!supplierId || !storageId) return;
+        if (!supplierId || !warehouseId) return;
         
         // Mock products - in real implementation, fetch via AJAX
         const products = [

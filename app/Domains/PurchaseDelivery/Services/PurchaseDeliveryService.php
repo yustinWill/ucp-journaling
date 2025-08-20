@@ -17,7 +17,7 @@ class PurchaseDeliveryService
             'purchase_order_id' => $data['purchase_order_id'] ?? null,
             'supplier_id' => $data['supplier_id'],
             'supplier_reference' => $data['supplier_reference'] ?? null,
-            'storage_id' => $data['storage_id'],
+            'warehouse_id' => $data['warehouse_id'],
             'expected_date' => $data['expected_date'] ?? null,
             'email' => $data['email'] ?? null,
             'address' => $data['address'] ?? null,
@@ -42,7 +42,7 @@ class PurchaseDeliveryService
                 'purchase_order_id' => $data['purchase_order_id'],
                 'supplier_id' => $data['supplier_id'],
                 'supplier_reference' => $data['supplier_reference'] ?? null,
-                'storage_id' => $data['storage_id'],
+                'warehouse_id' => $data['warehouse_id'],
                 'message' => $data['message'] ?? null,
                 'memo' => $data['memo'] ?? null,
                 'attachment' => $data['attachment'] ?? null,
@@ -68,12 +68,12 @@ class PurchaseDeliveryService
                 'po.id as po_id',
                 's.name as supplier',
                 's.id as supplier_id',
-                'st.name as storage',
-                'st.id as storage_id',
+                'st.name as warehouse',
+                'st.id as warehouse_id',
             ])
             ->leftJoin('t_purchase_orders as po', 'pd.purchase_order_id', '=', 'po.id')
             ->leftJoin('m_contacts as s', 'pd.supplier_id', '=', 's.id')
-            ->leftJoin('m_storages as st', 'pd.storage_id', '=', 'st.id');
+            ->leftJoin('m_warehouses as st', 'pd.warehouse_id', '=', 'st.id');
 
         // Filter by status
         if ($status = request()->input('status')) {
@@ -84,8 +84,8 @@ class PurchaseDeliveryService
             $query->where('s.id', $supplier);
         }
 
-        if ($storage = request()->input('storage')) {
-            $query->where('st.id', $storage);
+        if ($warehouse = request()->input('warehouse')) {
+            $query->where('st.id', $warehouse);
         }
 
         if ($search = request()->input('search')) {
@@ -126,14 +126,14 @@ class PurchaseDeliveryService
                 's.name as supplier',
                 's.email as supplier_email',
                 's.address as supplier_address',
-                'st.name as storage',
-                'st.code as storage_code',
+                'st.name as warehouse',
+                'st.code as warehouse_code',
                 'u_created.name as created_by_name',
                 'u_updated.name as updated_by_name'
             ])
             ->leftJoin('t_purchase_orders as po', 'pd.purchase_order_id', '=', 'po.id')
             ->leftJoin('m_contacts as s', 'pd.supplier_id', '=', 's.id')
-            ->leftJoin('m_storages as st', 'pd.storage_id', '=', 'st.id')
+            ->leftJoin('m_warehouses as st', 'pd.warehouse_id', '=', 'st.id')
             ->leftJoin('m_users as u_created', 'pd.created_by', '=', 'u_created.id')
             ->leftJoin('m_users as u_updated', 'pd.updated_by', '=', 'u_updated.id')
             ->where('pd.id', $id)

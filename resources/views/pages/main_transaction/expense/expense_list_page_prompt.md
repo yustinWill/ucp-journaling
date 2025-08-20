@@ -135,7 +135,7 @@ Comprehensive expense listing with detailed transaction information:
 This expense list page will enable:
 - **Advanced Analytics**: Expense trend analysis and budget performance tracking
 - **Automated Approvals**: Workflow-based expense approval processes
-- **Receipt Management**: Digital receipt storage and document management
+- **Receipt Management**: Digital receipt warehouse and document management
 - **Mobile Expense Entry**: Mobile app integration for field expense entry
 - **Integration Enhancement**: Advanced ERP and accounting system integration
 - **Predictive Analytics**: Expense forecasting and budget optimization

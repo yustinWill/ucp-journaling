@@ -118,7 +118,7 @@ class PurchaseDeliveryController extends Controller
                 'supplier_id' => 1,
                 'email' => 'plastik@prima.com',
                 'address' => 'Jl. Industri No. 123, Jakarta Timur',
-                'storage_id' => '1' // Default storage from PO
+                'warehouse_id' => '1' // Default warehouse from PO
             ],
             [
                 'value' => '2', 
@@ -127,7 +127,7 @@ class PurchaseDeliveryController extends Controller
                 'supplier_id' => 2,
                 'email' => 'info@grafika.com',
                 'address' => 'Jl. Percetakan Raya No. 45, Tangerang',
-                'storage_id' => '2' // Default storage from PO
+                'warehouse_id' => '2' // Default warehouse from PO
             ],
             [
                 'value' => '3', 
@@ -136,7 +136,7 @@ class PurchaseDeliveryController extends Controller
                 'supplier_id' => 3,
                 'email' => 'kemasan@sejahtera.co.id',
                 'address' => 'Jl. Kemasan Indah No. 67, Bekasi',
-                'storage_id' => '1' // Default storage from PO
+                'warehouse_id' => '1' // Default warehouse from PO
             ]
         ];
 
@@ -148,7 +148,7 @@ class PurchaseDeliveryController extends Controller
             ['value' => '4', 'label' => 'SUP-004 - PT Supplier Bahan Kimia', 'email' => 'kimia@supplier.com', 'address' => 'Jl. Kimia Industri No. 89, Cikarang']
         ];
 
-        $storages = [
+        $warehouses = [
             ['value' => '1', 'label' => 'GD-001 - Gudang Utama Jakarta'],
             ['value' => '2', 'label' => 'GD-002 - Gudang Produksi Tangerang'],
             ['value' => '3', 'label' => 'GD-003 - Gudang Distribusi Bekasi']
@@ -163,13 +163,13 @@ class PurchaseDeliveryController extends Controller
 
         // Permission checks
         $canAddSuppliers = PermissionHelper::canWrite('master_data_contact');
-        $canAddStorages = PermissionHelper::canWrite('master_data_storage');
+        $canAddStorages = PermissionHelper::canWrite('master_data_warehouse');
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
         return view('pages.main_transaction.purchase_delivery.add', [
             'purchaseOrders' => $purchaseOrders,
             'suppliers' => $suppliers,
-            'storages' => $storages,
+            'warehouses' => $warehouses,
             'availableTags' => $availableTags,
             'canAddSuppliers' => $canAddSuppliers,
             'canAddStorages' => $canAddStorages,
@@ -195,7 +195,7 @@ class PurchaseDeliveryController extends Controller
                 'date' => 'required|date',
                 'reference_no' => 'required|string|max:50',
                 'delivery_mode' => 'required|in:po,manual',
-                'storage_id' => 'required|integer',
+                'warehouse_id' => 'required|integer',
                 'supplier_reference' => 'nullable|string|max:100',
                 'expected_date' => 'nullable|date',
                 'tags' => 'nullable|array',
@@ -252,7 +252,7 @@ class PurchaseDeliveryController extends Controller
                 $deliveryData = [
                     'reference_no' => $validated['reference_no'],
                     'date' => $validated['date'],
-                    'storage_id' => $validated['storage_id'],
+                    'warehouse_id' => $validated['warehouse_id'],
                     'supplier_reference' => $validated['supplier_reference'] ?? null,
                     'expected_date' => $validated['expected_date'] ?? null,
                     'message' => $validated['message'] ?? null,
@@ -370,7 +370,7 @@ class PurchaseDeliveryController extends Controller
             'tracking_number' => 'INT-2025-0001',
             'total_items' => 1000,
             'delivered_items' => 1000,
-            'storage' => 'Gudang Utama',
+            'warehouse' => 'Gudang Utama',
             'received_by' => 'Ahmad Supardi',
             'delivery_notes' => 'Pengiriman botol PET 330ml sesuai PO-2025-001, kondisi barang baik',
             'created_at' => '2025-07-05 08:00:00',
@@ -471,7 +471,7 @@ class PurchaseDeliveryController extends Controller
             'tracking_number' => 'INT-2025-0001',
             'total_items' => 1000,
             'delivered_items' => 800,
-            'storage_id' => 1,
+            'warehouse_id' => 1,
             'received_by' => 'Ahmad Supardi',
             'delivery_notes' => 'Pengiriman botol PET 330ml sesuai PO-2025-001'
         ];
@@ -505,7 +505,7 @@ class PurchaseDeliveryController extends Controller
             ['value' => 'Pos Indonesia', 'label' => 'Pos Indonesia']
         ];
 
-        $storages = [
+        $warehouses = [
             ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
             ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
             ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
@@ -523,11 +523,11 @@ class PurchaseDeliveryController extends Controller
             'statuses' => $statuses,
             'purchaseOrders' => $purchaseOrders,
             'carriers' => $carriers,
-            'storages' => $storages,
+            'warehouses' => $warehouses,
             'receiverOptions' => $receiverOptions,
             'canWrite' => PermissionHelper::canWrite('main_transaction_purchase_delivery'),
             'canAddSuppliers' => PermissionHelper::canWrite('master_data_contact'),
-            'canAddStorages' => PermissionHelper::canWrite('master_data_storage')
+            'canAddStorages' => PermissionHelper::canWrite('master_data_warehouse')
         ];
         
         return view('pages.main_transaction.purchase_delivery.edit', array_merge($data, $permissionData));
@@ -555,7 +555,7 @@ class PurchaseDeliveryController extends Controller
                 'tracking_number' => 'nullable|string',
                 'total_items' => 'required|integer|min:0',
                 'delivered_items' => 'required|integer|min:0',
-                'storage_id' => 'nullable|integer',
+                'warehouse_id' => 'nullable|integer',
                 'received_by' => 'nullable|string',
                 'delivery_notes' => 'nullable|string|max:500'
             ]);
@@ -595,7 +595,7 @@ class PurchaseDeliveryController extends Controller
             ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
         ];
 
-        $storages = [
+        $warehouses = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
             ['value' => '3', 'label' => 'Gudang Finished Goods']
@@ -603,7 +603,7 @@ class PurchaseDeliveryController extends Controller
 
         return view('pages.main_transaction.purchase_delivery.import', [
             'suppliers' => $suppliers,
-            'storages' => $storages
+            'warehouses' => $warehouses
         ]);
     }
 
@@ -677,7 +677,7 @@ class PurchaseDeliveryController extends Controller
             ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
         ];
 
-        $storages = [
+        $warehouses = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
             ['value' => '3', 'label' => 'Gudang Finished Goods']
@@ -685,7 +685,7 @@ class PurchaseDeliveryController extends Controller
 
         return view('pages.main_transaction.purchase_delivery.export', [
             'suppliers' => $suppliers,
-            'storages' => $storages
+            'warehouses' => $warehouses
         ]);
     }
 

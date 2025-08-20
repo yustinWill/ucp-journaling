@@ -6,16 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use App\Domains\Storage\Services\StorageService;
-use App\Domains\Storage\Services\StorageAuditLogService;
-use App\Domains\Storage\Actions\CreateStorageAction;
-use App\Domains\Storage\Actions\UpdateStorageAction;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Domains\Warehouse\Services\WarehouseAuditLogService;
+use App\Domains\Warehouse\Actions\CreateWarehouseAction;
+use App\Domains\Warehouse\Actions\UpdateWarehouseAction;
 
-class StorageController extends Controller
+class WarehouseController extends Controller
 {
     public function index()
     {
-        $storageStatuses = [
+        $warehouseStatuses = [
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
             ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
             ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Maintenance']
@@ -35,8 +35,8 @@ class StorageController extends Controller
             ->get()
             ->toArray();
 
-        return view('pages.master_data.storage.index', [
-            'storageStatuses' => $storageStatuses,
+        return view('pages.master_data.warehouse.index', [
+            'warehouseStatuses' => $warehouseStatuses,
             'picUsers' => $picUsers,
             'availableTags' => $availableTags
         ]);
@@ -44,12 +44,12 @@ class StorageController extends Controller
 
     public function index_data_table()
     {
-        return response()->json(app(StorageService::class)->findAllDatatable(), 200);
+        return response()->json(app(WarehouseService::class)->findAllDatatable(), 200);
     }
 
     public function add()
     {
-        $storageStatuses = [
+        $warehouseStatuses = [
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
             ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
             ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Maintenance']
@@ -69,8 +69,8 @@ class StorageController extends Controller
             ->get()
             ->toArray();
 
-        return view('pages.master_data.storage.add', [
-            'storageStatuses' => $storageStatuses,
+        return view('pages.master_data.warehouse.add', [
+            'warehouseStatuses' => $warehouseStatuses,
             'picUsers' => $picUsers,
             'availableTags' => $availableTags
         ]);
@@ -78,7 +78,7 @@ class StorageController extends Controller
 
     public function edit($id)
     {
-        $storageStatuses = [
+        $warehouseStatuses = [
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
             ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
             ['value' => 'MAINTENANCE', 'label' => 'MAINTENANCE - Maintenance']
@@ -98,14 +98,14 @@ class StorageController extends Controller
             ->get()
             ->toArray();
 
-        // Get storage data from database
-        $storage = app(StorageService::class)->findOne($id);
+        // Get warehouse data from database
+        $warehouse = app(WarehouseService::class)->findOne($id);
 
-        return view('pages.master_data.storage.edit', [
-            'storageStatuses' => $storageStatuses,
+        return view('pages.master_data.warehouse.edit', [
+            'warehouseStatuses' => $warehouseStatuses,
             'picUsers' => $picUsers,
             'availableTags' => $availableTags,
-            'storage' => $storage
+            'warehouse' => $warehouse
         ]);
     }
 
@@ -126,18 +126,18 @@ class StorageController extends Controller
                 'tags' => $request->tags ?? []
             ];
 
-            $result = app(CreateStorageAction::class)->execute($data);
+            $result = app(CreateWarehouseAction::class)->execute($data);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Gudang berhasil ditambahkan',
+                'message' => 'Warehouse berhasil ditambahkan',
                 'data' => $result
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menambahkan gudang: ' . $e->getMessage()
+                'message' => 'Gagal menambahkan warehouse: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -159,18 +159,18 @@ class StorageController extends Controller
                 'tags' => $request->tags ?? []
             ];
 
-            $result = app(UpdateStorageAction::class)->execute($id, $data);
+            $result = app(UpdateWarehouseAction::class)->execute($id, $data);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Gudang berhasil diperbarui',
+                'message' => 'Warehouse berhasil diperbarui',
                 'data' => $result
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memperbarui gudang: ' . $e->getMessage()
+                'message' => 'Gagal memperbarui warehouse: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -184,20 +184,20 @@ class StorageController extends Controller
             ["no" => 4, "value" => "Status Gudang"],
             ["no" => 5, "value" => "Alamat Gudang"],
         ];
-        return view('pages.master_data.storage.export', ['data' => $data]);
+        return view('pages.master_data.warehouse.export', ['data' => $data]);
     }
 
     public function import()
     {
-        return view('pages.master_data.storage.import', []);
+        return view('pages.master_data.warehouse.import', []);
     }
 
     public function detail($id)
     {
-        $storage = app(StorageService::class)->findOne($id);
-        $auditLogs = app(StorageAuditLogService::class)->findAllBasedOnId($id);
+        $warehouse = app(WarehouseService::class)->findOne($id);
+        $auditLogs = app(WarehouseAuditLogService::class)->findAllBasedOnId($id);
         
-        return view('pages.master_data.storage.detail', compact('storage', 'auditLogs'));
+        return view('pages.master_data.warehouse.detail', compact('warehouse', 'auditLogs'));
     }
 
     public function detail_product_data_table()

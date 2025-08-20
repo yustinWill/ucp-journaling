@@ -330,7 +330,7 @@
                                             <tr>
                                                 <td>{{ $inventory['warehouse_code'] }}</td>
                                                 <td>
-                                                    <a href="{{ route('master_data.storage.detail', ['id' => $inventory['warehouse_id']]) }}"
+                                                    <a href="{{ route('master_data.warehouse.detail', ['id' => $inventory['warehouse_id']]) }}"
                                                         class="text-primary fw-semibold">
                                                         {{ $inventory['warehouse_name'] }}
                                                     </a>

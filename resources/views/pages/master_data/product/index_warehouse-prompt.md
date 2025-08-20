@@ -172,7 +172,7 @@ This warehouse tab will enable:
 
 ### Warehouse Management Context
 **Multi-location Inventory Control**:
-- **Warehouse Locations**: Comprehensive management of physical storage locations
+- **Warehouse Locations**: Comprehensive management of physical warehouse locations
 - **Stock Distribution**: Real-time tracking of inventory across multiple warehouses
 - **Transfer Operations**: Inter-warehouse transfer management and tracking
 - **Location Analytics**: Warehouse-specific performance and utilization metrics

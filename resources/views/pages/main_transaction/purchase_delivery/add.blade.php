@@ -43,7 +43,7 @@
                 <select class="global-select2 form-select" id="purchase-delivery-po" name="purchase_order_id" data-allow-clear="true">
                     <option value="">Tanpa Purchase Order</option>
                     @foreach($purchaseOrders as $po)
-                        <option value="{{ $po['value'] }}" data-supplier="{{ $po['supplier'] }}" data-supplier-id="{{ $po['supplier_id'] }}" data-email="{{ $po['email'] }}" data-address="{{ $po['address'] ?? '' }}" data-storage-id="{{ $po['storage_id'] ?? '' }}">{{ $po['label'] }}</option>
+                        <option value="{{ $po['value'] }}" data-supplier="{{ $po['supplier'] }}" data-supplier-id="{{ $po['supplier_id'] }}" data-email="{{ $po['email'] }}" data-address="{{ $po['address'] ?? '' }}" data-warehouse-id="{{ $po['warehouse_id'] ?? '' }}">{{ $po['label'] }}</option>
                     @endforeach
                 </select>
                 <small class="form-text text-muted">Pilih PO untuk mengisi data supplier otomatis, atau biarkan kosong untuk entry manual</small>
@@ -108,16 +108,16 @@
                 <label class="form-label">Gudang Tujuan <span style="color: red;">*</span></label>
                 <div class="row g-2">
                     <div class="col">
-                        <select class="global-select2 form-select" id="purchase-delivery-storage" name="storage_id" data-allow-clear="false" required>
+                        <select class="global-select2 form-select" id="purchase-delivery-warehouse" name="warehouse_id" data-allow-clear="false" required>
                             <option value="">Pilih Gudang</option>
-                            @foreach($storages as $storage)
-                                <option value="{{ $storage['value'] }}">{{ $storage['label'] }}</option>
+                            @foreach($warehouses as $warehouse)
+                                <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
                             @endforeach
                         </select>
                     </div>
                     @if($canAddStorages)
                         <div class="col-auto">
-                            <a href="{{ route('master_data.storage.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
+                            <a href="{{ route('master_data.warehouse.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
                                 <i class="icon-base ti tabler-plus"></i>
                             </a>
                         </div>
@@ -343,10 +343,10 @@ $(function() {
             $('#purchase-delivery-email').val(selectedOption.data('email') || '');
             $('#purchase-delivery-address').val(selectedOption.data('address') || '');
             
-            // Auto-fill storage destination from PO
-            const storageId = selectedOption.data('storage-id');
-            if (storageId) {
-                $('#purchase-delivery-storage').val(storageId).trigger('change');
+            // Auto-fill warehouse destination from PO
+            const warehouseId = selectedOption.data('warehouse-id');
+            if (warehouseId) {
+                $('#purchase-delivery-warehouse').val(warehouseId).trigger('change');
             }
             
             // Show PO mode table headers
@@ -411,8 +411,8 @@ $(function() {
         }
     });
     
-    // Reset product table when storage changes
-    $('#purchase-delivery-storage').on('change', function() {
+    // Reset product table when warehouse changes
+    $('#purchase-delivery-warehouse').on('change', function() {
         if (!isPOMode) {
             resetProductTable();
         }
@@ -424,10 +424,10 @@ $(function() {
         
         if (isPOMode) {
             hasSupplier = $('#purchase-delivery-po').val();
-            hasStorage = $('#purchase-delivery-storage').val();
+            hasStorage = $('#purchase-delivery-warehouse').val();
         } else {
             hasSupplier = $('#purchase-delivery-supplier').val();
-            hasStorage = $('#purchase-delivery-storage').val();
+            hasStorage = $('#purchase-delivery-warehouse').val();
         }
         
         productTableEnabled = hasSupplier && hasStorage;
@@ -616,9 +616,9 @@ $(function() {
     
     function loadProducts() {
         const supplierId = $('#purchase-delivery-supplier').val();
-        const storageId = $('#purchase-delivery-storage').val();
+        const warehouseId = $('#purchase-delivery-warehouse').val();
         
-        if (!supplierId || !storageId) return;
+        if (!supplierId || !warehouseId) return;
         
         // Mock products - in real implementation, fetch via AJAX
         const products = [
@@ -909,7 +909,7 @@ $(function() {
         // Validation
         const requiredFields = [
             'purchase-delivery-date',
-            'purchase-delivery-storage'
+            'purchase-delivery-warehouse'
         ];
         
         // Add supplier to required fields if not in PO mode

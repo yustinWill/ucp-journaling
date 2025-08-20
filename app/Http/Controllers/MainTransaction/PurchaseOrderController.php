@@ -126,7 +126,7 @@ class PurchaseOrderController extends Controller
             ];
         }
 
-        $storages = [
+        $warehouses = [
             ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
             ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
             ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
@@ -156,12 +156,12 @@ class PurchaseOrderController extends Controller
         $canAddSuppliers = PermissionHelper::hasPermission('master_data_contact', 'write');
         $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
         $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddStorages = PermissionHelper::hasPermission('master_data_storage', 'write');
+        $canAddStorages = PermissionHelper::hasPermission('master_data_warehouse', 'write');
 
         return view('pages.main_transaction.purchase_order.add', [
             'suppliers' => $suppliers,
             'paymentTerms' => $paymentTerms,
-            'storages' => $storages,
+            'warehouses' => $warehouses,
             'products' => $products,
             'taxOptions' => $taxOptions,
             'availableTags' => $availableTags,
@@ -189,7 +189,7 @@ class PurchaseOrderController extends Controller
                 'due_date' => 'nullable|date',
                 'payment_terms' => 'nullable|string',
                 'days' => 'nullable|integer|min:0|max:365',
-                'storage_id' => 'nullable|integer',
+                'warehouse_id' => 'nullable|integer',
                 'currency' => 'nullable|string',
                 'down_payment' => 'nullable|numeric|min:0',
                 'total' => 'required|numeric|min:0',
@@ -246,7 +246,7 @@ class PurchaseOrderController extends Controller
             'payment_terms_type' => 'NET',
             'days' => 30,
             'description' => 'Purchase Order untuk pengadaan bahan baku kemasan botol PET 330ml dan label kemasan untuk produk RIYO Water bulan Juli 2025',
-            'storage' => 'GDG-001 - Gudang Utama',
+            'warehouse' => 'GDG-001 - Gudang Utama',
             'include_tax' => true,
             'down_payment' => 5000000,
             'total' => 25000000,
@@ -267,7 +267,7 @@ class PurchaseOrderController extends Controller
             'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
             'attachment' => [
                 'name' => 'PO-Specification.pdf',
-                'url' => '/storage/attachments/po-specification.pdf'
+                'url' => '/warehouse/attachments/po-specification.pdf'
             ],
             'created_at' => '2025-07-01 08:00:00',
             'updated_at' => '2025-07-01 10:30:00',
@@ -449,7 +449,7 @@ class PurchaseOrderController extends Controller
             'payment_terms_type' => 'NET',
             'days' => 30,
             'description' => 'Purchase Order untuk pengadaan bahan baku kemasan botol PET 330ml dan label kemasan untuk produk RIYO Water bulan Juli 2025',
-            'storage_id' => 1,
+            'warehouse_id' => 1,
             'include_tax' => true,
             'subtotal' => 22500000,
             'tax_amount' => 2500000,
@@ -468,7 +468,7 @@ class PurchaseOrderController extends Controller
             'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
             'attachment' => [
                 'name' => 'PO-Specification.pdf',
-                'url' => '/storage/attachments/po-specification.pdf'
+                'url' => '/warehouse/attachments/po-specification.pdf'
             ],
             'product_lines' => [
                 [
@@ -523,7 +523,7 @@ class PurchaseOrderController extends Controller
             ['value' => 'Giro', 'label' => 'Giro']
         ];
 
-        $storages = [
+        $warehouses = [
             ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
             ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
             ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
@@ -563,7 +563,7 @@ class PurchaseOrderController extends Controller
         $canAddSuppliers = PermissionHelper::hasPermission('master_data_contact', 'write');
         $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
         $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddStorages = PermissionHelper::hasPermission('master_data_storage', 'write');
+        $canAddStorages = PermissionHelper::hasPermission('master_data_warehouse', 'write');
         $canAddPIC = PermissionHelper::hasPermission('master_data_user', 'write');
         
         // Ensure all fields have default values
@@ -576,7 +576,7 @@ class PurchaseOrderController extends Controller
             'statuses' => $statuses,
             'currencies' => $currencies,
             'paymentMethods' => $paymentMethods,
-            'storages' => $storages,
+            'warehouses' => $warehouses,
             'picOptions' => $picOptions,
             'paymentTerms' => $paymentTerms,
             'availableTags' => $availableTags,
@@ -612,7 +612,7 @@ class PurchaseOrderController extends Controller
                 'due_date' => 'nullable|date',
                 'payment_terms' => 'nullable|string',
                 'days' => 'nullable|integer|min:0|max:365',
-                'storage_id' => 'required|integer',
+                'warehouse_id' => 'required|integer',
                 'description' => 'nullable|string|max:1000',
                 'include_tax' => 'nullable|boolean',
                 'products' => 'nullable|array',
@@ -668,7 +668,7 @@ class PurchaseOrderController extends Controller
             ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
         ];
 
-        $storages = [
+        $warehouses = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
             ['value' => '3', 'label' => 'Gudang Finished Goods']
@@ -676,7 +676,7 @@ class PurchaseOrderController extends Controller
 
         return view('pages.main_transaction.purchase_order.import', [
             'suppliers' => $suppliers,
-            'storages' => $storages
+            'warehouses' => $warehouses
         ]);
     }
 
@@ -749,7 +749,7 @@ class PurchaseOrderController extends Controller
             ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
         ];
 
-        $storages = [
+        $warehouses = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
             ['value' => '3', 'label' => 'Gudang Finished Goods']
@@ -757,7 +757,7 @@ class PurchaseOrderController extends Controller
 
         return view('pages.main_transaction.purchase_order.export', [
             'suppliers' => $suppliers,
-            'storages' => $storages
+            'warehouses' => $warehouses
         ]);
     }
 

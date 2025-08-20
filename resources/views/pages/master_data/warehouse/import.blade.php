@@ -1,10 +1,10 @@
 @extends('layouts.default')
 @section('page_title')
-    Impor Gudang
+    Impor Warehouse
 @stop
 @section('content')
     <div class="card mb-6">
-        <h4 class="card-header">Impor Gudang</h4>
+        <h4 class="card-header">Impor Warehouse</h4>
         <form class="card-body" autocomplete="off">
             <div class="row gy-3 mt-0">
                 <div class="col-md-12">

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 //Controllers
 use App\Http\Controllers\MasterData\ContactController;
-use App\Http\Controllers\MasterData\StorageController;
+use App\Http\Controllers\MasterData\WarehouseController;
 use App\Http\Controllers\MasterData\ProductController;
 use App\Http\Controllers\MasterData\CoaController;
 use App\Http\Controllers\MasterData\UserController;
@@ -20,7 +20,7 @@ use App\Http\Controllers\MasterData\TransactionNumberController;
 
 $base_segment = '/master_data';
 $contact_segment = '/contact';
-$storage_segment = '/storage';
+$warehouse_segment = '/warehouse';
 $product_segment = '/product';
 $coa_segment = '/coa';
 $user_segment = '/user';
@@ -34,7 +34,7 @@ $sales_person_segment = '/sales_person';
 $payment_term_segment = '/payment_term';
 $transaction_number_segment = '/transaction_number';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $storage_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment . $contact_segment . '/index', 'index')->name('master_data.contact.index');
         Route::get($base_segment . $contact_segment . '/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table');
@@ -50,17 +50,19 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment . $contact_segment . '/import', 'import')->name('master_data.contact.import');
     });
 
-    Route::controller(StorageController::class)->group(function () use ($base_segment, $storage_segment) {
-        Route::get($base_segment . $storage_segment . '/index', 'index')->name('master_data.storage.index');
-        Route::get($base_segment . $storage_segment . '/index_data_table', 'index_data_table')->name('master_data.storage.index_data_table');
-        Route::get($base_segment . $storage_segment . '/add', 'add')->name('master_data.storage.add');
-        Route::get($base_segment . $storage_segment . '/edit/{id}', 'edit')->name('master_data.storage.edit');
-        Route::get($base_segment . $storage_segment . '/detail/{id}', 'detail')->name('master_data.storage.detail');
-        Route::get($base_segment . $storage_segment . '/detail_product_data_table', 'detail_product_data_table')->name('master_data.storage.detail_product_data_table');
-        Route::get($base_segment . $storage_segment . '/detail_transaction_data_table', 'detail_transaction_data_table')->name('master_data.storage.detail_transaction_data_table');
-        Route::get($base_segment . $storage_segment . '/detail_batch_data_table', 'detail_batch_data_table')->name('master_data.storage.detail_batch_data_table');
-        Route::get($base_segment . $storage_segment . '/export', 'export')->name('master_data.storage.export');
-        Route::get($base_segment . $storage_segment . '/import', 'import')->name('master_data.storage.import');
+    Route::controller(WarehouseController::class)->group(function () use ($base_segment, $warehouse_segment) {
+        Route::get($base_segment . $warehouse_segment . '/index', 'index')->name('master_data.warehouse.index');
+        Route::get($base_segment . $warehouse_segment . '/index_data_table', 'index_data_table')->name('master_data.warehouse.index_data_table');
+        Route::get($base_segment . $warehouse_segment . '/add', 'add')->name('master_data.warehouse.add');
+        Route::post($base_segment . $warehouse_segment . '/store', 'store')->name('master_data.warehouse.store');
+        Route::get($base_segment . $warehouse_segment . '/edit/{id}', 'edit')->name('master_data.warehouse.edit');
+        Route::put($base_segment . $warehouse_segment . '/update/{id}', 'update')->name('master_data.warehouse.update');
+        Route::get($base_segment . $warehouse_segment . '/detail/{id}', 'detail')->name('master_data.warehouse.detail');
+        Route::get($base_segment . $warehouse_segment . '/detail_product_data_table', 'detail_product_data_table')->name('master_data.warehouse.detail_product_data_table');
+        Route::get($base_segment . $warehouse_segment . '/detail_transaction_data_table', 'detail_transaction_data_table')->name('master_data.warehouse.detail_transaction_data_table');
+        Route::get($base_segment . $warehouse_segment . '/detail_batch_data_table', 'detail_batch_data_table')->name('master_data.warehouse.detail_batch_data_table');
+        Route::get($base_segment . $warehouse_segment . '/export', 'export')->name('master_data.warehouse.export');
+        Route::get($base_segment . $warehouse_segment . '/import', 'import')->name('master_data.warehouse.import');
     });
 
     Route::controller(ProductController::class)->group(function () use ($base_segment, $product_segment) {

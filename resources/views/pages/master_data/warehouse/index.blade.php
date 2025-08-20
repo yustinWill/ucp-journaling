@@ -1,6 +1,6 @@
 @extends('layouts.default')
 @section('page_title')
-    List Gudang
+    List Warehouse
 @stop
 @section('content')
     <!-- Summary Cards -->
@@ -15,7 +15,7 @@
                         </div>
                         <h4 class="mb-0">8</h4>
                     </div>
-                    <p class="mb-1">Total Gudang Aktif</p>
+                    <p class="mb-1">Total Warehouse Aktif</p>
                 </div>
             </div>
         </div>
@@ -29,7 +29,7 @@
                         </div>
                         <h4 class="mb-0">2</h4>
                     </div>
-                    <p class="mb-1">Gudang Maintenance</p>
+                    <p class="mb-1">Warehouse Maintenance</p>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
 
     <!-- Main Content Card -->
     <div class="card mt-6">
-        <h4 class="card-header">Kelola Gudang</h4>
+        <h4 class="card-header">Kelola Warehouse</h4>
         <div class="card-body">
             <!-- Advanced Search Form -->
             <form class="dt_adv_search" method="GET" autocomplete="off">
@@ -74,17 +74,17 @@
                         <div class="row g-3">
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Status:</label>
-                                <select class="global-select2 form-select" id="storage-status-filter"
+                                <select class="global-select2 form-select" id="warehouse-status-filter"
                                     data-allow-clear="true">
                                     <option value="">Semua Status</option>
-                                    @foreach($storageStatuses as $status)
+                                    @foreach($warehouseStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Tag:</label>
-                                <select class="global-select2 form-select" id="storage-tag-filter"
+                                <select class="global-select2 form-select" id="warehouse-tag-filter"
                                     data-allow-clear="true">
                                     <option value="">Semua Tag</option>
                                     @foreach($availableTags as $tag)
@@ -94,8 +94,8 @@
                             </div>
                             <div class="col-12 col-sm-6 col-lg-4">
                                 <label class="form-label">Pencarian:</label>
-                                <input type="text" class="form-control" id="storage-search"
-                                    placeholder="Cari Gudang">
+                                <input type="text" class="form-control" id="warehouse-search"
+                                    placeholder="Cari Warehouse">
                             </div>
                         </div>
                     </div>
@@ -116,13 +116,13 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <a href="{{ route('master_data.storage.import') }}"
+                        <a href="{{ route('master_data.warehouse.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                        <a href="{{ route('master_data.storage.export') }}"
+                        <a href="{{ route('master_data.warehouse.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                        <a href="{{ route('master_data.storage.add') }}"
+                        <a href="{{ route('master_data.warehouse.add') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                     </div>
@@ -131,11 +131,11 @@
         </div>
         <!-- Data Table -->
         <div class="card-datatable">
-            <table id="storage-table" class="table table-bordered">
+            <table id="warehouse-table" class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Kode Gudang</th>
-                        <th>Nama Gudang</th>
+                        <th>Kode Warehouse</th>
+                        <th>Nama Warehouse</th>
                         <th>Penanggung Jawab</th>
                         <th>Alamat</th>
                         <th>Status</th>
@@ -150,17 +150,17 @@
 @section('js_script')
     <script>
         $(function() {
-            let storageTable;
+            let warehouseTable;
 
-            storageTable = new DataTable('#storage-table', {
+            warehouseTable = new DataTable('#warehouse-table', {
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: `{{ route('master_data.storage.index_data_table') }}`,
+                    url: `{{ route('master_data.warehouse.index_data_table') }}`,
                     data: function(d) {
-                        d.status_filter = $('#storage-status-filter').val();
-                        d.tag_filter = $('#storage-tag-filter').val();
-                        d.search = $('#storage-search').val();
+                        d.status_filter = $('#warehouse-status-filter').val();
+                        d.tag_filter = $('#warehouse-tag-filter').val();
+                        d.search = $('#warehouse-search').val();
                         return d;
                     }
                 },
@@ -210,9 +210,9 @@
                         responsivePriority: 1,
                         width: '120px',
                         render: function(data, type, row, meta) {
-                            const detailUrl = `{{ route('master_data.storage.detail', ':id') }}`
+                            const detailUrl = `{{ route('master_data.warehouse.detail', ':id') }}`
                                 .replace(':id', row.id);
-                            const editUrl = `{{ route('master_data.storage.edit', ':id') }}`
+                            const editUrl = `{{ route('master_data.warehouse.edit', ':id') }}`
                                 .replace(':id', row.id);
                             return `
                                 <div class="d-flex gap-2">
@@ -253,26 +253,26 @@
 
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                if (storageTable) {
-                    const tagColumn = storageTable.column(5); // Tag column index (0-based)
+                if (warehouseTable) {
+                    const tagColumn = warehouseTable.column(5); // Tag column index (0-based)
                     tagColumn.visible(this.checked);
                 }
             });
 
             // Initialize tag column visibility based on checkbox state
             const initialTagVisibility = $('#toggleTagColumn').is(':checked');
-            if (storageTable) {
-                storageTable.column(5).visible(initialTagVisibility);
+            if (warehouseTable) {
+                warehouseTable.column(5).visible(initialTagVisibility);
             }
 
             let searchTimeout;
-            $('#storage-status-filter, #storage-tag-filter, #storage-search').on('keyup change',
+            $('#warehouse-status-filter, #warehouse-tag-filter, #warehouse-search').on('keyup change',
                 function() {
                     clearTimeout(searchTimeout);
                     const input = this;
                     searchTimeout = setTimeout(function() {
-                        if (storageTable) {
-                            storageTable.search(input.value).draw();
+                        if (warehouseTable) {
+                            warehouseTable.search(input.value).draw();
                         }
                     }, 400); // 400ms delay
                 });

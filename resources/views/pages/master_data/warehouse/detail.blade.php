@@ -1,6 +1,6 @@
 @extends('layouts.default')
 @section('page_title')
-    Detail Gudang
+    Detail Warehouse
 @stop
 @section('content')
     <div class="card mb-6">
@@ -8,7 +8,7 @@
             <!-- Header Section -->
             <div class="row mb-4">
                 <div class="col-md-8">
-                    <h4 class="mb-3">Detail Gudang</h4>
+                    <h4 class="mb-3">Detail Warehouse</h4>
                 </div>
                 
                 <!-- Action Panel -->
@@ -21,7 +21,7 @@
                         @if($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.storage.edit', $storage->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                <a href="{{ route('master_data.warehouse.edit', $warehouse->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
                             </div>
@@ -31,26 +31,26 @@
             </div>
             
             <!-- Storage Title -->
-            <h2>{{ $storage->name }}</h2>
+            <h2>{{ $warehouse->name }}</h2>
             <span>
-                <h6>Data gudang berdasarkan tanggal {{ $storage->updated_at }}</h6>
+                <h6>Data gudang berdasarkan tanggal {{ $warehouse->updated_at }}</h6>
             </span>
             <hr class="my-6 mx-n6" />
 
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label">Kode Gudang</label>
-                    <input type="text" class="form-control" value="{{ $storage->code }}" disabled />
+                    <label class="form-label">Kode Warehouse</label>
+                    <input type="text" class="form-control" value="{{ $warehouse->code }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
-                        @if($storage->status == 'ACTIVE')
-                            <span class="badge bg-label-success">{{ $storage->status }}</span>
-                        @elseif($storage->status == 'MAINTENANCE')
-                            <span class="badge bg-label-warning">{{ $storage->status }}</span>
+                        @if($warehouse->status == 'ACTIVE')
+                            <span class="badge bg-label-success">{{ $warehouse->status }}</span>
+                        @elseif($warehouse->status == 'MAINTENANCE')
+                            <span class="badge bg-label-warning">{{ $warehouse->status }}</span>
                         @else
-                            <span class="badge bg-label-secondary">{{ $storage->status }}</span>
+                            <span class="badge bg-label-secondary">{{ $warehouse->status }}</span>
                         @endif
                     </div>
                 </div>
@@ -60,8 +60,8 @@
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
-                        <a class="list-group-item list-group-item-action waves-effect active" id="storage-info-list-item"
-                            data-bs-toggle="list" href="#horizontal-storage-info" aria-selected="true" role="tab">
+                        <a class="list-group-item list-group-item-action waves-effect active" id="warehouse-info-list-item"
+                            data-bs-toggle="list" href="#horizontal-warehouse-info" aria-selected="true" role="tab">
                             <i class="icon-base ti tabler-info-circle me-2"></i>
                             <b>Informasi Detail</b>
                         </a>
@@ -77,38 +77,38 @@
                         </a>
                     </div>
                     <div class="tab-content px-0 mt-0">
-                        <div class="tab-pane fade show active" id="horizontal-storage-info" role="tabpanel">
-                            <!-- Info Gudang Section -->
+                        <div class="tab-pane fade show active" id="horizontal-warehouse-info" role="tabpanel">
+                            <!-- Info Warehouse Section -->
                             <div class="section-header mt-12">
-                                <h6>Info Gudang</h6>
+                                <h6>Info Warehouse</h6>
                                 <hr class="mx-n6">
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label">Nama Gudang</label>
-                                    <input type="text" class="form-control" value="{{ $storage->name }}" disabled />
+                                    <label class="form-label">Nama Warehouse</label>
+                                    <input type="text" class="form-control" value="{{ $warehouse->name }}" disabled />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Kode Gudang</label>
-                                    <input type="text" class="form-control" value="{{ $storage->code }}" disabled />
+                                    <label class="form-label">Kode Warehouse</label>
+                                    <input type="text" class="form-control" value="{{ $warehouse->code }}" disabled />
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Penanggung Jawab</label>
-                                    <input type="text" class="form-control" value="{{ $storage->pic_names ?? '-' }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $warehouse->pic_names ?? '-' }}" disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Status</label>
                                     <div class="form-control-plaintext">
-                                        @if($storage->status == 'ACTIVE')
-                                            <span class="badge bg-label-success">{{ $storage->status }}</span>
-                                        @elseif($storage->status == 'MAINTENANCE')
-                                            <span class="badge bg-label-warning">{{ $storage->status }}</span>
+                                        @if($warehouse->status == 'ACTIVE')
+                                            <span class="badge bg-label-success">{{ $warehouse->status }}</span>
+                                        @elseif($warehouse->status == 'MAINTENANCE')
+                                            <span class="badge bg-label-warning">{{ $warehouse->status }}</span>
                                         @else
-                                            <span class="badge bg-label-secondary">{{ $storage->status }}</span>
+                                            <span class="badge bg-label-secondary">{{ $warehouse->status }}</span>
                                         @endif
                                     </div>
                                 </div>
@@ -116,40 +116,40 @@
 
                             <!-- Alamat Section -->
                             <div class="section-header mt-12">
-                                <h6>Alamat Gudang</h6>
+                                <h6>Alamat Warehouse</h6>
                                 <hr class="mx-n6">
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Provinsi</label>
-                                    <input type="text" class="form-control" value="{{ $storage->province ?? '-' }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $warehouse->province ?? '-' }}" disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Kota</label>
-                                    <input type="text" class="form-control" value="{{ $storage->city ?? '-' }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $warehouse->city ?? '-' }}" disabled />
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Kecamatan</label>
-                                    <input type="text" class="form-control" value="{{ $storage->district ?? '-' }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $warehouse->district ?? '-' }}" disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Kelurahan</label>
-                                    <input type="text" class="form-control" value="{{ $storage->sub_district ?? '-' }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $warehouse->sub_district ?? '-' }}" disabled />
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Alamat Lengkap</label>
-                                    <textarea class="form-control" rows="3" disabled>{{ $storage->address ?? '-' }}</textarea>
+                                    <textarea class="form-control" rows="3" disabled>{{ $warehouse->address ?? '-' }}</textarea>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Kode POS</label>
-                                    <input type="text" class="form-control" value="{{ $storage->postal_code ?? '-' }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $warehouse->postal_code ?? '-' }}" disabled />
                                 </div>
                             </div>
 
@@ -163,9 +163,9 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Tag</label>
                                     <div class="form-control-plaintext">
-                                        @if($storage->tags)
+                                        @if($warehouse->tags)
                                             @php
-                                                $tags = json_decode($storage->tags, true);
+                                                $tags = json_decode($warehouse->tags, true);
                                             @endphp
                                             @if($tags && count($tags) > 0)
                                                 @foreach($tags as $tag)
@@ -209,7 +209,7 @@
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
                             <div class="section-header mt-6">
-                                <h6>Log Audit Gudang</h6>
+                                <h6>Log Audit Warehouse</h6>
                             </div>
                             <div class="mx-n6">
                                 <table id="audit-log-table" class="table table-bordered">
@@ -262,7 +262,7 @@
 
             if (product_table) {
                 let dt_adv_filter = new DataTable(product_table, {
-                    ajax: `{{ route('master_data.storage.detail_product_data_table') }}`,
+                    ajax: `{{ route('master_data.warehouse.detail_product_data_table') }}`,
                     columns: [{
                             data: 'product_code'
                         },

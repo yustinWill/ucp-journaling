@@ -267,7 +267,7 @@ This expense form will enable:
 **File Management**:
 - **Multiple Formats**: Support for Excel, Word, PDF, PNG, Zip files
 - **Size Limits**: 10MB maximum file size for attachments
-- **Document Tracking**: Proper file storage and retrieval for audit purposes
+- **Document Tracking**: Proper file warehouse and retrieval for audit purposes
 
 **Integration Points**:
 - **Contact Management**: Link expenses to vendor/supplier records

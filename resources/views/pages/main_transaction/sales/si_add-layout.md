@@ -253,7 +253,7 @@ Buttons: Full width stacked
 - **PDF Generation**: Professional invoice layout with company branding
 - **Email Distribution**: Automated customer delivery
 - **Payment Links**: Integration with online payment gateways
-- **Archive System**: Document storage and retrieval
+- **Archive System**: Document warehouse and retrieval
 - **Audit Trail**: Complete transaction history and modifications
 
 This Sales Invoice layout represents the most sophisticated form in the sales workflow, combining comprehensive financial calculations with advanced customer relationship management and professional document generation capabilities.

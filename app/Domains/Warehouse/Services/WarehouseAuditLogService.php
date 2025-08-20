@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Domains\Storage\Services;
+namespace App\Domains\Warehouse\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
-class StorageAuditLogService
+class WarehouseAuditLogService
 {
-    private $table_name = 'm_storage_audit_logs';
+    private $table_name = 'm_warehouse_audit_logs';
 
     public function create(array $data, $id)
     {
         return DB::table($this->table_name)->insertGetId([
-            'f_storage_id' => $id,
+            'f_warehouse_id' => $id,
             'company_code' => session('user_company_code'),
             'action_type' => $data['action_type'],
             'description' => $data['description'],
@@ -26,7 +26,7 @@ class StorageAuditLogService
     {
         return DB::table($this->table_name . ' as t')
             ->select([
-                't.f_storage_id',
+                't.f_warehouse_id',
                 't.action_type',
                 't.description',
                 't.metadata',
@@ -35,7 +35,7 @@ class StorageAuditLogService
                 'usr.name AS user_name'
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
-            ->where('t.f_storage_id', $id)
+            ->where('t.f_warehouse_id', $id)
             ->orderBy('t.created_at', 'DESC')
             ->get();
     }

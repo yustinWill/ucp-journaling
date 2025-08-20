@@ -47,7 +47,7 @@
                         </div>
                         @if($canAddWarehouses)
                             <div class="col-auto">
-                                <a href="{{ route('master_data.storage.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" 
+                                <a href="{{ route('master_data.warehouse.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" 
                                    title="Tambah Gudang Baru">
                                     <i class="icon-base ti tabler-plus"></i>
                                 </a>

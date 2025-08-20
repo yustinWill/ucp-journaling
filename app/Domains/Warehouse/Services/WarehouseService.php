@@ -1,37 +1,37 @@
 <?php
 
-namespace App\Domains\Storage\Services;
+namespace App\Domains\Warehouse\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class StorageService
+class WarehouseService
 {
-    private $table_name = 'm_storages';
+    private $table_name = 'm_warehouses';
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as m_storages')
-            ->select('m_storages.id', 'm_storages.name', 'm_storages.code')
-            ->where('m_storages.company_code', session('user_company_code'))
-            ->orderBy('m_storages.name', 'asc')
+        return DB::table($this->table_name . ' as m_warehouses')
+            ->select('m_warehouses.id', 'm_warehouses.name', 'm_warehouses.code')
+            ->where('m_warehouses.company_code', session('user_company_code'))
+            ->orderBy('m_warehouses.name', 'asc')
             ->get();
     }
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as m_storages')
+        $data = DB::table($this->table_name . ' as m_warehouses')
             ->select([
-                'm_storages.*',
+                'm_warehouses.*',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
             ])
-            ->leftJoin(DB::raw("JSON_TABLE(m_storages.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+            ->leftJoin(DB::raw("JSON_TABLE(m_warehouses.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
             })
             ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
-            ->where('m_storages.id', $id)
-            ->groupBy('m_storages.id')
+            ->where('m_warehouses.id', $id)
+            ->groupBy('m_warehouses.id')
             ->first();
 
         if ($data && $data->tags) {

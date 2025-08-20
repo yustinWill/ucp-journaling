@@ -178,7 +178,7 @@ $(function() {
                     data: 'warehouse_name',
                     responsivePriority: 4,
                     render: function(data, type, row) {
-                        const detailUrl = `{{ route('master_data.storage.detail', ':id') }}`.replace(':id', row.warehouse_id);
+                        const detailUrl = `{{ route('master_data.warehouse.detail', ':id') }}`.replace(':id', row.warehouse_id);
                         return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                     }
                 },
@@ -246,7 +246,7 @@ $(function() {
                 {
                     targets: 2, // Warehouse column
                     render: function(data, type, full, meta) {
-                        const warehouseDetailUrl = "{{ route('master_data.storage.detail', ':id') }}".replace(':id', full.warehouse_id);
+                        const warehouseDetailUrl = "{{ route('master_data.warehouse.detail', ':id') }}".replace(':id', full.warehouse_id);
                         return `<a href="${warehouseDetailUrl}" class="text-primary fw-semibold">${data}</a>`;
                     }
                 },

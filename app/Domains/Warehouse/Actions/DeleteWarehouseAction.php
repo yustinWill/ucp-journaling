@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Domains\Storage\Actions;
+namespace App\Domains\Warehouse\Actions;
 
 use Illuminate\Support\Facades\DB;
 use App\Enums\ActionTypes;
 
-use App\Domains\Storage\Services\StorageService;
-use App\Domains\Storage\Services\StorageAuditLogService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Domains\Warehouse\Services\WarehouseAuditLogService;
 
-class DeleteStorageAction
+class DeleteWarehouseAction
 {
     public function execute(int $id)
     {
         return DB::transaction(function () use ($id) {
             // Get original data for audit log
-            $original_data = app(StorageService::class)->findOne($id);
+            $original_data = app(WarehouseService::class)->findOne($id);
             
             // Soft delete by updating status to INACTIVE
-            $result = app(StorageService::class)->update($id, [
+            $result = app(WarehouseService::class)->update($id, [
                 'name' => $original_data->name,
                 'pic_users' => json_decode($original_data->f_pic_ids ?? '[]'),
                 'province' => $original_data->province,
@@ -32,13 +32,13 @@ class DeleteStorageAction
 
             $log_data = [
                 'action_type' => ActionTypes::DELETE,
-                'description' => "Penghapusan Storage: " . $original_data->name,
+                'description' => "Penghapusan Warehouse: " . $original_data->name,
                 'metadata' => json_encode([
                     'before' => $original_data,
                     'after' => null,
                 ])
             ];
-            app(StorageAuditLogService::class)->create($log_data, $id);
+            app(WarehouseAuditLogService::class)->create($log_data, $id);
 
             return $result;
         });
