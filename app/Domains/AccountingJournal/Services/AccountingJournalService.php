@@ -46,9 +46,7 @@ class AccountingJournalService
         }
 
         if ($date = request()->input('date')) {
-            [$from, $to] = array_map('trim', explode('-', $date));
-            $from = DateTime::createFromFormat('m/d/Y', $from)->format('Y-m-d');
-            $to = DateTime::createFromFormat('m/d/Y', $to)->format('Y-m-d');
+            [$from, $to] = array_map('trim', explode(' - ', $date));
             $query->whereBetween('t.date', [$from, $to]);
         }
 
