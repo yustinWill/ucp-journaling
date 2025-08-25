@@ -18,7 +18,7 @@ class CreateStockAdjustmentAction
                 'adjustment_type' => $data['adjustment_type'],
                 'warehouse_id' => $data['warehouse_id'],
                 'pic_id' => $data['pic_id'],
-                'status' => $data['status'] ?? 'DRAFT',
+                'status' => 'APPROVED',
                 'description' => $data['description'],
                 'memo' => $data['memo'] ?? null,
                 'f_tag_codes' => $data['tags'] ?? [],

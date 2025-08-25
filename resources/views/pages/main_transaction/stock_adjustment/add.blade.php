@@ -98,6 +98,12 @@
                     </div>
                 </div>
                 <div class="col-md-6">
+                    <label class="form-label">Deskripsi <span style="color: red;">*</span></label>
+                    <textarea class="form-control" id="description" rows="3"
+                        placeholder="Jelaskan alasan dan detail stock adjustment..." maxlength="1000"></textarea>
+                    <small class="form-text text-muted">Maksimal 1000 karakter</small>
+                </div>
+                {{-- <div class="col-md-6">
                     <label class="form-label">Status <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="status-select" data-allow-clear="false">
                         <option value="">Pilih Status</option>
@@ -105,16 +111,11 @@
                             <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                         @endforeach
                     </select>
-                </div>
+                </div> --}}
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Deskripsi <span style="color: red;">*</span></label>
-                    <textarea class="form-control" id="description" rows="3"
-                        placeholder="Jelaskan alasan dan detail stock adjustment..." maxlength="1000"></textarea>
-                    <small class="form-text text-muted">Maksimal 1000 karakter</small>
-                </div>
+
                 <div class="col-md-6">
                     <!-- Empty column for alignment -->
                 </div>
@@ -347,9 +348,7 @@
             // Form validation
             function validateForm() {
                 let isValid = true;
-                const requiredFields = ['adjustment-date', 'adjustment-type', 'warehouse-select', 'pic-select',
-                    'status-select', 'description'
-                ];
+                const requiredFields = ['adjustment-date', 'adjustment-type', 'warehouse-select', 'pic-select', 'description'];
 
                 requiredFields.forEach(function(fieldId) {
                     const field = $('#' + fieldId);
@@ -770,7 +769,7 @@
                     adjustment_type: $('#adjustment-type').val(),
                     warehouse_id: $('#warehouse-select').val(),
                     pic_id: $('#pic-select').val(),
-                    status: $('#status-select').val(),
+                    // status: $('#status-select').val(),
                     description: $('#description').val(),
                     memo: $('#adjustment-memo').val(),
                     tags: $('#adjustment-tags').val(),

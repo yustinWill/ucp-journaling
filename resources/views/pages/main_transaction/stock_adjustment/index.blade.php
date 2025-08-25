@@ -56,7 +56,7 @@
     <div class="mt-6">
         <div class="card">
             <h4 class="card-header">Kelola Stock Adjustment</h4>
-            <div class="card-body pb-0">
+            {{-- <div class="card-body pb-0">
                 <!-- Tab Navigation Inside Card -->
                 <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
                     <a class="list-group-item list-group-item-action active" data-bs-toggle="list"
@@ -76,10 +76,12 @@
                         <b>Selesai</b>
                     </a>
                 </div>
-            </div>
+            </div> --}}
 
+            
             <!-- Tab Content Inside Card -->
             <div class="tab-content pt-0">
+                
                 <!-- Waiting Adjustment Tab -->
                 <div class="tab-pane fade show active mx-n6" id="waiting-adjustment-tab" role="tabpanel">
                     <div class="card-body">
@@ -148,7 +150,7 @@
                 </div>
 
                 <!-- Waiting Approval Tab -->
-                <div class="tab-pane fade mx-n6" id="waiting-approval-tab" role="tabpanel">
+                {{-- <div class="tab-pane fade mx-n6" id="waiting-approval-tab" role="tabpanel">
                     <div class="card-body">
                         <!-- Advanced Search Form -->
                         <div class="row mb-4">
@@ -215,10 +217,10 @@
                             </thead>
                         </table>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Finished Tab -->
-                <div class="tab-pane fade mx-n6" id="finished-tab" role="tabpanel">
+                {{-- <div class="tab-pane fade mx-n6" id="finished-tab" role="tabpanel">
                     <div class="card-body">
                         <!-- Advanced Search Form -->
                         <div class="row mb-4">
@@ -296,7 +298,7 @@
                             </thead>
                         </table>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -447,11 +449,11 @@
                             </a>`;
                                 }
 
-                                if (canEdit) {
-                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                <i class="icon-base ti tabler-edit"></i>
-                            </a>`;
-                                }
+                            //     if (canEdit) {
+                            //         actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                            //     <i class="icon-base ti tabler-edit"></i>
+                            // </a>`;
+                            //     }
 
                                 actions += '</div>';
                                 return actions;

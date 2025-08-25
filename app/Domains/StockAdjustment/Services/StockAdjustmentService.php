@@ -114,17 +114,18 @@ class StockAdjustmentService
             ->where('sa.company_code', session('user_company_code'));
 
         // Apply tab-based filtering
-        switch ($tab) {
-            case 'waiting_adjustment':
-                $query->whereIn('sa.status', ['DRAFT']);
-                break;
-            case 'waiting_approval':
-                $query->whereIn('sa.status', ['WAITING_APPROVAL']);
-                break;
-            case 'finished':
-                $query->whereIn('sa.status', ['APPROVED', 'COMPLETED', 'CANCELLED']);
-                break;
-        }
+        // switch ($tab) {
+        //     case 'waiting_adjustment':
+        //         $query->whereIn('sa.status', ['DRAFT']);
+        //         break;
+        //     case 'waiting_approval':
+        //         $query->whereIn('sa.status', ['WAITING_APPROVAL']);
+        //         break;
+        //     case 'finished':
+        //         $query->whereIn('sa.status', ['APPROVED', 'COMPLETED', 'CANCELLED']);
+        //         break;
+        // }
+         $query->whereIn('sa.status', ['APPROVED']);
 
         // Apply filters
         if ($status_filter = request()->input('status_filter')) {
