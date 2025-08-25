@@ -109,12 +109,12 @@
                     <li>
                         <div class="dropdown-divider my-1 mx-n2"></div>
                     </li>
-                    <li>
+                    {{-- <li>
                         <a class="dropdown-item" href="#">
                             <i class="icon-base ti tabler-user icon-md me-3"></i><span>My
                                 Profile</span>
                         </a>
-                    </li>
+                    </li> --}}
                     <li>
                         <a class="dropdown-item" href="{{ route('change_password.index') }}">
                             <i class="icon-base ti tabler-lock icon-md me-3"></i><span>Change
