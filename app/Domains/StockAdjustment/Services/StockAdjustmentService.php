@@ -68,7 +68,7 @@ class StockAdjustmentService
             'status' => $data['status'],
             'description' => $data['description'],
             'memo' => $data['memo'] ?? null,
-            'tags' => json_encode($data['tags'] ?? []),
+            'f_tag_codes' => json_encode($data['tags'] ?? []),
             'reference_number' => $data['reference_number'] ?? null,
             'total_items' => $data['total_items'] ?? 0,
             'total_adjustment_qty' => $data['total_adjustment_qty'] ?? 0,
@@ -241,7 +241,7 @@ class StockAdjustmentService
                 'sai.stock_after',
                 'sai.unit_cost',
                 'sai.total_value',
-                'sai.reason'
+                'sai.reason',
             ])
             ->where('sai.stock_adjustment_id', $stockAdjustmentId)
             ->where('sai.company_code', session('user_company_code'))

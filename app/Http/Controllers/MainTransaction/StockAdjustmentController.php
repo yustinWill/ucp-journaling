@@ -263,15 +263,15 @@ class StockAdjustmentController extends Controller
         }
 
         // Get tags from service
-        $tagsData = app(TagService::class)->findAll();
-        $availableTags = [];
-        foreach ($tagsData as $tag) {
-            $availableTags[] = [
-                'code' => $tag->code,
-                'label' => $tag->code . ' - ' . $tag->name,
-                'color' => $tag->tag_color_code ?? 'primary'
-            ];
-        }
+        $availableTags = app(TagService::class)->findAll();
+        // $availableTags = [];
+        // foreach ($tagsData as $tag) {
+        //     $availableTags[] = [
+        //         'code' => $tag->code,
+        //         'label' => $tag->code . ' - ' . $tag->name,
+        //         'color' => $tag->tag_color_code ?? 'primary'
+        //     ];
+        // }
 
         // Permission checks for add buttons
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
@@ -639,10 +639,11 @@ class StockAdjustmentController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             $validated = $request->validate([
+                'adjustment_id' => 'required|integer|exists:t_stock_adjustments,id',
                 'adjustment_date' => 'required|date',
                 'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,PRODUCT_RETURN,DAMAGE_LOSS,EXPIRY_DISPOSAL,WAREHOUSE_TRANSFER',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
@@ -662,7 +663,7 @@ class StockAdjustmentController extends Controller
                 'products.*.reason' => 'nullable|string|max:200'
             ]);
 
-            app(UpdateStockAdjustmentAction::class)->execute($id, $validated);
+            app(UpdateStockAdjustmentAction::class)->execute($validated['adjustment_id'], $validated);
 
             return response()->json([
                 'message' => SuccessCodes::UPDATE_STOCK_ADJUSTMENT_SUCCESS->message()

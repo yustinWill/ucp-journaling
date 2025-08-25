@@ -2,10 +2,13 @@
 
 namespace App\Domains\StockAdjustment\Actions;
 
+use App\Exceptions\AppException;
+use App\Enums\ErrorCodes;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockMovementLogService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class UpdateStockAdjustmentAction
 {
@@ -14,8 +17,9 @@ class UpdateStockAdjustmentAction
         return DB::transaction(function () use ($id, $data) {
             // Get original data for audit
             $originalData = app(StockAdjustmentService::class)->findOne($id);
-            if (!$originalData) {
-                throw new \Exception('Stock adjustment not found');
+
+            if ($originalData->status !== 'DRAFT') {
+                throw new AppException(ErrorCodes::STOCK_ADJUSTMENT_STATUS_MUST_BE_DRAFT);
             }
 
             // Update main stock adjustment record
@@ -94,7 +98,7 @@ class UpdateStockAdjustmentAction
                     'unit_cost' => $product['unit_cost'] ?? 0,
                     'total_value' => ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0)),
                     'reason' => $product['reason'] ?? null,
-                    'created_by' => auth()->id(),
+                    'created_by' => Auth::id(),
                     'created_at' => now()
                 ];
             }
@@ -120,7 +124,7 @@ class UpdateStockAdjustmentAction
         foreach ($products as $product) {
             if ($product['adjustment_qty'] != 0) {
                 $movementType = $product['adjustment_qty'] > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
-                
+
                 $movements[] = [
                     'movement_date' => $mainData['adjustment_date'],
                     'movement_type' => $movementType,
@@ -151,10 +155,16 @@ class UpdateStockAdjustmentAction
     private function getChanges($originalData, array $newData): array
     {
         $changes = [];
-        
+
         $trackableFields = [
-            'adjustment_date', 'adjustment_type', 'warehouse_id', 'pic_id', 
-            'status', 'description', 'memo', 'reference_number'
+            'adjustment_date',
+            'adjustment_type',
+            'warehouse_id',
+            'pic_id',
+            'status',
+            'description',
+            'memo',
+            'reference_number'
         ];
 
         foreach ($trackableFields as $field) {

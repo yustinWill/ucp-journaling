@@ -181,7 +181,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment . $stock_adjustment_segment . '/add', 'add')->name('main_transaction.stock_adjustment.add');
         Route::post($base_segment . $stock_adjustment_segment . '/save', 'save')->name('main_transaction.stock_adjustment.save');
         Route::get($base_segment . $stock_adjustment_segment . '/edit/{id}', 'edit')->name('main_transaction.stock_adjustment.edit');
-        Route::post($base_segment . $stock_adjustment_segment . '/update/{id}', 'update')->name('main_transaction.stock_adjustment.update');
+        Route::post($base_segment . $stock_adjustment_segment . '/update', 'update')->name('main_transaction.stock_adjustment.update');
         Route::get($base_segment . $stock_adjustment_segment . '/detail/{id}', 'detail')->name('main_transaction.stock_adjustment.detail');
         Route::get($base_segment . $stock_adjustment_segment . '/get_warehouse_products', 'getWarehouseProducts')->name('main_transaction.stock_adjustment.get_warehouse_products');
         Route::get($base_segment . $stock_adjustment_segment . '/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.stock_adjustment.generate_transaction_number');

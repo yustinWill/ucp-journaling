@@ -15,6 +15,7 @@ enum ErrorCodes: string
     case USER_NO_PERMISSIONS = 'USER_NO_PERMISSIONS';
     case USER_NO_COMPANY = 'USER_NO_COMPANY';
     case JOURNAL_IS_LOCKED = 'JOURNAL_IS_LOCKED';
+     case STOCK_ADJUSTMENT_STATUS_MUST_BE_DRAFT = 'STOCK_ADJUSTMENT_STATUS_MUST_BE_DRAFT';
 
     public function message(): string
     {
@@ -26,6 +27,7 @@ enum ErrorCodes: string
             self::USER_NO_PERMISSIONS => 'User tidak memiliki hak akses apapun.',
             self::USER_NO_COMPANY => 'User tidak memiliki perusahaan yang ditetapkan.',
             self::JOURNAL_IS_LOCKED => 'Jurnal ini sudah terkunci / dilakukan closing.',
+            self::STOCK_ADJUSTMENT_STATUS_MUST_BE_DRAFT => 'Status stock adjustment harus DRAFT.',
         };
     }
 
@@ -39,6 +41,7 @@ enum ErrorCodes: string
             self::USER_NO_PERMISSIONS => self::UNAUTHORIZED,
             self::USER_NO_COMPANY => self::UNAUTHORIZED,
             self::JOURNAL_IS_LOCKED => self::BAD_REQUEST,
+            self::STOCK_ADJUSTMENT_STATUS_MUST_BE_DRAFT => self::BAD_REQUEST,
         };
     }
 

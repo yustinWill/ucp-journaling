@@ -6,6 +6,7 @@
     <div class="card mb-6">
         <h4 class="card-header">Edit Stock Adjustment - {{ $stockAdjustment->adjustment_number }}</h4>
         <form class="card-body" id="stockAdjustmentEditForm" autocomplete="off">
+            <input type="hidden" id="adjustment-id" value="{{ $stockAdjustment->id }}">
             <!-- Basic Information Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Dasar</h6>
@@ -40,7 +41,8 @@
                     <label class="form-label">Gudang <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="warehouse-select" data-allow-clear="false">
+                            <select class="global-select2 form-select" id="warehouse-select" data-allow-clear="false"
+                                disabled>
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
                                     <option value="{{ $warehouse['value'] }}"
@@ -107,20 +109,75 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Filter Kategori Produk</label>
-                    <select class="global-select2 form-select" id="product-category-filter" data-allow-clear="false">
-                        <option value="">Semua Kategori</option>
-                        @foreach ($productCategories as $category)
-                            <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
-                        @endforeach
-                    </select>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="product-category-filter"
+                                data-allow-clear="false">
+                                <option value="">Semua Kategori</option>
+                                @foreach ($productCategories as $category)
+                                    <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if ($canAddCategories)
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.category.add') }}" target="_blank"
+                                    class="btn btn-outline-primary d-flex align-items-center" title="Tambah Kategori Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Cari Produk</label>
-                    <input type="text" class="form-control" id="product-search" placeholder="Nama atau kode produk..." />
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="product-search"
+                            placeholder="Nama atau kode produk..." />
+                        <button type="button" class="btn btn-outline-primary" id="search-products-btn">
+                            <i class="icon-base ti tabler-search"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Load Products Button -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Produk yang Tersedia di Gudang</h6>
+                        <button type="button" class="btn btn-md btn-primary waves-effect waves-light"
+                            id="load-products-btn">
+                            <i class="icon-base ti tabler-box me-2"></i>
+                            Load Produk dari Gudang
+                        </button>
+                    </div>
+
+                    <div class="mx-n5">
+                        <table class="table table-bordered" id="available-products-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%;">Kode Produk</th>
+                                    <th style="width: 30%;">Nama Produk</th>
+                                    <th style="width: 10%;">Unit</th>
+                                    <th style="width: 15%;">Stok Tersedia</th>
+                                    <th style="width: 15%;">Harga Satuan</th>
+                                    <th style="width: 10%;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="available-products-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <i class="icon-base ti tabler-box-off me-2"></i>
+                                        Pilih gudang dan klik "Load Produk dari Gudang" untuk memuat data
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {{-- <!-- Load Products Button -->
             <div class="row g-3 mb-4">
                 <div class="col-md-12">
                     <button type="button" class="btn btn-md btn-primary waves-effect waves-light" id="load-products-btn">
@@ -129,45 +186,10 @@
                     </button>
                     <small class="form-text text-muted ms-3">Klik untuk memuat ulang daftar produk dari gudang</small>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Product Adjustment Table -->
-            <div class="section-header mt-12">
-                <h6>Daftar Produk untuk Adjustment</h6>
-                <hr class="mx-n6">
-            </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0">Produk yang akan disesuaikan</h6>
-                    </div>
-
-                    <div class="mx-n5">
-                        <table class="table table-bordered" id="products-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 5%;">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="select-all-products">
-                                        </div>
-                                    </th>
-                                    <th style="width: 15%;">Kode Produk</th>
-                                    <th style="width: 25%;">Nama Produk</th>
-                                    <th style="width: 8%;">Unit</th>
-                                    <th style="width: 10%;">Stok Sistem</th>
-                                    <th style="width: 12%;">Qty Adjustment</th>
-                                    <th style="width: 10%;">Selisih</th>
-                                    <th style="width: 15%;">Alasan</th>
-                                </tr>
-                            </thead>
-                            <tbody id="products-table-tbody">
-                                <!-- Existing adjustment items will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
 
             <!-- Summary Section -->
             <div class="section-header mt-12">
@@ -196,6 +218,81 @@
                 </div>
             </div>
 
+            {{-- <div class="section-header mt-12">
+                <h6>Daftar Produk untuk Adjustment</h6>
+                <hr class="mx-n6">
+            </div> --}}
+            <div class="row g-3 mb-4">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Produk yang akan disesuaikan</h6>
+                    </div>
+
+                    <div class="mx-n5">
+                        <table class="table table-bordered" id="products-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%;">Kode Produk</th>
+                                    <th style="width: 25%;">Nama Produk</th>
+                                    <th style="width: 8%;">Unit</th>
+                                    <th style="width: 10%;">Stok Sistem</th>
+                                    <th style="width: 12%;">Qty Adjustment</th>
+                                    <th style="width: 10%;">Selisih</th>
+                                    <th style="width: 15%;">Alasan</th>
+                                    <th style="width: 5%;">Hapus</th>
+                                </tr>
+                            </thead>
+                            <tbody id="selected-products-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informasi Tambahan Section -->
+            <div class="section-header mt-12">
+                <h6>Informasi Tambahan</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
+                    <textarea class="form-control" id="adjustment-memo" rows="3"
+                        placeholder="Catatan internal untuk stock adjustment..." maxlength="500">{{ $stockAdjustment->memo }}</textarea>
+                    <small class="form-text text-muted">Maksimal 500 karakter - Hanya untuk keperluan internal</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="adjustment-tags" multiple
+                                data-allow-clear="false">
+                                @foreach ($availableTags as $tag)
+                                    {{-- <option value="{{ $tag['id'] }}" data-color="{{ $tag['tag_color_code'] }}" >
+                                        {{ $tag['label'] }}</option> --}}
+
+
+                                    <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}"
+                                        @if (isset($stockAdjustment->f_tag_codes) && in_array($tag->id, $stockAdjustment->f_tag_codes)) selected @endif>{{ $tag->code }} -
+                                        {{ $tag->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if ($canAddTags)
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.tag.add') }}" target="_blank"
+                                    class="btn btn-outline-primary d-flex align-items-center" id="add-new-adjustment-tag"
+                                    title="Tambah Tag Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi</small>
+                </div>
+            </div>
+
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <button type="button" class="btn btn-label-danger me-3" id="cancel-btn">Batalkan</button>
@@ -210,81 +307,29 @@
         $(function() {
             // Existing adjustment items from controller
             const existingAdjustmentItems = @json($adjustmentItems ?? []);
-
-            // Mock product data for RIYO Water
-            const mockProducts = [{
-                    code: 'AIR-330',
-                    name: 'RIYO Water 330ml',
-                    unit: 'pcs',
-                    current_stock: 1500,
-                    category: 'FINISHED_GOODS',
-                    unit_cost: 12000
-                },
-                {
-                    code: 'AIR-600',
-                    name: 'RIYO Water 600ml',
-                    unit: 'pcs',
-                    current_stock: 800,
-                    category: 'FINISHED_GOODS',
-                    unit_cost: 18000
-                },
-                {
-                    code: 'AIR-1500',
-                    name: 'RIYO Water 1500ml',
-                    unit: 'pcs',
-                    current_stock: 400,
-                    category: 'FINISHED_GOODS',
-                    unit_cost: 21000
-                },
-                {
-                    code: 'BTL-330',
-                    name: 'Botol PET 330ml',
-                    unit: 'pcs',
-                    current_stock: 5000,
-                    category: 'PACKAGING',
-                    unit_cost: 1650
-                },
-                {
-                    code: 'BTL-600',
-                    name: 'Botol PET 600ml',
-                    unit: 'pcs',
-                    current_stock: 3000,
-                    category: 'PACKAGING',
-                    unit_cost: 2200
-                },
-                {
-                    code: 'LBL-330',
-                    name: 'Label RIYO 330ml',
-                    unit: 'pcs',
-                    current_stock: 5000,
-                    category: 'PACKAGING',
-                    unit_cost: 150
-                },
-                {
-                    code: 'CAP-330',
-                    name: 'Tutup Botol 330ml',
-                    unit: 'pcs',
-                    current_stock: 5000,
-                    category: 'PACKAGING',
-                    unit_cost: 200
-                }
-            ];
+            let selectedProducts = [];
 
             // Initialize existing data on page load
             $(document).ready(function() {
-                loadExistingAdjustmentItems();
-            });
-
-            function loadExistingAdjustmentItems() {
                 if (existingAdjustmentItems && existingAdjustmentItems.length > 0) {
                     // Merge existing items with product data
                     const mergedProducts = existingAdjustmentItems.map(item => {
-                        const product = mockProducts.find(p => p.code === item.product_code);
+                        selectedProducts.push({
+                            product_id: item.product_id,
+                            product_code: item.product_code,
+                            product_name: item.product_name,
+                            unit: item.unit,
+                            current_stock: item.stock_before,
+                            unit_cost: item.unit_cost,
+                            adjustment_qty: item.adjustment_qty,
+                            reason: item.reason
+                        });
+
                         return {
                             code: item.product_code,
                             name: item.product_name,
                             unit: item.unit,
-                            current_stock: item.current_stock,
+                            current_stock: item.stock_before,
                             category: item.category || 'FINISHED_GOODS',
                             unit_cost: item.unit_cost,
                             adjustment_qty: item.adjustment_qty,
@@ -297,7 +342,7 @@
                 } else {
                     clearProductTable();
                 }
-            }
+            });
 
             // Form validation
             function validateForm() {
@@ -316,11 +361,8 @@
                     }
                 });
 
-                // Check if at least one product is selected with adjustment qty
-                const hasValidProducts = $('#products-table tbody tr').filter(function() {
-                    const checkbox = $(this).find('.row-checkbox:checked');
-                    const adjustmentQty = $(this).find('.adjustment-qty').val();
-                    return checkbox.length > 0 && adjustmentQty && adjustmentQty !== '0';
+                const hasValidProducts = selectedProducts.filter(function(product) {
+                    return product.adjustment_qty && product.adjustment_qty !== 0;
                 }).length > 0;
 
                 if (!hasValidProducts) {
@@ -339,44 +381,6 @@
                 return isValid;
             }
 
-            // Load products based on warehouse and filters
-            // $('#load-products-btn').on('click', function() {
-            //     const warehouse = $('#warehouse-select').val();
-            //     const categoryFilter = $('#product-category-filter').val();
-            //     const searchFilter = $('#product-search').val().toLowerCase();
-
-            //     if (!warehouse) {
-            //         Swal.fire({
-            //             icon: 'warning',
-            //             title: 'Pilih Gudang',
-            //             text: 'Silakan pilih gudang terlebih dahulu.',
-            //             customClass: {
-            //                 confirmButton: 'btn btn-primary'
-            //             },
-            //             buttonsStyling: false
-            //         });
-            //         return;
-            //     }
-
-            //     // Filter products
-            //     let filteredProducts = mockProducts;
-
-            //     if (categoryFilter) {
-            //         filteredProducts = filteredProducts.filter(product => product.category === categoryFilter);
-            //     }
-
-            //     if (searchFilter) {
-            //         filteredProducts = filteredProducts.filter(product => 
-            //             product.code.toLowerCase().includes(searchFilter) || 
-            //             product.name.toLowerCase().includes(searchFilter)
-            //         );
-            //     }
-
-            //     // Generate table rows
-            //     renderProductTable(filteredProducts);
-            // });
-
-            // Load products based on warehouse and filters
             function loadProducts() {
                 const warehouse = $('#warehouse-select').val();
                 const categoryFilter = $('#product-category-filter').val();
@@ -438,8 +442,23 @@
                             '<i class="icon-base ti tabler-box me-2"></i>Load Produk dari Gudang');
                     });
             }
+
             $('#load-products-btn').on('click', loadProducts);
             $('#search-products-btn').on('click', loadProducts);
+
+            // Auto search when Enter key is pressed
+            $('#product-search').on('keypress', function(e) {
+                if (e.which === 13) {
+                    loadProducts();
+                }
+            });
+
+            // Auto filter when category changes
+            $('#product-category-filter').on('change', function() {
+                if (currentWarehouse) {
+                    loadProducts();
+                }
+            });
 
             function renderAvailableProductsTable() {
                 const tbody = $('#available-products-tbody');
@@ -458,6 +477,7 @@
 
                 let rows = '';
                 availableProducts.forEach(function(product) {
+                    //TEST
                     const isAlreadySelected = selectedProducts.find(p => p.product_code === product.code);
                     const buttonClass = isAlreadySelected ? 'btn-secondary' : 'btn-primary';
                     const buttonText = isAlreadySelected ? 'Sudah Dipilih' : 'Tambah';
@@ -482,22 +502,9 @@
 
                 tbody.html(rows);
             }
-             // Auto search when Enter key is pressed
-            $('#product-search').on('keypress', function(e) {
-                if (e.which === 13) {
-                    loadProducts();
-                }
-            });
-
-            // Auto filter when category changes
-            $('#product-category-filter').on('change', function() {
-                if (currentWarehouse) {
-                    loadProducts();
-                }
-            });
 
             function renderProductTable(products, preserveExisting = false) {
-                const tbody = $('#products-table-tbody');
+                const tbody = $('#selected-products-tbody');
 
                 if (products.length === 0) {
                     tbody.html(`
@@ -520,11 +527,6 @@
 
                     rows += `
                 <tr data-product-code="${product.code}">
-                    <td>
-                        <div class="form-check">
-                            <input class="form-check-input row-checkbox" type="checkbox" value="${product.code}" ${isChecked}>
-                        </div>
-                    </td>
                     <td><strong>${product.code}</strong></td>
                     <td>${product.name}</td>
                     <td>${product.unit}</td>
@@ -547,6 +549,12 @@
                         <input type="text" class="form-control form-control-sm reason-input" 
                                placeholder="Alasan adjustment..." maxlength="200" value="${reason}">
                     </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger remove-product-btn" 
+                                data-product-code="${product.code}">
+                            <i class="icon-base ti tabler-trash"></i>
+                        </button>
+                    </td>
                 </tr>
             `;
                 });
@@ -555,12 +563,50 @@
                 updateSummary();
             }
 
+            // Add product to adjustment list
+            $(document).on('click', '.add-product-btn', function() {
+                const productData = JSON.parse($(this).attr('data-product'));
+                const selectedProduct = {
+                    product_id: productData.id,
+                    product_code: productData.code,
+                    product_name: productData.name,
+                    unit: productData.unit,
+                    current_stock: productData.current_stock,
+                    unit_cost: productData.unit_cost,
+                    adjustment_qty: 0,
+                    reason: ''
+                };
+
+                selectedProducts.push(selectedProduct);
+                renderSelectedProductsTable();
+                renderAvailableProductsTable(); // Refresh to show "Sudah Dipilih" status
+            });
+
+            // Remove product from adjustment list
+            $(document).on('click', '.remove-product-btn', function() {
+                const productCode = $(this).data('product-code');
+                selectedProducts = selectedProducts.filter(p => p.product_code !== productCode);
+                renderSelectedProductsTable();
+                renderAvailableProductsTable(); // Refresh to show "Tambah" button again
+                updateSummary();
+            });
+
             // Auto-calculation for variance and summary
             $(document).on('input', '.adjustment-qty', function() {
                 const adjustmentQty = parseInt($(this).val()) || 0;
                 const currentStock = parseInt($(this).data('current-stock')) || 0;
                 const row = $(this).closest('tr');
+                const productCode = row.data('product-code');
                 const varianceCell = row.find('.variance-display');
+
+                // Update variance display
+                varianceCell.html(getVarianceDisplay(adjustmentQty));
+
+                // Update selectedProducts array
+                const productIndex = selectedProducts.findIndex(p => p.product_code === productCode);
+                if (productIndex !== -1) {
+                    selectedProducts[productIndex].adjustment_qty = adjustmentQty;
+                }
 
                 if (adjustmentQty > 0) {
                     varianceCell.html(
@@ -573,6 +619,15 @@
                 }
 
                 updateSummary();
+            });
+
+            $(document).on('input', '.reason-input', function() {
+                const row = $(this).closest('tr');
+                const productCode = row.data('product-code');
+                const productIndex = selectedProducts.findIndex(p => p.product_code === productCode);
+                if (productIndex !== -1) {
+                    selectedProducts[productIndex].reason = $(this).val();
+                }
             });
 
             // Checkbox functionality
@@ -590,23 +645,85 @@
             });
 
 
+            function renderSelectedProductsTable() {
+                const tbody = $('#selected-products-tbody');
+
+                if (selectedProducts.length === 0) {
+                    tbody.html(`
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        <i class="icon-base ti tabler-plus me-2"></i>
+                        Tambahkan produk dari daftar di atas untuk mulai melakukan adjustment
+                    </td>
+                </tr>
+            `);
+                    $('#selected-products-count').text('0');
+                    return;
+                }
+
+                let rows = '';
+                selectedProducts.forEach(function(product, index) {
+                    rows += `
+                <tr data-product-code="${product.product_code}">
+                    <td><strong>${product.product_code}</strong></td>
+                    <td>${product.product_name}</td>
+                    <td>${product.unit}</td>
+                    <td><span class="text-info">${product.current_stock.toLocaleString('id-ID')}</span></td>
+                    <td>
+                        <input type="number" class="form-control form-control-sm adjustment-qty" 
+                               placeholder="0" value="${product.adjustment_qty || 0}" 
+                               data-current-stock="${product.current_stock}" 
+                               data-unit-cost="${product.unit_cost}" 
+                               min="-${product.current_stock}">
+                    </td>
+                    <td class="variance-display">
+                        ${getVarianceDisplay(product.adjustment_qty || 0)}
+                    </td>
+                    <td>
+                        <input type="text" class="form-control form-control-sm reason-input" 
+                               placeholder="Alasan adjustment..." maxlength="200" 
+                               value="${product.reason || ''}">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger remove-product-btn" 
+                                data-product-code="${product.product_code}">
+                            <i class="icon-base ti tabler-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+                });
+
+                tbody.html(rows);
+                $('#selected-products-count').text(selectedProducts.length);
+                updateSummary();
+            }
+
+            function getVarianceDisplay(qty) {
+                const adjustmentQty = parseInt(qty) || 0;
+                if (adjustmentQty > 0) {
+                    return `<span class="text-success">+${adjustmentQty.toLocaleString('id-ID')}</span>`;
+                } else if (adjustmentQty < 0) {
+                    return `<span class="text-danger">${adjustmentQty.toLocaleString('id-ID')}</span>`;
+                } else {
+                    return '<span class="text-muted">0</span>';
+                }
+            }
+
             // Update summary cards
             function updateSummary() {
                 let totalItems = 0;
                 let totalQty = 0;
                 let totalValue = 0;
 
-                $('#products-table tbody tr').each(function() {
-                    const checkbox = $(this).find('.row-checkbox:checked');
+                $('#selected-products-tbody tr').each(function() {
                     const adjustmentQtyInput = $(this).find('.adjustment-qty');
                     const adjustmentQty = parseInt(adjustmentQtyInput.val()) || 0;
                     const unitCost = parseInt(adjustmentQtyInput.data('unit-cost')) || 0;
 
-                    if (checkbox.length > 0 && adjustmentQty !== 0) {
-                        totalItems++;
-                        totalQty += adjustmentQty;
-                        totalValue += (adjustmentQty * unitCost);
-                    }
+                    totalItems++;
+                    totalQty += adjustmentQty;
+                    totalValue += (adjustmentQty * unitCost);
                 });
 
                 // Update summary display
@@ -651,7 +768,7 @@
             });
 
             function clearProductTable() {
-                $('#products-table-tbody').html(`
+                $('#selected-products-tbody').html(`
             <tr>
                 <td colspan="8" class="text-center text-muted py-5">
                     <i class="icon-base ti tabler-box-off me-2"></i>
@@ -668,7 +785,6 @@
                 window.location.href = "{{ route('main_transaction.stock_adjustment.index') }}";
             });
 
-            // Update button
             $('#update-btn').on('click', function(e) {
                 e.preventDefault();
 
@@ -687,39 +803,41 @@
 
                 // Collect form data
                 const formData = {
-                    id: {{ $stockAdjustment->id }},
+                    adjustment_id: $('#adjustment-id').val(),
                     adjustment_date: $('#adjustment-date').val(),
                     adjustment_type: $('#adjustment-type').val(),
                     warehouse_id: $('#warehouse-select').val(),
                     pic_id: $('#pic-select').val(),
                     status: $('#status-select').val(),
                     description: $('#description').val(),
+                    memo: $('#adjustment-memo').val(),
+                    tags: $('#adjustment-tags').val(),
                     products: []
                 };
 
-                // Collect selected products
-                $('#products-table tbody tr').each(function() {
-                    const checkbox = $(this).find('.row-checkbox:checked');
-                    const adjustmentQtyInput = $(this).find('.adjustment-qty');
-                    const adjustmentQty = parseInt(adjustmentQtyInput.val()) || 0;
-                    const reason = $(this).find('.reason-input').val();
-
-                    if (checkbox.length > 0 && adjustmentQty !== 0) {
+                // Collect selected products with valid adjustment quantities
+                selectedProducts.forEach(function(product) {
+                    if (product.adjustment_qty && product.adjustment_qty !== 0) {
                         formData.products.push({
-                            product_code: $(this).data('product-code'),
-                            adjustment_qty: adjustmentQty,
-                            reason: reason
+                            product_id: product.product_id,
+                            product_code: product.product_code,
+                            product_name: product.product_name,
+                            unit: product.unit,
+                            stock_before: product.current_stock,
+                            adjustment_qty: product.adjustment_qty,
+                            unit_cost: product.unit_cost,
+                            reason: product.reason
                         });
                     }
                 });
 
                 // Show confirmation
                 Swal.fire({
-                    title: 'Konfirmasi Update',
-                    text: `Apakah Anda yakin ingin mengupdate stock adjustment dengan ${formData.products.length} produk?`,
+                    title: 'Konfirmasi Simpan',
+                    text: `Apakah Anda yakin ingin menyimpan stock adjustment dengan ${formData.products.length} produk?`,
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: 'Ya, Update',
+                    confirmButtonText: 'Ya, Simpan',
                     cancelButtonText: 'Batal',
                     customClass: {
                         confirmButton: 'btn btn-success',
@@ -727,19 +845,48 @@
                     },
                     buttonsStyling: false
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        // In real implementation, submit to server
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil!',
-                            text: 'Stock adjustment berhasil diupdate.',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
+                    if (result.value) {
+                        $('#submit-btn').prop('disabled', true).html(
+                            '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...'
+                        );
+                        $.ajax({
+                            url: "{{ route('main_transaction.stock_adjustment.update') }}",
+                            method: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                ...formData
                             },
-                            buttonsStyling: false
-                        }).then(() => {
-                            window.location.href =
-                                "{{ route('main_transaction.stock_adjustment.index') }}";
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Stock adjustment berhasil diubah.',
+                                    customClass: {
+                                        confirmButton: 'btn btn-success'
+                                    },
+                                    buttonsStyling: false
+                                }).then(function() {
+                                    window.location.href =
+                                        "{{ route('main_transaction.stock_adjustment.index') }}";
+                                });
+                            },
+                            error: function(xhr) {
+                                const res = xhr.responseJSON;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal menyimpan',
+                                    html: res?.message ||
+                                        'Terjadi kesalahan saat menyimpan data.',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary'
+                                    },
+                                    buttonsStyling: false
+                                });
+                            },
+                            complete: function() {
+                                $('#submit-btn').prop('disabled', false).html(
+                                    'Simpan Data');
+                            }
                         });
                     }
                 });

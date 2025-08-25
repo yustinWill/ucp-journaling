@@ -595,6 +595,7 @@
                 selectedProducts = selectedProducts.filter(p => p.product_code !== productCode);
                 renderSelectedProductsTable();
                 renderAvailableProductsTable(); // Refresh to show "Tambah" button again
+                updateSummary();
             });
 
             // Auto-calculation for variance and summary
