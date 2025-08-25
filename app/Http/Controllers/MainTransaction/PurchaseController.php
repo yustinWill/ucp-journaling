@@ -282,6 +282,7 @@ class PurchaseController extends Controller
         if (!PermissionHelper::hasPermission('main_transaction_purchase', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
+        
         // Get all required options for the Purchase Order form
         $suppliers = [
             ['value' => '1', 'label' => 'PT. Sumber Makmur'],

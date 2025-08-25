@@ -143,7 +143,7 @@ class StockAdjustmentController extends Controller
         }
 
         // Get employees from contact service
-        $contactsData = app(ContactService::class)->findByType('EMPLOYEE');
+        $contactsData = app(ContactService::class)->findAllByType('EMPLOYEE');
         $picOptions = [];
         foreach ($contactsData as $contact) {
             $picOptions[] = [
@@ -231,7 +231,7 @@ class StockAdjustmentController extends Controller
         }
 
         // Get employees from contact service
-        $contactsData = app(ContactService::class)->findByType('EMPLOYEE');
+        $contactsData = app(ContactService::class)->findAllByType('EMPLOYEE');
         $picOptions = [];
         foreach ($contactsData as $contact) {
             $picOptions[] = [
@@ -686,50 +686,6 @@ class StockAdjustmentController extends Controller
                 'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
-        // try {
-        //     // Check write permission
-        //     if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-        //         return response()->json(['error' => 'Unauthorized'], 403);
-        //     }
-
-        //     $validated = $request->validate([
-        //         'adjustment_date' => 'required|date',
-        //         'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,PRODUCT_RETURN,DAMAGE_LOSS,EXPIRY_DISPOSAL,WAREHOUSE_TRANSFER',
-        //         'warehouse_id' => 'required|integer|exists:m_warehouses,id',
-        //         'pic_id' => 'required|integer|exists:users,id',
-        //         'status' => 'required|string|in:DRAFT,WAITING_APPROVAL,APPROVED,CANCELLED',
-        //         'description' => 'required|string|max:1000',
-        //         'memo' => 'nullable|string|max:500',
-        //         'tags' => 'nullable|array',
-        //         'products' => 'required|array|min:1',
-        //         'products.*.product_id' => 'required|integer',
-        //         'products.*.product_code' => 'required|string',
-        //         'products.*.product_name' => 'required|string',
-        //         'products.*.unit' => 'required|string',
-        //         'products.*.stock_before' => 'required|numeric',
-        //         'products.*.adjustment_qty' => 'required|numeric|not_in:0',
-        //         'products.*.unit_cost' => 'nullable|numeric|min:0',
-        //         'products.*.reason' => 'nullable|string|max:200'
-        //     ]);
-
-        //     app(UpdateStockAdjustmentAction::class)->execute($id, $validated);
-
-        //     return response()->json([
-        //         'success' => true,
-        //         'message' => 'Stock adjustment berhasil diperbarui'
-        //     ]);
-        // } catch (ValidationException $e) {
-        //     return response()->json([
-        //         'message' => 'Validation failed',
-        //         'errors' => $e->errors(),
-        //         'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
-        //     ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
-        // } catch (\Throwable $e) {
-        //     return response()->json([
-        //         'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
-        //         'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-        //     ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
-        // }
     }
 
     public function getWarehouseProducts(Request $request)
