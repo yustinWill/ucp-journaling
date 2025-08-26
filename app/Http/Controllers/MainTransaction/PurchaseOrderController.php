@@ -6,6 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Helpers\PermissionHelper;
 use Illuminate\Http\Request;
 
+use App\Domains\Contact\Services\ContactService;
+use App\Domains\PaymentTerm\Services\PaymentTermService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Domains\Product\Services\ProductService;
+use App\Domains\Tax\Services\TaxService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
 class PurchaseOrderController extends Controller
 {
     public function index()
@@ -102,55 +112,12 @@ class PurchaseOrderController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
 
-        // Get required options for the Purchase Order form
-        $suppliers = [
-            ['value' => '1', 'label' => 'SUP-001 - PT. Sumber Makmur'],
-            ['value' => '2', 'label' => 'SUP-002 - CV. Berkah Jaya'],
-            ['value' => '3', 'label' => 'SUP-003 - PT. Mandiri Sejahtera'],
-            ['value' => '4', 'label' => 'SUP-004 - CV. Maju Bersama']
-        ];
-
-        // Load payment terms from database
-        $paymentTermsData = \DB::table('m_payment_terms')
-            ->where('status', 'ACTIVE')
-            ->orderBy('code')
-            ->get();
-        
-        $paymentTerms = [];
-        foreach ($paymentTermsData as $term) {
-            $paymentTerms[] = [
-                'value' => $term->code,
-                'label' => $term->code . ' - ' . $term->name,
-                'days' => $term->days,
-                'type' => $term->type
-            ];
-        }
-
-        $warehouses = [
-            ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
-            ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
-            ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
-        ];
-
-        $products = [
-            ['value' => '1', 'label' => 'PRD-001 - Botol PET 330ml'],
-            ['value' => '2', 'label' => 'PRD-002 - Label Kemasan'],
-            ['value' => '3', 'label' => 'PRD-003 - Tutup Botol'],
-            ['value' => '4', 'label' => 'PRD-004 - Kardus Packaging']
-        ];
-
-        $taxOptions = [
-            ['value' => 'PPN', 'label' => 'PPN - 11%'],
-            ['value' => 'No Tax', 'label' => 'Tidak Ada Pajak']
-        ];
-
-        $availableTags = [
-            ['value' => 'PO001', 'label' => 'PO001 - Bahan Baku', 'preview' => 'bg-label-primary'],
-            ['value' => 'PO002', 'label' => 'PO002 - Kemasan', 'preview' => 'bg-label-success'],
-            ['value' => 'PO003', 'label' => 'PO003 - Urgent', 'preview' => 'bg-label-warning'],
-            ['value' => 'PO004', 'label' => 'PO004 - Regular', 'preview' => 'bg-label-info'],
-            ['value' => 'PO005', 'label' => 'PO005 - Seasonal', 'preview' => 'bg-label-secondary']
-        ];
+        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
+        $paymentTerms = app(PaymentTermService::class)->findAll();
+        $warehouses = app(WarehouseService::class)->findAll();
+        $products = app(ProductService::class)->findAll();
+        $taxOptions = app(TaxService::class)->findAll();
+        $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
         $canAddSuppliers = PermissionHelper::hasPermission('master_data_contact', 'write');
@@ -170,6 +137,33 @@ class PurchaseOrderController extends Controller
             'canAddTags' => $canAddTags,
             'canAddStorages' => $canAddStorages
         ]);
+    }
+
+    public function generateTransactionNumber()
+    {
+        try {
+            // Generate transaction number based on current date and sequence
+            $year = date('Y');
+            $month = date('m');
+
+            // Get the latest sequence number for this month
+            $latestRecord = app(PurchaseOrderService::class)->getLatestByMonth($year, $month);
+            $sequence = $latestRecord ? ($latestRecord->id + 1) : 1;
+
+            // Format: PO-YYYY-MMDD-XXX (PO = Purchase Order)
+            $transactionNumber = sprintf('PO-%s-%s%s-%03d', $year, $month, date('d'), $sequence);
+
+            return response()->json([
+                'success' => true,
+                'transaction_number' => $transactionNumber
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+               'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function store(Request $request)

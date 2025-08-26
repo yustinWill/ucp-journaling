@@ -70,6 +70,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
     Route::controller(PurchaseOrderController::class)->group(function () use ($base_segment, $purchase_order_segment) {
         Route::get($base_segment . $purchase_order_segment . '/index', 'index')->name('main_transaction.purchase_order.index');
         Route::get($base_segment . $purchase_order_segment . '/index_data_table', 'index_data_table')->name('main_transaction.purchase_order.index_data_table');
+        Route::get($base_segment . $purchase_order_segment . '/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.purchase_order.generate_transaction_number');
         Route::get($base_segment . $purchase_order_segment . '/add', 'add')->name('main_transaction.purchase_order.add');
         Route::post($base_segment . $purchase_order_segment . '/store', 'store')->name('main_transaction.purchase_order.store');
         Route::get($base_segment . $purchase_order_segment . '/detail/{id}', 'detail')->name('main_transaction.purchase_order.detail');

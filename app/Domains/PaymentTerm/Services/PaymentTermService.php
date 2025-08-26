@@ -12,7 +12,7 @@ class PaymentTermService
     public function findAll()
     {
         return DB::table($this->table_name)
-            ->select('id', 'name', 'code')
+            ->select('id', 'name', 'code', 'days', 'type')
             ->where('status', GeneralStatuses::ACTIVE)
             ->where('company_code', session('user_company_code'))
             ->orderBy('name', 'asc')

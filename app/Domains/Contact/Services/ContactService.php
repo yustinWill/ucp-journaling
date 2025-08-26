@@ -2,6 +2,7 @@
 
 namespace App\Domains\Contact\Services;
 
+use App\Enums\GeneralStatuses;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -111,17 +112,17 @@ class ContactService
     public function findAll()
     {
         return DB::table($this->table_name)
-            ->where('status', 'ACTIVE')
+            ->where('status', GeneralStatuses::ACTIVE)
             ->where('company_code', session('user_company_code'))
             ->get();
     }
 
-    public function findByType($type)
+    public function findAllByType($type)
     {
         return DB::table($this->table_name)
             ->select(['id', 'name', 'type'])
             ->where('type', $type)
-            ->where('status', 'ACTIVE')
+            ->where('status', GeneralStatuses::ACTIVE)
             ->where('company_code', session('user_company_code'))
             ->orderBy('name')
             ->get();
