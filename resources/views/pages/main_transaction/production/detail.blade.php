@@ -267,11 +267,12 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {{-- @forelse($auditLogs as $log)
+                                        @forelse($audit_logs as $log)
                                             <tr>
                                                 <td>{{ $log->created_at }}</td>
                                                 <td>
-                                                    <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}" class="text-primary fw-semibold">
+                                                    <a href="{{ route('master_data.user.detail', ['id' => $log->user_id]) }}"
+                                                        class="text-primary fw-semibold">
                                                         {{ $log->user_name }}
                                                     </a>
                                                 </td>
@@ -290,9 +291,10 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="text-center text-muted">Belum ada riwayat perubahan</td>
+                                                <td colspan="4" class="text-center text-muted">Belum ada riwayat
+                                                    perubahan</td>
                                             </tr>
-                                        @endforelse --}}
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
