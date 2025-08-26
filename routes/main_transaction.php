@@ -12,6 +12,7 @@ use App\Http\Controllers\MainTransaction\SalesController;
 use App\Http\Controllers\MainTransaction\CreditMemoController;
 use App\Http\Controllers\MainTransaction\ExpenseController;
 use App\Http\Controllers\MainTransaction\StockAdjustmentController;
+use App\Http\Controllers\MainTransaction\ProductionController;
 
 $base_segment = '/main_transaction';
 $journal_segment = '/journal';
@@ -23,8 +24,9 @@ $sales_segment = '/sales';
 $credit_memo_segment = '/credit_memo';
 $expense_segment = '/expense';
 $stock_adjustment_segment = '/stock_adjustment';
+$production_segment = '/production';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment . $journal_segment . '/index', 'index')->name('main_transaction.journal.index');
         Route::get($base_segment . $journal_segment . '/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table');
@@ -191,5 +193,37 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment . $stock_adjustment_segment . '/download_template', 'downloadTemplate')->name('main_transaction.stock_adjustment.download_template');
         Route::post($base_segment . $stock_adjustment_segment . '/validate_import', 'validateImport')->name('main_transaction.stock_adjustment.validate_import');
         Route::post($base_segment . $stock_adjustment_segment . '/process_import', 'processImport')->name('main_transaction.stock_adjustment.process_import');
+    });
+
+    // Production Routes
+    Route::controller(ProductionController::class)->group(function () use ($base_segment, $production_segment) {
+        Route::get($base_segment . $production_segment . '/index', 'index')->name('main_transaction.production.index');
+        Route::get($base_segment . $production_segment . '/index_data_table', 'index_data_table')->name('main_transaction.production.index_data_table');
+        Route::get($base_segment . $production_segment . '/add', 'add')->name('main_transaction.production.add');
+        Route::post($base_segment . $production_segment . '/store', 'store')->name('main_transaction.production.store');
+        Route::get($base_segment . $production_segment . '/detail/{id}', 'detail')->name('main_transaction.production.detail');
+        // Edit/Update removed - use Reversal process instead
+        Route::delete($base_segment . $production_segment . '/{id}', 'destroy')->name('main_transaction.production.destroy');
+        Route::get($base_segment . $production_segment . '/export', 'export')->name('main_transaction.production.export');
+        Route::post($base_segment . $production_segment . '/process_export', 'processExport')->name('main_transaction.production.process_export');
+        
+        // AJAX Routes for dynamic functionality
+        Route::get($base_segment . $production_segment . '/get_bundle_components', 'getBundleComponents')->name('main_transaction.production.get_bundle_components');
+        Route::get($base_segment . $production_segment . '/get_warehouses', 'getWarehouses')->name('main_transaction.production.get_warehouses');
+        Route::get($base_segment . $production_segment . '/get_bundle_products', 'getBundleProducts')->name('main_transaction.production.get_bundle_products');
+        Route::get($base_segment . $production_segment . '/get_pic_users', 'getPicUsers')->name('main_transaction.production.get_pic_users');
+        Route::get($base_segment . $production_segment . '/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.production.generate_transaction_number');
+        
+        // AJAX endpoints for form data
+        Route::get($base_segment . $production_segment . '/get-formula/{bundleProductId}', 'getFormula')->name('main_transaction.production.get_formula');
+        Route::get($base_segment . $production_segment . '/get-expenses/{bundleProductId}', 'getExpenses')->name('main_transaction.production.get_expenses');
+
+        // Reversal Routes
+        Route::get($base_segment . $production_segment . '/reversal/{id}', 'reversal')->name('main_transaction.production.reversal');
+        Route::post($base_segment . $production_segment . '/reversal/{id}', 'processReversal')->name('main_transaction.production.process_reversal');
+        
+        // Action Routes for production management
+        Route::post($base_segment . $production_segment . '/complete/{id}', 'complete')->name('main_transaction.production.complete');
+        Route::post($base_segment . $production_segment . '/cancel/{id}', 'cancel')->name('main_transaction.production.cancel');
     });
 });

@@ -111,10 +111,10 @@
                 <div data-i18n="Warehouse">Warehouse</div>
             </a>
         </li>
-        <li class="menu-item">
-            <a href="app-chat.html" class="menu-link">
+        <li class="menu-item @if (request()->routeIs(['main_transaction.production.*'])) active @endif">
+            <a href="{{ route('main_transaction.production.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-tools"></i>
-                <div data-i18n="Chat">Produksi - wip</div>
+                <div data-i18n="Produksi">Produksi</div>
             </a>
         </li>
         <li class="menu-item">
