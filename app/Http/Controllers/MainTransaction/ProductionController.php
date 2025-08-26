@@ -44,18 +44,11 @@ class ProductionController extends Controller
             'plannedProductions' => $productions->where('status', 'PLANNED')->count()
         ];
 
-        $productionStatuses = [
-            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
-            ['value' => 'PLANNED', 'label' => 'PLANNED - Direncanakan'],
-            ['value' => 'IN_PROGRESS', 'label' => 'IN_PROGRESS - Sedang Produksi'],
-            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
-        ];
-
+        $bundleProducts = app(ProductService::class)->findAllBundle();
         $warehouses = app(WarehouseService::class)->findAll();
 
         return view('pages.main_transaction.production.index', array_merge($stats, [
-            'productionStatuses' => $productionStatuses, // Keep original variable name to match existing view
+            'bundleProducts' => $bundleProducts,
             'warehouses' => $warehouses,
             'canAddProduction' => $this->hasPermission('production.write'),
             'canExportProduction' => $this->hasPermission('production.export'),
@@ -68,39 +61,8 @@ class ProductionController extends Controller
 
     public function index_data_table(Request $request)
     {
-        if (!$this->hasPermission('production.read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $filters = [
-            'status' => $request->get('status_filter'),
-            'warehouse_id' => $request->get('warehouse_filter'),
-            'date_from' => $request->get('date_from'),
-            'date_to' => $request->get('date_to')
-        ];
-
-        $productions = app(ProductionService::class)->findAll($filters);
-
-        $data = $productions->map(function ($production) {
-            return [
-                'id' => $production->id,
-                'production_number' => $production->production_number,
-                'production_date' => $production->production_date,
-                'bundle_product_name' => $production->bundle_product_name,
-                'warehouse_name' => $production->warehouse_name,
-                'warehouse_id' => $production->warehouse_id,
-                'quantity_planned' => $production->quantity_planned,
-                'quantity_produced' => $production->quantity_produced,
-                'status' => $production->status,
-                'status_badge_class' => $this->getStatusBadgeClass($production->status),
-                'pic_name' => $production->pic_name,
-                'pic_id' => $production->pic_id,
-                'created_by' => $production->created_by ?? 'System',
-                'created_at' => $production->created_at
-            ];
-        })->toArray();
-
-        return response()->json(['data' => array_values($data)], 200);
+        $data = app(ProductionService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()

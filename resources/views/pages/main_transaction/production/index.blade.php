@@ -74,31 +74,35 @@
             <div class="card-body">
                 <!-- Advanced Search Form -->
                 <div class="row mb-4">
-                    <div class="col-md-3">
-                        <label class="form-label">Tanggal Dari:</label>
-                        <input type="date" class="form-control" id="date-from-filter">
+
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">Tanggal Jurnal:</label>
+                        <input type="text" id="date-range-picker" class="form-control" />
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Tanggal Sampai:</label>
-                        <input type="date" class="form-control" id="date-to-filter" value="{{ date('Y-m-d') }}">
-                    </div>
-                    {{-- <div class="col-md-3">
-                        <label class="form-label">Status:</label>
-                        <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
-                            <option value="">Semua Status</option>
-                            @foreach ($productionStatuses as $status)
-                                <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
-                            @endforeach
-                        </select>
-                    </div> --}}
+
                     <div class="col-md-3">
                         <label class="form-label">Warehouse:</label>
                         <select class="global-select2 form-select" id="warehouse-filter" data-allow-clear="true">
                             <option value="">Semua Warehouse</option>
                             @foreach ($warehouses as $warehouse)
-                                <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}
+                                </option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Product:</label>
+                        <select class="global-select2 form-select" id="product-filter" data-allow-clear="true">
+                            <option value="">Semua Product</option>
+                            @foreach ($bundleProducts as $product)
+                                <option value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">No Produksi:</label>
+                        <input type="text" class="form-control dt-input dt-full-name" data-column="1"
+                            placeholder="Cari Berdasarkan Kode Produksi" id="production-number" data-column-index="0" />
                     </div>
                 </div>
 
@@ -142,203 +146,197 @@
 @stop
 
 @section('js_script')
-<script>
-$(function() {
-    let productionTable;
-    
-    function initProductionTable() {
-        if (productionTable) {
-            productionTable.destroy();
-        }
-        
-        productionTable = new DataTable('#production-table', {
-            ajax: {
-                url: '{{ route("main_transaction.production.index_data_table") }}',
-                data: function(d) {
-                    d.date_from = $('#date-from-filter').val();
-                    d.date_to = $('#date-to-filter').val();
-                    d.status = $('#status-filter').val();
-                    d.warehouse_id = $('#warehouse-filter').val();
-                    return d;
+    <script>
+        $(function() {
+            let productionTable;
+
+            function initProductionTable() {
+                if (productionTable) {
+                    productionTable.destroy();
                 }
-            },
-            columns: [
-                { 
-                    data: 'production_date', 
-                    width: '100px',
-                    render: function(data, type, row) {
-                        return moment(data).format('DD/MM/YYYY');
-                    }
-                },
-                { 
-                    data: 'production_number', 
-                    width: '140px',
-                    render: function(data, type, row) {
-                        @if ($canViewDetails)
-                        const detailUrl = "{{ route('main_transaction.production.detail', ':id') }}".replace(':id', row.id);
-                        return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                        @else
-                        return data;
-                        @endif
-                    }
-                },
-                { data: 'bundle_product_name' },
-                { 
-                    data: 'warehouse_name', 
-                    width: '180px'
-                },
-                { 
-                    data: 'quantity_planned', 
-                    width: '100px',
-                    className: 'text-end',
-                    render: function(data, type, row) {
-                        return new Intl.NumberFormat('id-ID', {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 2
-                        }).format(data || 0);
-                    }
-                },
-                { 
-                    data: 'quantity_produced', 
-                    width: '100px',
-                    className: 'text-end',
-                    render: function(data, type, row) {
-                        return new Intl.NumberFormat('id-ID', {
-                            minimumFractionDigits: 0,
-                            maximumFractionDigits: 2
-                        }).format(data || 0);
-                    }
-                },
-                { 
-                    data: 'total_production_cost', 
-                    width: '120px',
-                    className: 'text-end',
-                    render: function(data, type, row) {
-                        return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);
-                    }
-                },
-                {
-                    data: 'status',
-                    width: '100px',
-                    className: 'text-center',
-                    render: function(data, type, row) {
-                        let badgeClass = '';
-                        switch(data) {
-                            case 'DRAFT':
-                                badgeClass = 'bg-label-secondary';
-                                break;
-                            case 'PLANNED':
-                                badgeClass = 'bg-label-info';
-                                break;
-                            case 'IN_PROGRESS':
-                                badgeClass = 'bg-label-warning';
-                                break;
-                            case 'COMPLETED':
-                                badgeClass = 'bg-label-success';
-                                break;
-                            case 'CANCELLED':
-                                badgeClass = 'bg-label-danger';
-                                break;
-                            default:
-                                badgeClass = 'bg-label-secondary';
+
+                productionTable = new DataTable('#production-table', {
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '{{ route('main_transaction.production.index_data_table') }}',
+                        data: function(d) {
+                            d.date = $('#date-range-picker').val();
+                            d.product = $('#product-filter').val();
+                            d.production_no = $('#production-number').val();
+                            d.warehouse = $('#warehouse-filter').val();
+                            return d;
                         }
-                        return `<span class="badge ${badgeClass}">${data}</span>`;
-                    }
-                },
-                {
-                    data: null,
-                    width: '100px',
-                    orderable: false,
-                    searchable: false,
-                    render: function(data, type, row, meta) {
-                        let actions = '';
-                        
-                        @if ($canViewDetails)
-                        const detailUrl = "{{ route('main_transaction.production.detail', ':id') }}".replace(':id', row.id);
-                        actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                    },
+                    columns: [{
+                            data: 'production_date',
+                            width: '100px',
+                            render: function(data, type, row) {
+                                return moment(data).format('DD/MM/YYYY');
+                            }
+                        },
+                        {
+                            data: 'production_number',
+                            width: '140px',
+                            render: function(data, type, row) {
+                                @if ($canViewDetails)
+                                    const detailUrl =
+                                        "{{ route('main_transaction.production.detail', ':id') }}"
+                                        .replace(':id', row.id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                @else
+                                    return data;
+                                @endif
+                            }
+                        },
+                        {
+                            data: 'bundle_product_name'
+                        },
+                        {
+                            data: 'warehouse_name',
+                            width: '180px'
+                        },
+                        {
+                            data: 'quantity_planned',
+                            width: '100px',
+                            className: 'text-end',
+                            render: function(data, type, row) {
+                                return new Intl.NumberFormat('id-ID', {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 2
+                                }).format(data || 0);
+                            }
+                        },
+                        {
+                            data: 'quantity_produced',
+                            width: '100px',
+                            className: 'text-end',
+                            render: function(data, type, row) {
+                                return new Intl.NumberFormat('id-ID', {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 2
+                                }).format(data || 0);
+                            }
+                        },
+                        {
+                            data: 'total_production_cost',
+                            width: '120px',
+                            className: 'text-end',
+                            render: function(data, type, row) {
+                                return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);
+                            }
+                        },
+                        {
+                            data: 'status',
+                            width: '100px',
+                            className: 'text-center',
+                            render: function(data, type, row) {
+                                let badgeClass = '';
+                                switch (data) {
+                                    case 'DRAFT':
+                                        badgeClass = 'bg-label-secondary';
+                                        break;
+                                    case 'PLANNED':
+                                        badgeClass = 'bg-label-info';
+                                        break;
+                                    case 'IN_PROGRESS':
+                                        badgeClass = 'bg-label-warning';
+                                        break;
+                                    case 'COMPLETED':
+                                        badgeClass = 'bg-label-success';
+                                        break;
+                                    case 'CANCELLED':
+                                        badgeClass = 'bg-label-danger';
+                                        break;
+                                    default:
+                                        badgeClass = 'bg-label-secondary';
+                                }
+                                return `<span class="badge ${badgeClass}">${data}</span>`;
+                            }
+                        },
+                        {
+                            data: null,
+                            width: '100px',
+                            orderable: false,
+                            searchable: false,
+                            render: function(data, type, row, meta) {
+                                let actions = '';
+
+                                @if ($canViewDetails)
+                                    const detailUrl =
+                                        "{{ route('main_transaction.production.detail', ':id') }}"
+                                        .replace(':id', row.id);
+                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
                                     </a>`;
-                        @endif
+                                @endif
 
-                        // Edit functionality removed - use Reversal process for modifications
+                                // Edit functionality removed - use Reversal process for modifications
 
-                        @if ($canReverseProduction)
-                        if (row.status === 'COMPLETED') {
-                            const reversalUrl = "{{ route('main_transaction.production.reversal', ':id') }}".replace(':id', row.id);
-                            actions += `<a href="${reversalUrl}" class="btn btn-sm btn-danger waves-effect waves-light ms-1" title="Reversal">
-                                            <i class="icon-base ti tabler-arrow-back-up"></i>
-                                        </a>`;
+                                // @if ($canReverseProduction)
+                                // if (row.status === 'COMPLETED') {
+                                //     const reversalUrl = "{{ route('main_transaction.production.reversal', ':id') }}".replace(':id', row.id);
+                                //     actions += `<a href="${reversalUrl}" class="btn btn-sm btn-danger waves-effect waves-light ms-1" title="Reversal">
+                            //                     <i class="icon-base ti tabler-arrow-back-up"></i>
+                            //                 </a>`;
+                                // }
+                                // @endif
+
+                                // @if ($canDeleteProduction)
+                                // if (row.status === 'DRAFT') {
+                                //     actions += `<button type="button" class="btn btn-sm btn-danger waves-effect waves-light ms-1" 
+                            //                        onclick="deleteProduction(${row.id})" title="Delete">
+                            //                     <i class="icon-base ti tabler-trash"></i>
+                            //                 </button>`;
+                                // }
+                                // @endif
+
+                                return actions;
+                            }
                         }
-                        @endif
-
-                        @if ($canDeleteProduction)
-                        if (row.status === 'DRAFT') {
-                            actions += `<button type="button" class="btn btn-sm btn-danger waves-effect waves-light ms-1" 
-                                               onclick="deleteProduction(${row.id})" title="Delete">
-                                            <i class="icon-base ti tabler-trash"></i>
-                                        </button>`;
+                    ],
+                    layout: {
+                        topStart: {
+                            rowClass: 'm-0',
+                            features: []
+                        },
+                        topEnd: {},
+                        bottomStart: {
+                            rowClass: 'row mx-3 justify-content-between',
+                            features: ['info']
+                        },
+                        bottomEnd: 'paging'
+                    },
+                    language: {
+                        paginate: {
+                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
-                        @endif
-                        
-                        return actions;
-                    }
-                }
-            ],
-            layout: {
-                topStart: { rowClass: 'm-0', features: [] },
-                topEnd: {},
-                bottomStart: { rowClass: 'row mx-3 justify-content-between', features: ['info'] },
-                bottomEnd: 'paging'
-            },
-            language: {
-                paginate: {
-                    next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                    previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                    first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                    last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                }
-            },
-            scrollX: true,
-            responsive: true,
-            orderCellsTop: true,
-            ordering: false
-        });
-    }
-    
-    // Initialize table
-    initProductionTable();
-    
-    // Filter functionality
-    $('#date-from-filter, #date-to-filter, #status-filter, #warehouse-filter').on('change', function() {
-        if (productionTable) {
-            productionTable.draw();
-        }
-    });
-});
-
-// Delete production function
-function deleteProduction(productionId) {
-    if (confirm('Apakah Anda yakin ingin menghapus production ini? Aksi ini tidak dapat dibatalkan.')) {
-        $.ajax({
-            url: `{{ route('main_transaction.production.destroy', ':id') }}`.replace(':id', productionId),
-            type: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message);
-                    $('#production-table').DataTable().ajax.reload();
-                } else {
-                    alert(response.message || 'Gagal menghapus production');
-                }
-            },
-            error: function(xhr) {
-                const response = xhr.responseJSON;
-                alert(response?.message || 'Terjadi kesalahan saat menghapus production');
+                    },
+                    scrollX: true,
+                    responsive: true,
+                    orderCellsTop: true,
+                    ordering: false
+                });
             }
+
+            // Initialize table
+            initProductionTable();
+
+            let searchTimeout;
+            $('#date-range-picker,#warehouse-filter,#product-filter,#production-number').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (productionTable) {
+                            productionTable.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
         });
-    }
-}
-</script>
+
+    </script>
 @endsection

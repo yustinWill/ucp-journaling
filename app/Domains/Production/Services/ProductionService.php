@@ -46,6 +46,68 @@ class ProductionService
         return $query->get();
     }
 
+    public function findAllDatatable()
+    {
+        $query = DB::table($this->table_name . ' as p')
+            ->select(
+                'p.*',
+                'bp.name as bundle_product_name',
+                'bp.code as bundle_product_code',
+                'w.name as warehouse_name',
+                'w.code as warehouse_code',
+                'u.name as pic_name'
+            )
+            ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
+            ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
+            ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
+            ->where('p.company_code', session('user_company_code'));
+
+        if ($date = request()->input('date')) {
+            // Check if date is a range (contains ' - ')
+            if (strpos($date, ' - ') !== false) {
+                [$dateFrom, $dateTo] = explode(' - ', $date);
+                $query->whereBetween('p.production_date', [$dateFrom, $dateTo]);
+            } else {
+                $query->where('p.production_date', $date);
+            }
+        }
+
+        if ($product_id = request()->input('product')) {
+            $query->where('p.bundle_product_id', $product_id);
+        }
+
+        if ($warehouse_id = request()->input('warehouse')) {
+            $query->where('p.warehouse_id', $warehouse_id);
+        }
+
+
+        if ($production_no = request()->input('production_no')) {
+            $query->where('p.production_number', 'like', "%{$production_no}%");
+        }
+
+        $query->groupBy('p.id');
+
+
+        $draw = (int) request()->input('draw', 1);
+        $recordsTotal = DB::table($this->table_name)->count();
+        $filteredQuery = clone $query;
+
+        // Pagination
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
+        $query->skip($start)->take($length);
+        $recordsFiltered = $filteredQuery->get()->count();
+        $query->orderBy('p.id', 'DESC');
+        $data = $query->get();
+
+        return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ];
+    }
+
     public function findOne($id)
     {
         $data = DB::table($this->table_name . ' as p')
@@ -154,7 +216,7 @@ class ProductionService
     {
         $year = date('Y');
         $month = date('m');
-        
+
         // Get next sequence number for this month
         $lastProduction = DB::table($this->table_name)
             ->where('company_code', session('user_company_code'))
@@ -205,7 +267,7 @@ class ProductionService
     public function canBeReversed(int $id): array
     {
         $production = $this->findOne($id);
-        
+
         if (!$production) {
             return ['can_reverse' => false, 'reason' => 'Production not found'];
         }
@@ -221,7 +283,7 @@ class ProductionService
 
         if (!$bundleProduct || $bundleProduct->total_stock < $production->quantity_produced) {
             return [
-                'can_reverse' => false, 
+                'can_reverse' => false,
                 'reason' => 'Insufficient bundle product stock for reversal',
                 'available_stock' => $bundleProduct->total_stock ?? 0,
                 'required_stock' => $production->quantity_produced
