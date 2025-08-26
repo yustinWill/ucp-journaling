@@ -61,7 +61,7 @@ class ProductionService
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
-            ->leftJoin('users as created_user', 'p.created_by_user_id', '=', 'created_user.id')
+            ->leftJoin('users as created_user', 'p.created_by', '=', 'created_user.id')
             ->where('p.id', $id)
             ->where('p.company_code', session('user_company_code'))
             ->first();
@@ -77,14 +77,14 @@ class ProductionService
     {
         $productionData = [
             'company_code' => session('user_company_code'),
-            'production_number' => $this->generateProductionNumber(),
+            'production_number' => $data['production_number'],
             'production_date' => $data['production_date'],
             'bundle_product_id' => $data['bundle_product_id'],
             'warehouse_id' => $data['warehouse_id'],
             'pic_id' => $data['pic_id'],
             'quantity_planned' => $data['quantity_planned'],
             'quantity_produced' => $data['quantity_produced'] ?? 0,
-            'status' => $data['status'] ?? 'DRAFT',
+            'status' => 'COMPLETED',
             'description' => $data['description'] ?? null,
             'notes' => $data['notes'] ?? null,
             'reference_number' => $data['reference_number'] ?? null,
@@ -93,10 +93,10 @@ class ProductionService
             'total_production_expense' => $data['total_production_expense'] ?? 0,
             'total_production_cost' => $data['total_production_cost'] ?? 0,
             'total_items_consumed' => $data['total_items_consumed'] ?? 0,
-            'created_by_user_id' => Auth::id(),
-            'updated_by_user_id' => Auth::id(),
+            'created_by' => Auth::id(),
+            // 'updated_by' => Auth::id(),
             'created_at' => now(),
-            'updated_at' => now()
+            // 'updated_at' => now()
         ];
 
         return DB::table($this->table_name)->insertGetId($productionData);

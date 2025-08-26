@@ -30,7 +30,7 @@ class ProductionItemService
     public function createBulk(int $productionId, array $items): void
     {
         $insertData = [];
-        
+
         foreach ($items as $item) {
             $insertData[] = [
                 'production_id' => $productionId,
@@ -54,7 +54,7 @@ class ProductionItemService
     {
         // Delete existing items
         DB::table($this->table_name)->where('production_id', $productionId)->delete();
-        
+
         // Insert updated items
         $this->createBulk($productionId, $items);
     }
@@ -122,18 +122,21 @@ class ProductionItemService
                 ->where('id', $item['raw_material_product_id'])
                 ->first();
 
+
+            // dd($product->total_stock);
             // Check total stock
             $isAvailable = $product && $product->total_stock >= $item['quantity_required'];
-            
             // Get available batches for this product in the warehouse
             $availableBatches = DB::table('t_product_stock_batches')
-                ->where('product_id', $item['raw_material_product_id'])
-                ->where('warehouse_id', $warehouseId)
-                ->where('remaining_quantity', '>', 0)
+                ->where('f_product_id', $item['raw_material_product_id'])
+                //warehouse tidak ada
+                // ->where('warehouse_id', $warehouseId)
+                ->where('remaining_qty', '>', 0)
+                ->where('status', 'ACTIVE')
                 ->orderBy('created_at', 'ASC') // FIFO order
                 ->get();
-
-            $totalAvailableInBatches = $availableBatches->sum('remaining_quantity');
+           
+            $totalAvailableInBatches = $availableBatches->sum('remaining_qty');
 
             $validation[] = [
                 'raw_material_product_id' => $item['raw_material_product_id'],

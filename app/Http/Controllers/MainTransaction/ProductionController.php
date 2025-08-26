@@ -3,15 +3,27 @@
 namespace App\Http\Controllers\MainTransaction;
 
 use App\Http\Controllers\Controller;
+use App\Domains\Product\Services\ProductService;
+use App\Domains\Product\Services\ProductCompositionService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Domains\User\Services\UserService;
 use App\Domains\Production\Services\ProductionService;
 use App\Domains\Production\Services\ProductionItemService;
 use App\Domains\Production\Services\ProductionExpenseService;
 use App\Domains\Production\Services\ProductionAuditLogService;
 use App\Domains\Production\Actions\CreateProductionAction;
+use App\Domains\Production\Actions\CancelProductionAction;
 use App\Domains\Production\Actions\UpdateProductionAction;
 use App\Domains\Production\Actions\ReversalProductionAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
+use App\Exceptions\AppException;
+use App\Enums\ErrorCodes;
+use App\Enums\AuditLogTypes;
+use App\Enums\SuccessCodes;
+use App\Helpers\DiscordNotifier;
+
 
 class ProductionController extends Controller
 {
@@ -24,14 +36,14 @@ class ProductionController extends Controller
 
         // Get summary statistics
         $productions = app(ProductionService::class)->findAll();
-        
+
         $stats = [
             'totalProductions' => $productions->count(),
             'inProgressProductions' => $productions->where('status', 'IN_PROGRESS')->count(),
             'completedProductions' => $productions->where('status', 'COMPLETED')->count(),
             'plannedProductions' => $productions->where('status', 'PLANNED')->count()
         ];
-        
+
         $productionStatuses = [
             ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
             ['value' => 'PLANNED', 'label' => 'PLANNED - Direncanakan'],
@@ -40,7 +52,7 @@ class ProductionController extends Controller
             ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
         ];
 
-        $warehouses = $this->getWarehouseOptions();
+        $warehouses = app(WarehouseService::class)->findAll();
 
         return view('pages.main_transaction.production.index', array_merge($stats, [
             'productionStatuses' => $productionStatuses, // Keep original variable name to match existing view
@@ -68,7 +80,7 @@ class ProductionController extends Controller
         ];
 
         $productions = app(ProductionService::class)->findAll($filters);
-        
+
         $data = $productions->map(function ($production) {
             return [
                 'id' => $production->id,
@@ -98,9 +110,9 @@ class ProductionController extends Controller
         }
 
         // Load bundle products (products with bundle elements)
-        $bundleProducts = $this->getBundleProductOptions();
-        $warehouses = $this->getWarehouseOptions();
-        $picUsers = $this->getPicUserOptions();
+        $bundleProducts = app(ProductService::class)->findAllBundle();
+        $warehouses = app(WarehouseService::class)->findAll();
+        $picUsers = app(UserService::class)->findAll();
 
         // Production status options
         $productionStatuses = [
@@ -130,11 +142,11 @@ class ProductionController extends Controller
 
         try {
             $data = $request->all();
-            
+
             // Validate input data
             $createAction = app(CreateProductionAction::class);
             $validation = $createAction->validateProductionData($data);
-            
+
             if (!$validation['is_valid']) {
                 return response()->json([
                     'success' => false,
@@ -153,8 +165,8 @@ class ProductionController extends Controller
 
             // Prepare expenses from product
             if (!empty($data['bundle_product_id'])) {
-                $defaultExpenses = $createAction->prepareExpensesFromProduct($data['bundle_product_id']);
-                $data['expenses'] = $data['expenses'] ?? $defaultExpenses;
+                // $defaultExpenses = $createAction->prepareExpensesFromProduct($data['bundle_product_id']);
+                // $data['expenses'] = $data['expenses'] ?? $defaultExpenses;
             }
 
             // Execute creation
@@ -165,12 +177,18 @@ class ProductionController extends Controller
                 'message' => 'Production order created successfully',
                 'production_id' => $productionId
             ]);
-            
-        } catch (\Exception $e) {
+        } catch (AppException $e) {
             return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Exception $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
@@ -189,13 +207,13 @@ class ProductionController extends Controller
 
         // Load production items (raw materials)
         $productionItems = app(ProductionItemService::class)->findByProductionId($id);
-        
+
         // Load production expenses
         $productionExpenses = app(ProductionExpenseService::class)->findByProductionId($id);
-        
+
         // Load audit logs
         $auditLogs = app(ProductionAuditLogService::class)->findByProductionId($id);
-        
+
         // Check if production can be reversed
         $reversalCheck = app(ReversalProductionAction::class)->validateReversal($id);
 
@@ -209,57 +227,6 @@ class ProductionController extends Controller
             'canReversal' => $this->hasPermission('production.reversal') && $reversalCheck['can_reverse'],
             'reversalInfo' => $reversalCheck
         ]);
-    }
-
-    public function destroy($id)
-    {
-        if (!$this->hasPermission('production.delete')) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized access'], 403);
-        }
-
-        try {
-            $production = app(ProductionService::class)->findOne($id);
-            
-            if (!$production) {
-                return response()->json(['success' => false, 'message' => 'Production not found'], 404);
-            }
-
-            // Only allow deletion of DRAFT status
-            if ($production->status !== 'DRAFT') {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'Only draft productions can be deleted'
-                ], 400);
-            }
-
-            // Delete production (this will cascade to items and expenses if properly set up)
-            $deleted = app(ProductionService::class)->delete($id);
-            
-            if ($deleted) {
-                // Log audit trail
-                app(ProductionAuditLogService::class)->logDelete($id, [
-                    'production_number' => $production->production_number,
-                    'deleted_by' => auth()->user()->name ?? 'System',
-                    'deleted_at' => now()->toISOString()
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Production deleted successfully'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to delete production'
-                ], 500);
-            }
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
     }
 
     public function export()
@@ -279,27 +246,20 @@ class ProductionController extends Controller
 
     public function getBundleComponents(Request $request)
     {
-        // TODO: AJAX endpoint to get bundle product components
         $bundleProductId = $request->get('bundle_product_id');
-        
-        // Mock data - replace with actual database query
-        $components = [
-            [
-                'id' => 1,
-                'product_name' => 'RIYO Water 12L',
-                'quantity_required' => 1,
-                'stock_available' => 150,
-                'unit' => 'pcs'
-            ],
-            [
-                'id' => 2,
-                'product_name' => 'RIYO Water 5L',
-                'quantity_required' => 2,
-                'stock_available' => 300,
-                'unit' => 'pcs'
-            ]
-        ];
 
+        $data = app(ProductCompositionService::class)->findAllBasedOnProductId($bundleProductId);
+
+        $components = [];
+        foreach ($data as $row) {
+            $components[] =  [
+                'id' => $row->id,
+                'product_name' => $row->product_name,
+                'quantity_required' => $row->qty,
+                'stock_available' => $row->qty_available ?? 0,
+                'unit' => $row->unit_name
+            ];
+        }
         return response()->json([
             'success' => true,
             'components' => $components
@@ -312,23 +272,10 @@ class ProductionController extends Controller
         // Validate production exists and can be completed
         // Update status and quantity_produced
         // Create audit log
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Production marked as completed successfully'
-        ]);
-    }
-
-    public function cancel($id)
-    {
-        // TODO: Cancel production order
-        // Validate production exists and can be cancelled
-        // Update status to CANCELLED
-        // Create audit log
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Production cancelled successfully'
         ]);
     }
 
@@ -339,123 +286,61 @@ class ProductionController extends Controller
         $month = date('m');
         $day = date('d');
         $timestamp = time();
-        
+
         // Mock generation - replace with proper sequence
         $number = "PROD-{$year}-" . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
-        
+
         return response()->json([
             'success' => true,
             'transaction_number' => $number
         ]);
     }
 
-    public function getWarehouses(Request $request)
-    {
-        // TODO: AJAX endpoint for warehouse selection
-        $search = $request->get('search', '');
-        
-        $warehouses = [
-            ['value' => '1', 'label' => 'GDG-001 - Gudang Utama Pusat'],
-            ['value' => '2', 'label' => 'GDG-002 - Gudang Produksi'],
-            ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang Jakarta'],
-        ];
+    // public function getFormula($bundleProductId, Request $request)
+    // {
+    //     try {
+    //         $quantityPlanned = $request->get('quantity_planned', 1);
 
-        if ($search) {
-            $warehouses = array_filter($warehouses, function($warehouse) use ($search) {
-                return stripos($warehouse['label'], $search) !== false;
-            });
-        }
+    //         $action = app(CreateProductionAction::class);
+    //         $formula = $action->prepareItemsFromFormula($bundleProductId, $quantityPlanned);
 
-        return response()->json(array_values($warehouses));
-    }
+    //         // Enhance with product names
+    //         foreach ($formula as &$item) {
+    //             $product = DB::table('m_products')
+    //                 ->where('id', $item['raw_material_product_id'])
+    //                 ->first();
+    //             $item['product_name'] = $product ? $product->name : 'Unknown Product';
+    //         }
 
-    public function getBundleProducts(Request $request)
-    {
-        // TODO: AJAX endpoint for bundle product selection
-        $search = $request->get('search', '');
-        
-        $bundleProducts = [
-            ['value' => '1', 'label' => 'BUNDLE-001 - Paket RIYO Water 12L + 5L'],
-            ['value' => '2', 'label' => 'BUNDLE-002 - Paket RIYO Water Family Pack'],
-            ['value' => '3', 'label' => 'BUNDLE-003 - Paket RIYO Water Office'],
-        ];
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $formula
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
-        if ($search) {
-            $bundleProducts = array_filter($bundleProducts, function($product) use ($search) {
-                return stripos($product['label'], $search) !== false;
-            });
-        }
+    // public function getExpenses($bundleProductId)
+    // {
+    //     try {
+    //         $action = app(CreateProductionAction::class);
+    //         $expenses = $action->prepareExpensesFromProduct($bundleProductId);
 
-        return response()->json(array_values($bundleProducts));
-    }
-
-    public function getPicUsers(Request $request)
-    {
-        // TODO: AJAX endpoint for PIC user selection
-        $search = $request->get('search', '');
-        
-        $users = [
-            ['value' => '1', 'label' => 'Yustinus Komunal'],
-            ['value' => '2', 'label' => 'Production Manager'],
-            ['value' => '3', 'label' => 'Quality Control'],
-        ];
-
-        if ($search) {
-            $users = array_filter($users, function($user) use ($search) {
-                return stripos($user['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($users));
-    }
-
-    public function getFormula($bundleProductId, Request $request)
-    {
-        try {
-            $quantityPlanned = $request->get('quantity_planned', 1);
-            
-            $action = app(CreateProductionAction::class);
-            $formula = $action->prepareItemsFromFormula($bundleProductId, $quantityPlanned);
-            
-            // Enhance with product names
-            foreach ($formula as &$item) {
-                $product = DB::table('m_products')
-                    ->where('id', $item['raw_material_product_id'])
-                    ->first();
-                $item['product_name'] = $product ? $product->name : 'Unknown Product';
-            }
-            
-            return response()->json([
-                'success' => true,
-                'data' => $formula
-            ]);
-            
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function getExpenses($bundleProductId)
-    {
-        try {
-            $action = app(CreateProductionAction::class);
-            $expenses = $action->prepareExpensesFromProduct($bundleProductId);
-            
-            return response()->json([
-                'success' => true,
-                'data' => $expenses
-            ]);
-            
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => $expenses
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     // Reversal functionality
     public function reversal($id)
@@ -466,15 +351,15 @@ class ProductionController extends Controller
 
         // Get production data directly
         $production = app(ProductionService::class)->findOne($id);
-        
+
         if (!$production) {
             abort(404, 'Production not found');
         }
-        
+
         // Check if production can be reversed (must be COMPLETED)
         if ($production->status !== 'COMPLETED') {
             return redirect()->route('main_transaction.production.detail', $id)
-                           ->with('error', 'Only completed productions can be reversed');
+                ->with('error', 'Only completed productions can be reversed');
         }
 
         return view('pages.main_transaction.production.reversal', [
@@ -502,7 +387,6 @@ class ProductionController extends Controller
                 'success' => true,
                 'message' => 'Production reversal completed successfully (Placeholder - implement actual logic)'
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -519,90 +403,9 @@ class ProductionController extends Controller
         return true; // Temporary - replace with actual permission check
     }
 
-    private function getBundleProductOptions(): array
-    {
-        // Get products that have compositions (formula) - using correct table name
-        $query = DB::table('m_products as p')
-            ->select('p.id as value', DB::raw("CONCAT(p.code, ' - ', p.name) as label"))
-            ->join('m_product_compositions as pc', 'p.id', '=', 'pc.f_product_id')
-            ->where('p.status', 'ACTIVE')
-            ->groupBy('p.id', 'p.code', 'p.name')
-            ->orderBy('p.name');
-            
-        // Add company filter only if company_code column exists and session has value
-        if (session('user_company_code')) {
-            $query->where('p.company_code', session('user_company_code'));
-        }
-        
-        return $query->get()
-            ->map(function ($item) {
-                return ['value' => $item->value, 'label' => $item->label];
-            })
-            ->toArray();
-    }
-
-    private function getWarehouseOptions(): array
-    {
-        $query = DB::table('m_warehouses')
-            ->select('id as value', DB::raw("CONCAT(code, ' - ', name) as label"))
-            ->where('status', 'ACTIVE')
-            ->orderBy('name');
-            
-        // Add company filter only if company_code column exists and session has value
-        if (session('user_company_code')) {
-            $query->where('company_code', session('user_company_code'));
-        }
-        
-        return $query->get()
-            ->map(function ($item) {
-                return ['value' => $item->value, 'label' => $item->label];
-            })
-            ->toArray();
-    }
-
-    private function getPicUserOptions(): array
-    {
-        $query = DB::table('users')
-            ->select('id as value', DB::raw("name as label"))
-            ->where('status', 'ACTIVE')
-            ->orderBy('name');
-            
-        // Add company filter only if company_code column exists and session has value
-        // Note: users table may not have company_code, check if column exists
-        try {
-            $columns = DB::getSchemaBuilder()->getColumnListing('users');
-            if (in_array('company_code', $columns) && session('user_company_code')) {
-                $query->where('company_code', session('user_company_code'));
-            }
-        } catch (\Exception $e) {
-            // Ignore if we can't check columns
-        }
-        
-        return $query->get()
-            ->map(function ($item) {
-                return ['value' => $item->value, 'label' => $item->label];
-            })
-            ->toArray();
-    }
-
-    private function getTagOptions(): array
-    {
-        $query = DB::table('m_tags')
-            ->select('code as value', 'name as label', 'color')
-            ->where('status', 'ACTIVE')
-            ->orderBy('name');
-            
-        // Add company filter only if company_code column exists and session has value
-        if (session('user_company_code')) {
-            $query->where('company_code', session('user_company_code'));
-        }
-        
-        return $query->get()->toArray();
-    }
-
     private function getStatusBadgeClass(string $status): string
     {
-        return match($status) {
+        return match ($status) {
             'DRAFT' => 'bg-label-secondary',
             'PLANNED' => 'bg-label-info',
             'IN_PROGRESS' => 'bg-label-warning',

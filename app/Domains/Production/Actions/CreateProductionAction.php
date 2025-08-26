@@ -8,47 +8,52 @@ use App\Domains\Production\Services\ProductionExpenseService;
 use App\Domains\Production\Services\ProductionAuditLogService;
 use App\Domains\Production\Services\ProductionStockService;
 use Illuminate\Support\Facades\DB;
+use App\Exceptions\AppException;
+use App\Enums\ErrorCodes;
 
 class CreateProductionAction
 {
     public function execute(array $data): int
     {
         return DB::transaction(function () use ($data) {
+
             // 1. Validate stock availability before creating production
             $this->validateStockAvailability($data);
 
             // 2. Calculate totals
             $totals = $this->calculateTotals($data);
 
+            // dd($totals);
             // 3. Create main production record
             $productionData = array_merge($data, $totals);
+
             $productionId = app(ProductionService::class)->create($productionData);
+
 
             // 4. Create production items (raw materials)
             if (!empty($data['items'])) {
                 app(ProductionItemService::class)->createBulk($productionId, $data['items']);
             }
 
+             //IMPORTANT
             // 5. Create production expenses
-            if (!empty($data['expenses'])) {
-                app(ProductionExpenseService::class)->createBulk($productionId, $data['expenses']);
-            }
+            // if (!empty($data['expenses'])) {
+            //     app(ProductionExpenseService::class)->createBulk($productionId, $data['expenses']);
+            // }
 
             // 6. If status is COMPLETED, process stock movements
-            if (($data['status'] ?? 'DRAFT') === 'COMPLETED') {
-                $stockResult = $this->processStockMovements($productionId, $data);
-                
-                // Update production with stock processing results
-                app(ProductionService::class)->update($productionId, [
-                    'quantity_produced' => $data['quantity_produced'] ?? $data['quantity_planned'],
-                    'status' => 'COMPLETED'
-                ] + $productionData);
-            }
+            $stockResult = $this->processStockMovements($productionId, $data);
+
+            // Update production with stock processing results
+            // app(ProductionService::class)->update($productionId, [
+            //     'quantity_produced' => $data['quantity_produced'] ?? $data['quantity_planned'],
+            //     'status' => 'COMPLETED'
+            // ] + $productionData);
 
             // 7. Create audit log
             app(ProductionAuditLogService::class)->logCreation(
-                $productionId, 
-                $productionData, 
+                $productionId,
+                $productionData,
                 $data['items'] ?? [],
                 $data['expenses'] ?? []
             );
@@ -65,7 +70,7 @@ class CreateProductionAction
 
         $itemService = app(ProductionItemService::class);
         $validationResult = $itemService->validateStockAvailability(
-            $data['items'], 
+            $data['items'],
             $data['warehouse_id']
         );
 
@@ -75,7 +80,8 @@ class CreateProductionAction
 
         if (!empty($insufficientItems)) {
             $itemNames = array_column($insufficientItems, 'product_name');
-            throw new \Exception(
+            throw new AppException(
+                ErrorCodes::INSUFFICIENT_STOCK, // Use your actual error code here
                 'Insufficient stock for raw materials: ' . implode(', ', $itemNames)
             );
         }
@@ -113,10 +119,10 @@ class CreateProductionAction
     private function processStockMovements(int $productionId, array $data): array
     {
         $stockService = app(ProductionStockService::class);
-        
+
         $productionData = [
             'production_id' => $productionId,
-            'production_number' => app(ProductionService::class)->generateProductionNumber(),
+            'production_number' => $data['production_number'],
             'production_date' => $data['production_date'],
             'bundle_product_id' => $data['bundle_product_id'],
             'warehouse_id' => $data['warehouse_id'],
@@ -198,7 +204,7 @@ class CreateProductionAction
         if (!empty($data['expenses'])) {
             $expenseService = app(ProductionExpenseService::class);
             $expenseValidation = $expenseService->validateExpenseData($data['expenses']);
-            
+
             foreach ($expenseValidation as $index => $validation) {
                 if (!$validation['is_valid']) {
                     $errors[] = "Expense #{$index}: " . implode(', ', $validation['errors']);
@@ -250,7 +256,7 @@ class CreateProductionAction
         return $compositions->map(function ($element) use ($quantityPlanned) {
             $quantityRequired = $element->quantity_per_unit * $quantityPlanned;
             $unitCost = $element->average_price ?? 0;
-            
+
             return [
                 'raw_material_product_id' => $element->raw_material_product_id,
                 'quantity_required' => $quantityRequired,

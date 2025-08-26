@@ -16,20 +16,23 @@
                     <div class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
                             {{-- Status-based action buttons --}}
-                            @if($production['status'] == 'IN_PROGRESS')
-                                <button class="btn btn-success btn-md waves-effect waves-light" onclick="completeProduction({{ $production['id'] }})">
+                            @if ($production->status == 'IN_PROGRESS')
+                                <button class="btn btn-success btn-md waves-effect waves-light"
+                                    onclick="completeProduction({{ $production->id }})">
                                     <i class="icon-base ti tabler-check me-2"></i>
                                     Complete
                                 </button>
                             @endif
-                            @if(in_array($production['status'], ['DRAFT', 'PLANNED']))
-                                <button class="btn btn-danger btn-md waves-effect waves-light" onclick="cancelProduction({{ $production['id'] }})">
+                            @if (in_array($production->status, ['DRAFT', 'PLANNED']))
+                                <button class="btn btn-danger btn-md waves-effect waves-light"
+                                    onclick="cancelProduction({{ $production->id }})">
                                     <i class="icon-base ti tabler-x me-2"></i>
                                     Cancel
                                 </button>
                             @endif
-                            @if($production['status'] == 'COMPLETED')
-                                <a href="{{ route('main_transaction.production.reversal', $production['id']) }}" class="btn btn-warning btn-md waves-effect waves-light">
+                            @if ($production->status == 'COMPLETED')
+                                <a href="{{ route('main_transaction.production.reversal', $production->id) }}"
+                                    class="btn btn-warning btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-arrow-back-up me-2"></i>
                                     Reversal
                                 </a>
@@ -40,7 +43,7 @@
             </div>
 
             <!-- Entity Title -->
-            <h2>{{ $production['production_number'] }}</h2>
+            <h2>{{ $production->production_number }}</h2>
             <span>
                 <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
             </span>
@@ -50,24 +53,25 @@
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label">No Produksi</label>
-                    <input type="text" class="form-control" value="{{ $production['production_number'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $production->production_number }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Produksi</label>
-                    <input type="text" class="form-control" value="{{ $production['production_date'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $production->production_date }}" disabled />
                 </div>
             </div>
 
             <div class="row g-6 mt-3">
                 <div class="col-md-6">
                     <label class="form-label">Bundle Product</label>
-                    <input type="text" class="form-control" value="{{ $production['bundle_product_name'] }}" disabled />
+                    <input type="text" class="form-control" value="{{ $production->bundle_product_name }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Gudang</label>
                     <div class="form-control-plaintext">
-                        <a href="{{ route('master_data.warehouse.detail', $production['warehouse_id']) }}" class="text-primary fw-semibold">
-                            {{ $production['warehouse_name'] }}
+                        <a href="{{ route('master_data.warehouse.detail', $production->warehouse_id) }}"
+                            class="text-primary fw-semibold">
+                            {{ $production->warehouse_name }}
                         </a>
                     </div>
                 </div>
@@ -77,24 +81,25 @@
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
-                        @if($production['status'] == 'COMPLETED')
-                            <span class="badge bg-label-success">{{ $production['status'] }}</span>
-                        @elseif($production['status'] == 'IN_PROGRESS')
-                            <span class="badge bg-label-warning">{{ $production['status'] }}</span>
-                        @elseif($production['status'] == 'CANCELLED')
-                            <span class="badge bg-label-danger">{{ $production['status'] }}</span>
-                        @elseif($production['status'] == 'PLANNED')
-                            <span class="badge bg-label-info">{{ $production['status'] }}</span>
+                        @if ($production->status == 'COMPLETED')
+                            <span class="badge bg-label-success">{{ $production->status }}</span>
+                        @elseif($production->status == 'IN_PROGRESS')
+                            <span class="badge bg-label-warning">{{ $production->status }}</span>
+                        @elseif($production->status == 'CANCELLED')
+                            <span class="badge bg-label-danger">{{ $production->status }}</span>
+                        @elseif($production->status == 'PLANNED')
+                            <span class="badge bg-label-info">{{ $production->status }}</span>
                         @else
-                            <span class="badge bg-label-secondary">{{ $production['status'] }}</span>
+                            <span class="badge bg-label-secondary">{{ $production->status }}</span>
                         @endif
                     </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">PIC Produksi</label>
                     <div class="form-control-plaintext">
-                        <a href="{{ route('master_data.user.detail', $production['pic_id']) }}" class="text-primary fw-semibold">
-                            {{ $production['pic_name'] }}
+                        <a href="{{ route('master_data.user.detail', $production->pic_id) }}"
+                            class="text-primary fw-semibold">
+                            {{ $production->pic_name }}
                         </a>
                     </div>
                 </div>
@@ -105,20 +110,23 @@
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
-                        <a class="list-group-item list-group-item-action waves-effect active" id="production-info-list-item" data-bs-toggle="list" href="#horizontal-production-info" aria-selected="true" role="tab">
+                        <a class="list-group-item list-group-item-action waves-effect active" id="production-info-list-item"
+                            data-bs-toggle="list" href="#horizontal-production-info" aria-selected="true" role="tab">
                             <i class="icon-base ti tabler-info-circle me-2"></i>
                             <b>Informasi Detail</b>
                         </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="components-list-item" data-bs-toggle="list" href="#horizontal-components" aria-selected="false" role="tab">
+                        <a class="list-group-item list-group-item-action waves-effect" id="components-list-item"
+                            data-bs-toggle="list" href="#horizontal-components" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-package me-2"></i>
                             <b>Komponen Bundle</b>
                         </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item" data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
+                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
+                            data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>
                             <b>Audit Log</b>
                         </a>
                     </div>
-                    
+
                     <div class="tab-content px-0 mt-0">
                         <!-- Production Information Tab -->
                         <div class="tab-pane fade show active" id="horizontal-production-info" role="tabpanel">
@@ -130,11 +138,13 @@
                             <div class="row g-6">
                                 <div class="col-md-6">
                                     <label class="form-label">Quantity Planned</label>
-                                    <input type="text" class="form-control" value="{{ $production['quantity_planned'] }} pcs" disabled />
+                                    <input type="text" class="form-control"
+                                        value="{{ $production->quantity_planned }} pcs" disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Quantity Produced</label>
-                                    <input type="text" class="form-control" value="{{ $production['quantity_produced'] }} pcs" disabled />
+                                    <input type="text" class="form-control"
+                                        value="{{ $production->quantity_produced }} pcs" disabled />
                                 </div>
                             </div>
 
@@ -142,40 +152,44 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Progress</label>
                                     @php
-                                        $progress = $production['quantity_planned'] > 0 
-                                            ? ($production['quantity_produced'] / $production['quantity_planned']) * 100 
-                                            : 0;
+                                        $progress =
+                                            $production->quantity_planned > 0
+                                                ? ($production->quantity_produced / $production->quantity_planned) * 100
+                                                : 0;
                                     @endphp
                                     <div class="progress" style="height: 40px;">
-                                        <div class="progress-bar" role="progressbar" style="width: {{ number_format($progress, 1) }}%;" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar" role="progressbar"
+                                            style="width: {{ number_format($progress, 1) }}%;"
+                                            aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100">
                                             {{ number_format($progress, 1) }}%
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Created By</label>
-                                    <input type="text" class="form-control" value="{{ $production['created_by'] }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $production->created_by }}"
+                                        disabled />
                                 </div>
                             </div>
 
                             <div class="row g-6 mt-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Deskripsi</label>
-                                    <textarea class="form-control" rows="3" disabled>{{ $production['description'] ?: '-' }}</textarea>
+                                    <textarea class="form-control" rows="3" disabled>{{ $production->description ?: '-' }}</textarea>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
-                                    <textarea class="form-control" rows="3" disabled>{{ $production['memo'] ?: '-' }}</textarea>
+                                    <textarea class="form-control" rows="3" disabled>{{ $production->notes ?: '-' }}</textarea>
                                 </div>
                             </div>
 
                             <div class="row g-6 mt-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Lampiran Dokumen</label>
-                                    @if(!empty($production['attachment']))
+                                    @if (!empty($production->attachment))
                                         <div class="form-control-plaintext">
-                                            <a href="{{ asset('storage/' . $production['attachment']) }}" target="_blank" 
-                                               class="btn btn-outline-primary btn-sm">
+                                            <a href="{{ asset('storage/' . $production->attachment) }}" target="_blank"
+                                                class="btn btn-outline-primary btn-sm">
                                                 <i class="icon-base ti tabler-download me-2"></i>
                                                 Download Lampiran
                                             </a>
@@ -186,7 +200,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Created At</label>
-                                    <input type="text" class="form-control" value="{{ $production['created_at'] }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $production->created_at }}"
+                                        disabled />
                                 </div>
                             </div>
                         </div>
@@ -208,7 +223,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($bundleComponents as $component)
+                                        {{-- @forelse($bundleComponents as $component)
                                             <tr>
                                                 <td>{{ $component['product_name'] }}</td>
                                                 <td class="text-center">{{ $component['quantity_required'] }} {{ $component['unit'] }}</td>
@@ -219,7 +234,7 @@
                                                         $totalRequired = $component['quantity_required'] * $production['quantity_planned'];
                                                         $isAvailable = $totalRequired <= $component['quantity_available'];
                                                     @endphp
-                                                    @if($isAvailable)
+                                                    @if ($isAvailable)
                                                         <span class="badge bg-label-success">Available</span>
                                                     @else
                                                         <span class="badge bg-label-danger">Insufficient</span>
@@ -230,7 +245,7 @@
                                             <tr>
                                                 <td colspan="5" class="text-center text-muted">Tidak ada komponen tersedia</td>
                                             </tr>
-                                        @endforelse
+                                        @endforelse --}}
                                     </tbody>
                                 </table>
                             </div>
@@ -252,7 +267,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse($auditLogs as $log)
+                                        {{-- @forelse($auditLogs as $log)
                                             <tr>
                                                 <td>{{ $log->created_at }}</td>
                                                 <td>
@@ -261,7 +276,7 @@
                                                     </a>
                                                 </td>
                                                 <td>
-                                                    @if($log->action_type == 'CREATE')
+                                                    @if ($log->action_type == 'CREATE')
                                                         <span class="badge bg-label-success">CREATE</span>
                                                     @elseif($log->action_type == 'UPDATE')
                                                         <span class="badge bg-label-warning">UPDATE</span>
@@ -277,7 +292,7 @@
                                             <tr>
                                                 <td colspan="4" class="text-center text-muted">Belum ada riwayat perubahan</td>
                                             </tr>
-                                        @endforelse
+                                        @endforelse --}}
                                     </tbody>
                                 </table>
                             </div>
@@ -290,119 +305,135 @@
 @stop
 
 @section('js_script')
-<script>
-$(function() {
-    // Initialize DataTable for audit log if needed
-    $('#audit-log-table').DataTable({
-        responsive: true,
-        orderCellsTop: true,
-        order: [[0, 'desc']],
-        searching: false,
-        paging: false,
-        info: false
-    });
+    <script>
+        $(function() {
+            // Initialize DataTable for audit log if needed
+            $('#audit-log-table').DataTable({
+                responsive: true,
+                orderCellsTop: true,
+                order: [
+                    [0, 'desc']
+                ],
+                searching: false,
+                paging: false,
+                info: false
+            });
 
-    // Tab switching handler
-    $('a[data-bs-toggle="list"]').on('shown.bs.tab', function (e) {
-        const target = $(e.target).attr('href');
-        // Handle any tab-specific initialization if needed
-    });
-});
+            // Tab switching handler
+            $('a[data-bs-toggle="list"]').on('shown.bs.tab', function(e) {
+                const target = $(e.target).attr('href');
+                // Handle any tab-specific initialization if needed
+            });
+        });
 
-// Complete production function
-window.completeProduction = function(productionId) {
-    Swal.fire({
-        title: 'Complete Produksi?',
-        text: 'Apakah Anda yakin ingin menandai production ini sebagai selesai?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Complete',
-        cancelButtonText: 'Batal',
-        customClass: {
-            confirmButton: 'btn btn-success',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // TODO: Implement AJAX call to complete production
-            $.ajax({
-                url: "{{ route('main_transaction.production.complete', ':id') }}".replace(':id', productionId),
-                type: 'POST',
-                data: { _token: '{{ csrf_token() }}' },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: response.message,
-                            icon: 'success',
-                            customClass: { confirmButton: 'btn btn-primary' },
-                            buttonsStyling: false
-                        }).then(() => {
-                            location.reload();
-                        });
-                    }
+        // Complete production function
+        window.completeProduction = function(productionId) {
+            Swal.fire({
+                title: 'Complete Produksi?',
+                text: 'Apakah Anda yakin ingin menandai production ini sebagai selesai?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Complete',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-secondary'
                 },
-                error: function() {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Failed to complete production',
-                        icon: 'error',
-                        customClass: { confirmButton: 'btn btn-primary' },
-                        buttonsStyling: false
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // TODO: Implement AJAX call to complete production
+                    $.ajax({
+                        url: "{{ route('main_transaction.production.complete', ':id') }}".replace(
+                            ':id', productionId),
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: response.message,
+                                    icon: 'success',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary'
+                                    },
+                                    buttonsStyling: false
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Failed to complete production',
+                                icon: 'error',
+                                customClass: {
+                                    confirmButton: 'btn btn-primary'
+                                },
+                                buttonsStyling: false
+                            });
+                        }
                     });
                 }
             });
-        }
-    });
-};
+        };
 
-// Cancel production function
-window.cancelProduction = function(productionId) {
-    Swal.fire({
-        title: 'Cancel Produksi?',
-        text: 'Apakah Anda yakin ingin membatalkan production ini?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Cancel',
-        cancelButtonText: 'Batal',
-        customClass: {
-            confirmButton: 'btn btn-danger',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // TODO: Implement AJAX call to cancel production
-            $.ajax({
-                url: "{{ route('main_transaction.production.cancel', ':id') }}".replace(':id', productionId),
-                type: 'POST',
-                data: { _token: '{{ csrf_token() }}' },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: response.message,
-                            icon: 'success',
-                            customClass: { confirmButton: 'btn btn-primary' },
-                            buttonsStyling: false
-                        }).then(() => {
-                            location.reload();
-                        });
-                    }
+        // Cancel production function
+        window.cancelProduction = function(productionId) {
+            Swal.fire({
+                title: 'Cancel Produksi?',
+                text: 'Apakah Anda yakin ingin membatalkan production ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Cancel',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    confirmButton: 'btn btn-danger',
+                    cancelButton: 'btn btn-secondary'
                 },
-                error: function() {
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Failed to cancel production',
-                        icon: 'error',
-                        customClass: { confirmButton: 'btn btn-primary' },
-                        buttonsStyling: false
+                buttonsStyling: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // TODO: Implement AJAX call to cancel production
+                    $.ajax({
+                        url: "{{ route('main_transaction.production.cancel', ':id') }}".replace(':id',
+                            productionId),
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: response.message,
+                                    icon: 'success',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary'
+                                    },
+                                    buttonsStyling: false
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Failed to cancel production',
+                                icon: 'error',
+                                customClass: {
+                                    confirmButton: 'btn btn-primary'
+                                },
+                                buttonsStyling: false
+                            });
+                        }
                     });
                 }
             });
-        }
-    });
-};
-</script>
+        };
+    </script>
 @endsection

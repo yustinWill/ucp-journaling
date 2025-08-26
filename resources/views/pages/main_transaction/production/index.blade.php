@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <!-- Summary Cards -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-lg-3 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
@@ -65,7 +65,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Main Content Card -->
     <div class="mt-6">
@@ -82,7 +82,7 @@
                         <label class="form-label">Tanggal Sampai:</label>
                         <input type="date" class="form-control" id="date-to-filter" value="{{ date('Y-m-d') }}">
                     </div>
-                    <div class="col-md-3">
+                    {{-- <div class="col-md-3">
                         <label class="form-label">Status:</label>
                         <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
                             <option value="">Semua Status</option>
@@ -90,13 +90,13 @@
                                 <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                             @endforeach
                         </select>
-                    </div>
+                    </div> --}}
                     <div class="col-md-3">
                         <label class="form-label">Warehouse:</label>
                         <select class="global-select2 form-select" id="warehouse-filter" data-allow-clear="true">
                             <option value="">Semua Warehouse</option>
                             @foreach ($warehouses as $warehouse)
-                                <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
+                                <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
                             @endforeach
                         </select>
                     </div>

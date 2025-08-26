@@ -8,9 +8,10 @@ use Exception;
 class AppException extends Exception
 {
     public function __construct(
-        public readonly ErrorCodes $errorCode
+        public readonly ErrorCodes $errorCode, 
+        string $message = ''
     ) {
-        parent::__construct($errorCode->message(), $errorCode->httpStatus());
+        parent::__construct($message ?: $errorCode->message(), $errorCode->httpStatus());
     }
 
     public function getCodeValue(): string

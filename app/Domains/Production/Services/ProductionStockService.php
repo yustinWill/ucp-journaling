@@ -3,6 +3,8 @@
 namespace App\Domains\Production\Services;
 
 use Illuminate\Support\Facades\DB;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Domains\Product\Services\ProductService;
 
 class ProductionStockService
 {
@@ -12,7 +14,7 @@ class ProductionStockService
     public function createProductionStockMovements(int $productionId, array $items, array $productionData): array
     {
         $movements = [];
-
+        $warehouse = app(WarehouseService::class)->findOne($productionData['warehouse_id']);
         // 1. Consume raw materials (negative movements)
         foreach ($items as $item) {
             $batchConsumption = $this->consumeRawMaterialFIFO(
@@ -22,20 +24,28 @@ class ProductionStockService
                 $productionId
             );
 
+            $product = app(ProductService::class)->findOne($item['raw_material_product_id']);
             $movements[] = [
-                'movement_id' => $this->generateMovementId(),
+                // 'movement_id' => $this->generateMovementId(),
                 'company_code' => session('user_company_code'),
                 'product_id' => $item['raw_material_product_id'],
+                'product_code' => $product->code,
+                'product_name' => $product->name,
                 'warehouse_id' => $productionData['warehouse_id'],
+                'warehouse_code' => $warehouse->code,
+                'warehouse_name' => $warehouse->name,
                 'movement_type' => 'PRODUCTION_CONSUME',
-                'quantity' => -$item['quantity_consumed'], // Negative for consumption
-                'unit_code' => $item['unit_code'],
+                //IMPORTANT
+                'stock_before' => 0,
+                'movement_qty' => -$item['quantity_consumed'], // Negative for consumption
+                'stock_after' => 0,
+                'unit' => $item['unit_code'],
                 'reference_type' => 'PRODUCTION',
-                'reference_id' => $productionId,
+                // 'reference_id' => $productionData['production_number'],
                 'reference_number' => $productionData['production_number'],
                 'movement_date' => $productionData['production_date'],
                 'notes' => "Raw material consumed for production {$productionData['production_number']}",
-                'batch_details' => json_encode($batchConsumption),
+                // 'batch_details' => json_encode($batchConsumption),
                 'created_at' => now(),
                 'updated_at' => now()
             ];
@@ -44,21 +54,29 @@ class ProductionStockService
             $item['batch_consumption'] = $batchConsumption;
         }
 
+        $product = app(ProductService::class)->findOne($productionData['bundle_product_id']);
         // 2. Create bundle product (positive movement)
         $bundleMovement = [
-            'movement_id' => $this->generateMovementId(),
+            // 'movement_id' => $this->generateMovementId(),
             'company_code' => session('user_company_code'),
             'product_id' => $productionData['bundle_product_id'],
+            'product_code' => $product->code,
+            'product_name' => $product->name,
             'warehouse_id' => $productionData['warehouse_id'],
+            'warehouse_code' => $warehouse->code,
+            'warehouse_name' => $warehouse->name,
             'movement_type' => 'PRODUCTION_CREATE',
-            'quantity' => $productionData['quantity_produced'],
-            'unit_code' => $this->getBundleProductUnitCode($productionData['bundle_product_id']),
+            //IMPORTANT
+            'stock_before' => 0,
+            'movement_qty' => $productionData['quantity_produced'],
+            'stock_after' => 0,
+            'unit' => $this->getBundleProductUnitCode($productionData['bundle_product_id']),
             'reference_type' => 'PRODUCTION',
-            'reference_id' => $productionId,
+            // 'reference_id' => $productionId,
             'reference_number' => $productionData['production_number'],
             'movement_date' => $productionData['production_date'],
             'notes' => "Bundle product created from production {$productionData['production_number']}",
-            'batch_details' => null,
+            // 'batch_details' => null,
             'created_at' => now(),
             'updated_at' => now()
         ];
@@ -69,13 +87,14 @@ class ProductionStockService
         DB::table($this->movement_table)->insert($movements);
 
         // 3. Create new batch for bundle product
-        $this->createProductionBatch(
-            $productionData['bundle_product_id'],
-            $productionData['warehouse_id'],
-            $productionData['quantity_produced'],
-            $productionId,
-            $productionData
-        );
+        //IMPORTANT terlalu banyak beda field takut salah mapping
+        // $this->createProductionBatch(
+        //     $productionData['bundle_product_id'],
+        //     $productionData['warehouse_id'],
+        //     $productionData['quantity_produced'],
+        //     $productionId,
+        //     $productionData
+        // );
 
         // 4. Update product stock totals
         $this->updateProductStockTotals($items, $productionData);
@@ -103,15 +122,15 @@ class ProductionStockService
         );
 
         $movements[] = [
-            'movement_id' => $this->generateMovementId(),
+            // 'movement_id' => $this->generateMovementId(),
             'company_code' => session('user_company_code'),
             'product_id' => $production['bundle_product_id'],
             'warehouse_id' => $production['warehouse_id'],
             'movement_type' => 'PRODUCTION_REVERSAL_REMOVE',
             'quantity' => -$reversalData['quantity_to_reverse'], // Negative for removal
-            'unit_code' => $this->getBundleProductUnitCode($production['bundle_product_id']),
+            'unit' => $this->getBundleProductUnitCode($production['bundle_product_id']),
             'reference_type' => 'PRODUCTION_REVERSAL',
-            'reference_id' => $productionId,
+            // 'reference_id' => $productionId,
             'reference_number' => $production['production_number'] . '-REV',
             'movement_date' => now()->format('Y-m-d'),
             'notes' => "Bundle product removed for production reversal {$production['production_number']}",
@@ -130,15 +149,15 @@ class ProductionStockService
             );
 
             $movements[] = [
-                'movement_id' => $this->generateMovementId(),
+                // 'movement_id' => $this->generateMovementId(),
                 'company_code' => session('user_company_code'),
                 'product_id' => $item['raw_material_product_id'],
                 'warehouse_id' => $production['warehouse_id'],
                 'movement_type' => 'PRODUCTION_REVERSAL_RESTORE',
                 'quantity' => $item['quantity_consumed'], // Positive for restoration
-                'unit_code' => $item['unit_code'],
+                'unit' => $item['unit_code'],
                 'reference_type' => 'PRODUCTION_REVERSAL',
-                'reference_id' => $productionId,
+                // 'reference_id' => $productionId,
                 'reference_number' => $production['production_number'] . '-REV',
                 'movement_date' => now()->format('Y-m-d'),
                 'notes' => "Raw material restored from production reversal {$production['production_number']}",
@@ -164,11 +183,13 @@ class ProductionStockService
     private function consumeRawMaterialFIFO(int $productId, int $warehouseId, float $quantityNeeded, int $productionId): array
     {
         $batches = DB::table($this->batch_table)
-            ->where('product_id', $productId)
-            ->where('warehouse_id', $warehouseId)
-            ->where('remaining_quantity', '>', 0)
+            ->where('f_product_id', $productId)
+            // ->where('warehouse_id', $warehouseId)
+            ->where('remaining_qty', '>', 0)
             ->orderBy('created_at', 'ASC') // FIFO order
             ->get();
+
+        // dd($batches);
 
         $consumedBatches = [];
         $remainingToConsume = $quantityNeeded;
@@ -176,19 +197,19 @@ class ProductionStockService
         foreach ($batches as $batch) {
             if ($remainingToConsume <= 0) break;
 
-            $consumeFromThisBatch = min($remainingToConsume, $batch->remaining_quantity);
-            
+            $consumeFromThisBatch = min($remainingToConsume, $batch->remaining_qty);
+
             // Update batch remaining quantity
             DB::table($this->batch_table)
                 ->where('id', $batch->id)
-                ->decrement('remaining_quantity', $consumeFromThisBatch);
+                ->decrement('remaining_qty', $consumeFromThisBatch);
 
             $consumedBatches[] = [
                 'batch_id' => $batch->id,
-                'batch_number' => $batch->batch_number,
+                'batch_number' => $batch->batch_reference_code,
                 'quantity_consumed' => $consumeFromThisBatch,
-                'original_quantity' => $batch->original_quantity,
-                'remaining_after' => $batch->remaining_quantity - $consumeFromThisBatch
+                'original_quantity' => $batch->initial_qty,
+                'remaining_after' => $batch->remaining_qty - $consumeFromThisBatch
             ];
 
             $remainingToConsume -= $consumeFromThisBatch;
@@ -229,7 +250,7 @@ class ProductionStockService
     {
         // Create new batch for restored raw material (FIFO integrity)
         $batchNumber = $this->generateBatchNumber('RESTORE');
-        
+
         $batchId = DB::table($this->batch_table)->insertGetId([
             'batch_number' => $batchNumber,
             'product_id' => $productId,
@@ -258,19 +279,21 @@ class ProductionStockService
         $batchNumber = $this->generateBatchNumber('PROD');
 
         return DB::table($this->batch_table)->insertGetId([
-            'batch_number' => $batchNumber,
-            'product_id' => $productId,
-            'warehouse_id' => $warehouseId,
-            'original_quantity' => $quantity,
-            'remaining_quantity' => $quantity,
-            'unit_cost' => $this->calculateBundleProductUnitCost($productionData),
-            'reference_type' => 'PRODUCTION',
-            'reference_id' => $productionId,
+            'batch_reference_code' => $batchNumber,
+            'company_code' => session('user_company_code'),
+            'f_product_id' => $productId,
+            //IMPORTANT
+            // 'warehouse_id' => $warehouseId,
+            'initial_qty' => $quantity,
+            'remaining_qty' => $quantity,
+            // 'unit_cost' => $this->calculateBundleProductUnitCost($productionData),
+            // 'reference_type' => 'PRODUCTION',
+            // 'reference_id' => $productionId,
             'batch_date' => $productionData['production_date'],
-            'expiry_date' => null,
-            'notes' => "Produced from {$productionData['production_number']}",
+            // 'expiry_date' => null,
+            // 'notes' => "Produced from {$productionData['production_number']}",
             'created_at' => now(),
-            'updated_at' => now()
+            // 'updated_at' => now()
         ]);
     }
 
@@ -304,10 +327,10 @@ class ProductionStockService
             ->decrement('total_stock', $production['quantity_produced']);
     }
 
-    private function generateMovementId(): string
-    {
-        return 'MOV-' . date('YmdHis') . '-' . substr(uniqid(), -4);
-    }
+    // private function generateMovementId(): string
+    // {
+    //     return 'MOV-' . date('YmdHis') . '-' . substr(uniqid(), -4);
+    // }
 
     private function generateBatchNumber(string $prefix): string
     {
@@ -321,7 +344,7 @@ class ProductionStockService
             ->where('p.id', $productId)
             ->first();
 
-        return $product->code ?? 'PCS';
+        return $product->code;
     }
 
     private function getProductAveragePrice(int $productId): float
