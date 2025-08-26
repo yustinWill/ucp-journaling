@@ -218,7 +218,7 @@ class ProductionController extends Controller
                 'id' => $row->id,
                 'product_name' => $row->product_name,
                 'quantity_required' => $row->qty,
-                'stock_available' => $row->qty_available ?? 0,
+                'stock_available' => $row->total_stock ?? 0,
                 'unit' => $row->unit_name
             ];
         }

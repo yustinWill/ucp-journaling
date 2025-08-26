@@ -155,6 +155,7 @@ class ProductionService
             'total_production_expense' => $data['total_production_expense'] ?? 0,
             'total_production_cost' => $data['total_production_cost'] ?? 0,
             'total_items_consumed' => $data['total_items_consumed'] ?? 0,
+            'attachment' => $data['attachment'] ?? null,
             'created_by' => Auth::id(),
             // 'updated_by' => Auth::id(),
             'created_at' => now(),

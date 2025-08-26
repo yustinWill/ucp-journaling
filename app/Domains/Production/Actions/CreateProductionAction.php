@@ -23,6 +23,10 @@ class CreateProductionAction
             // 2. Calculate totals
             $totals = $this->calculateTotals($data);
 
+            if (isset($data['attachment']) && $data['attachment'] instanceof \Illuminate\Http\UploadedFile) {
+                $path = $data['attachment']->store('productions', 'public');
+                $data['attachment'] = $path;
+            }
             // dd($totals);
             // 3. Create main production record
             $productionData = array_merge($data, $totals);

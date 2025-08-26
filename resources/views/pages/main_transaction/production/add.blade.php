@@ -260,7 +260,6 @@
             }
 
             function displayComponents(components) {
-                console.log(components);
                 let componentsHtml = '';
                 components.forEach(component => {
                     const qtyPlanned = parseInt($('#quantity-planned').val()) || 0;
