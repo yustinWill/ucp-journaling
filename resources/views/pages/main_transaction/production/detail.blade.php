@@ -223,18 +223,14 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {{-- @forelse($bundleComponents as $component)
+                                        @forelse($production_items as $component)
                                             <tr>
-                                                <td>{{ $component['product_name'] }}</td>
-                                                <td class="text-center">{{ $component['quantity_required'] }} {{ $component['unit'] }}</td>
-                                                <td class="text-center">{{ $component['quantity_required'] * $production['quantity_planned'] }} {{ $component['unit'] }}</td>
-                                                <td class="text-center">{{ $component['quantity_available'] }} {{ $component['unit'] }}</td>
+                                                <td>{{ $component->product_name }}</td>
+                                                <td class="text-center">{{ $component->quantity_required }} {{ $component->unit_code }}</td>
+                                                <td class="text-center">{{ $component->quantity_required }} {{ $component->unit_code }}</td>
+                                                <td class="text-center">{{ $component->quantity_required }} {{ $component->unit_code }}</td>
                                                 <td class="text-center">
-                                                    @php
-                                                        $totalRequired = $component['quantity_required'] * $production['quantity_planned'];
-                                                        $isAvailable = $totalRequired <= $component['quantity_available'];
-                                                    @endphp
-                                                    @if ($isAvailable)
+                                                    @if ($component->quantity_required >= $component->quantity_required)
                                                         <span class="badge bg-label-success">Available</span>
                                                     @else
                                                         <span class="badge bg-label-danger">Insufficient</span>
@@ -245,7 +241,7 @@
                                             <tr>
                                                 <td colspan="5" class="text-center text-muted">Tidak ada komponen tersedia</td>
                                             </tr>
-                                        @endforelse --}}
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>

@@ -264,6 +264,7 @@ class CreateProductionAction
             return [
                 'raw_material_product_id' => $element->raw_material_product_id,
                 'quantity_required' => $quantityRequired,
+                //IMPORTANT
                 'quantity_consumed' => $quantityRequired,
                 'unit_code' => $element->unit_code,
                 'unit_cost' => $unitCost,
