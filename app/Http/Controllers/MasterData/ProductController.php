@@ -532,12 +532,13 @@ class ProductController extends Controller
             ]
         ];
 
-        $auditLogs =  app(ProductAuditLogService::class)->findAllBasedOnId($id);
+        $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
 
         return view('pages.master_data.product.detail', [
             'product' => $product,
             'inventoryData' => $inventoryData,
-            'auditLogs' => $auditLogs
+            'auditLogs' => $auditLogs,
+            'auditLogType' => AuditLogTypes::MASTER_DATA_PRODUCT->code()
         ]);
     }
 

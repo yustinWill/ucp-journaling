@@ -19,7 +19,8 @@ use App\Domains\Tax\Services\TaxService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
 use App\Domains\PurchaseOrder\Actions\CreatePurchaseOrderAction;
-
+use App\Domains\PurchaseOrder\Services\PurchaseOrderAuditLogService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -207,67 +208,72 @@ class PurchaseOrderController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
 
-        // Mock purchase order data
+        $po_data = app(PurchaseOrderService::class)->findOne($id);
+        $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
+        $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
+
+
+        $auditLogs = [];
+        foreach ($audit_logs as $log) {
+            $auditLogs[] = [
+                'created_at' => $log->created_at,
+                'user_id' => $log->user_id,
+                'user_name' => $log->user_name,
+                'action_type' => $log->action_type,
+                'description' => $log->description
+            ];
+        }
+
+        $product_lines = [];        
+        foreach ($po_products as $prod) {
+            $product_lines[] = [
+                'product_name' => $prod->product_code . " - " . $prod->product_name,
+                'description' => '',
+                'quantity' => $prod->qty,
+                'unit' => $prod->unit_code,
+                'unit_price' => $prod->price_per_qty,
+                'tax_name' => $prod->tax_name,
+                'total' => $prod->total
+            ];
+        }
         $purchaseOrder = [
             'id' => $id,
-            'reference_no' => 'PO-2025-001',
-            'date' => '2025-07-01',
-            'supplier' => 'CV Plastik Prima',
-            'supplier_id' => 1,
-            'email' => 'procurement@plastikprima.co.id',
-            'address' => 'Jl. Industri Raya No. 123, Kawasan Industri MM2100, Bekasi',
-            'supplier_reference' => 'REF-PP-2025-001',
-            'status' => 'APPROVED',
-            'due_date' => '2025-07-31',
-            'payment_terms' => 'NET_30 - Net 30',
-            'payment_terms_type' => 'NET',
-            'days' => 30,
-            'description' => 'Purchase Order untuk pengadaan bahan baku kemasan botol PET 330ml dan label kemasan untuk produk RIYO Water bulan Juli 2025',
-            'warehouse' => 'GDG-001 - Gudang Utama',
-            'include_tax' => true,
-            'down_payment' => 5000000,
-            'total' => 25000000,
-            'subtotal' => 22500000,
-            'tax_amount' => 2500000,
-            'total_before_discount' => 25000000,
-            'discount_amount' => 0,
-            'total_paid' => 5000000,
-            'remaining_bill' => 20000000,
+            'reference_no' => $po_data->transaction_code,
+            'date' => $po_data->transaction_date,
+            'supplier' => $po_data->supplier_name,
+            'supplier_id' => $po_data->f_supplier_id,
+            'email' => $po_data->supplier_email,
+            'address' => $po_data->supplier_address,
+            'supplier_reference' => $po_data->supplier_reference_no,
+            // 'status' => 'APPROVED',
+            'due_date' => $po_data->payment_term_due_date,
+            'payment_terms' => $po_data->payment_term_code . " - " . $po_data->payment_term_name,
+            'payment_terms_type' => $po_data->payment_term_type,
+            'days' => $po_data->payment_term_day_count,
+            'description' => $po_data->description,
+            'warehouse' => $po_data->warehouse_code . " - " . $po_data->warehouse_name,
+            'include_tax' => $po_data->is_price_include_tax,
+            // 'down_payment' => 5000000,
+            'total' => $po_data->grand_price,
+            'subtotal' => $po_data->subtotal,
+            'tax_amount' => $po_data->total_tax,
+            'total_before_discount' => $po_data->total_price_before_discount,
+            'discount_amount' => $po_data->discount,
+            'total_paid' => $po_data->total_paid,
+            'remaining_bill' => $po_data->remaining_bill,
             'currency' => 'IDR',
             'pic' => 'Ahmad Supardi',
-            'payment_method' => 'Transfer Bank',
-            'tags' => [
-                ['name' => 'Bahan Baku', 'preview' => 'bg-label-primary'],
-                ['name' => 'Urgent', 'preview' => 'bg-label-warning']
-            ],
-            'memo' => 'Catatan internal: PO ini terkait dengan peningkatan produksi untuk mengantisipasi peningkatan permintaan di musim kemarau.',
-            'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
+            // 'payment_method' => 'Transfer Bank',
+            'tags' => json_decode($po_data->tags),
+            'memo' => $po_data->internal_memo,
+            // 'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
             'attachment' => [
-                'name' => 'PO-Specification.pdf',
-                'url' => '/warehouse/attachments/po-specification.pdf'
+                'name' => $po_data->attachment,
+                'url' => $po_data->attachment
             ],
-            'created_at' => '2025-07-01 08:00:00',
-            'updated_at' => '2025-07-01 10:30:00',
-            'product_lines' => [
-                [
-                    'product_name' => 'PRD-001 - Botol PET 330ml',
-                    'description' => 'Botol plastik PET untuk kemasan air mineral 330ml',
-                    'quantity' => 10000,
-                    'unit' => 'pcs',
-                    'unit_price' => 150,
-                    'tax_name' => 'PPN 11%',
-                    'total' => 1665000
-                ],
-                [
-                    'product_name' => 'PRD-002 - Label Kemasan',
-                    'description' => 'Label kemasan dengan logo RIYO Water',
-                    'quantity' => 10000,
-                    'unit' => 'lembar',
-                    'unit_price' => 75,
-                    'tax_name' => 'PPN 11%',
-                    'total' => 832500
-                ]
-            ],
+            'created_at' => $po_data->created_at,
+            'updated_at' => $po_data->updated_at,
+            'product_lines' => $product_lines,
             'delivery_summary' => [
                 [
                     'product_id' => 1,
@@ -341,22 +347,7 @@ class PurchaseOrderController extends Controller
         ];
 
         // Mock audit logs
-        $auditLogs = [
-            [
-                'created_at' => '2025-07-01 10:30:00',
-                'user_id' => 1,
-                'user_name' => 'Admin System',
-                'action_type' => 'UPDATE',
-                'description' => 'Status PO diubah dari PENDING_APPROVAL menjadi APPROVED'
-            ],
-            [
-                'created_at' => '2025-07-01 08:00:00',
-                'user_id' => 2,
-                'user_name' => 'Purchasing Staff',
-                'action_type' => 'CREATE',
-                'description' => 'Purchase Order dibuat dengan total Rp 25,000,000'
-            ]
-        ];
+       
 
         $data = [
             'purchaseOrder' => $purchaseOrder,

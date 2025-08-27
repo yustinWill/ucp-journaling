@@ -23,4 +23,25 @@ class PurchaseOrderProductService
             "created_by" => Auth::id(),
         ]);
     }
+
+    public function findAllBasedOnPOId($po_id)
+    {
+        return DB::table($this->table_name . ' as pop')
+            ->select(
+                'pop.*',
+                'mp.code AS product_code',
+                'mp.name AS product_name',
+                'mu.code AS unit_code',
+                'mu.name AS unit_name',
+                'mt.code AS tax_code',
+                'mt.name AS tax_name',
+                'mt.rate AS tax_rate'
+            )
+            ->leftJoin('m_products as mp', 'mp.id', '=', 'pop.f_product_id')
+            ->leftJoin('m_units as mu', 'mu.id', '=', 'pop.f_unit_id')
+            ->leftJoin('m_taxes as mt', 'mt.id', '=', 'pop.f_tax_id')
+            ->where('pop.f_purchase_order_id', $po_id)
+            ->orderBy('pop.id', 'ASC')
+            ->get();
+    }
 }

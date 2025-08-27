@@ -11,7 +11,7 @@
                     <h4 class="mb-3">Detail Purchase Order</h4>
                 </div>
                 <div class="col-md-4">
-                    @php
+                    {{-- @php
                         $totalActions = 1; // Print always present
                         if($canEditPurchaseOrder) {
                             $totalActions++;
@@ -22,9 +22,9 @@
                         if($canDeletePurchaseOrder && in_array($purchaseOrder['status'], ['DRAFT', 'CANCELLED'])) {
                             $totalActions++; // Delete action
                         }
-                    @endphp
+                    @endphp --}}
 
-                    @if($totalActions < 3)
+                    {{-- @if($totalActions < 3) --}}
                         <!-- Show buttons directly when less than 3 actions -->
                         <div class="d-flex gap-2 justify-content-end">
                             <button type="button" class="btn btn-primary btn-md waves-effect waves-light" onclick="window.print()">
@@ -36,9 +36,9 @@
                                 </a>
                             @endif
                         </div>
-                    @else
+                    {{-- @else --}}
                         <!-- Show dropdown for 3 or more actions -->
-                        <div class="dropdown">
+                        {{-- <div class="dropdown">
                             <button type="button" class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle" data-bs-toggle="dropdown">
                                 Aksi
                             </button>
@@ -60,8 +60,8 @@
                                         <i class="icon-base ti tabler-trash me-2"></i>Hapus</a></li>
                                 @endif
                             </ul>
-                        </div>
-                    @endif
+                        </div> --}}
+                    {{-- @endif --}}
                 </div>
             </div>
 
@@ -87,7 +87,7 @@
             </div>
 
             <!-- Row 2: Status -->
-            <div class="row g-3 mb-4">
+            {{-- <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <div class="input-group">
@@ -95,7 +95,7 @@
                         <input type="text" class="form-control" value="{{ $purchaseOrder['status'] }}" disabled />
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             <hr class="my-6 mx-n6" />
 
@@ -111,7 +111,7 @@
                         <a class="list-group-item list-group-item-action waves-effect" id="delivery-invoice-list-item"
                             data-bs-toggle="list" href="#horizontal-delivery-invoice" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-truck-delivery me-2"></i>
-                            <b>Purchase Delivery & Invoice</b>
+                            <b>Purchase Delivery & Invoice (WIP)</b>
                         </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
@@ -260,7 +260,7 @@
                                             @if(isset($purchaseOrder['tags']) && is_array($purchaseOrder['tags']) && count($purchaseOrder['tags']) > 0)
                                                 <div class="d-flex flex-wrap gap-1">
                                                     @foreach($purchaseOrder['tags'] as $tag)
-                                                        <span class="badge {{ $tag['preview'] }}">{{ $tag['name'] }}</span>
+                                                        <span class="badge {{ $tag->preview }}">{{ $tag->code }}</span>
                                                     @endforeach
                                                 </div>
                                             @else

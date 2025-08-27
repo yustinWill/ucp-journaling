@@ -36,7 +36,7 @@ class PurchaseOrderAuditLogService
                 'usr.name AS user_name'
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
-            ->where('t.f_contact_id', $id)
+            ->where('t.f_purchase_order_id', $id)
             ->where('t.company_code', session('user_company_code'))
             ->orderBy('t.created_at', 'DESC')
             ->get();

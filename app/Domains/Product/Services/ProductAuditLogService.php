@@ -26,6 +26,7 @@ class ProductAuditLogService
     {
         return DB::table($this->table_name . ' as t')
             ->select([
+                't.id',
                 't.f_product_id',
                 't.action_type',
                 't.description',

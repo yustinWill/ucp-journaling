@@ -3,7 +3,7 @@
 namespace App\Domains\PurchaseOrder\Services;
 
 use Illuminate\Support\Facades\DB;
-use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 
 class PurchaseOrderService
@@ -108,5 +108,43 @@ class PurchaseOrderService
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ];
+    }
+
+    public function findOne($id)
+    {
+        $data = DB::table($this->table_name . ' as po')
+            ->select(
+                'po.*',
+                'mc.name AS supplier_name',
+                'pt.code AS payment_term_code',
+                'pt.name AS payment_term_name',
+                'pt.type AS payment_term_type',
+                 'mw.code AS warehouse_code',
+                'mw.name AS warehouse_name',
+                'u.name AS created_by_name',
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+            )
+            ->leftJoin('m_contacts as mc', 'mc.id', '=', 'po.f_supplier_id')
+            ->leftJoin('users as u', 'po.created_by', '=', 'u.id')
+            ->leftJoin('m_payment_terms as pt', 'pt.id', '=', 'po.f_payment_term_id')
+            ->leftJoin('m_warehouses as mw', 'mw.id', '=', 'po.f_warehouse_id')
+            ->leftJoin(DB::raw("JSON_TABLE(po.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
+            ->where('po.id', $id)
+            ->where('po.company_code', session('user_company_code'))
+            ->groupBy('po.id')
+            ->first();
+
+        if ($data && $data->f_tag_codes) {
+            $data->f_tag_codes = json_decode($data->f_tag_codes); // Returns objects for view compatibility
+        }
+         if ($data->attachment) {
+            $data->attachment = Storage::disk('public')->url($data->attachment);
+        }
+
+        return $data;
     }
 }
