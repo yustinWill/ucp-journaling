@@ -55,7 +55,9 @@
                                 data-allow-clear="false" required>
                                 <option value="">Pilih Supplier</option>
                                 @foreach ($suppliers as $supplier)
-                                    <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                                    <option value="{{ $supplier->id }}" data-email="{{ $supplier->email }}"
+                                        data-billing-address="{{ $supplier->billing_address }}">{{ $supplier->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -99,7 +101,7 @@
             <!-- Row 1: Syarat Pembayaran -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Syarat Pembayaran</label>
+                    <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
                             <select class="global-select2 form-select" id="purchase-order-payment-terms"
@@ -129,8 +131,8 @@
                 <div class="col-md-6">
                     <label class="form-label">Jumlah Hari <span style="color: red;">*</span></label>
                     <div class="input-group">
-                        <input type="number" class="form-control" id="purchase-order-days" name="days"
-                            placeholder="30" min="0" max="365" disabled>
+                        <input type="number" class="form-control" id="purchase-order-days"
+                            name="payment_term_day_count" placeholder="30" min="0" max="365" disabled>
                         <span class="input-group-text">Hari</span>
                     </div>
                     <small class="form-text text-muted">Jumlah hari untuk pembayaran (0 untuk immediate/COD)</small>
@@ -138,7 +140,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Jatuh Tempo</label>
                     <input type="date" class="form-control global-single-date-picker" id="purchase-order-due-date"
-                        name="due_date" placeholder="YYYY-MM-DD" disabled />
+                        name="payment_term_due_date" placeholder="YYYY-MM-DD" disabled />
                 </div>
             </div>
 
@@ -220,7 +222,6 @@
                                 <td>
                                     <input type="text" class="form-control currency-input"
                                         name="products[0][unit_price]" disabled />
-
                                 </td>
                                 <td>
                                     <div class="position-relative">
@@ -233,7 +234,8 @@
                                         </select>
                                     </div>
                                 </td>
-                                <td><input type="text" class="form-control" name="products[0][total]" disabled /></td>
+                                <td><input type="text" class="form-control currency-input" name="products[0][total]"
+                                        disabled /></td>
                                 <td>
                                     <button class="btn btn-label-danger btn-sm" type="button"
                                         onclick="removeProductRow(this)" disabled>
@@ -335,7 +337,7 @@
                             </div>
                             <div class="col-6">
                                 <input type="text" class="form-control readonly-field" id="total-before-discount"
-                                    dir="rtl" value="Rp 0" disabled>
+                                    name="total_price_before_discount" dir="rtl" value="Rp 0" disabled>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -344,7 +346,7 @@
                             </div>
                             <div class="col-6">
                                 <input type="text" class="form-control currency-input" id="discount-amount"
-                                    name="discount_amount" dir="rtl" placeholder="Rp 0">
+                                    name="discount_amount" dir="rtl" value="Rp 0">
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -445,7 +447,6 @@
                             });
                         });
 
-                        // $(this).find('.select2-container').remove();
                         $(this).find('select.select2Tax').removeClass(
                             'select2-hidden-accessible').removeAttr(
                             'data-select2-id tabindex aria-hidden');
@@ -461,7 +462,7 @@
                                 width: '100%'
                             });
                         });
-                        // initCleaveCurrency(document);
+                        initCleaveCurrency(document);
                     });
                 },
                 hide: function(remove) {
@@ -474,12 +475,11 @@
                 const supplierId = $(this).val();
                 if (supplierId) {
                     // Mock data - in real implementation, fetch from server
-                    $('#purchase-order-email').val('supplier@example.com').prop('disabled', false);
-                    $('#purchase-order-address').val('Jl. Supplier Address No. 123, Jakarta').prop(
+                    $('#purchase-order-email').val($('#purchase-order-supplier option:selected').data(
+                        'email')).prop('disabled', false);
+                    $('#purchase-order-address').val($('#purchase-order-supplier option:selected').data(
+                        'billing-address')).prop(
                         'disabled', false);
-
-                    // Reset product table when supplier changes
-                    // resetProductTable();
 
                     // Auto-calculate due date based on payment terms
                     updateDueDate();
@@ -535,35 +535,6 @@
                 }
             }
 
-            // function resetProductTable() {
-            //     // Reset to one empty row
-            //     $('#product-table tbody').html(`
-        //         <tr>
-        //             <td>
-        //                 <select class="form-select product-select" name="products[0][product_id]" data-allow-clear="false" disabled>
-        //                     <option value="">Pilih Produk</option>
-        //                 </select>
-        //             </td>
-        //             <td><input type="number" class="form-control" name="products[0][quantity]" min="1" step="1" disabled /></td>
-        //             <td><input type="text" class="form-control" name="products[0][unit]" disabled /></td>
-        //             <td><input type="text" class="form-control currency-input" name="products[0][unit_price]" placeholder="Rp 0" disabled /></td>
-        //             <td>
-        //                 <select class="form-select tax-select" name="products[0][tax_id]" data-allow-clear="false" disabled>
-        //                     <option value="">Tanpa Pajak</option>
-        //                 </select>
-        //             </td>
-        //             <td><input type="text" class="form-control" name="products[0][total]" disabled /></td>
-        //             <td>
-        //                 <button class="btn btn-label-danger btn-sm" type="button" onclick="removeProductRow(this)" disabled>
-        //                     <i class="icon-base ti tabler-x me-1"></i>
-        //                     <span class="align-middle">Hapus</span>
-        //                 </button>
-        //             </td>
-        //         </tr>
-        //     `);
-            //     calculateTotals();
-            // }
-
             function loadProducts() {
                 const supplierId = $('#purchase-order-supplier').val();
                 const warehouseId = $('#purchase-order-warehouse').val();
@@ -592,49 +563,13 @@
                 const row = $(this).closest('tr');
 
                 if (unit) {
-                    row.find('input[name*="[unit]"]').val(unit);
+                    row.find('input[name*="[unit]"]').val(unit).prop('disabled', true);
                 } else {
-                    row.find('input[name*="[unit]"]').val('');
+                    row.find('input[name*="[unit]"]').val('').prop('disabled', true);
                 }
 
                 calculateTotals();
             });
-
-            // function initializePOTransactionNumber() {
-            //     // Generate initial transaction number on page load
-            //     generatePOTransactionNumber();
-
-            //     // Handle generate button click
-            //     $('#generate-po-number-btn').on('click', function() {
-            //         generatePOTransactionNumber();
-            //     });
-
-            //     // Validate for duplicates when manually edited
-            //     $('#purchase-order-reference').on('blur', function() {
-            //         const number = $(this).val();
-            //         if (number) {
-            //             checkPODuplicateNumber(number);
-            //         }
-            //     });
-            // }
-
-            // function generatePOTransactionNumber() {
-            //     $('#generate-po-number-btn').prop('disabled', true);
-
-            //     // Mock generation - in real implementation, use AJAX
-            //     const year = new Date().getFullYear();
-            //     const month = String(new Date().getMonth() + 1).padStart(2, '0');
-            //     const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            //     const number = `PO-${year}${month}-${random}`;
-
-            //     $('#purchase-order-reference').val(number);
-            //     $('#generate-po-number-btn').prop('disabled', false);
-            // }
-
-            // function checkPODuplicateNumber(number) {
-            //     // Mock validation - in real implementation, use AJAX
-            //     console.log('Checking duplicate for:', number);
-            // }
 
             function handlePaymentTermsChange() {
                 const selectedOption = $('#purchase-order-payment-terms option:selected');
@@ -710,6 +645,7 @@
                         let rowTax = 0;
 
                         if (taxSelect && taxSelect !== '') {
+                            //IMPORTANT
                             if (includesTax) {
                                 // Price includes tax - extract tax amount
                                 rowTax = rowTotal * 0.11 / 1.11;
@@ -748,18 +684,6 @@
             }
 
             // Global currency formatting functions
-            function formatCurrency(amount) {
-                if (!amount || isNaN(amount)) return 'Rp 0';
-                return 'Rp ' + new Intl.NumberFormat('id-ID', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }).format(amount)
-            }
-
-            function parseCurrency(str) {
-                if (!str) return 0;
-                return parseFloat(str.replace(/[^\d.-]/g, '')) || 0;
-            }
 
             function formatCurrencyInput(input) {
                 const value = parseCurrency(input.value);
@@ -790,13 +714,6 @@
                 calculateTotals();
             });
 
-            // Add product row functionality
-            // $('#add-product-row').on('click', function() {
-            //     if (productTableEnabled) {
-            //         addProductRow();
-            //     }
-            // });
-
             // Remove product row function
             window.removeProductRow = function(button) {
                 if ($('#product-table tbody tr').length > 1) {
@@ -804,39 +721,6 @@
                     calculateTotals();
                 }
             };
-
-            //     function addProductRow() {
-            //         const rowCount = $('#product-table tbody tr').length;
-            //         const newRow = `
-        //     <tr>
-        //         <td>
-        //             <select class="form-select product-select" name="products[${rowCount}][product_id]" data-allow-clear="false">
-        //                 <option value="">Pilih Produk</option>
-        //             </select>
-        //         </td>
-        //         <td><input type="number" class="form-control" name="products[${rowCount}][quantity]" min="1" step="1" /></td>
-        //         <td><input type="text" class="form-control" name="products[${rowCount}][unit]" disabled /></td>
-        //         <td><input type="text" class="form-control currency-input" name="products[${rowCount}][unit_price]" placeholder="Rp 0" /></td>
-        //         <td>
-        //             <select class="form-select tax-select" name="products[${rowCount}][tax_id]" data-allow-clear="false">
-        //                 <option value="">Tanpa Pajak</option>
-        //             </select>
-        //         </td>
-        //         <td><input type="text" class="form-control" name="products[${rowCount}][total]" disabled /></td>
-        //         <td>
-        //             <button class="btn btn-label-danger btn-sm" type="button" onclick="removeProductRow(this)">
-        //                 <i class="icon-base ti tabler-x me-1"></i>
-        //                 <span class="align-middle">Hapus</span>
-        //             </button>
-        //         </td>
-        //     </tr>
-        // `;
-
-            //         $('#product-table tbody').append(newRow);
-
-            //         // Load products for the new row
-            //         loadProducts();
-            //     }
 
             // Form submission
             $('#purchase-order-form').on('submit', function(e) {
@@ -850,7 +734,7 @@
                     'purchase-order-date',
                     'purchase-order-warehouse',
                     'purchase-order-payment-terms',
-                    'purchase-order-due-date'
+                    // 'purchase-order-due-date'
                 ];
 
                 let isValid = true;
@@ -906,6 +790,43 @@
 
                 // Collect form data
                 const formData = new FormData($('#purchase-order-form')[0]);
+
+                const includeTax = $('#include-tax').is(':checked') ? 1 : 0;
+                formData.append('include_tax', includeTax);
+                const totalBeforeDiscount = parseCurrency($('#total-before-discount').val());
+                formData.append('total_before_discount', totalBeforeDiscount);
+
+                const discountAmount = parseCurrency($('#discount-amount').val());
+                formData.append('discount_amount', discountAmount);
+
+                const paymentTermDays = $('#purchase-order-days').val();
+                formData.append('payment_term_day_count', paymentTermDays);
+
+                const dueDate = $('#purchase-order-due-date').val();
+                formData.append('payment_term_due_date', dueDate);
+
+                // Collect product rows from data-repeater-list
+                $('#products-tbody tr[data-repeater-item]').each(function(index) {
+                    const productId = $(this).find('.product-select').val();
+                    const quantity = parseCurrency($(this).find('input[name*="[quantity]"]').val());
+                    const unit = $(this).find('input[name*="[unit]"]').val();
+                    const unitPrice = parseCurrency($(this).find('input[name*="[unit_price]"]').val());
+                    const taxId = $(this).find('select[name*="[tax_id]"]').val();
+                    const total = parseCurrency($(this).find('input[name*="[total]"]').val());
+
+                    // Append each product field to FormData
+                    formData.append(`products[${index}][product_id]`, productId);
+                    formData.append(`products[${index}][quantity]`, quantity);
+                    formData.append(`products[${index}][unit]`, unit);
+                    formData.append(`products[${index}][unit_price]`, unitPrice);
+                    formData.append(`products[${index}][tax_id]`, taxId);
+                    formData.append(`products[${index}][total]`, total);
+                });
+
+                const attachment = $('#purchase-order-attachment')[0];
+                if (attachment && attachment.files.length) {
+                    formData.append('attachment', attachment.files[0]);
+                }
 
                 // AJAX submission
                 $.ajax({

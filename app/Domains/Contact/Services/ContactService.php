@@ -119,12 +119,16 @@ class ContactService
 
     public function findAllByType($type)
     {
-        return DB::table($this->table_name)
-            ->select(['id', 'name', 'type'])
-            ->where('type', $type)
-            ->where('status', GeneralStatuses::ACTIVE)
-            ->where('company_code', session('user_company_code'))
-            ->orderBy('name')
+        return DB::table($this->table_name . ' AS t')
+            ->select(['t.id', 't.name', 't.type', 't.email', 'ca.address AS billing_address'])
+            ->leftJoin('m_contact_addresses AS ca', function ($join) {
+                $join->on('ca.f_contact_id', '=', 't.id')
+                    ->where('ca.type', '=', 'BILLING'); // AND condition here
+            })
+            ->where('t.type', $type)
+            ->where('t.status', GeneralStatuses::ACTIVE)
+            ->where('t.company_code', session('user_company_code'))
+            ->orderBy('t.name')
             ->get();
     }
 

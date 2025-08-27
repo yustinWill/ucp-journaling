@@ -5,6 +5,11 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Http\Controllers\Controller;
 use App\Helpers\PermissionHelper;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
 
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
@@ -13,9 +18,13 @@ use App\Domains\Product\Services\ProductService;
 use App\Domains\Tax\Services\TaxService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
+use App\Domains\PurchaseOrder\Actions\CreatePurchaseOrderAction;
+
 //Enums
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
+
 class PurchaseOrderController extends Controller
 {
     public function index()
@@ -24,10 +33,10 @@ class PurchaseOrderController extends Controller
         if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
         }
-        
+
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
-        
+
         $statuses = [
             ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
             ['value' => 'PENDING_APPROVAL', 'label' => 'PENDING_APPROVAL - Menunggu Persetujuan'],
@@ -51,7 +60,7 @@ class PurchaseOrderController extends Controller
             'canViewPurchaseOrder' => $canViewPurchaseOrder,
             'canEditPurchaseOrder' => $canEditPurchaseOrder
         ];
-        
+
         return view('pages.main_transaction.purchase_order.index', array_merge($data, $permissionData));
     }
 
@@ -159,7 +168,7 @@ class PurchaseOrderController extends Controller
             ]);
         } catch (\Throwable $e) {
             return response()->json([
-               'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
                 'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
@@ -179,38 +188,57 @@ class PurchaseOrderController extends Controller
         try {
             $validated = $request->validate([
                 'date' => 'required|date',
+                'reference_no' => 'required|string|max:255',
                 'supplier_id' => 'required|integer',
-                'due_date' => 'nullable|date',
-                'payment_terms' => 'nullable|string',
-                'days' => 'nullable|integer|min:0|max:365',
-                'warehouse_id' => 'nullable|integer',
-                'currency' => 'nullable|string',
-                'down_payment' => 'nullable|numeric|min:0',
+                'email' => 'nullable|email',
+                'address' => 'nullable|string|max:255',
+                'supplier_reference' => 'nullable|string|max:255',
+                'payment_terms' => 'required|string|max:50',
+                'payment_term_day_count' => 'nullable|integer',
+                'payment_term_due_date' => 'nullable|date',
+                'warehouse_id' => 'required|integer',
+                'description' => 'nullable|string|max:1000',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string|max:50',
+                'memo' => 'nullable|string|max:500',
+                'discount_amount' => 'nullable|string|max:50',
+                'subtotal' => 'required|numeric|min:0',
+                'total_before_discount' => 'required|numeric|min:0',
+                'tax_amount' => 'required|numeric|min:0',
                 'total' => 'required|numeric|min:0',
-                'payment_method' => 'nullable|string',
-                'tax' => 'nullable|string',
-                'notes' => 'nullable|string|max:500'
+                'include_tax' => 'required|boolean',
+                'products' => 'required|array|min:1',
+                'products.*.product_id' => 'required|integer',
+                'products.*.quantity' => 'required|numeric|min:1',
+                'products.*.unit' => 'required|string|max:20',
+                'products.*.unit_price' => 'required|string|max:50',
+                'products.*.tax_id' => 'required|string|max:50',
+                'products.*.total' => 'required|string|max:50',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
             ]);
 
-            // Mock store logic - in real implementation, call Action
-            // $id = app(CreatePurchaseOrderAction::class)->execute($validated);
+            app(CreatePurchaseOrderAction::class)->execute($validated);
 
             return response()->json([
-                'message' => 'Purchase Order berhasil disimpan',
-                'id' => 1 // Mock ID
-            ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+                'message' => SuccessCodes::CREATE_PURCHASE_ORDER_SUCCESS->message()
+            ], SuccessCodes::CREATE_PURCHASE_ORDER_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function($errors) {
-                    return implode(', ', $errors);
-                }, $e->errors())),
-                'error' => 'VALIDATION_ERROR',
-            ], 422);
-        } catch (\Exception $e) {
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
             return response()->json([
-                'message' => 'Terjadi kesalahan saat menyimpan data.',
-                'error' => 'INTERNAL_SERVER_ERROR',
-            ], 500);
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
@@ -220,10 +248,10 @@ class PurchaseOrderController extends Controller
         if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
         }
-        
+
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
-        
+
         // Mock purchase order data
         $purchaseOrder = [
             'id' => $id,
@@ -356,7 +384,7 @@ class PurchaseOrderController extends Controller
                 ]
             ]
         ];
-        
+
         // Mock audit logs
         $auditLogs = [
             [
@@ -374,7 +402,7 @@ class PurchaseOrderController extends Controller
                 'description' => 'Purchase Order dibuat dengan total Rp 25,000,000'
             ]
         ];
-        
+
         $data = [
             'purchaseOrder' => $purchaseOrder,
             'auditLogs' => $auditLogs,
@@ -386,7 +414,7 @@ class PurchaseOrderController extends Controller
             'canViewPurchaseDelivery' => PermissionHelper::canRead('main_transaction_purchase_delivery'),
             'canViewPurchaseInvoice' => PermissionHelper::canRead('main_transaction_purchase_invoice')
         ];
-        
+
         return view('pages.main_transaction.purchase_order.detail', array_merge($data, $permissionData));
     }
 
@@ -424,10 +452,10 @@ class PurchaseOrderController extends Controller
         if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
         }
-        
+
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
-        
+
         // Mock purchase order data
         $purchaseOrder = [
             'id' => $id,
@@ -487,7 +515,7 @@ class PurchaseOrderController extends Controller
                 ]
             ]
         ];
-        
+
         // Options for form
         $suppliers = [
             ['value' => '1', 'label' => 'SUP-001 - CV Plastik Prima'],
@@ -534,7 +562,7 @@ class PurchaseOrderController extends Controller
             ->where('status', 'ACTIVE')
             ->orderBy('code')
             ->get();
-        
+
         $paymentTerms = [];
         foreach ($paymentTermsData as $term) {
             $paymentTerms[] = [
@@ -559,11 +587,11 @@ class PurchaseOrderController extends Controller
         $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
         $canAddStorages = PermissionHelper::hasPermission('master_data_warehouse', 'write');
         $canAddPIC = PermissionHelper::hasPermission('master_data_user', 'write');
-        
+
         // Ensure all fields have default values
         $purchaseOrder['description'] = $purchaseOrder['description'] ?? '';
         $purchaseOrder['memo'] = $purchaseOrder['memo'] ?? '';
-        
+
         $data = [
             'purchaseOrder' => $purchaseOrder,
             'suppliers' => $suppliers,
@@ -581,7 +609,7 @@ class PurchaseOrderController extends Controller
             'canAddStorages' => $canAddStorages,
             'canAddPIC' => $canAddPIC
         ];
-        
+
         return view('pages.main_transaction.purchase_order.edit', array_merge($data, $permissionData));
     }
 
@@ -635,7 +663,7 @@ class PurchaseOrderController extends Controller
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function($errors) {
+                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function ($errors) {
                     return implode(', ', $errors);
                 }, $e->errors())),
                 'error' => 'VALIDATION_ERROR',
