@@ -462,6 +462,8 @@
 @section('js_script')
     <script>
         $(function() {
+            initCleaveCurrency(document);
+
             $('select.select2Bank').each(function() {
                 $(this).select2({
                     placeholder: "Select value",
@@ -582,6 +584,7 @@
                             $(this).find('input.product_id').val(null);
                             $(this).find('input.currency-input').val(null);
                         });
+                        initCleaveCurrency(document);
                     });
                 },
                 hide: function(remove) {
@@ -700,8 +703,9 @@
                                     bank_accounts: $(
                                             '.form-repeater-bank [data-repeater-item]')
                                         .map(function() {
-                                            const bank_id = $(this).find('input.bank_id')
-                                                    .val();
+                                            const bank_id = $(this).find(
+                                                    'input.bank_id')
+                                                .val();
                                             const bank_code = $(this).find(
                                                 'select.bank_code').val();
                                             const branch_office = $(this).find(
@@ -733,9 +737,9 @@
                                             product: $(this).find(
                                                     'select.select2Product')
                                                 .val(),
-                                            price: $(this).find(
+                                            price: parseCurrency($(this).find(
                                                     'input.currency-input')
-                                                .val()
+                                                .val())
                                         };
                                     }).get()
                                 },

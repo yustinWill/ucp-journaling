@@ -81,7 +81,8 @@
                     <select class="global-select2 form-select" id="sales_user" data-allow-clear="false">
                         <option value="">Pilih Sales</option>
                         @foreach ($sales_users as $sales_user)
-                            <option value="{{ $sales_user->id }}">{{ $sales_user->code }} - {{ $sales_user->employee_name }}</option>
+                            <option value="{{ $sales_user->id }}">{{ $sales_user->code }} - {{ $sales_user->employee_name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -351,6 +352,8 @@
 @section('js_script')
     <script>
         $(function() {
+            initCleaveCurrency(document);
+
             $('select.select2Bank').each(function() {
                 $(this).select2({
                     placeholder: "Select value",
@@ -414,14 +417,13 @@
                                 width: '100%'
                             });
                         });
+                        initCleaveCurrency(document);
                     });
                 },
                 hide: function(remove) {
                     $(this).slideUp(remove);
                 }
             });
-
-            // initCleaveCurrency(document);
 
             // SweetAlert for submit
             $('#submit-btn').click(function(e) {
@@ -520,9 +522,9 @@
                                             product: $(this).find(
                                                     'select.select2Product')
                                                 .val(),
-                                            price: $(this).find(
+                                            price: parseCurrency($(this).find(
                                                     'input.currency-input')
-                                                .val()
+                                                .val())
                                         };
                                     }).get()
                                 },

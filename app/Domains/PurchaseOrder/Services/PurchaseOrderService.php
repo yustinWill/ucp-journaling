@@ -48,4 +48,65 @@ class PurchaseOrderService
             "created_by" => Auth::id()
         ]);
     }
+
+    public function findAllDatatable()
+    {
+        $query = DB::table($this->table_name . ' as po')
+            ->select(
+                'po.*',
+                'mc.name AS supplier_name',
+                'u.name AS created_by_name',
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+            )
+            ->leftJoin('m_contacts as mc', 'mc.id', '=', 'po.f_supplier_id')
+            ->leftJoin('users as u', 'po.created_by', '=', 'u.id')
+            ->leftJoin(DB::raw("JSON_TABLE(po.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
+            ->where('po.company_code', session('user_company_code'));
+
+        if ($date = request()->input('date_range_filter')) {
+            // Check if date is a range (contains ' - ')
+            if (strpos($date, ' - ') !== false) {
+                [$dateFrom, $dateTo] = explode(' - ', $date);
+                $query->whereBetween('po.transaction_date', [$dateFrom, $dateTo]);
+            }
+        }
+
+        if ($on_due_date_filter = request()->input('on_due_date_filter')) {
+            $query->where('po.payment_term_due_date', $on_due_date_filter);
+        }
+
+        if ($suppllier_filter = request()->input('suppllier_filter')) {
+            $query->where('po.f_supplier_id', $suppllier_filter);
+        }
+
+        if ($purchase_order_no_filter = request()->input('purchase_order_no_filter')) {
+            $query->where('po.transaction_code', 'like', "%{$purchase_order_no_filter}%");
+        }
+
+        $query->groupBy('po.id');
+
+
+        $draw = (int) request()->input('draw', 1);
+        $recordsTotal = DB::table($this->table_name)->count();
+        $filteredQuery = clone $query;
+
+        // Pagination
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
+        $query->skip($start)->take($length);
+        $recordsFiltered = $filteredQuery->get()->count();
+        $query->orderBy('po.id', 'DESC');
+        $data = $query->get();
+
+        return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ];
+    }
 }

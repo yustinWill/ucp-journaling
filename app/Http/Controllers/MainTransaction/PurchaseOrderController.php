@@ -37,13 +37,7 @@ class PurchaseOrderController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
 
-        $statuses = [
-            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
-            ['value' => 'PENDING_APPROVAL', 'label' => 'PENDING_APPROVAL - Menunggu Persetujuan'],
-            ['value' => 'APPROVED', 'label' => 'APPROVED - Disetujui'],
-            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
-        ];
+        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
 
         // Map permissions to view variables
         $canAddPurchaseOrder = PermissionHelper::canWrite('main_transaction_purchase_order');
@@ -53,7 +47,7 @@ class PurchaseOrderController extends Controller
         $canEditPurchaseOrder = PermissionHelper::canWrite('main_transaction_purchase_order');
 
         $data = [
-            'statuses' => $statuses,
+            'suppliers' => $suppliers,
             'canAddPurchaseOrder' => $canAddPurchaseOrder,
             'canImportPurchaseOrder' => $canImportPurchaseOrder,
             'canExportPurchaseOrder' => $canExportPurchaseOrder,
@@ -64,54 +58,15 @@ class PurchaseOrderController extends Controller
         return view('pages.main_transaction.purchase_order.index', array_merge($data, $permissionData));
     }
 
-    public function index_data_table(Request $request)
+    public function index_data_table()
     {
         // Check read permission
         if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Mock data specific to Purchase Orders
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "date" => "2025-07-01",
-                    "reference_no" => "PO-2025-001",
-                    "supplier" => "CV Plastik Prima",
-                    "supplier_id" => "CNT-001",
-                    "due_date" => "2025-07-15",
-                    "status" => "Disetujui",
-                    "status_badge_class" => "bg-label-success",
-                    "down_payment" => 5000000,
-                    "total" => 25000000,
-                    "created_by" => "Ahmad Supardi",
-                    "created_by_id" => "USR-001",
-                    "tags" => [
-                        ["name" => "Bahan Baku", "preview" => "bg-label-primary"],
-                        ["name" => "Urgent", "preview" => "bg-label-warning"]
-                    ],
-                ],
-                [
-                    "id" => 2,
-                    "date" => "2025-07-02",
-                    "reference_no" => "PO-2025-002",
-                    "supplier" => "PT Grafika Mandiri",
-                    "supplier_id" => "CNT-002",
-                    "due_date" => "2025-07-16",
-                    "status" => "Draft",
-                    "status_badge_class" => "bg-label-secondary",
-                    "down_payment" => 3000000,
-                    "total" => 15000000,
-                    "created_by" => "Siti Nurhaliza",
-                    "created_by_id" => "USR-002",
-                    "tags" => [
-                        ["name" => "Kemasan", "preview" => "bg-label-success"]
-                    ],
-                ]
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(PurchaseOrderService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
