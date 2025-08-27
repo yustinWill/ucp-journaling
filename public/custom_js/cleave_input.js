@@ -50,6 +50,17 @@ function parseCurrency(str) {
     return parseFloat(str) || 0;
 }
 
+function convertToIndonesianFormat(str) {
+    if (!str) return '';
+    // Remove all non-digit, non-dot, non-comma
+    str = str.replace(/[^0-9.,]/g, '');
+    // US format: 100,000.00 → Indonesian: 100.000,00
+    // Remove commas (thousand separator), replace dot (decimal) with comma
+    str = str.replace(/,/g, '.').replace(/\.(\d{2})$/, ',$1');
+    return str;
+}
+
 window.initCleaveCurrency = initCleaveCurrency;
 window.formatCurrency = formatCurrency;
 window.parseCurrency = parseCurrency;
+window.convertToIndonesianFormat = convertToIndonesianFormat;

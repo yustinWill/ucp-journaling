@@ -462,7 +462,13 @@
 @section('js_script')
     <script>
         $(function() {
+            $('.currency-input').each(function() {
+                const val = $(this).val();
+                $(this).val(convertToIndonesianFormat(val));
+            });
             initCleaveCurrency(document);
+
+
 
             $('select.select2Bank').each(function() {
                 $(this).select2({
