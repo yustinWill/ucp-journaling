@@ -11,7 +11,7 @@ class PurchaseOrderProductService
 
     public function create($po_id, array $data)
     {
-        return DB::table($this->table_name)->insert([
+        return DB::table($this->table_name)->insertGetId([
             "f_purchase_order_id" => $po_id,
             "f_product_id" => $data['product_id'],
             "qty" => $data['qty'],
@@ -22,6 +22,31 @@ class PurchaseOrderProductService
             "created_at" => now(),
             "created_by" => Auth::id(),
         ]);
+    }
+
+    public function update($po_id, $id, array $data)
+    {
+        return DB::table($this->table_name)
+            ->where('f_purchase_order_id', $po_id)
+            ->where('id', $id)
+            ->update([
+                "f_product_id" => $data['product_id'],
+                "qty" => $data['qty'],
+                "f_unit_id" => $data['unit_id'],
+                "price_per_qty" => $data['price_per_qty'],
+                "f_tax_id" => $data['tax_id'],
+                "total" => $data['total'],
+                "updated_at" => now(),
+                "updated_by" => Auth::id(),
+            ]);
+    }
+
+    public function delete($po_id, $id)
+    {
+        return DB::table($this->table_name)
+            ->where('f_purchase_order_id', $po_id)
+            ->where('id', $id)
+            ->delete();
     }
 
     public function findAllBasedOnPOId($po_id)

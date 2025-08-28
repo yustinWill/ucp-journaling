@@ -32,6 +32,7 @@ enum SuccessCodes: string
     case CREATE_STOCK_ADJUSTMENT_SUCCESS = 'CREATE_STOCK_ADJUSTMENT_SUCCESS';
     case UPDATE_STOCK_ADJUSTMENT_SUCCESS = 'UPDATE_STOCK_ADJUSTMENT_SUCCESS';
     case CREATE_PURCHASE_ORDER_SUCCESS = 'CREATE_PURCHASE_ORDER_SUCCESS';
+    case UPDATE_PURCHASE_ORDER_SUCCESS = 'UPDATE_PURCHASE_ORDER_SUCCESS';
 
     public function message(): string
     {
@@ -62,6 +63,7 @@ enum SuccessCodes: string
             self::CREATE_STOCK_ADJUSTMENT_SUCCESS => 'Penyesuaian Stok berhasil dibuat.',
             self::UPDATE_STOCK_ADJUSTMENT_SUCCESS => 'Penyesuaian Stok berhasil diperbarui.',
             self::CREATE_PURCHASE_ORDER_SUCCESS => 'Purchase Order berhasil dibuat.',
+            self::UPDATE_PURCHASE_ORDER_SUCCESS => 'Purchase Order berhasil diperbarui.',
         };
     }
 
@@ -94,6 +96,7 @@ enum SuccessCodes: string
             self::CREATE_STOCK_ADJUSTMENT_SUCCESS => self::OK,
             self::UPDATE_STOCK_ADJUSTMENT_SUCCESS => self::OK,
             self::CREATE_PURCHASE_ORDER_SUCCESS => self::OK,
+            self::UPDATE_PURCHASE_ORDER_SUCCESS => self::OK,
         };
     }
 

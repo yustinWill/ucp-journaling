@@ -19,6 +19,7 @@ use App\Domains\Tax\Services\TaxService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
 use App\Domains\PurchaseOrder\Actions\CreatePurchaseOrderAction;
+use App\Domains\PurchaseOrder\Actions\UpdatePurchaseOrderAction;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderAuditLogService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
 //Enums
@@ -212,7 +213,6 @@ class PurchaseOrderController extends Controller
         $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
         $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
 
-
         $auditLogs = [];
         foreach ($audit_logs as $log) {
             $auditLogs[] = [
@@ -224,7 +224,7 @@ class PurchaseOrderController extends Controller
             ];
         }
 
-        $product_lines = [];        
+        $product_lines = [];
         foreach ($po_products as $prod) {
             $product_lines[] = [
                 'product_name' => $prod->product_code . " - " . $prod->product_name,
@@ -346,9 +346,6 @@ class PurchaseOrderController extends Controller
             ]
         ];
 
-        // Mock audit logs
-       
-
         $data = [
             'purchaseOrder' => $purchaseOrder,
             'auditLogs' => $auditLogs,
@@ -402,129 +399,156 @@ class PurchaseOrderController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
 
-        // Mock purchase order data
+        $po_data = app(PurchaseOrderService::class)->findOne($id);
+        $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
+        $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
+
+        // dd($po_data);
+        $auditLogs = [];
+        foreach ($audit_logs as $log) {
+            $auditLogs[] = [
+                'created_at' => $log->created_at,
+                'user_id' => $log->user_id,
+                'user_name' => $log->user_name,
+                'action_type' => $log->action_type,
+                'description' => $log->description
+            ];
+        }
+
+        $product_lines = [];
+        foreach ($po_products as $prod) {
+            $product_lines[] = [
+                'id' => $prod->id,
+                'product_id' => $prod->f_product_id,
+                'product_name' => $prod->product_code . " - " . $prod->product_name,
+                'description' => '',
+                'quantity' => $prod->qty,
+                'unit' => $prod->unit_code,
+                'unit_price' => $prod->price_per_qty,
+                'tax_id' => $prod->f_tax_id,
+                'tax_name' => $prod->tax_name,
+                'total' => $prod->total
+            ];
+        }
+
+        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
+        $paymentTerms = app(PaymentTermService::class)->findAll();
+        $warehouses = app(WarehouseService::class)->findAll();
+        $products = app(ProductService::class)->findAll();
+        $taxOptions = app(TaxService::class)->findAll();
+        $availableTags = app(TagService::class)->findAll();
+
         $purchaseOrder = [
             'id' => $id,
-            'reference_no' => 'PO-2025-001',
-            'date' => '2025-07-01',
-            'supplier_id' => 1,
-            'email' => 'procurement@plastikprima.co.id',
-            'address' => 'Jl. Industri Raya No. 123, Kawasan Industri MM2100, Bekasi',
-            'supplier_reference' => 'REF-PP-2025-001',
-            'status' => 'DRAFT',
-            'due_date' => '2025-07-15',
-            'payment_terms' => 'NET_30',
-            'payment_terms_type' => 'NET',
-            'days' => 30,
-            'description' => 'Purchase Order untuk pengadaan bahan baku kemasan botol PET 330ml dan label kemasan untuk produk RIYO Water bulan Juli 2025',
-            'warehouse_id' => 1,
-            'include_tax' => true,
-            'subtotal' => 22500000,
-            'tax_amount' => 2500000,
-            'total_before_discount' => 25000000,
-            'discount_amount' => 0,
-            'total' => 25000000,
+            'reference_no' => $po_data->transaction_code,
+            'date' => $po_data->transaction_date,
+            'supplier' => $po_data->supplier_name,
+            'supplier_id' => $po_data->f_supplier_id,
+            'email' => $po_data->supplier_email,
+            'address' => $po_data->supplier_address,
+            'supplier_reference' => $po_data->supplier_reference_no,
+            // 'status' => 'APPROVED',
+            'due_date' => $po_data->payment_term_due_date,
+            'payment_term_id' => $po_data->f_payment_term_id,
+            'payment_terms' => $po_data->payment_term_code . " - " . $po_data->payment_term_name,
+            'payment_terms_type' => $po_data->payment_term_type,
+            'days' => $po_data->payment_term_day_count,
+            'description' => $po_data->description,
+            'warehouse' => $po_data->warehouse_code . " - " . $po_data->warehouse_name,
+            'warehouse_id' => $po_data->f_warehouse_id,
+            'include_tax' => $po_data->is_price_include_tax,
+            // 'down_payment' => 5000000,
+            'total' => $po_data->grand_price,
+            'subtotal' => $po_data->subtotal,
+            'tax_amount' => $po_data->total_tax,
+            'total_before_discount' => $po_data->total_price_before_discount,
+            'discount_amount' => $po_data->discount,
+            'total_paid' => $po_data->total_paid,
+            'remaining_bill' => $po_data->remaining_bill,
             'currency' => 'IDR',
-            'down_payment' => 5000000,
-            'payment_method' => 'Transfer Bank',
-            'pic_id' => 1,
-            'tags' => [
-                ['code' => 'PO001', 'name' => 'Bahan Baku', 'preview' => 'bg-label-primary'],
-                ['code' => 'PO003', 'name' => 'Urgent', 'preview' => 'bg-label-warning']
-            ],
-            'memo' => 'Catatan internal: PO ini terkait dengan peningkatan produksi untuk mengantisipasi peningkatan permintaan di musim kemarau.',
-            'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
+            'pic' => 'Ahmad Supardi',
+            // 'payment_method' => 'Transfer Bank',
+            'f_tag_codes' => $po_data->f_tag_codes,
+            'tags' => json_decode($po_data->tags),
+            'memo' => $po_data->internal_memo,
+            // 'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
             'attachment' => [
-                'name' => 'PO-Specification.pdf',
-                'url' => '/warehouse/attachments/po-specification.pdf'
+                'name' => $po_data->attachment,
+                'url' => $po_data->attachment
             ],
-            'product_lines' => [
+            'created_at' => $po_data->created_at,
+            'updated_at' => $po_data->updated_at,
+            'product_lines' => $product_lines,
+            'delivery_summary' => [
                 [
                     'product_id' => 1,
                     'product_name' => 'PRD-001 - Botol PET 330ml',
-                    'description' => 'Botol plastik PET untuk kemasan air mineral 330ml',
-                    'quantity' => 10000,
-                    'unit' => 'pcs',
-                    'unit_price' => 150,
-                    'tax_name' => 'PPN 11%',
-                    'total' => 1665000
+                    'total_qty' => 10000,
+                    'qty_delivered' => 7500,
+                    'remaining_qty' => 2500
                 ],
                 [
                     'product_id' => 2,
                     'product_name' => 'PRD-002 - Label Kemasan',
-                    'description' => 'Label kemasan dengan logo RIYO Water',
-                    'quantity' => 10000,
-                    'unit' => 'lembar',
-                    'unit_price' => 75,
-                    'tax_name' => 'PPN 11%',
-                    'total' => 832500
+                    'total_qty' => 10000,
+                    'qty_delivered' => 10000,
+                    'remaining_qty' => 0
+                ]
+            ],
+            'purchase_deliveries' => [
+                [
+                    'id' => 1,
+                    'date' => '2025-07-15 14:30:00',
+                    'reference_no' => 'DEL-2025-001',
+                    'status' => 'Completed',
+                    'status_badge_class' => 'bg-label-success',
+                    'created_by' => 'Staff Gudang A',
+                    'created_by_id' => 5,
+                    'tags' => [
+                        ['name' => 'Partial', 'preview' => 'bg-label-warning']
+                    ]
+                ],
+                [
+                    'id' => 2,
+                    'date' => '2025-07-20 09:15:00',
+                    'reference_no' => 'DEL-2025-002',
+                    'status' => 'In Transit',
+                    'status_badge_class' => 'bg-label-info',
+                    'created_by' => 'Staff Gudang B',
+                    'created_by_id' => 6,
+                    'tags' => [
+                        ['name' => 'Final', 'preview' => 'bg-label-success']
+                    ]
+                ]
+            ],
+            'purchase_invoices' => [
+                [
+                    'id' => 1,
+                    'date' => '2025-07-16 16:00:00',
+                    'reference_no' => 'INV-2025-001',
+                    'amount' => 5000000,
+                    'status' => 'Paid',
+                    'status_badge_class' => 'bg-label-success',
+                    'created_by' => 'Finance Team',
+                    'created_by_id' => 3,
+                    'tags' => [
+                        ['name' => 'Down Payment', 'preview' => 'bg-label-primary']
+                    ]
+                ],
+                [
+                    'id' => 2,
+                    'date' => '2025-07-25 11:30:00',
+                    'reference_no' => 'INV-2025-002',
+                    'amount' => 20000000,
+                    'status' => 'Pending',
+                    'status_badge_class' => 'bg-label-warning',
+                    'created_by' => 'Finance Team',
+                    'created_by_id' => 3,
+                    'tags' => [
+                        ['name' => 'Final Payment', 'preview' => 'bg-label-info']
+                    ]
                 ]
             ]
-        ];
-
-        // Options for form
-        $suppliers = [
-            ['value' => '1', 'label' => 'SUP-001 - CV Plastik Prima'],
-            ['value' => '2', 'label' => 'SUP-002 - PT Grafika Mandiri'],
-            ['value' => '3', 'label' => 'SUP-003 - CV Kemasan Sejahtera'],
-            ['value' => '4', 'label' => 'SUP-004 - PT Supplier Bahan Kimia']
-        ];
-
-        $statuses = [
-            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
-            ['value' => 'PENDING_APPROVAL', 'label' => 'PENDING_APPROVAL - Menunggu Persetujuan'],
-            ['value' => 'APPROVED', 'label' => 'APPROVED - Disetujui'],
-            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
-        ];
-
-        $currencies = [
-            ['value' => 'IDR', 'label' => 'IDR - Rupiah'],
-            ['value' => 'USD', 'label' => 'USD - Dollar'],
-            ['value' => 'EUR', 'label' => 'EUR - Euro']
-        ];
-
-        $paymentMethods = [
-            ['value' => 'Transfer Bank', 'label' => 'Transfer Bank'],
-            ['value' => 'Cash', 'label' => 'Cash'],
-            ['value' => 'Cek', 'label' => 'Cek'],
-            ['value' => 'Giro', 'label' => 'Giro']
-        ];
-
-        $warehouses = [
-            ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
-            ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
-            ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
-        ];
-
-        $picOptions = [
-            ['value' => '1', 'label' => 'USR-001 - Ahmad Supardi'],
-            ['value' => '2', 'label' => 'USR-002 - Siti Nurhaliza'],
-            ['value' => '3', 'label' => 'USR-003 - Budi Santoso']
-        ];
-
-        // Load payment terms from database
-        $paymentTermsData = \DB::table('m_payment_terms')
-            ->where('status', 'ACTIVE')
-            ->orderBy('code')
-            ->get();
-
-        $paymentTerms = [];
-        foreach ($paymentTermsData as $term) {
-            $paymentTerms[] = [
-                'value' => $term->code,
-                'label' => $term->code . ' - ' . $term->name,
-                'days' => $term->days,
-                'type' => $term->type
-            ];
-        }
-
-        $availableTags = [
-            ['value' => 'PO001', 'label' => 'PO001 - Bahan Baku', 'preview' => 'bg-label-primary'],
-            ['value' => 'PO002', 'label' => 'PO002 - Kemasan', 'preview' => 'bg-label-success'],
-            ['value' => 'PO003', 'label' => 'PO003 - Urgent', 'preview' => 'bg-label-warning'],
-            ['value' => 'PO004', 'label' => 'PO004 - Regular', 'preview' => 'bg-label-info'],
-            ['value' => 'PO005', 'label' => 'PO005 - Seasonal', 'preview' => 'bg-label-secondary']
         ];
 
         // Check permissions for adding related data
@@ -541,11 +565,9 @@ class PurchaseOrderController extends Controller
         $data = [
             'purchaseOrder' => $purchaseOrder,
             'suppliers' => $suppliers,
-            'statuses' => $statuses,
-            'currencies' => $currencies,
-            'paymentMethods' => $paymentMethods,
             'warehouses' => $warehouses,
-            'picOptions' => $picOptions,
+            'taxOptions' => $taxOptions,
+            'products' => $products,
             'paymentTerms' => $paymentTerms,
             'availableTags' => $availableTags,
             'canWrite' => PermissionHelper::canWrite('main_transaction_purchase_order'),
@@ -571,54 +593,60 @@ class PurchaseOrderController extends Controller
 
         try {
             $validated = $request->validate([
-                'id' => 'required|integer',
+                'id' => 'required|exists:t_purchase_orders,id',
                 'date' => 'required|date',
+                'reference_no' => 'required|string|max:255',
                 'supplier_id' => 'required|integer',
                 'email' => 'nullable|email',
-                'address' => 'nullable|string',
-                'supplier_reference' => 'nullable|string',
-                'due_date' => 'nullable|date',
-                'payment_terms' => 'nullable|string',
-                'days' => 'nullable|integer|min:0|max:365',
+                'address' => 'nullable|string|max:255',
+                'supplier_reference' => 'nullable|string|max:255',
+                'payment_terms' => 'required|string|max:50',
+                'payment_term_day_count' => 'nullable|integer',
+                'payment_term_due_date' => 'nullable|date',
                 'warehouse_id' => 'required|integer',
                 'description' => 'nullable|string|max:1000',
-                'include_tax' => 'nullable|boolean',
-                'products' => 'nullable|array',
-                'products.*.product_id' => 'nullable|integer',
-                'products.*.quantity' => 'nullable|numeric|min:0',
-                'products.*.unit' => 'nullable|string',
-                'products.*.unit_price' => 'nullable|numeric|min:0',
-                'products.*.tax_id' => 'nullable|string',
-                'products.*.total' => 'nullable|numeric|min:0',
                 'tags' => 'nullable|array',
+                'tags.*' => 'string|max:50',
                 'memo' => 'nullable|string|max:500',
-                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
-                'subtotal' => 'nullable|numeric|min:0',
-                'tax_amount' => 'nullable|numeric|min:0',
-                'discount_amount' => 'nullable|numeric|min:0',
+                'discount_amount' => 'nullable|string|max:50',
+                'subtotal' => 'required|numeric|min:0',
+                'total_before_discount' => 'required|numeric|min:0',
+                'tax_amount' => 'required|numeric|min:0',
                 'total' => 'required|numeric|min:0',
-                'currency' => 'nullable|string',
-                'status' => 'nullable|string'
+                'include_tax' => 'required|boolean',
+                'products' => 'required|array|min:1',
+                'products.*.id' => 'nullable|integer',
+                'products.*.product_id' => 'required|integer',
+                'products.*.quantity' => 'required|numeric|min:1',
+                'products.*.unit' => 'required|string|max:20',
+                'products.*.unit_price' => 'required|string|max:50',
+                'products.*.tax_id' => 'required|string|max:50',
+                'products.*.total' => 'required|string|max:50',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
             ]);
 
-            // Mock update logic - in real implementation, update database
-            // app(UpdatePurchaseOrderAction::class)->execute($request->id, $validated);
+            app(UpdatePurchaseOrderAction::class)->execute($validated);
 
             return response()->json([
-                'message' => 'Purchase Order berhasil diperbarui'
-            ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+                'message' => SuccessCodes::UPDATE_PURCHASE_ORDER_SUCCESS->message()
+            ], SuccessCodes::UPDATE_PURCHASE_ORDER_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function ($errors) {
-                    return implode(', ', $errors);
-                }, $e->errors())),
-                'error' => 'VALIDATION_ERROR',
-            ], 422);
-        } catch (\Exception $e) {
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
             return response()->json([
-                'message' => 'Terjadi kesalahan saat menyimpan data.',
-                'error' => 'INTERNAL_SERVER_ERROR',
-            ], 500);
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
