@@ -171,14 +171,7 @@ class ContactController extends Controller
         $payment_terms = app(PaymentTermService::class)->findAll();
         $tags = app(TagService::class)->findAll();
         $sales_users = app(SalesPersonService::class)->findAll();
-
-        $product =  [
-            ['value' => 'prod_a', 'label' => 'Produk A'],
-            ['value' => 'prod_b', 'label' => 'Produk B'],
-            ['value' => 'prod_c', 'label' => 'Produk C'],
-            ['value' => 'prod_d', 'label' => 'Produk D'],
-            ['value' => 'prod_e', 'label' => 'Produk E']
-        ];
+        $products = app(ProductService::class)->findAll();
 
         return view('pages.master_data.contact.edit', [
             'contact' => $contact_header,
@@ -196,7 +189,7 @@ class ContactController extends Controller
             'payable_accounts' => $coa_accounts,
             'receivable_accounts' => $coa_accounts,
             'canAddTags' => true, // Mock permission check
-            'products' => $product
+            'products' => $products
         ]);
     }
 
