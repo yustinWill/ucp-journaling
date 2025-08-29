@@ -4,6 +4,23 @@ namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\AppException;
+use App\Helpers\ValidationHelper;
+use App\Helpers\DiscordNotifier;
+
+use App\Domains\StockOpname\Actions\CreateStockOpnameAction;
+use App\Domains\StockOpname\Actions\UpdateStockAdjustmentAction;
+
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Domains\User\Services\UserService;
+use App\Domains\Category\Services\CategoryService;
+use App\Domains\Tag\Services\TagService;
+
+//Enums
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Enums\AuditLogTypes;
 
 class StockOpnameController extends Controller
 {
@@ -170,34 +187,39 @@ class StockOpnameController extends Controller
         return response()->json($data, 200);
     }
 
+    public function get_product_list(Request $req)
+    {
+        $warehouse = $req->query('warehouse');
+        $category = $req->query('category');
+
+        // // Fetch products based on warehouse and category filters
+        // $products = app(ProductService::class)->getProductsByWarehouseAndCategory($warehouse, $category);
+
+        return response()->json([
+            'message' => SuccessCodes::GENERAL_SUCCESS->message(),
+            'data' => [
+                [
+                    'id' => 1,
+                    'code' => 'AIR-330',
+                    'name' => 'RIYO Water 330ml',
+                    'unit' => 'pcs',
+                    'system_stock' => 1500,
+                    'category' => '1'
+                ]
+            ]
+        ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
+    }
+
     public function add()
     {
         // Warehouses for RIYO Water
-        $warehouses = [
-            ['value' => 'GDG-001', 'label' => 'GDG-001 - Gudang Utama Pusat'],
-            ['value' => 'GDG-002', 'label' => 'GDG-002 - Gudang Produksi'],
-            ['value' => 'GDG-003', 'label' => 'GDG-003 - Gudang Bahan Baku'],
-            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods']
-        ];
+        $warehouses = app(WarehouseService::class)->findAll();
 
         // PIC options
-        $picOptions = [
-            ['value' => 'USR-001', 'label' => 'USR-001 - Yustinus Komunal'],
-            ['value' => 'USR-002', 'label' => 'USR-002 - Ririn Safitri'],
-            ['value' => 'USR-003', 'label' => 'USR-003 - Hartono Wijaya'],
-            ['value' => 'USR-004', 'label' => 'USR-004 - Sari Indah'],
-            ['value' => 'USR-005', 'label' => 'USR-005 - Budi Santoso'],
-            ['value' => 'USR-006', 'label' => 'USR-006 - Ani Suhartini']
-        ];
+        $picUsers = app(UserService::class)->findAll();
 
         // Product categories for filtering
-        $productCategories = [
-            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
-            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
-            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
-            ['value' => 'CHEMICALS', 'label' => 'CHEMICALS - Bahan Kimia'],
-            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
-        ];
+        $categories = app(CategoryService::class)->findAll();
 
         // Status options
         $statusOptions = [
@@ -206,25 +228,62 @@ class StockOpnameController extends Controller
             ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai']
         ];
 
-        $tags = [
-            ['value' => 'ROUTINE', 'label' => 'ROUTINE - Opname Rutin', 'color' => 'primary'],
-            ['value' => 'AUDIT', 'label' => 'AUDIT - Audit Stok', 'color' => 'danger'],
-            ['value' => 'MONTHLY', 'label' => 'MONTHLY - Bulanan', 'color' => 'info'],
-            ['value' => 'ANNUAL', 'label' => 'ANNUAL - Tahunan', 'color' => 'success'],
-            ['value' => 'INVESTIGATION', 'label' => 'INVESTIGATION - Investigasi', 'color' => 'warning']
-        ];
+        $tags = app(TagService::class)->findAll();
 
         // Permission check for adding new tags
         $canAddTags = true; // Mock permission check
 
         return view('pages.master_data.stock_opname.add', [
             'warehouses' => $warehouses,
-            'picOptions' => $picOptions,
-            'productCategories' => $productCategories,
+            'picOptions' => $picUsers,
+            'productCategories' => $categories,
             'statusOptions' => $statusOptions,
             'tags' => $tags,
             'canAddTags' => $canAddTags
         ]);
+    }
+
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'opname_number'=> 'required|string|max:50|unique:stock_opname,opname_number',
+                'opname_date' => 'required|date',
+                'warehouse' => 'required|integer',
+                'pic' => 'required|integer',
+                'status' => 'required|string|in:DRAFT,IN_PROGRESS,COMPLETED',
+                'description' => 'nullable|string|max:500',
+                'products' => 'required|array|min:1',
+                'products.*.product_id' => 'required|integer|exists:products,id',
+                'products.*.system_stock' => 'required|integer|min:0',
+                'products.*.physical_qty' => 'required|integer|min:0',
+                'products.*.variance' => 'required|integer',
+                'products.*.notes' => 'nullable|string|max:255',
+            ]);
+
+            app(CreateStockOpnameAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_STOCK_OPNAME_SUCCESS->message()
+            ], SuccessCodes::CREATE_STOCK_OPNAME_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 
     public function edit($id)
@@ -444,7 +503,7 @@ class StockOpnameController extends Controller
         $format = $request->input('format');
         $columns = json_decode($request->input('columns'), true);
         $filters = json_decode($request->input('filters'), true);
-        
+
         // Mock data for stock opnames
         $stockOpnames = collect([
             [
@@ -490,26 +549,26 @@ class StockOpnameController extends Controller
                 'description' => 'Stock opname bahan baku'
             ]
         ]);
-        
+
         // Apply filters
         if (!empty($filters['date_from'])) {
-            $stockOpnames = $stockOpnames->filter(function($item) use ($filters) {
+            $stockOpnames = $stockOpnames->filter(function ($item) use ($filters) {
                 return $item['opname_date'] >= $filters['date_from'];
             });
         }
-        
+
         if (!empty($filters['date_to'])) {
-            $stockOpnames = $stockOpnames->filter(function($item) use ($filters) {
+            $stockOpnames = $stockOpnames->filter(function ($item) use ($filters) {
                 return $item['opname_date'] <= $filters['date_to'];
             });
         }
-        
+
         if (!empty($filters['warehouse'])) {
-            $stockOpnames = $stockOpnames->filter(function($item) use ($filters) {
+            $stockOpnames = $stockOpnames->filter(function ($item) use ($filters) {
                 return strpos($item['warehouse_name'], $filters['warehouse']) !== false;
             });
         }
-        
+
         if (!empty($filters['status'])) {
             $statusMap = [
                 'draft' => 'Draft',
@@ -520,11 +579,11 @@ class StockOpnameController extends Controller
                 'cancelled' => 'Dibatalkan'
             ];
             $statusLabel = $statusMap[$filters['status']] ?? $filters['status'];
-            $stockOpnames = $stockOpnames->filter(function($item) use ($statusLabel) {
+            $stockOpnames = $stockOpnames->filter(function ($item) use ($statusLabel) {
                 return $item['status'] === $statusLabel;
             });
         }
-        
+
         switch ($format) {
             case 'excel':
                 return $this->exportToExcel($stockOpnames, $columns);
@@ -542,7 +601,7 @@ class StockOpnameController extends Controller
         // Mock Excel export - in real implementation, use PhpSpreadsheet
         $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.xlsx';
         $content = $this->generateMockExcelContent($data, $columns);
-        
+
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -552,7 +611,7 @@ class StockOpnameController extends Controller
     {
         $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.csv';
         $content = $this->generateCsvContent($data, $columns);
-        
+
         return response($content)
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -563,7 +622,7 @@ class StockOpnameController extends Controller
         // Mock PDF export - in real implementation, use TCPDF or similar
         $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.pdf';
         $content = $this->generateMockPdfContent($data, $columns);
-        
+
         return response($content)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -578,11 +637,13 @@ class StockOpnameController extends Controller
     private function generateCsvContent($data, $columns)
     {
         $csv = [];
-        
+
         // Add headers
-        $headers = array_map(function($col) { return $col['label']; }, $columns);
+        $headers = array_map(function ($col) {
+            return $col['label'];
+        }, $columns);
         $csv[] = implode(',', $headers);
-        
+
         // Add data rows
         foreach ($data as $row) {
             $csvRow = [];
@@ -596,7 +657,7 @@ class StockOpnameController extends Controller
             }
             $csv[] = implode(',', $csvRow);
         }
-        
+
         return implode("\n", $csv);
     }
 
@@ -616,7 +677,7 @@ class StockOpnameController extends Controller
         // Mock template download - in real implementation, generate actual Excel template
         $filename = 'stock_opname_import_template.xlsx';
         $content = $this->generateImportTemplate();
-        
+
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -631,7 +692,7 @@ class StockOpnameController extends Controller
         try {
             // Mock validation - in real implementation, read and validate file
             $mockData = $this->generateMockImportValidation();
-            
+
             return response()->json([
                 'success' => true,
                 'total_count' => $mockData['total_count'],
@@ -640,7 +701,6 @@ class StockOpnameController extends Controller
                 'success_data' => $mockData['success_data'],
                 'error_data' => $mockData['error_data']
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -654,19 +714,18 @@ class StockOpnameController extends Controller
         try {
             $data = $request->input('data');
             $importedCount = count($data);
-            
+
             // Mock import process - in real implementation, save to database
             foreach ($data as $item) {
                 // Create stock opname record
                 // StockOpname::create([...]);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'imported_count' => $importedCount,
                 'message' => 'Data stock opname berhasil diimport'
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

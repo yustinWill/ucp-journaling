@@ -120,7 +120,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
     Route::controller(StockOpnameController::class)->group(function () use ($base_segment, $stock_opname_segment) {
         Route::get($base_segment . $stock_opname_segment . '/index', 'index')->name('master_data.stock_opname.index');
         Route::get($base_segment . $stock_opname_segment . '/index_data_table', 'index_data_table')->name('master_data.stock_opname.index_data_table');
+        Route::get($base_segment . $stock_opname_segment . '/get_product_list', 'get_product_list')->name('master_data.stock_opname.get_product_list');
         Route::get($base_segment . $stock_opname_segment . '/add', 'add')->name('master_data.stock_opname.add');
+        Route::post($base_segment . $stock_opname_segment . '/save', 'save')->name('master_data.stock_opname.save');
         Route::get($base_segment . $stock_opname_segment . '/edit/{id}', 'edit')->name('master_data.stock_opname.edit');
         Route::get($base_segment . $stock_opname_segment . '/detail/{id}', 'detail')->name('master_data.stock_opname.detail');
 
