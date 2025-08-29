@@ -97,25 +97,13 @@ class StockAdjustmentController extends Controller
 
     public function index_data_table(Request $request)
     {
-        try {
-            // Check read permission
-            if (!PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-
-            $result = app(StockAdjustmentService::class)->findAllDatatable();
-            return response()->json($result);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
-            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
-        } catch (\Throwable $e) {
-            return response()->json([
-                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
+
+        $data = app(StockAdjustmentService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
@@ -755,7 +743,7 @@ class StockAdjustmentController extends Controller
             ]);
         } catch (\Throwable $e) {
             return response()->json([
-               'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
                 'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());

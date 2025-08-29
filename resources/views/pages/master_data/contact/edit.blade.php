@@ -416,9 +416,9 @@
                                             <select class="select2Product form-select" data-allow-clear="false">
                                                 <option value="">Pilih Produk</option>
                                                 @foreach ($products as $product)
-                                                    <option value="{{ $product['value'] }}"
-                                                        {{ $row->f_product_code == $product['value'] ? 'selected' : '' }}>
-                                                        {{ $product['label'] }}
+                                                    <option value="{{ $product->id }}"
+                                                        {{ $row->f_product_code == $product->id ? 'selected' : '' }}>
+                                                        {{ $product->name }}
                                                     </option>
                                                 @endforeach
                                             </select>

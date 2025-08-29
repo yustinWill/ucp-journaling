@@ -6,6 +6,7 @@ use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockMovementLogService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class CreateStockAdjustmentAction
 {
@@ -82,7 +83,7 @@ class CreateStockAdjustmentAction
                 'unit_cost' => $product['unit_cost'] ?? 0,
                 'total_value' => ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0)),
                 'reason' => $product['reason'] ?? null,
-                'created_by' => auth()->id(),
+                'created_by' => Auth::id(),
                 'created_at' => now()
             ];
         }
@@ -107,8 +108,8 @@ class CreateStockAdjustmentAction
                     'reference_type' => 'STOCK_ADJUSTMENT',
                     'reference_number' => $adjustment->adjustment_number,
                     'warehouse_id' => $mainData['warehouse_id'],
-                    'warehouse_code' => $warehouse->code ?? '',
-                    'warehouse_name' => $warehouse->name ?? '',
+                    'warehouse_code' => $warehouse->code,
+                    'warehouse_name' => $warehouse->name,
                     'product_id' => $product['product_id'],
                     'product_code' => $product['product_code'],
                     'product_name' => $product['product_name'],

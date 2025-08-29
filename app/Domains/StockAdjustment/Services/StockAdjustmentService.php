@@ -125,9 +125,16 @@ class StockAdjustmentService
         //         $query->whereIn('sa.status', ['APPROVED', 'COMPLETED', 'CANCELLED']);
         //         break;
         // }
-         $query->whereIn('sa.status', ['APPROVED']);
+        $query->whereIn('sa.status', ['APPROVED']);
 
         // Apply filters
+
+        if ($date = request()->input('date_range_filter')) {
+            if (strpos($date, ' - ') !== false) {
+                [$dateFrom, $dateTo] = explode(' - ', $date);
+                $query->whereBetween('sa.adjustment_date', [$dateFrom, $dateTo]);
+            }
+        }
         if ($status_filter = request()->input('status_filter')) {
             $query->where('sa.status', $status_filter);
         }
@@ -136,14 +143,14 @@ class StockAdjustmentService
             $query->where('sa.adjustment_type', $type_filter);
         }
 
-        if ($search = request()->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('sa.adjustment_number', 'like', "%{$search}%")
-                    ->orWhere('sa.description', 'like', "%{$search}%")
-                    ->orWhere('w.name', 'like', "%{$search}%")
-                    ->orWhere('u.name', 'like', "%{$search}%");
-            });
-        }
+        // if ($search = request()->input('search')) {
+        //     $query->where(function ($q) use ($search) {
+        //         $q->where('sa.adjustment_number', 'like', "%{$search}%")
+        //             ->orWhere('sa.description', 'like', "%{$search}%")
+        //             ->orWhere('w.name', 'like', "%{$search}%")
+        //             ->orWhere('u.name', 'like', "%{$search}%");
+        //     });
+        // }
 
         $query->groupBy('sa.id');
 
