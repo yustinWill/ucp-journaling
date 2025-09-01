@@ -356,6 +356,9 @@
                     pic: $('#pic-select').val(),
                     status: $('#status-select').val(),
                     description: $('#description').val(),
+                    tags: $('#opname-tags').val() || [],
+                    memo: $('#opname-memo').val(),
+                    category: $('#product-category-filter').val(),
                     products: []
                 };
 
@@ -365,16 +368,34 @@
                     const row = $(this).closest('tr');
                     const physicalQty = parseInt(row.find('.physical-qty').val()) || 0;
                     const systemStock = parseInt(row.find('.physical-qty').data('system-stock'));
-                    const notes = row.find('.notes').val();
+                    const note = row.find('.notes').val();
+                    const variance = physicalQty - systemStock;
 
-                    formData.products.push({
-                        product_id: productId,
-                        system_stock: systemStock,
-                        physical_qty: physicalQty,
-                        variance: physicalQty - systemStock,
-                        notes: notes
-                    });
+                    if (variance !== 0) {
+                        formData.products.push({
+                            product_id: productId,
+                            system_stock: systemStock,
+                            physical_qty: physicalQty,
+                            variance: variance,
+                            note: note
+                        });
+                    }
                 });
+
+                if (formData.products.length == 0) {
+                    // If there are no products with variance, show a warning
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Tidak ada Perubahan',
+                        text: 'Tidak ada perubahan pada stok produk.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
 
                 Swal.fire({
                     title: 'Konfirmasi Simpan?',

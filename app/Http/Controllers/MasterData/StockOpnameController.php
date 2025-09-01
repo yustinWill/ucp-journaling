@@ -199,7 +199,7 @@ class StockOpnameController extends Controller
             'message' => SuccessCodes::GENERAL_SUCCESS->message(),
             'data' => [
                 [
-                    'id' => 1,
+                    'id' => 24,
                     'code' => 'AIR-330',
                     'name' => 'RIYO Water 330ml',
                     'unit' => 'pcs',
@@ -247,18 +247,21 @@ class StockOpnameController extends Controller
     {
         try {
             $validated = $request->validate([
-                'opname_number'=> 'required|string|max:50|unique:stock_opname,opname_number',
+                'opname_number' => 'required|string|max:50|unique:t_stock_opnames,stock_opname_no',
                 'opname_date' => 'required|date',
                 'warehouse' => 'required|integer',
                 'pic' => 'required|integer',
                 'status' => 'required|string|in:DRAFT,IN_PROGRESS,COMPLETED',
                 'description' => 'nullable|string|max:500',
+                'memo' => 'nullable|string|max:500',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string|max:50',
                 'products' => 'required|array|min:1',
-                'products.*.product_id' => 'required|integer|exists:products,id',
+                'products.*.product_id' => 'required|integer|exists:m_products,id',
                 'products.*.system_stock' => 'required|integer|min:0',
                 'products.*.physical_qty' => 'required|integer|min:0',
                 'products.*.variance' => 'required|integer',
-                'products.*.notes' => 'nullable|string|max:255',
+                'products.*.note' => 'nullable|string|max:255',
             ]);
 
             app(CreateStockOpnameAction::class)->execute($validated);
@@ -339,7 +342,7 @@ class StockOpnameController extends Controller
         // Mock existing products for this stock opname
         $stockOpnameProducts = [
             [
-                'id' => 1,
+                'id' => 24,
                 'code' => 'AIR-330',
                 'name' => 'RIYO Water 330ml',
                 'unit' => 'pcs',
@@ -350,7 +353,7 @@ class StockOpnameController extends Controller
                 'category' => 'finished_goods'
             ],
             [
-                'id' => 2,
+                'id' => 25,
                 'code' => 'AIR-600',
                 'name' => 'RIYO Water 600ml',
                 'unit' => 'pcs',
@@ -358,17 +361,6 @@ class StockOpnameController extends Controller
                 'physical_qty' => 800,
                 'variance' => 0,
                 'notes' => 'Sesuai dengan sistem',
-                'category' => 'finished_goods'
-            ],
-            [
-                'id' => 3,
-                'code' => 'AIR-1500',
-                'name' => 'RIYO Water 1500ml',
-                'unit' => 'pcs',
-                'system_stock' => 400,
-                'physical_qty' => 400,
-                'variance' => 0,
-                'notes' => '',
                 'category' => 'finished_goods'
             ]
         ];
