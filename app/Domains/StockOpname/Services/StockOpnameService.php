@@ -17,22 +17,22 @@ class StockOpnameService
     //         ->get();
     // }
 
-    // public function findOne($id)
-    // {
-    //     $data = DB::table($this->table_name . ' as t')
-    //         ->select('t.*', 'w.name as warehouse_name', 'u.name as pic_name')
-    //         ->leftJoin('m_warehouses as w', 't.warehouse_id', '=', 'w.id')
-    //         ->leftJoin('users as u', 't.pic_id', '=', 'u.id')
-    //         ->where('t.id', $id)
-    //         ->where('t.company_code', session('user_company_code'))
-    //         ->first();
+    public function findOne($id)
+    {
+        $data = DB::table($this->table_name . ' as t')
+            ->select('t.*', 'w.code as warehouse_code', 'w.name as warehouse_name', 'u.name as pic_name')
+            ->leftJoin('m_warehouses as w', 't.f_warehouse_id', '=', 'w.id')
+            ->leftJoin('users as u', 't.f_pic_id', '=', 'u.id')
+            ->where('t.id', $id)
+            ->where('t.company_code', session('user_company_code'))
+            ->first();
 
-    //     if ($data && $data->f_tag_codes) {
-    //         $data->f_tag_codes = json_decode($data->f_tag_codes); // Returns objects for view compatibility
-    //     }
+        if ($data && $data->f_tag_codes) {
+            $data->f_tag_codes = json_decode($data->f_tag_codes); // Returns objects for view compatibility
+        }
 
-    //     return $data;
-    // }
+        return $data;
+    }
 
     public function create(array $data): int
     {
@@ -150,90 +150,4 @@ class StockOpnameService
             'data' => $data,
         ];
     }
-
-    // public function getProductsInWarehouse($warehouse_id, $category_filter = null, $search_filter = null)
-    // {
-    //     // For now, return products with zero stock since stock movement tables don't exist yet
-    //     // This allows the stock adjustment form to work for testing purposes
-    //     $query = DB::table('m_products as p')
-    //         ->select([
-    //             'p.id',
-    //             'p.code',
-    //             'p.name',
-    //             'u.code as unit', // Get unit from units table
-    //             'pc.name as category_name',
-    //             DB::raw('COALESCE(p.total_stock, 0) as current_stock'), // Use existing total_stock field
-    //             DB::raw('COALESCE(p.average_price, p.unit_purchase_price, 0) as unit_cost')
-    //         ])
-    //         ->leftJoin('m_categories as pc', 'p.f_category_id', '=', 'pc.id')
-    //         ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
-    //         ->where('p.company_code', session('user_company_code'))
-    //         ->where('p.status', 'ACTIVE');
-
-    //     if ($category_filter) {
-    //         $query->where('p.f_category_id', $category_filter);
-    //     }
-
-    //     if ($search_filter) {
-    //         $query->where(function ($q) use ($search_filter) {
-    //             $q->where('p.code', 'like', "%{$search_filter}%")
-    //                 ->orWhere('p.name', 'like', "%{$search_filter}%");
-    //         });
-    //     }
-
-    //     return $query->orderBy('p.name')->get();
-    // }
-
-    // private function generateAdjustmentNumber()
-    // {
-    //     $today = now()->format('Ymd');
-    //     $prefix = 'SA-' . $today . '-';
-
-    //     $lastNumber = DB::table($this->table_name)
-    //         ->where('company_code', session('user_company_code'))
-    //         ->where('adjustment_number', 'like', $prefix . '%')
-    //         ->orderBy('id', 'desc')
-    //         ->value('adjustment_number');
-
-    //     if ($lastNumber) {
-    //         $lastSequence = (int) substr($lastNumber, -3);
-    //         $newSequence = str_pad($lastSequence + 1, 3, '0', STR_PAD_LEFT);
-    //     } else {
-    //         $newSequence = '001';
-    //     }
-
-    //     return $prefix . $newSequence;
-    // }
-
-    // public function getAdjustmentItems($stockAdjustmentId)
-    // {
-    //     return DB::table('t_stock_adjustment_items as sai')
-    //         ->select([
-    //             'sai.id',
-    //             'sai.product_id',
-    //             'sai.product_code',
-    //             'sai.product_name',
-    //             'sai.unit',
-    //             'sai.stock_before',
-    //             'sai.adjustment_qty',
-    //             'sai.stock_after',
-    //             'sai.unit_cost',
-    //             'sai.total_value',
-    //             'sai.reason',
-    //         ])
-    //         ->where('sai.stock_adjustment_id', $stockAdjustmentId)
-    //         ->where('sai.company_code', session('user_company_code'))
-    //         ->orderBy('sai.id')
-    //         ->get();
-    // }
-
-    // public function getLatestByMonth($year, $month)
-    // {
-    //     return DB::table($this->table_name)
-    //         ->where('company_code', session('user_company_code'))
-    //         ->whereYear('adjustment_date', $year)
-    //         ->whereMonth('adjustment_date', $month)
-    //         ->orderBy('created_at', 'desc')
-    //         ->first(['id', 'adjustment_number']);
-    // }
 }

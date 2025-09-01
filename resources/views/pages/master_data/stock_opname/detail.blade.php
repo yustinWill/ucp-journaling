@@ -99,6 +99,16 @@
                     <input type="text" class="form-control" value="{{ $stockOpname['adjustment_number'] ?? 'Belum dibuat' }}" disabled />
                 </div>
             </div>
+             <div class="row g-6 mt-3">
+                <div class="col-md-6">
+                    <label class="form-label">Deskripsi</label>
+                    <input type="text" class="form-control" value="{{ $stockOpname['description'] ?? '' }}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Memo</label>
+                    <input type="text" class="form-control" value="{{ $stockOpname['memo'] ?? '' }}" disabled />
+                </div>
+            </div>
             <hr class="my-6 mx-n6" />
 
             <!-- Summary Cards -->
@@ -137,14 +147,14 @@
                             data-bs-toggle="list" href="#horizontal-products" aria-selected="true" role="tab">
                             <b>Daftar Produk</b>
                         </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="variances-list-item"
+                        {{-- <a class="list-group-item list-group-item-action waves-effect" id="variances-list-item"
                             data-bs-toggle="list" href="#horizontal-variances" aria-selected="false" role="tab">
                             <b>Selisih Detail</b>
-                        </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="history-list-item"
+                        </a> --}}
+                        {{-- <a class="list-group-item list-group-item-action waves-effect" id="history-list-item"
                             data-bs-toggle="list" href="#horizontal-history" aria-selected="false" role="tab">
                             <b>Riwayat</b>
-                        </a>
+                        </a> --}}
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>

@@ -9,13 +9,16 @@ class StockOpnameProductService
 {
     private $table_name = 't_stock_opname_products';
 
-    // public function findAll()
-    // {
-    //     return DB::table($this->table_name)
-    //         ->where('company_code', session('user_company_code'))
-    //         ->orderBy('created_at', 'DESC')
-    //         ->get();
-    // }
+    public function findAllBasedOnId($id)
+    {
+        return DB::table($this->table_name . ' AS t')
+            ->select('t.*', 'p.name as product_name', 'p.code as product_code', 'u.name as unit_name')
+            ->join('m_products as p', 'p.id', '=', 't.f_product_id')
+            ->join('m_units as u', 'u.id', '=', 'p.f_unit_id')
+            ->where('f_stock_opname_id', $id)
+            ->orderBy('id', 'ASC')
+            ->get();
+    }
 
     // public function findOne($id)
     // {

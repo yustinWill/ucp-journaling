@@ -17,6 +17,8 @@ use App\Domains\User\Services\UserService;
 use App\Domains\Category\Services\CategoryService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\StockOpname\Services\StockOpnameService;
+use App\Domains\StockOpname\Services\StockOpnameProductService;
+
 
 //Enums
 use App\Enums\ErrorCodes;
@@ -253,58 +255,43 @@ class StockOpnameController extends Controller
 
     public function detail($id)
     {
+        $header_data = app(StockOpnameService::class)->findOne($id);
         // Mock data for detail view
         $stockOpname = [
             'id' => $id,
-            'opname_number' => 'SO-2025-001',
-            'opname_date' => '2025-01-15',
-            'warehouse_name' => 'Gudang Utama Pusat',
-            'warehouse_code' => 'GDG-001',
-            'pic_name' => 'Yustinus Komunal',
-            'description' => 'Stock opname rutin bulanan untuk gudang utama pusat',
-            'variant_products' => 3,
-            'total_products' => 3,  // Total product count for backwards compatibility
-            'counted_products' => 3, // Products that have been counted
-            'system_qty' => 2700,
-            'physical_qty' => 2702,
-            'variance_qty' => 2,
-            'variance_value' => 125000,
-            'status' => 'ADJUSTMENT_PENDING',
+            'opname_number' => $header_data->stock_opname_no,
+            'opname_date' => $header_data->transaction_date,
+            'warehouse_name' => $header_data->warehouse_name,
+            'warehouse_code' => $header_data->warehouse_code,
+            'pic_name' => $header_data->pic_name,
+            'description' => $header_data->description,
+            'memo' => $header_data->memo,
+            // 'variant_products' => $header_data->count_variance,
+            'total_products' => $header_data->count_product,
+            'counted_products' => $header_data->count_variance,
+            'system_qty' => $header_data->total_system_stock,
+            'physical_qty' => $header_data->total_physical_stock,
+            'variance_qty' => $header_data->total_variance,
+            'variance_value' => 0,
+            'status' => $header_data->status,
             'adjustment_number' => null,
-            'created_at' => '2025-01-15 08:00:00',
-            'updated_at' => '2025-01-15 16:30:00'
+            'created_at' => $header_data->created_at,
+            'updated_at' => $header_data->updated_at
         ];
 
-        // Mock product list data for this stock opname
-        $productList = [
-            [
-                'code' => 'AIR-330',
-                'name' => 'RIYO Water 330ml',
-                'unit' => 'pcs',
-                'system_stock' => 1500,
-                'physical_qty' => 1502,
-                'variance' => 2,
-                'notes' => 'Ada penambahan dari produksi'
-            ],
-            [
-                'code' => 'AIR-600',
-                'name' => 'RIYO Water 600ml',
-                'unit' => 'pcs',
-                'system_stock' => 800,
-                'physical_qty' => 800,
-                'variance' => 0,
-                'notes' => 'Sesuai dengan sistem'
-            ],
-            [
-                'code' => 'AIR-1500',
-                'name' => 'RIYO Water 1500ml',
-                'unit' => 'pcs',
-                'system_stock' => 400,
-                'physical_qty' => 400,
-                'variance' => 0,
-                'notes' => '-'
-            ]
-        ];
+        $product_data = app(StockOpnameProductService::class)->findAllBasedOnId($id);
+
+        foreach ($product_data as  $row) {
+            $productList[] = [
+                'code' => $row->product_code,
+                'name' => $row->product_name,
+                'unit' => $row->unit_name,
+                'system_stock' => $row->system_stock,
+                'physical_qty' => $row->physical_qty,
+                'variance' => $row->variance,
+                'notes' => $row->note
+            ];
+        }
 
         return view('pages.master_data.stock_opname.detail', [
             'stockOpname' => $stockOpname,
