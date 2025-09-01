@@ -16,6 +16,7 @@ use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\User\Services\UserService;
 use App\Domains\Category\Services\CategoryService;
 use App\Domains\Tag\Services\TagService;
+use App\Domains\StockOpname\Services\StockOpnameService;
 
 //Enums
 use App\Enums\ErrorCodes;
@@ -26,165 +27,27 @@ class StockOpnameController extends Controller
 {
     public function index()
     {
-        // Status options for stock opname with adjustment workflow (restricted to 4 valid statuses)
-        $stockOpnameStatuses = [
-            ['value' => 'ADJUSTMENT_PENDING', 'label' => 'ADJUSTMENT_PENDING - Menunggu Adjustment'],
-            ['value' => 'ADJUSTMENT_CREATED', 'label' => 'ADJUSTMENT_CREATED - Adjustment Dibuat'],
-            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dihapus']
+        // Status options
+        $statusOptions = [
+            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
+            ['value' => 'IN_PROGRESS', 'label' => 'IN_PROGRESS - Sedang Dikerjakan'],
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai']
         ];
 
         // Warehouse locations for RIYO Water
-        $warehouseLocations = [
-            ['value' => 'GDG-001', 'label' => 'GDG-001 - Gudang Utama Pusat'],
-            ['value' => 'GDG-002', 'label' => 'GDG-002 - Gudang Produksi'],
-            ['value' => 'GDG-003', 'label' => 'GDG-003 - Gudang Bahan Baku'],
-            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods']
-        ];
+        $warehouses = app(WarehouseService::class)->findAll();
 
-        // Product categories for RIYO Water
-        $productCategories = [
-            ['value' => 'FINISHED_GOODS', 'label' => 'FINISHED_GOODS - Produk Jadi'],
-            ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
-            ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
-            ['value' => 'CHEMICALS', 'label' => 'CHEMICALS - Bahan Kimia'],
-            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
-        ];
 
         return view('pages.master_data.stock_opname.index', [
-            'stockOpnameStatuses' => $stockOpnameStatuses,
-            'warehouseLocations' => $warehouseLocations,
-            'productCategories' => $productCategories
+            'stockOpnameStatuses' => $statusOptions,
+            'warehouses' => $warehouses
         ]);
     }
 
     public function index_data_table()
     {
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "opname_number" => "SO-2025-001",
-                    "opname_date" => "2025-01-15",
-                    "warehouse_name" => "Gudang Utama Pusat",
-                    "warehouse_id" => "GDG-001",
-                    "pic_name" => "Yustinus Komunal",
-                    "pic_id" => "USR-001",
-                    "tags" => [
-                        ["name" => "ROUTINE", "color" => "primary"],
-                        ["name" => "MONTHLY", "color" => "info"]
-                    ],
-                    "variant_products" => 3,
-                    "system_qty" => 2700,
-                    "physical_qty" => 2702,
-                    "variance_qty" => 2,
-                    "variance_value" => 66000,
-                    "status" => "ADJUSTMENT_PENDING",
-                    "adjustment_number" => null,
-                    "description" => "Stock opname bulanan - Produk RIYO Water semua varian"
-                ],
-                [
-                    "id" => 2,
-                    "opname_number" => "SO-2025-002",
-                    "opname_date" => "2025-01-16",
-                    "warehouse_name" => "Gudang Produksi",
-                    "warehouse_id" => "GDG-002",
-                    "pic_name" => "Ririn Safitri",
-                    "pic_id" => "USR-002",
-                    "tags" => [
-                        ["name" => "ROUTINE", "color" => "primary"]
-                    ],
-                    "variant_products" => 2,
-                    "system_qty" => 1200,
-                    "physical_qty" => 1200,
-                    "variance_qty" => 0,
-                    "variance_value" => 0,
-                    "status" => "IN_PROGRESS",
-                    "adjustment_number" => null,
-                    "description" => "Stock opname work in process - Botol dan kemasan"
-                ],
-                [
-                    "id" => 3,
-                    "opname_number" => "SO-2025-003",
-                    "opname_date" => "2025-01-17",
-                    "warehouse_name" => "Gudang Bahan Baku",
-                    "warehouse_id" => "GDG-003",
-                    "pic_name" => "Hartono Wijaya",
-                    "pic_id" => "USR-003",
-                    "tags" => [
-                        ["name" => "INVESTIGATION", "color" => "warning"]
-                    ],
-                    "variant_products" => 4,
-                    "system_qty" => 850,
-                    "physical_qty" => 0,
-                    "variance_qty" => 0,
-                    "variance_value" => 0,
-                    "status" => "DRAFT",
-                    "adjustment_number" => null,
-                    "description" => "Stock opname bahan baku - Air mineral, botol PET, label"
-                ],
-                [
-                    "id" => 4,
-                    "opname_number" => "SO-2025-004",
-                    "opname_date" => "2025-01-18",
-                    "warehouse_name" => "Gudang Finished Goods",
-                    "warehouse_id" => "GDG-004",
-                    "pic_name" => "Sari Indah",
-                    "pic_id" => "USR-004",
-                    "tags" => [
-                        ["name" => "AUDIT", "color" => "danger"],
-                        ["name" => "INVESTIGATION", "color" => "warning"]
-                    ],
-                    "variant_products" => 3,
-                    "system_qty" => 2850,
-                    "physical_qty" => 2700,
-                    "variance_qty" => -150,
-                    "variance_value" => -495000,
-                    "status" => "ADJUSTMENT_CREATED",
-                    "adjustment_number" => "SA-2025-001",
-                    "description" => "Stock opname produk jadi - RIYO Water 330ml, 600ml, 1.5L"
-                ],
-                [
-                    "id" => 5,
-                    "opname_number" => "SO-2025-005",
-                    "opname_date" => "2025-01-19",
-                    "warehouse_name" => "Gudang Utama Pusat",
-                    "warehouse_id" => "GDG-001",
-                    "pic_name" => "Budi Santoso",
-                    "pic_id" => "USR-005",
-                    "tags" => [
-                        ["name" => "ANNUAL", "color" => "success"]
-                    ],
-                    "variant_products" => 5,
-                    "system_qty" => 3200,
-                    "physical_qty" => 3200,
-                    "variance_qty" => 0,
-                    "variance_value" => 0,
-                    "status" => "IN_PROGRESS",
-                    "adjustment_number" => null,
-                    "description" => "Stock opname gabungan - Finished goods dan spare parts"
-                ],
-                [
-                    "id" => 6,
-                    "opname_number" => "SO-2025-006",
-                    "opname_date" => "2025-01-20",
-                    "warehouse_name" => "Gudang Produksi",
-                    "warehouse_id" => "GDG-002",
-                    "pic_name" => "Ani Suhartini",
-                    "pic_id" => "USR-006",
-                    "tags" => [],
-                    "variant_products" => 6,
-                    "system_qty" => 1800,
-                    "physical_qty" => 1825,
-                    "variance_qty" => 25,
-                    "variance_value" => 75000,
-                    "status" => "COMPLETED",
-                    "adjustment_number" => null,
-                    "description" => "Stock opname mesin produksi - Spare parts dan consumables"
-                ]
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(StockOpnameService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function get_product_list(Request $req)

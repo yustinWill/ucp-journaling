@@ -78,103 +78,78 @@ class StockOpnameService
     //         ->update($updateData);
     // }
 
-    // public function findAllDatatable()
-    // {
-    //     $tab = request()->input('tab', 'waiting_adjustment');
+    public function findAllDatatable()
+    {
+        $query = DB::table($this->table_name . ' as so')
+            ->select([
+                'so.id',
+                'so.stock_opname_no',
+                'so.transaction_date',
+                'w.name as warehouse_name',
+                'u.name as pic_name',
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                'so.count_product',
+                'so.total_system_stock',
+                'so.total_physical_stock',
+                'so.total_variance',
+                'so.status',
+            ])
+            ->leftJoin('m_warehouses as w', 'so.f_warehouse_id', '=', 'w.id')
+            ->leftJoin('users as u', 'so.f_pic_id', '=', 'u.id')
+            ->leftJoin(DB::raw("JSON_TABLE(so.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
+            ->where('so.company_code', session('user_company_code'));
 
-    //     $query = DB::table($this->table_name . ' as sa')
-    //         ->select([
-    //             'sa.id',
-    //             'sa.adjustment_number',
-    //             'sa.adjustment_date',
-    //             'sa.adjustment_type',
-    //             'sa.warehouse_id',
-    //             'sa.status',
-    //             'sa.description',
-    //             'sa.total_items',
-    //             'sa.total_adjustment_qty',
-    //             'sa.total_adjustment_value',
-    //             'sa.created_at as created_date',
-    //             'w.name as warehouse_name',
-    //             'u.name as pic_name',
-    //             DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', t.code, 'name', t.name, 'color', tc.code)) as tags")
-    //         ])
-    //         ->leftJoin('m_warehouses as w', 'sa.warehouse_id', '=', 'w.id')
-    //         ->leftJoin('users as u', 'sa.pic_id', '=', 'u.id')
-    //         ->leftJoin(DB::raw("JSON_TABLE(sa.f_tag_codes, '$[*]' COLUMNS(code VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
-    //             $join->on(DB::raw('1'), '=', DB::raw('1'));
-    //         })
-    //         ->leftJoin('m_tags as t', 'tag_json.code', '=', 't.code')
-    //         ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
-    //         ->where('sa.company_code', session('user_company_code'));
+        if ($date = request()->input('date')) {
+            if (strpos($date, ' - ') !== false) {
+                [$dateFrom, $dateTo] = explode(' - ', $date);
+                $query->whereBetween('so.transaction_date', [$dateFrom, $dateTo]);
+            }
+        }
+        if ($warehouse_filter = request()->input('warehouse')) {
+            $query->where('so.f_warehouse_id', $warehouse_filter);
+        }
 
-    //     // Apply tab-based filtering
-    //     // switch ($tab) {
-    //     //     case 'waiting_adjustment':
-    //     //         $query->whereIn('sa.status', ['DRAFT']);
-    //     //         break;
-    //     //     case 'waiting_approval':
-    //     //         $query->whereIn('sa.status', ['WAITING_APPROVAL']);
-    //     //         break;
-    //     //     case 'finished':
-    //     //         $query->whereIn('sa.status', ['APPROVED', 'COMPLETED', 'CANCELLED']);
-    //     //         break;
-    //     // }
-    //     $query->whereIn('sa.status', ['APPROVED']);
+        if ($status_filter = request()->input('status')) {
+            $query->where('so.status', $status_filter);
+        }
 
-    //     // Apply filters
+        if ($no_opname = request()->input('no_opname')) {
+            $query->where('so.stock_opname_no', 'like', "%{$no_opname}%");
+        }
 
-    //     if ($date = request()->input('date_range_filter')) {
-    //         if (strpos($date, ' - ') !== false) {
-    //             [$dateFrom, $dateTo] = explode(' - ', $date);
-    //             $query->whereBetween('sa.adjustment_date', [$dateFrom, $dateTo]);
-    //         }
-    //     }
-    //     if ($status_filter = request()->input('status_filter')) {
-    //         $query->where('sa.status', $status_filter);
-    //     }
 
-    //     if ($type_filter = request()->input('type_filter')) {
-    //         $query->where('sa.adjustment_type', $type_filter);
-    //     }
+        $query->groupBy('so.id');
 
-    //     // if ($search = request()->input('search')) {
-    //     //     $query->where(function ($q) use ($search) {
-    //     //         $q->where('sa.adjustment_number', 'like', "%{$search}%")
-    //     //             ->orWhere('sa.description', 'like', "%{$search}%")
-    //     //             ->orWhere('w.name', 'like', "%{$search}%")
-    //     //             ->orWhere('u.name', 'like', "%{$search}%");
-    //     //     });
-    //     // }
+        $draw = (int) request()->input('draw', 1);
+        $recordsTotal = DB::table($this->table_name)->where('company_code', session('user_company_code'))->count();
+        $filteredQuery = clone $query;
 
-    //     $query->groupBy('sa.id');
+        // Pagination
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
+        $query->skip($start)->take($length);
+        $recordsFiltered = $filteredQuery->get()->count();
+        $query->orderBy('so.created_at', 'DESC');
+        $data = $query->get();
 
-    //     $draw = (int) request()->input('draw', 1);
-    //     $recordsTotal = DB::table($this->table_name)->where('company_code', session('user_company_code'))->count();
-    //     $filteredQuery = clone $query;
+        foreach ($data as $row) {
+            if ($row->tags) {
+                $tags = json_decode($row->tags, true);
+                $row->tags = collect($tags)->unique('code')->values()->all();
+            }
+        }
 
-    //     // Pagination
-    //     $start = (int) request()->input('start', 0);
-    //     $length = (int) request()->input('length', 10);
-    //     $query->skip($start)->take($length);
-    //     $recordsFiltered = $filteredQuery->get()->count();
-    //     $query->orderBy('sa.created_at', 'DESC');
-    //     $data = $query->get();
-
-    //     foreach ($data as $row) {
-    //         if ($row->tags) {
-    //             $tags = json_decode($row->tags, true);
-    //             $row->tags = collect($tags)->unique('code')->values()->all();
-    //         }
-    //     }
-
-    //     return [
-    //         'draw' => $draw,
-    //         'recordsTotal' => $recordsTotal,
-    //         'recordsFiltered' => $recordsFiltered,
-    //         'data' => $data,
-    //     ];
-    // }
+        return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ];
+    }
 
     // public function getProductsInWarehouse($warehouse_id, $category_filter = null, $search_filter = null)
     // {
