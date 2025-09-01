@@ -24,20 +24,20 @@ class StockOpnameAuditLogService
 
     public function findByStockOpnameId(int $stock_opname_id)
     {
-        return DB::table($this->table_name . ' as sal')
+        return DB::table($this->table_name . ' as t')
             ->select([
-                'sal.id',
-                'sal.action_type',
-                'sal.description',
-                'sal.metadata',
-                'sal.created_at',
-                'sal.created_by',
+                't.id',
+                't.action_type',
+                't.description',
+                't.metadata',
+                't.created_at',
+                't.created_by',
                 'u.name as user_name'
             ])
-            ->leftJoin('users as u', 'sal.created_by', '=', 'u.id')
-            ->where('sal.stock_opname_id', $stock_opname_id)
-            ->where('sal.company_code', session('user_company_code'))
-            ->orderBy('sal.created_at', 'desc')
+            ->leftJoin('users as u', 't.created_by', '=', 'u.id')
+            ->where('t.f_stock_opname_id', $stock_opname_id)
+            ->where('t.company_code', session('user_company_code'))
+            ->orderBy('t.created_at', 'desc')
             ->get()
             ->map(function ($log) {
                 $log->metadata = $log->metadata ? json_decode($log->metadata) : null;

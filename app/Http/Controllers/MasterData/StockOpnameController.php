@@ -18,6 +18,7 @@ use App\Domains\Category\Services\CategoryService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\StockOpname\Services\StockOpnameService;
 use App\Domains\StockOpname\Services\StockOpnameProductService;
+use App\Domains\StockOpname\Services\StockOpnameAuditLogService;
 
 
 //Enums
@@ -293,9 +294,23 @@ class StockOpnameController extends Controller
             ];
         }
 
+        $audit_logs = app(StockOpnameAuditLogService::class)->findByStockOpnameId($id);
+
+        $auditLogs = [];
+        foreach ($audit_logs as $log) {
+            $auditLogs[] = [
+                'created_at' => $log->created_at,
+                'user_id' => $log->created_by,
+                'user_name' => $log->user_name,
+                'action_type' => $log->action_type,
+                'description' => $log->description
+            ];
+        }
+
         return view('pages.master_data.stock_opname.detail', [
             'stockOpname' => $stockOpname,
-            'productList' => $productList
+            'productList' => $productList,
+            'auditLogs' => $auditLogs
         ]);
     }
 
