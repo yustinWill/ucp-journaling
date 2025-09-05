@@ -68,6 +68,34 @@
             <input type="hidden" id="purchase-delivery-email" name="email" />
             <input type="hidden" id="purchase-delivery-address" name="address" />
 
+        <!-- Informasi Purchase Order Section -->
+        <div class="section-header mt-12" id="po-info-section" style="display: none;">
+            <h6>Informasi Purchase Order</h6>
+            <hr class="mx-n6">
+        </div>
+
+        <div class="row g-3 mb-4" id="po-info-content" style="display: none;">
+            <div class="col-md-6">
+                <label class="form-label">Supplier</label>
+                <input type="text" class="form-control" id="po-supplier-info" disabled />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email Supplier</label>
+                <input type="text" class="form-control" id="po-email-info" disabled />
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4" id="po-info-content-2" style="display: none;">
+            <div class="col-md-6">
+                <label class="form-label">Alamat Supplier</label>
+                <textarea class="form-control" id="po-address-info" rows="2" disabled></textarea>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Gudang Tujuan (dari PO)</label>
+                <input type="text" class="form-control" id="po-warehouse-info" disabled />
+            </div>
+        </div>
+
         <!-- Informasi Delivery Section -->
         <div class="section-header mt-12">
             <h6>Informasi Delivery</h6>
@@ -333,11 +361,23 @@
                     $('#purchase-delivery-email').val(poHidden.data('email') || '');
                     $('#purchase-delivery-address').val(poHidden.data('address') || '');
 
+                    // Show and populate PO information section
+                    $('#po-supplier-info').val(poHidden.data('supplier') || '');
+                    $('#po-email-info').val(poHidden.data('email') || '');
+                    $('#po-address-info').val(poHidden.data('address') || '');
+                    
                     // Auto-fill warehouse from PO
                     const warehouseId = poHidden.data('warehouse-id');
                     if (warehouseId) {
                         $('#purchase-delivery-warehouse').val(warehouseId).trigger('change');
+                        
+                        // Get warehouse name for display
+                        const warehouseName = $('#purchase-delivery-warehouse option:selected').text();
+                        $('#po-warehouse-info').val(warehouseName);
                     }
+
+                    // Show PO info section
+                    $('#po-info-section, #po-info-content, #po-info-content-2').show();
 
                     // Load products for selected PO immediately
                     loadPOProducts(poId);

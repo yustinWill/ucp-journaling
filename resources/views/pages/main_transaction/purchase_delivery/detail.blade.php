@@ -188,6 +188,38 @@
                         </div>
                     </div>
 
+                    <!-- Purchase Order Information Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Purchase Order</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">No. Purchase Order</label>
+                            <input type="text" class="form-control" value="{{ $purchaseDelivery['po_reference'] ?? 'N/A' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Supplier</label>
+                            <input type="text" class="form-control" value="{{ $purchaseDelivery['supplier_name'] ?? $purchaseDelivery['supplier'] ?? 'N/A' }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Email Supplier</label>
+                            <input type="text" class="form-control" value="{{ $purchaseDelivery['supplier_email'] ?? 'N/A' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status PO</label>
+                            <input type="text" class="form-control" value="{{ $purchaseDelivery['po_status'] ?? 'N/A' }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label">Alamat Supplier</label>
+                            <textarea class="form-control" rows="2" disabled>{{ $purchaseDelivery['supplier_address'] ?? 'N/A' }}</textarea>
+                        </div>
+                    </div>
+
                     <!-- Items Delivery Section -->
                     <div class="section-header mt-12">
                         <h6>Items Delivery</h6>

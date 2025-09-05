@@ -33,29 +33,14 @@
             <!-- Row 2: Purchase Order Reference -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Purchase Order <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="purchase-delivery-po" name="purchase_order_id"
-                        data-allow-clear="false" required>
-                        <option value="">Pilih Purchase Order</option>
-                        @foreach ($purchaseOrders as $po)
-                            <option value="{{ $po['value'] }}" 
-                                {{ $purchaseDelivery->purchase_order_id == $po['value'] ? 'selected' : '' }}
-                                data-supplier="{{ $po['supplier'] }}"
-                                data-supplier-id="{{ $po['supplier_id'] }}"
-                                data-email="{{ $po['email'] }}"
-                                data-address="{{ $po['address'] ?? '' }}"
-                                data-warehouse-id="{{ $po['warehouse_id'] ?? '' }}"
-                                data-reference="{{ $po['reference_no'] ?? '' }}">
-                                {{ $po['label'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <small class="form-text text-muted">PO yang menjadi referensi delivery ini</small>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Referensi PO</label>
-                    <input type="text" class="form-control" id="purchase-order-reference"
-                        value="{{ $purchaseDelivery->po_reference }}" disabled />
+                    <label class="form-label">Purchase Order</label>
+                    @php
+                        $currentPO = collect($purchaseOrders)->firstWhere('value', $purchaseDelivery->purchase_order_id);
+                    @endphp
+                    <input type="text" class="form-control" 
+                        value="{{ $currentPO['reference_no'] ?? $purchaseDelivery->po_reference ?? 'N/A' }}" disabled />
+                    <input type="hidden" name="purchase_order_id" value="{{ $purchaseDelivery->purchase_order_id }}" />
+                    <small class="form-text text-muted">PO tidak dapat diubah setelah delivery dibuat</small>
                 </div>
             </div>
 
