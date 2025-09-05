@@ -4,7 +4,9 @@ namespace App\Domains\PurchaseDelivery\Actions;
 
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryAuditLogService;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
 use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CreatePurchaseDeliveryAction
@@ -41,29 +43,7 @@ class CreatePurchaseDeliveryAction
         // Validate products
         if (empty($data['products']) || ! is_array($data['products'])) {
             $errors[] = 'Minimal satu produk harus dipilih';
-        } else {
-            $hasValidDelivery = false;
-            foreach ($data['products'] as $index => $product) {
-                if (isset($product['delivery_qty']) && $product['delivery_qty'] > 0) {
-                    $hasValidDelivery = true;
-
-                    // Validate quantities
-                    $orderedQty = $product['ordered_qty'] ?? 0;
-                    $deliveredQty = $product['delivered_qty'] ?? 0;
-                    $deliveryQty = $product['delivery_qty'] ?? 0;
-                    $remainingQty = $orderedQty - $deliveredQty;
-
-                    if ($deliveryQty > $remainingQty) {
-                        $errors[] = 'Produk #'.($index + 1).': Kuantitas delivery melebihi sisa yang belum dikirim';
-                    }
-                }
-            }
-
-            if (! $hasValidDelivery) {
-                $errors[] = 'Minimal satu produk harus memiliki kuantitas delivery > 0';
-            }
         }
-
         return [
             'is_valid' => empty($errors),
             'errors' => $errors,
@@ -85,9 +65,13 @@ class CreatePurchaseDeliveryAction
             // Create delivery products
             if (isset($data['products']) && is_array($data['products'])) {
                 app(PurchaseDeliveryService::class)->createDeliveryProducts($deliveryId, $data['products']);
-                
+
                 // Create product batches for HPP tracking
                 $this->createProductBatches($deliveryId, $data);
+
+                foreach ($data['products'] as $product) {
+                    app(PurchaseOrderProductService::class)->updateDeliveredQuantities($data['purchase_order_id'], $product['product_order_product_id'], $product['delivery_qty']);
+                }
             }
 
             // Create audit log
@@ -104,7 +88,7 @@ class CreatePurchaseDeliveryAction
             return $deliveryId;
         });
     }
-    
+
     /**
      * Create product stock batches for HPP tracking
      */
@@ -115,7 +99,7 @@ class CreatePurchaseDeliveryAction
         }
 
         // Get PO products with pricing information
-        $poProducts = \DB::table('t_purchase_order_products as pop')
+        $poProducts = DB::table('t_purchase_order_products as pop')
             ->select('pop.f_product_id', 'pop.price_per_qty', 'pop.qty as ordered_qty')
             ->where('pop.f_purchase_order_id', $data['purchase_order_id'])
             ->get()
@@ -129,7 +113,7 @@ class CreatePurchaseDeliveryAction
 
             $productId = $product['product_id'];
             $deliveryQty = $product['delivery_qty'];
-            
+
             // Get the purchase price from PO
             $poProduct = $poProducts->get($productId);
             if (!$poProduct) {
@@ -140,7 +124,7 @@ class CreatePurchaseDeliveryAction
             $batchReference = 'PD-' . $deliveryId . '-' . $productId . '-' . time();
 
             $batchInserts[] = [
-                'company_code' => session('user_company_code', '001'),
+                'company_code' => session('user_company_code'),
                 'f_product_id' => $productId,
                 'batch_reference_code' => $batchReference,
                 'source_type' => 'PURCHASE',
@@ -156,12 +140,12 @@ class CreatePurchaseDeliveryAction
                 'hpp_status' => 'UNSETTLED',
                 'status' => 'ACTIVE',
                 'created_at' => now(),
-                'created_by' => \Auth::id() ?? 1, // Fallback for testing
+                'created_by' => Auth::id()
             ];
         }
 
         if (!empty($batchInserts)) {
-            \DB::table('t_product_stock_batches')->insert($batchInserts);
+            DB::table('t_product_stock_batches')->insert($batchInserts);
         }
     }
 }

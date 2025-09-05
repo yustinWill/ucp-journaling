@@ -12,18 +12,19 @@ class PurchaseDeliveryAuditLogService
     public function create(array $data, int $purchaseDeliveryId)
     {
         return DB::table($this->table_name)->insertGetId([
-            'purchase_delivery_id' => $purchaseDeliveryId,
-            'user_id' => Auth::id(),
-            'action_type' => $data['action_type']->value,
+            'company_code' => session('user_company_code'),
+            'f_purchase_delivery_id' => $purchaseDeliveryId,
+            'action_type' => $data['action_type'],
             'description' => $data['description'],
             'metadata' => $data['metadata'],
             'created_at' => now(),
+            'created_by' => Auth::id(),
         ]);
     }
 
     public function findByPurchaseDeliveryId(int $purchaseDeliveryId)
     {
-        return DB::table($this->table_name.' as pal')
+        return DB::table($this->table_name . ' as pal')
             ->select([
                 'pal.*',
                 'u.name as user_name',
@@ -36,7 +37,7 @@ class PurchaseDeliveryAuditLogService
 
     public function findAllDatatableByPurchaseDeliveryId(int $purchaseDeliveryId)
     {
-        $query = DB::table($this->table_name.' as pal')
+        $query = DB::table($this->table_name . ' as pal')
             ->select([
                 'pal.created_at',
                 'pal.user_id',

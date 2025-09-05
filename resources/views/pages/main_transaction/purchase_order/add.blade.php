@@ -277,7 +277,6 @@
                         <label class="form-label">Tag</label>
                         <div class="row g-2">
                             <div class="col">
-
                                 <select class="global-select2 form-select" id="purchase-order-tags" name="tags[]"
                                     multiple data-allow-clear="false">
                                     @foreach ($availableTags as $tag)

@@ -101,7 +101,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$purchase_delivery_segment.'/export', 'export')->name('main_transaction.purchase_delivery.export');
         Route::post($base_segment.$purchase_delivery_segment.'/process_export', 'processExport')->name('main_transaction.purchase_delivery.process_export');
         Route::get($base_segment.$purchase_delivery_segment.'/print_pdf/{po_id}', 'printPDF')->name('main_transaction.purchase_delivery.print_pdf');
-        Route::get($base_segment.$purchase_delivery_segment.'/get_po_products', 'getPOProducts')->name('main_transaction.purchase_delivery.get_po_products');
+        // Route::get($base_segment.$purchase_delivery_segment.'/get_po_products', 'getPOProducts')->name('main_transaction.purchase_delivery.get_po_products');
         Route::get($base_segment.$purchase_delivery_segment.'/get_po_details', 'getPODetails')->name('main_transaction.purchase_delivery.get_po_details');
         Route::get($base_segment.$purchase_delivery_segment.'/get_previous_deliveries', 'getPreviousDeliveries')->name('main_transaction.purchase_delivery.get_previous_deliveries');
         Route::get($base_segment.$purchase_delivery_segment.'/get_products', 'getProducts')->name('main_transaction.purchase_delivery.get_products');

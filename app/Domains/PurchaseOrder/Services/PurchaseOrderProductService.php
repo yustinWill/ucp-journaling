@@ -15,6 +15,8 @@ class PurchaseOrderProductService
             'f_purchase_order_id' => $po_id,
             'f_product_id' => $data['product_id'],
             'qty' => $data['qty'],
+            'delivered_qty' => 0,
+            'remaining_qty' => $data['qty'],
             'f_unit_id' => $data['unit_id'],
             'price_per_qty' => $data['price_per_qty'],
             'f_tax_id' => $data['tax_id'],
@@ -32,10 +34,25 @@ class PurchaseOrderProductService
             ->update([
                 'f_product_id' => $data['product_id'],
                 'qty' => $data['qty'],
+                'delivered_qty' => 0,
+                'remaining_qty' => $data['qty'],
                 'f_unit_id' => $data['unit_id'],
                 'price_per_qty' => $data['price_per_qty'],
                 'f_tax_id' => $data['tax_id'],
                 'total' => $data['total'],
+                'updated_at' => now(),
+                'updated_by' => Auth::id(),
+            ]);
+    }
+
+    public function updateDeliveredQuantities($po_id, $product_order_product_id, $qty)
+    {
+        return DB::table($this->table_name)
+            ->where('f_purchase_order_id', $po_id)
+            ->where('id', $product_order_product_id)
+            ->update([
+                'delivered_qty' => DB::raw('delivered_qty + ' . $qty),
+                'remaining_qty' => DB::raw('remaining_qty - ' . $qty),
                 'updated_at' => now(),
                 'updated_by' => Auth::id(),
             ]);
@@ -51,7 +68,7 @@ class PurchaseOrderProductService
 
     public function findAllBasedOnPOId($po_id)
     {
-        return DB::table($this->table_name.' as pop')
+        return DB::table($this->table_name . ' as pop')
             ->select(
                 'pop.*',
                 'mp.code AS product_code',

@@ -9,6 +9,7 @@ use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryAuditLogService;
 // Domain Services
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
@@ -74,8 +75,13 @@ class PurchaseDeliveryController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
 
+        // Check if coming from PO detail page
+        $preselectedPOId = $request->get('po_id');
+
         // Get available Purchase Orders for delivery
-        $purchaseOrders = app(PurchaseOrderService::class)->findAvailableForDelivery();
+        $purchaseOrder = app(PurchaseOrderService::class)->findOne($preselectedPOId);
+        $purchaseOrderProducts = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($preselectedPOId);
+
         $warehouses = app(WarehouseService::class)->findAll();
         $availableTags = app(TagService::class)->findAll();
 
@@ -83,11 +89,9 @@ class PurchaseDeliveryController extends Controller
         $canAddStorages = PermissionHelper::canWrite('master_data_warehouse');
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
-        // Check if coming from PO detail page
-        $preselectedPOId = $request->get('po_id');
-
         return view('pages.main_transaction.purchase_delivery.add', [
-            'purchaseOrders' => $purchaseOrders,
+            'purchaseOrder' => $purchaseOrder,
+            'purchaseOrderProducts' => $purchaseOrderProducts,
             'warehouses' => $warehouses,
             'availableTags' => $availableTags,
             'canAddStorages' => $canAddStorages,
@@ -127,7 +131,6 @@ class PurchaseDeliveryController extends Controller
             return response()->json([
                 'message' => SuccessCodes::CREATE_PURCHASE_DELIVERY_SUCCESS->message(),
             ], SuccessCodes::CREATE_PURCHASE_DELIVERY_SUCCESS->httpStatus());
-
         } catch (AppException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -247,7 +250,6 @@ class PurchaseDeliveryController extends Controller
             return response()->json([
                 'message' => SuccessCodes::UPDATE_PURCHASE_DELIVERY_SUCCESS->message(),
             ], SuccessCodes::UPDATE_PURCHASE_DELIVERY_SUCCESS->httpStatus());
-
         } catch (AppException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -326,7 +328,7 @@ class PurchaseDeliveryController extends Controller
                     'status' => 'PENDING',
                 ],
             ],
-            'validation_key' => 'pd_validation_'.time(),
+            'validation_key' => 'pd_validation_' . time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -381,13 +383,13 @@ class PurchaseDeliveryController extends Controller
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_deliveries_export_'.date('Y-m-d_H-i-s').'.'.$format;
+        $filename = 'purchase_deliveries_export_' . date('Y-m-d_H-i-s') . '.' . $format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/'.$filename,
+            'download_url' => '/exports/' . $filename,
         ]);
     }
 
@@ -404,7 +406,7 @@ class PurchaseDeliveryController extends Controller
         // 2. Generate PDF using a library like TCPDF or DomPDF
         // 3. Return the PDF as a downloadable response
 
-        $filename = 'purchase_delivery_form_PO-'.$poId.'_'.date('Y-m-d_H-i-s').'.pdf';
+        $filename = 'purchase_delivery_form_PO-' . $poId . '_' . date('Y-m-d_H-i-s') . '.pdf';
 
         // For now, return a JSON response indicating success
         // In production, this would return: return response()->file($pdfPath);
@@ -412,122 +414,122 @@ class PurchaseDeliveryController extends Controller
             'success' => true,
             'message' => 'PDF berhasil digenerate.',
             'filename' => $filename,
-            'download_url' => '/temp/'.$filename,
+            'download_url' => '/temp/' . $filename,
         ]);
     }
 
-    public function getPOProducts(Request $request)
-    {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+    // public function getPOProducts(Request $request)
+    // {
+    //     // Check read permission
+    //     if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+    //         return response()->json(['error' => 'Unauthorized'], 403);
+    //     }
 
-        $poId = $request->input('po_id');
-        if (! $poId) {
-            return response()->json(['error' => 'PO ID required'], 400);
-        }
+    //     $poId = $request->input('po_id');
+    //     if (! $poId) {
+    //         return response()->json(['error' => 'PO ID required'], 400);
+    //     }
 
-        // Mock PO products data - in real implementation, fetch from database
-        $products = [
-            [
-                'product_id' => 1,
-                'product_name' => 'Botol PET 330ml',
-                'unit' => 'pcs',
-                'ordered_qty' => 1000,
-                'delivered_qty' => 400,
-                'remaining_qty' => 600,
-            ],
-            [
-                'product_id' => 2,
-                'product_name' => 'Label Kemasan',
-                'unit' => 'lembar',
-                'ordered_qty' => 500,
-                'delivered_qty' => 200,
-                'remaining_qty' => 300,
-            ],
-            [
-                'product_id' => 3,
-                'product_name' => 'Tutup Botol',
-                'unit' => 'pcs',
-                'ordered_qty' => 800,
-                'delivered_qty' => 800,
-                'remaining_qty' => 0,
-            ],
-        ];
+    //     // Mock PO products data - in real implementation, fetch from database
+    //     $products = [
+    //         [
+    //             'product_id' => 1,
+    //             'product_name' => 'Botol PET 330ml',
+    //             'unit' => 'pcs',
+    //             'ordered_qty' => 1000,
+    //             'delivered_qty' => 400,
+    //             'remaining_qty' => 600,
+    //         ],
+    //         [
+    //             'product_id' => 2,
+    //             'product_name' => 'Label Kemasan',
+    //             'unit' => 'lembar',
+    //             'ordered_qty' => 500,
+    //             'delivered_qty' => 200,
+    //             'remaining_qty' => 300,
+    //         ],
+    //         [
+    //             'product_id' => 3,
+    //             'product_name' => 'Tutup Botol',
+    //             'unit' => 'pcs',
+    //             'ordered_qty' => 800,
+    //             'delivered_qty' => 800,
+    //             'remaining_qty' => 0,
+    //         ],
+    //     ];
 
-        return response()->json(['products' => $products]);
-    }
+    //     return response()->json(['products' => $products]);
+    // }
 
-    public function getPreviousDeliveries(Request $request)
-    {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+    // public function getPreviousDeliveries(Request $request)
+    // {
+    //     // Check read permission
+    //     if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+    //         return response()->json(['error' => 'Unauthorized'], 403);
+    //     }
 
-        $poId = $request->input('po_id');
-        if (! $poId) {
-            return response()->json(['error' => 'PO ID required'], 400);
-        }
+    //     $poId = $request->input('po_id');
+    //     if (! $poId) {
+    //         return response()->json(['error' => 'PO ID required'], 400);
+    //     }
 
-        // Mock previous deliveries data - in real implementation, fetch from database
-        $deliveries = [
-            [
-                'reference_no' => 'PD-2025-001',
-                'date' => '2025-07-10',
-                'status' => 'DELIVERED',
-                'total_items' => 300,
-            ],
-            [
-                'reference_no' => 'PD-2025-002',
-                'date' => '2025-07-15',
-                'status' => 'DELIVERED',
-                'total_items' => 100,
-            ],
-        ];
+    //     // Mock previous deliveries data - in real implementation, fetch from database
+    //     $deliveries = [
+    //         [
+    //             'reference_no' => 'PD-2025-001',
+    //             'date' => '2025-07-10',
+    //             'status' => 'DELIVERED',
+    //             'total_items' => 300,
+    //         ],
+    //         [
+    //             'reference_no' => 'PD-2025-002',
+    //             'date' => '2025-07-15',
+    //             'status' => 'DELIVERED',
+    //             'total_items' => 100,
+    //         ],
+    //     ];
 
-        return response()->json(['deliveries' => $deliveries]);
-    }
+    //     return response()->json(['deliveries' => $deliveries]);
+    // }
 
-    public function getProducts(Request $request)
-    {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+    // public function getProducts(Request $request)
+    // {
+    //     // Check read permission
+    //     if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+    //         return response()->json(['error' => 'Unauthorized'], 403);
+    //     }
 
-        $supplierId = $request->input('supplier_id');
-        if (! $supplierId) {
-            return response()->json(['error' => 'Supplier ID required'], 400);
-        }
+    //     $supplierId = $request->input('supplier_id');
+    //     if (! $supplierId) {
+    //         return response()->json(['error' => 'Supplier ID required'], 400);
+    //     }
 
-        // Mock products data - in real implementation, fetch from database
-        $products = [
-            [
-                'product_id' => 1,
-                'product_name' => 'PRD-001 - Botol PET 330ml',
-                'unit' => 'pcs',
-            ],
-            [
-                'product_id' => 2,
-                'product_name' => 'PRD-002 - Label Kemasan',
-                'unit' => 'lembar',
-            ],
-            [
-                'product_id' => 3,
-                'product_name' => 'PRD-003 - Tutup Botol',
-                'unit' => 'pcs',
-            ],
-            [
-                'product_id' => 4,
-                'product_name' => 'PRD-004 - Kardus Packaging',
-                'unit' => 'dus',
-            ],
-        ];
+    //     // Mock products data - in real implementation, fetch from database
+    //     $products = [
+    //         [
+    //             'product_id' => 1,
+    //             'product_name' => 'PRD-001 - Botol PET 330ml',
+    //             'unit' => 'pcs',
+    //         ],
+    //         [
+    //             'product_id' => 2,
+    //             'product_name' => 'PRD-002 - Label Kemasan',
+    //             'unit' => 'lembar',
+    //         ],
+    //         [
+    //             'product_id' => 3,
+    //             'product_name' => 'PRD-003 - Tutup Botol',
+    //             'unit' => 'pcs',
+    //         ],
+    //         [
+    //             'product_id' => 4,
+    //             'product_name' => 'PRD-004 - Kardus Packaging',
+    //             'unit' => 'dus',
+    //         ],
+    //     ];
 
-        return response()->json(['products' => $products]);
-    }
+    //     return response()->json(['products' => $products]);
+    // }
 
     public function generateTransactionNumber()
     {
@@ -542,7 +544,7 @@ class PurchaseDeliveryController extends Controller
         $timestamp = time();
 
         // Mock generation - in real implementation, use proper sequence
-        $number = "PD{$year}{$month}.".str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT).'/DO/STG';
+        $number = "PD{$year}{$month}." . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT) . '/DO/STG';
 
         return response()->json([
             'success' => true,
@@ -562,7 +564,7 @@ class PurchaseDeliveryController extends Controller
         $month = date('m');
 
         // Mock generation - in real implementation, use proper sequence
-        $number = 'DN-'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        $number = 'DN-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
 
         return response()->json([
             'success' => true,
@@ -570,66 +572,65 @@ class PurchaseDeliveryController extends Controller
         ]);
     }
 
-    public function getPODetails(Request $request)
-    {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+    // public function getPODetails(Request $request)
+    // {
+    //     // Check read permission
+    //     if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+    //         return response()->json(['error' => 'Unauthorized'], 403);
+    //     }
 
-        $poId = $request->get('po_id');
-        if (! $poId) {
-            return response()->json(['error' => 'PO ID required'], 400);
-        }
+    //     $poId = $request->get('po_id');
+    //     if (! $poId) {
+    //         return response()->json(['error' => 'PO ID required'], 400);
+    //     }
 
-        try {
-            // Get PO details
-            $poData = app(PurchaseOrderService::class)->findOne($poId);
-            if (! $poData) {
-                return response()->json(['error' => 'PO not found'], 404);
-            }
+    //     try {
+    //         // Get PO details
+    //         $poData = app(PurchaseOrderService::class)->findOne($poId);
+    //         if (! $poData) {
+    //             return response()->json(['error' => 'PO not found'], 404);
+    //         }
 
-            // Get PO products with delivery tracking
-            $poProducts = app(\App\Domains\PurchaseOrder\Services\PurchaseOrderProductService::class)->findAllBasedOnPOId($poId);
+    //         // Get PO products with delivery tracking
+    //         $poProducts = app(\App\Domains\PurchaseOrder\Services\PurchaseOrderProductService::class)->findAllBasedOnPOId($poId);
 
-            $items = [];
-            foreach ($poProducts as $product) {
-                // Mock delivered quantity - in real implementation, calculate from existing deliveries
-                $deliveredQty = 0; // This should be calculated from t_purchase_delivery_products
-                $remainingQty = $product->qty - $deliveredQty;
+    //         $items = [];
+    //         foreach ($poProducts as $product) {
+    //             // Mock delivered quantity - in real implementation, calculate from existing deliveries
+    //             $deliveredQty = 0; // This should be calculated from t_purchase_delivery_products
+    //             $remainingQty = $product->qty - $deliveredQty;
 
-                $items[] = [
-                    'product_id' => $product->product_id,
-                    'product_name' => $product->product_code.' - '.$product->product_name,
-                    'unit_name' => $product->unit_code,
-                    'ordered_qty' => $product->qty,
-                    'delivered_qty' => $deliveredQty,
-                    'remaining_qty' => $remainingQty,
-                    'unit_price' => $product->price_per_qty,
-                    'tax_name' => $product->tax_name,
-                ];
-            }
+    //             $items[] = [
+    //                 'product_id' => $product->product_id,
+    //                 'product_name' => $product->product_code . ' - ' . $product->product_name,
+    //                 'unit_name' => $product->unit_code,
+    //                 'ordered_qty' => $product->qty,
+    //                 'delivered_qty' => $deliveredQty,
+    //                 'remaining_qty' => $remainingQty,
+    //                 'unit_price' => $product->price_per_qty,
+    //                 'tax_name' => $product->tax_name,
+    //             ];
+    //         }
 
-            return response()->json([
-                'success' => true,
-                'po_data' => [
-                    'id' => $poData->id,
-                    'reference_no' => $poData->transaction_code,
-                    'supplier_name' => $poData->supplier_name,
-                    'supplier_id' => $poData->f_supplier_id,
-                    'supplier_email' => $poData->supplier_email,
-                    'supplier_address' => $poData->supplier_address,
-                    'warehouse_id' => $poData->f_warehouse_id,
-                    'warehouse_name' => $poData->warehouse_code.' - '.$poData->warehouse_name,
-                    'date' => $poData->transaction_date,
-                ],
-                'items' => $items,
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to load PO details: '.$e->getMessage(),
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'success' => true,
+    //             'po_data' => [
+    //                 'id' => $poData->id,
+    //                 'reference_no' => $poData->transaction_code,
+    //                 'supplier_name' => $poData->supplier_name,
+    //                 'supplier_id' => $poData->f_supplier_id,
+    //                 'supplier_email' => $poData->supplier_email,
+    //                 'supplier_address' => $poData->supplier_address,
+    //                 'warehouse_id' => $poData->f_warehouse_id,
+    //                 'warehouse_name' => $poData->warehouse_code . ' - ' . $poData->warehouse_name,
+    //                 'date' => $poData->transaction_date,
+    //             ],
+    //             'items' => $items,
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'error' => 'Failed to load PO details: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 }

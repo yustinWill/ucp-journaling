@@ -14,19 +14,18 @@ class PurchaseDeliveryService
         return DB::table($this->table_name)->insertGetId([
             'company_code' => session('user_company_code'),
             'transaction_code' => $data['reference_no'],
-            'f_purchase_order_id' => $data['purchase_order_id'] ?? null,
-            'delivery_date' => $data['delivery_date'] ?? null,
-            'f_supplier_id' => $data['supplier_id'],
-            'supplier_email' => $data['email'] ?? null,
-            'supplier_address' => $data['address'] ?? null,
-            'supplier_reference_no' => $data['supplier_reference'] ?? null,
+            'f_purchase_order_id' => $data['purchase_order_id'],
+            'delivery_date' => $data['date'],
+            'delivery_number' => $data['delivery_number'],
+            'tracking_number' => $data['tracking_number'],
+            'attachment' => $data['attachment'] ?? null,
+            'courier_name' => $data['courier_name'],
             'f_warehouse_id' => $data['warehouse_id'],
-            'expected_received_date' => $data['expected_date'] ?? null,
             'description' => $data['description'] ?? null,
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'internal_memo' => $data['memo'] ?? null,
-            'allow_over_delivery' => $data['allow_over_delivery'] ?? false,
-            'total_item' => $data['total_item'] ?? 0,
+            'total_item' => $data['total_items'] ?? 0,
+            'delivery_status' => $data['delivery_status'],
             'created_at' => now(),
             'created_by' => Auth::id(),
         ]);
@@ -58,7 +57,7 @@ class PurchaseDeliveryService
 
     public function findAll()
     {
-        return DB::table($this->table_name.' as pd')
+        return DB::table($this->table_name . ' as pd')
             ->select([
                 'pd.*',
                 'po.transaction_code as po_reference',
@@ -76,7 +75,7 @@ class PurchaseDeliveryService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name.' as pd')
+        $query = DB::table($this->table_name . ' as pd')
             ->select([
                 'pd.id',
                 'pd.transaction_code as reference_no',
@@ -177,7 +176,7 @@ class PurchaseDeliveryService
 
     public function findOne($id)
     {
-        return DB::table($this->table_name.' as pd')
+        return DB::table($this->table_name . ' as pd')
             ->select([
                 'pd.*',
                 'po.transaction_code as po_reference',
@@ -203,36 +202,20 @@ class PurchaseDeliveryService
     {
         $insertData = [];
         foreach ($products as $product) {
-            // Handle PO-based products
-            if (isset($product['delivery_qty'])) {
-                if ($product['delivery_qty'] > 0) {
-                    $insertData[] = [
-                        'f_purchase_delivery_id' => $deliveryId,
-                        'f_product_id' => $product['product_id'],
-                        'qty' => $product['delivery_qty'],
-                        'f_unit_id' => $product['unit_id'] ?? 1, // Default unit ID
-                        'note' => $product['notes'] ?? null,
-                        'status' => $product['status'] ?? 'GOOD',
-                        'created_at' => now(),
-                        'created_by' => Auth::id(),
-                    ];
-                }
-            }
-            // Handle manual products
-            elseif (isset($product['quantity'])) {
-                if ($product['quantity'] > 0) {
-                    $insertData[] = [
-                        'f_purchase_delivery_id' => $deliveryId,
-                        'f_product_id' => $product['product_id'],
-                        'qty' => $product['quantity'],
-                        'f_unit_id' => $product['unit_id'] ?? 1,
-                        'note' => $product['notes'] ?? null,
-                        'status' => $product['status'] ?? 'GOOD',
-                        'created_at' => now(),
-                        'created_by' => Auth::id(),
-                    ];
-                }
-            }
+            $insertData[] = [
+                'f_purchase_delivery_id' => $deliveryId,
+                'f_product_order_product_id' => $product['product_order_product_id'],
+                'f_product_id' => $product['product_id'],
+                'delivered_qty_before' => $product['delivered_qty_before'],
+                'remaining_qty_before' => $product['remaining_qty_before'],
+                'qty' => $product['delivery_qty'],
+                'delivered_qty_after' => $product['delivered_qty_before'] + $product['delivery_qty'],
+                'remaining_qty_after' => $product['remaining_qty_before'] - $product['delivery_qty'],
+                'note' => $product['note'],
+                'status' => $product['status'],
+                'created_at' => now(),
+                'created_by' => Auth::id(),
+            ];
         }
 
         if (! empty($insertData)) {
