@@ -116,7 +116,7 @@
                         <a class="list-group-item list-group-item-action waves-effect" id="delivery-invoice-list-item"
                             data-bs-toggle="list" href="#horizontal-delivery-invoice" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-truck-delivery me-2"></i>
-                            <b>Purchase Delivery & Invoice (WIP)</b>
+                            <b>Purchase Delivery & Invoice</b>
                         </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
@@ -343,7 +343,7 @@
                         <!-- Purchase Delivery & Invoice Tab -->
                         <div class="tab-pane fade" id="horizontal-delivery-invoice" role="tabpanel">
                             
-                            <!-- Summary Section -->
+                            {{-- <!-- Summary Section -->
                             <div class="section-header mt-12">
                                 <h6>Ringkasan Pembayaran & Pengiriman</h6>
                                 <hr class="mx-n6">
@@ -375,7 +375,7 @@
                                         <small class="text-muted">Amount Left</small>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
                             <!-- Delivery Summary Table -->
                             <div class="section-header mt-12">
@@ -460,14 +460,12 @@
                                                     <a href="{{ route('master_data.user.detail', $delivery['created_by_id']) }}" class="text-primary fw-semibold">
                                                         {{ $delivery['created_by'] }}
                                                     </a>
-                                                @else
-                                                    {{ $delivery['created_by'] }}
                                                 @endif
                                             </td>
                                             <td>
                                                 @if(isset($delivery['tags']) && count($delivery['tags']) > 0)
                                                     @foreach($delivery['tags'] as $tag)
-                                                        <span class="badge {{ $tag['preview'] }} me-1">{{ $tag['name'] }}</span>
+                                                        <span class="badge {{ $tag->preview }} me-1">{{ $tag->code }}</span>
                                                     @endforeach
                                                 @else
                                                     -

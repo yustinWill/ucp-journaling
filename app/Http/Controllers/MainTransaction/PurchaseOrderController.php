@@ -10,6 +10,7 @@ use App\Domains\PurchaseOrder\Actions\UpdatePurchaseOrderAction;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderAuditLogService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
+use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Tax\Services\TaxService;
 use App\Domains\Warehouse\Services\WarehouseService;
@@ -26,6 +27,18 @@ use Illuminate\Validation\ValidationException;
 
 class PurchaseOrderController extends Controller
 {
+    public function get_delivery_status_design($delivery_status)
+    {
+        if ($delivery_status == 'NONE') {
+            return 'bg-label-danger';
+        } else if ($delivery_status == 'MIXED') {
+            return 'bg-label-warning';
+        } else if ($delivery_status == 'PARTIAL') {
+            return 'bg-label-warning';
+        } else if ($delivery_status == 'COMPLETE') {
+            return 'bg-label-success';
+        }
+    }
     public function index()
     {
         // Check read permission for purchase order module
@@ -212,6 +225,8 @@ class PurchaseOrderController extends Controller
         $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
         $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
 
+        $purchaseDeliveries = app(PurchaseDeliveryService::class)->findAllHeaderBasedOnPoId($id);
+
         $auditLogs = [];
         foreach ($audit_logs as $log) {
             $auditLogs[] = [
@@ -226,7 +241,7 @@ class PurchaseOrderController extends Controller
         $product_lines = [];
         foreach ($po_products as $prod) {
             $product_lines[] = [
-                'product_name' => $prod->product_code.' - '.$prod->product_name,
+                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
@@ -235,6 +250,32 @@ class PurchaseOrderController extends Controller
                 'total' => $prod->total,
             ];
         }
+
+        $product_delivery_summary = [];
+        foreach ($po_products as $prod) {
+            $product_delivery_summary[] = [
+                'product_id' => $prod->id,
+                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
+                'total_qty' => $prod->qty,
+                'qty_delivered' => $prod->delivered_qty,
+                'remaining_qty' => $prod->remaining_qty,
+            ];
+        }
+
+        $purchase_deliveries = [];
+        foreach ($purchaseDeliveries as $row) {
+            $purchase_deliveries[] = [
+                'id' => $row->id,
+                'date' => $row->created_at,
+                'reference_no' => $row->transaction_code,
+                'status' => $row->delivery_status,
+                'status_badge_class' => $this->get_delivery_status_design($row->delivery_status),
+                'created_by' => $row->created_by_name,
+                'created_by_id' => $row->created_by,
+                'tags' => json_decode($row->tags),
+            ];
+        }
+
         $purchaseOrder = [
             'id' => $id,
             'reference_no' => $po_data->transaction_code,
@@ -246,11 +287,11 @@ class PurchaseOrderController extends Controller
             'supplier_reference' => $po_data->supplier_reference_no,
             'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
-            'payment_terms' => $po_data->payment_term_code.' - '.$po_data->payment_term_name,
+            'payment_terms' => $po_data->payment_term_code . ' - ' . $po_data->payment_term_name,
             'payment_terms_type' => $po_data->payment_term_type,
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
-            'warehouse' => $po_data->warehouse_code.' - '.$po_data->warehouse_name,
+            'warehouse' => $po_data->warehouse_code . ' - ' . $po_data->warehouse_name,
             'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
             'total' => $po_data->grand_price,
@@ -273,48 +314,8 @@ class PurchaseOrderController extends Controller
             'created_at' => $po_data->created_at,
             'updated_at' => $po_data->updated_at,
             'product_lines' => $product_lines,
-            'delivery_summary' => [
-                [
-                    'product_id' => 1,
-                    'product_name' => 'PRD-001 - Botol PET 330ml',
-                    'total_qty' => 10000,
-                    'qty_delivered' => 7500,
-                    'remaining_qty' => 2500,
-                ],
-                [
-                    'product_id' => 2,
-                    'product_name' => 'PRD-002 - Label Kemasan',
-                    'total_qty' => 10000,
-                    'qty_delivered' => 10000,
-                    'remaining_qty' => 0,
-                ],
-            ],
-            'purchase_deliveries' => [
-                [
-                    'id' => 1,
-                    'date' => '2025-07-15 14:30:00',
-                    'reference_no' => 'DEL-2025-001',
-                    'status' => 'Completed',
-                    'status_badge_class' => 'bg-label-success',
-                    'created_by' => 'Staff Gudang A',
-                    'created_by_id' => 5,
-                    'tags' => [
-                        ['name' => 'Partial', 'preview' => 'bg-label-warning'],
-                    ],
-                ],
-                [
-                    'id' => 2,
-                    'date' => '2025-07-20 09:15:00',
-                    'reference_no' => 'DEL-2025-002',
-                    'status' => 'In Transit',
-                    'status_badge_class' => 'bg-label-info',
-                    'created_by' => 'Staff Gudang B',
-                    'created_by_id' => 6,
-                    'tags' => [
-                        ['name' => 'Final', 'preview' => 'bg-label-success'],
-                    ],
-                ],
-            ],
+            'delivery_summary' => $product_delivery_summary,
+            'purchase_deliveries' => $purchase_deliveries,
             'purchase_invoices' => [
                 [
                     'id' => 1,
@@ -420,7 +421,7 @@ class PurchaseOrderController extends Controller
             $product_lines[] = [
                 'id' => $prod->id,
                 'product_id' => $prod->f_product_id,
-                'product_name' => $prod->product_code.' - '.$prod->product_name,
+                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
@@ -450,11 +451,11 @@ class PurchaseOrderController extends Controller
             'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
             'payment_term_id' => $po_data->f_payment_term_id,
-            'payment_terms' => $po_data->payment_term_code.' - '.$po_data->payment_term_name,
+            'payment_terms' => $po_data->payment_term_code . ' - ' . $po_data->payment_term_name,
             'payment_terms_type' => $po_data->payment_term_type,
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
-            'warehouse' => $po_data->warehouse_code.' - '.$po_data->warehouse_name,
+            'warehouse' => $po_data->warehouse_code . ' - ' . $po_data->warehouse_name,
             'warehouse_id' => $po_data->f_warehouse_id,
             'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
@@ -712,7 +713,7 @@ class PurchaseOrderController extends Controller
                     'status' => 'DRAFT',
                 ],
             ],
-            'validation_key' => 'po_validation_'.time(),
+            'validation_key' => 'po_validation_' . time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -767,13 +768,13 @@ class PurchaseOrderController extends Controller
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_orders_export_'.date('Y-m-d_H-i-s').'.'.$format;
+        $filename = 'purchase_orders_export_' . date('Y-m-d_H-i-s') . '.' . $format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/'.$filename,
+            'download_url' => '/exports/' . $filename,
         ]);
     }
 }
