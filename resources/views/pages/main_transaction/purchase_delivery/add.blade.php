@@ -399,7 +399,7 @@
                     let productStatus = '';
                     if (newRemaining === 0) {
                         statusCell.html('<span class="badge bg-label-success">Complete</span>');
-                        productStatus = 'COMPLETE';
+                        productStatus = 'COMPLETED';
                     } else if (newRemaining > 0) {
                         statusCell.html('<span class="badge bg-label-warning">Partial</span>');
                         productStatus = 'PARTIAL';
@@ -576,7 +576,7 @@
                     NONE: 'Belum Ada Data',
                     MIXED: 'Mixed Delivery',
                     PARTIAL: 'Partial Delivery',
-                    COMPLETE: 'Complete Delivery'
+                    COMPLETED: 'Complete Delivery'
                 };
                 // Optionally, map to enum value if needed
                 let statusValue = '';
@@ -590,8 +590,8 @@
                     case DeliveryStatus.PARTIAL:
                         statusValue = 'PARTIAL';
                         break;
-                    case DeliveryStatus.COMPLETE:
-                        statusValue = 'COMPLETE';
+                    case DeliveryStatus.COMPLETED:
+                        statusValue = 'COMPLETED';
                         break;
                     default:
                         statusValue = 'NONE';

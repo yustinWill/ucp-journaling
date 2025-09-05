@@ -80,8 +80,12 @@ class PurchaseDeliveryService
                 'pd.id',
                 'pd.transaction_code as reference_no',
                 'pd.delivery_date',
+                'pd.delivery_number',
+                'pd.tracking_number',
+                'pd.courier_name',
                 'pd.created_at',
                 'pd.created_by',
+                'pd.delivery_status as delivery_status',
                 'po.transaction_code as po_reference',
                 'po.id as po_id',
                 's.name as supplier_name',
@@ -92,16 +96,18 @@ class PurchaseDeliveryService
                 DB::raw('COALESCE(pd.f_tag_codes, "[]") as tags'),
             ])
             ->leftJoin('t_purchase_orders as po', 'pd.f_purchase_order_id', '=', 'po.id')
-            ->leftJoin('m_contacts as s', 'pd.f_supplier_id', '=', 's.id')
+            ->leftJoin('m_contacts as s', 'po.f_supplier_id', '=', 's.id')
             ->leftJoin('m_warehouses as w', 'pd.f_warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'pd.created_by', '=', 'u.id')
             ->where('pd.company_code', session('user_company_code'));
 
         // Apply filters
         if ($dateRange = request()->input('date_range_filter')) {
-            // Check if date is a range (contains ' - ')
             if (strpos($dateRange, ' - ') !== false) {
-                [$dateFrom, $dateTo] = explode(' - ', $dateRange);
+                [$dateFrom, $dateTo] = array_map('trim', explode(' - ', $dateRange));
+                // Ensure full day for end date
+                $dateFrom .= ' 00:00:00';
+                $dateTo   .= ' 23:59:59';
                 $query->whereBetween('pd.created_at', [$dateFrom, $dateTo]);
             }
         }
@@ -110,8 +116,12 @@ class PurchaseDeliveryService
             $query->where('pd.delivery_date', $deliveryDate);
         }
 
+        // if ($deliveryDate = request()->input('delivery_date_filter')) {
+        //     $query->where('pd.delivery_date', $deliveryDate);
+        // }
+
         if ($supplier = request()->input('supplier_filter')) {
-            $query->where('pd.f_supplier_id', $supplier);
+            $query->where('po.f_supplier_id', $supplier);
         }
 
         if ($deliverySearch = request()->input('delivery_search_filter')) {
@@ -121,13 +131,13 @@ class PurchaseDeliveryService
             });
         }
 
-        if ($search = request()->input('search.value')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('pd.transaction_code', 'like', "%{$search}%")
-                    ->orWhere('po.transaction_code', 'like', "%{$search}%")
-                    ->orWhere('s.name', 'like', "%{$search}%");
-            });
-        }
+        // if ($search = request()->input('search.value')) {
+        //     $query->where(function ($q) use ($search) {
+        //         $q->where('pd.transaction_code', 'like', "%{$search}%")
+        //             ->orWhere('po.transaction_code', 'like', "%{$search}%")
+        //             ->orWhere('s.name', 'like', "%{$search}%");
+        //     });
+        // }
 
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
@@ -148,18 +158,18 @@ class PurchaseDeliveryService
         $formattedData = $data->map(function ($item) {
             return [
                 'id' => $item->id,
-                'transaction_date' => date('d/m/Y', strtotime($item->created_at)),
+                'transaction_date' => $item->created_at,
                 'reference_no' => $item->reference_no,
-                'delivery_number' => '-', // Not in current schema
+                'delivery_number' => $item->delivery_number,
                 'po_reference' => $item->po_reference,
                 'po_id' => $item->po_id,
                 'supplier_name' => $item->supplier_name,
                 'supplier_id' => $item->supplier_id,
                 'warehouse_name' => $item->warehouse_name,
-                'delivery_date' => $item->delivery_date ? date('d/m/Y', strtotime($item->delivery_date)) : '-',
-                'status' => 'PENDING', // Default status as not in current schema
-                'tracking_number' => '-', // Not in current schema
-                'courier_name' => '-', // Not in current schema
+                'delivery_date' => $item->delivery_date,
+                'status' => $item->delivery_status,
+                'tracking_number' => $item->tracking_number,
+                'courier_name' => $item->courier_name,
                 'created_by_name' => $item->created_by_name,
                 'created_by' => $item->created_by,
                 'tags' => $item->tags,

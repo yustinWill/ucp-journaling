@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <!-- Summary Cards -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-lg-4 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
@@ -50,7 +50,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     
     <!-- Main Content Card -->
     <div class="mt-6">
@@ -98,13 +98,13 @@
                             </div>
                         </div>
                         
-                        <div class="d-flex gap-2">
+                        {{-- <div class="d-flex gap-2">
                             @if($canExportPurchaseDelivery)
                                 <a href="{{ route('main_transaction.purchase_delivery.export') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                             @endif
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>

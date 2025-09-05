@@ -35,7 +35,7 @@ class PurchaseOrderController extends Controller
             return 'bg-label-warning';
         } else if ($delivery_status == 'PARTIAL') {
             return 'bg-label-warning';
-        } else if ($delivery_status == 'COMPLETE') {
+        } else if ($delivery_status == 'COMPLETED') {
             return 'bg-label-success';
         }
     }
