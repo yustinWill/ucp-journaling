@@ -93,12 +93,17 @@ class PurchaseDeliveryService
                 'w.name as warehouse_name',
                 'w.id as warehouse_id',
                 'u.name as created_by_name',
-                DB::raw('COALESCE(pd.f_tag_codes, "[]") as tags'),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
             ])
             ->leftJoin('t_purchase_orders as po', 'pd.f_purchase_order_id', '=', 'po.id')
             ->leftJoin('m_contacts as s', 'po.f_supplier_id', '=', 's.id')
             ->leftJoin('m_warehouses as w', 'pd.f_warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'pd.created_by', '=', 'u.id')
+            ->leftJoin(DB::raw("JSON_TABLE(pd.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
             ->where('pd.company_code', session('user_company_code'));
 
         // Apply filters
@@ -116,10 +121,6 @@ class PurchaseDeliveryService
             $query->where('pd.delivery_date', $deliveryDate);
         }
 
-        // if ($deliveryDate = request()->input('delivery_date_filter')) {
-        //     $query->where('pd.delivery_date', $deliveryDate);
-        // }
-
         if ($supplier = request()->input('supplier_filter')) {
             $query->where('po.f_supplier_id', $supplier);
         }
@@ -131,14 +132,7 @@ class PurchaseDeliveryService
             });
         }
 
-        // if ($search = request()->input('search.value')) {
-        //     $query->where(function ($q) use ($search) {
-        //         $q->where('pd.transaction_code', 'like', "%{$search}%")
-        //             ->orWhere('po.transaction_code', 'like', "%{$search}%")
-        //             ->orWhere('s.name', 'like', "%{$search}%");
-        //     });
-        // }
-
+        $query->groupBy('pd.id');
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
         $filteredQuery = clone $query;

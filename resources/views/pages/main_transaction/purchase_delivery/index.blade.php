@@ -51,7 +51,7 @@
             </div>
         </div>
     </div> --}}
-    
+
     <!-- Main Content Card -->
     <div class="mt-6">
         <div class="card">
@@ -82,9 +82,9 @@
                             placeholder="Cari Delivery atau PO">
                     </div>
                 </div>
-                
+
                 <hr class="my-6 mx-n6" />
-                
+
                 <!-- Action Buttons -->
                 <div class="mt-4">
                     <div class="d-flex justify-content-between">
@@ -97,9 +97,9 @@
                                 </label>
                             </div>
                         </div>
-                        
+
                         {{-- <div class="d-flex gap-2">
-                            @if($canExportPurchaseDelivery)
+                            @if ($canExportPurchaseDelivery)
                                 <a href="{{ route('main_transaction.purchase_delivery.export') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
@@ -108,7 +108,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Data Table -->
             <div class="card-datatable">
                 <table id="purchase-delivery-table" class="table table-bordered">
@@ -133,201 +133,217 @@
 @stop
 
 @section('js_script')
-<script>
-$(function() {
-    // Note: global-select2 initialization is handled globally by layout
-    
-    let purchaseDeliveryTable;
-    
-    // Permission variables
-    const canRead = @json($canViewPurchaseDelivery ?? true);
-    const canEdit = @json($canEditPurchaseDelivery ?? true);
-    const canViewUser = @json($canViewUser ?? true);
-    const canViewPurchaseOrder = @json($canViewPurchaseOrder ?? true);
-    
-    // Initialize DataTable
-    function initPurchaseDeliveryTable() {
-        if (purchaseDeliveryTable) {
-            purchaseDeliveryTable.destroy();
-        }
-        
-        purchaseDeliveryTable = new DataTable('#purchase-delivery-table', {
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: '{{ route("main_transaction.purchase_delivery.index_data_table") }}',
-                data: function(d) {
-                    d.date_range_filter = $('#date-range-picker').val();
-                    d.delivery_date_filter = $('#delivery-date-filter').val();
-                    d.supplier_filter = $('#supplier-filter').val();
-                    d.delivery_search_filter = $('#delivery-search-filter').val();
+    <script>
+        $(function() {
+            // Note: global-select2 initialization is handled globally by layout
+
+            let purchaseDeliveryTable;
+
+            // Permission variables
+            const canRead = @json($canViewPurchaseDelivery ?? true);
+            const canEdit = @json($canEditPurchaseDelivery ?? true);
+            const canViewUser = @json($canViewUser ?? true);
+            const canViewPurchaseOrder = @json($canViewPurchaseOrder ?? true);
+
+            // Initialize DataTable
+            function initPurchaseDeliveryTable() {
+                if (purchaseDeliveryTable) {
+                    purchaseDeliveryTable.destroy();
                 }
-            },
-            columns: [{
-                    data: 'transaction_date',
-                    width: '100px'
-                },
-                {
-                    data: 'reference_no',
-                    width: '140px',
-                    render: function(data, type, row) {
-                        return data; // Non-clickable as per standard
-                    }
-                },
-                {
-                    data: 'delivery_number',
-                    width: '140px',
-                    render: function(data, type, row) {
-                        return data || '-';
-                    }
-                },
-                {
-                    data: 'supplier_name',
-                    width: '180px',
-                    render: function(data, type, row) {
-                        if (!data) return '-';
-                        if (canRead) {
-                            const detailUrl = `{{ route('master_data.contact.detail', ':id') }}`
-                                .replace(':id', row.supplier_id);
-                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+
+                purchaseDeliveryTable = new DataTable('#purchase-delivery-table', {
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '{{ route('main_transaction.purchase_delivery.index_data_table') }}',
+                        data: function(d) {
+                            d.date_range_filter = $('#date-range-picker').val();
+                            d.delivery_date_filter = $('#delivery-date-filter').val();
+                            d.supplier_filter = $('#supplier-filter').val();
+                            d.delivery_search_filter = $('#delivery-search-filter').val();
                         }
-                        return data;
-                    }
-                },
-                {
-                    data: 'delivery_date',
-                    width: '120px'
-                },
-                {
-                    data: 'po_reference',
-                    width: '140px',
-                    render: function(data, type, row) {
-                        if (!data) return '-';
-                        if (canViewPurchaseOrder && row.po_id) {
-                            const detailUrl = `{{ route('main_transaction.purchase_order.detail', ':id') }}`
-                                .replace(':id', row.po_id);
-                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                        }
-                        return data;
-                    }
-                },
-                {
-                    data: 'status',
-                    width: '100px',
-                    render: function(data, type, row) {
-                        let badgeClass = 'bg-label-secondary';
-                        switch(data) {
-                            case 'PENDING': badgeClass = 'bg-label-warning'; break;
-                            case 'IN_TRANSIT': badgeClass = 'bg-label-info'; break;
-                            case 'DELIVERED': badgeClass = 'bg-label-success'; break;
-                            case 'CANCELLED': badgeClass = 'bg-label-danger'; break;
-                        }
-                        return `<span class="badge ${badgeClass}">${data}</span>`;
-                    }
-                },
-                {
-                    data: 'created_by_name',
-                    width: '120px',
-                    render: function(data, type, row) {
-                        if (canViewUser) {
-                            const detailUrl = `{{ route('master_data.user.detail', ':id') }}`
-                                .replace(':id', row.created_by);
-                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                        }
-                        return data;
-                    }
-                },
-                {
-                    data: 'tags',
-                    width: '120px',
-                    render: function(data, type, row) {
-                        if (!data || data === '[]') {
-                            return '-';
-                        }
-                        try {
-                            let tags = JSON.parse(data);
-                            return tags.map(tag => {
-                                if (tag.code == null) {
-                                    return '';
+                    },
+                    columns: [{
+                            data: 'transaction_date',
+                            width: '100px'
+                        },
+                        {
+                            data: 'reference_no',
+                            width: '140px',
+                            render: function(data, type, row) {
+                                return data; // Non-clickable as per standard
+                            }
+                        },
+                        {
+                            data: 'delivery_number',
+                            width: '140px',
+                            render: function(data, type, row) {
+                                return data || '-';
+                            }
+                        },
+                        {
+                            data: 'supplier_name',
+                            width: '180px',
+                            render: function(data, type, row) {
+                                if (!data) return '-';
+                                if (canRead) {
+                                    const detailUrl =
+                                        `{{ route('master_data.contact.detail', ':id') }}`
+                                        .replace(':id', row.supplier_id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 }
-                                return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
-                            }).join('');
-                        } catch (e) {
-                            return '-';
-                        }
-                    }
-                },
-                {
-                    data: null,
-                    orderable: false,
-                    searchable: false,
-                    responsivePriority: 1,
-                    width: '80px',
-                    render: function(data, type, row, meta) {
-                        const detailUrl = `{{ route('main_transaction.purchase_delivery.detail', ':id') }}`.replace(':id', row.id);
-                        const editUrl = `{{ route('main_transaction.purchase_delivery.edit', ':id') }}`.replace(':id', row.id);
-                        let actions = '<div class="d-flex gap-2">';
-                        
-                        if (canRead) {
-                            actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                return data;
+                            }
+                        },
+                        {
+                            data: 'delivery_date',
+                            width: '120px'
+                        },
+                        {
+                            data: 'po_reference',
+                            width: '140px',
+                            render: function(data, type, row) {
+                                if (!data) return '-';
+                                if (canViewPurchaseOrder && row.po_id) {
+                                    const detailUrl =
+                                        `{{ route('main_transaction.purchase_order.detail', ':id') }}`
+                                        .replace(':id', row.po_id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
+                            }
+                        },
+                        {
+                            data: 'status',
+                            width: '100px',
+                            render: function(data, type, row) {
+                                let badgeClass = 'bg-label-secondary';
+                                switch (data) {
+                                    case 'PENDING':
+                                        badgeClass = 'bg-label-warning';
+                                        break;
+                                    case 'IN_TRANSIT':
+                                        badgeClass = 'bg-label-info';
+                                        break;
+                                    case 'DELIVERED':
+                                        badgeClass = 'bg-label-success';
+                                        break;
+                                    case 'CANCELLED':
+                                        badgeClass = 'bg-label-danger';
+                                        break;
+                                }
+                                return `<span class="badge ${badgeClass}">${data}</span>`;
+                            }
+                        },
+                        {
+                            data: 'created_by_name',
+                            width: '120px',
+                            render: function(data, type, row) {
+                                if (canViewUser) {
+                                    const detailUrl =
+                                        `{{ route('master_data.user.detail', ':id') }}`
+                                        .replace(':id', row.created_by);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
+                            }
+                        },
+                        {
+                            data: 'tags',
+                            width: '120px',
+                            render: function(data, type, row) {
+                                console.log(data)
+                                let tags = JSON.parse(data);
+                                return tags.map(tag => {
+                                    if (tag.code == null) {
+                                        return ``;
+                                    }
+                                    return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
+                                }).join('');
+                            }
+                        },
+                        {
+                            data: null,
+                            orderable: false,
+                            searchable: false,
+                            responsivePriority: 1,
+                            width: '80px',
+                            render: function(data, type, row, meta) {
+                                const detailUrl =
+                                    `{{ route('main_transaction.purchase_delivery.detail', ':id') }}`
+                                    .replace(':id', row.id);
+                                const editUrl =
+                                    `{{ route('main_transaction.purchase_delivery.edit', ':id') }}`
+                                    .replace(':id', row.id);
+                                let actions = '<div class="d-flex gap-2">';
+
+                                if (canRead) {
+                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                 <i class="icon-xs icon-base ti tabler-eye"></i>
                             </a>`;
+                                }
+
+                                // if (canEdit) {
+                                //     actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                            //         <i class="icon-xs icon-base ti tabler-edit"></i>
+                            //     </a>`;
+                                // }
+
+                                actions += '</div>';
+                                return actions;
+                            }
                         }
-                        
-                        if (canEdit) {
-                            actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                <i class="icon-xs icon-base ti tabler-edit"></i>
-                            </a>`;
+                    ],
+                    layout: {
+                        topStart: {
+                            rowClass: 'm-0',
+                            features: []
+                        },
+                        topEnd: {},
+                        bottomStart: {
+                            rowClass: 'row mx-3 justify-content-between',
+                            features: ['info']
+                        },
+                        bottomEnd: 'paging'
+                    },
+                    language: {
+                        paginate: {
+                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
-                        
-                        actions += '</div>';
-                        return actions;
-                    }
-                }
-            ],
-            layout: {
-                topStart: { rowClass: 'm-0', features: [] },
-                topEnd: {},
-                bottomStart: { rowClass: 'row mx-3 justify-content-between', features: ['info'] },
-                bottomEnd: 'paging'
-            },
-            language: {
-                paginate: {
-                    next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                    previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                    first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                    last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                }
-            },
-            scrollX: true,
-            responsive: true,
-            orderCellsTop: true,
-            ordering: false
+                    },
+                    scrollX: true,
+                    responsive: true,
+                    orderCellsTop: true,
+                    ordering: false
+                });
+            }
+
+            // Initialize table
+            initPurchaseDeliveryTable();
+
+            // Filter functionality with timeout
+            let searchTimeout;
+            $('#date-range-picker, #delivery-date-filter, #supplier-filter, #delivery-search-filter').on(
+                'keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (purchaseDeliveryTable) {
+                            purchaseDeliveryTable.draw();
+                        }
+                    }, 400); // 400ms delay
+                });
+
+            // Tag Column Toggle Functionality
+            $('#toggleTagColumn').on('change', function() {
+                const tagColumn = purchaseDeliveryTable.column(
+                8); // Tag column index (0-based, adjusted for new column)
+                tagColumn.visible(this.checked);
+            });
         });
-    }
-    
-    // Initialize table
-    initPurchaseDeliveryTable();
-    
-    // Filter functionality with timeout
-    let searchTimeout;
-    $('#date-range-picker, #delivery-date-filter, #supplier-filter, #delivery-search-filter').on(
-        'keyup change',
-        function() {
-            clearTimeout(searchTimeout);
-            const input = this;
-            searchTimeout = setTimeout(function() {
-                if (purchaseDeliveryTable) {
-                    purchaseDeliveryTable.draw();
-                }
-            }, 400); // 400ms delay
-        });
-    
-    // Tag Column Toggle Functionality
-    $('#toggleTagColumn').on('change', function() {
-        const tagColumn = purchaseDeliveryTable.column(8); // Tag column index (0-based, adjusted for new column)
-        tagColumn.visible(this.checked);
-    });
-});
-</script>
+    </script>
 @endsection
