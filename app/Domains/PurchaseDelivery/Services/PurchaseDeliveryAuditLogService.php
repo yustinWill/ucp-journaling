@@ -29,8 +29,8 @@ class PurchaseDeliveryAuditLogService
                 'pal.*',
                 'u.name as user_name',
             ])
-            ->leftJoin('m_users as u', 'pal.user_id', '=', 'u.id')
-            ->where('pal.purchase_delivery_id', $purchaseDeliveryId)
+            ->leftJoin('users as u', 'pal.created_by', '=', 'u.id')
+            ->where('pal.f_purchase_delivery_id', $purchaseDeliveryId)
             ->orderBy('pal.created_at', 'DESC')
             ->get();
     }

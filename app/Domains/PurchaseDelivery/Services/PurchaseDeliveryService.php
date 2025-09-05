@@ -4,6 +4,7 @@ namespace App\Domains\PurchaseDelivery\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PurchaseDeliveryService
 {
@@ -180,26 +181,59 @@ class PurchaseDeliveryService
 
     public function findOne($id)
     {
-        return DB::table($this->table_name . ' as pd')
+        $data =  DB::table($this->table_name . ' as pd')
             ->select([
                 'pd.*',
                 'po.transaction_code as po_reference',
                 'po.id as po_id',
                 's.name as supplier',
-                's.email as supplier_email',
-                's.address as supplier_address',
+                'po.supplier_email as supplier_email',
+                'po.supplier_address as supplier_address',
                 'st.name as warehouse',
                 'st.code as warehouse_code',
                 'u_created.name as created_by_name',
                 'u_updated.name as updated_by_name',
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
             ])
             ->leftJoin('t_purchase_orders as po', 'pd.f_purchase_order_id', '=', 'po.id')
-            ->leftJoin('m_contacts as s', 'pd.f_supplier_id', '=', 's.id')
+            ->leftJoin('m_contacts as s', 'po.f_supplier_id', '=', 's.id')
             ->leftJoin('m_warehouses as st', 'pd.f_warehouse_id', '=', 'st.id')
             ->leftJoin('users as u_created', 'pd.created_by', '=', 'u_created.id')
             ->leftJoin('users as u_updated', 'pd.updated_by', '=', 'u_updated.id')
+            ->leftJoin(DB::raw("JSON_TABLE(pd.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
             ->where('pd.id', $id)
+            ->groupBy('pd.id')
             ->first();
+
+        if ($data && $data->tags) {
+            $data->tags = json_decode($data->tags); // Returns objects for view compatibility
+        }
+        if ($data->attachment) {
+            $data->attachment = Storage::disk('public')->url($data->attachment);
+        }
+        return $data;
+    }
+
+    public function findAllProducts($id)
+    {
+        return DB::table('t_purchase_delivery_products' . ' as pdp')
+            ->select([
+                'pdp.*',
+                'pdp.note AS product_delivery_note',
+                'pop.qty AS ordered_qty',
+                'pop.price_per_qty AS price_per_qty',
+                'mp.name AS product_name'
+            ])
+            ->leftJoin('m_products as mp', 'pdp.f_product_id', '=', 'mp.id')
+            ->leftJoin('t_purchase_order_products as pop', 'pdp.f_product_order_product_id', '=', 'pop.id')
+            ->leftJoin('m_products as st', 'pdp.f_product_id', '=', 'st.id')
+            ->where('pdp.f_purchase_delivery_id', $id)
+            ->orderBy('pdp.id', 'ASC')
+            ->get();
     }
 
     public function createDeliveryProducts(int $deliveryId, array $products)

@@ -158,6 +158,8 @@ class PurchaseDeliveryController extends Controller
         if (! $purchaseDelivery) {
             abort(404, 'Purchase Delivery not found');
         }
+        // dd($purchaseDelivery);
+        $purchaseDeliveryProducts = app(PurchaseDeliveryService::class)->findAllProducts($id);
 
         // Load audit logs
         $auditLogs = app(PurchaseDeliveryAuditLogService::class)->findByPurchaseDeliveryId($id);
@@ -165,9 +167,10 @@ class PurchaseDeliveryController extends Controller
         return view('pages.main_transaction.purchase_delivery.detail', [
             'purchaseDelivery' => $purchaseDelivery,
             'auditLogs' => $auditLogs,
-            'canEdit' => PermissionHelper::canWrite('main_transaction_purchase_delivery') && in_array($purchaseDelivery->status, ['PENDING', 'IN_TRANSIT']),
-            'canDelete' => PermissionHelper::canDelete('main_transaction_purchase_delivery') && $purchaseDelivery->status === 'PENDING',
-            'canCancel' => PermissionHelper::canWrite('main_transaction_purchase_delivery') && in_array($purchaseDelivery->status, ['PENDING', 'IN_TRANSIT']),
+            'purchaseDeliveryProducts' => $purchaseDeliveryProducts,
+            // 'canEdit' => PermissionHelper::canWrite('main_transaction_purchase_delivery') && in_array($purchaseDelivery->status, ['PENDING', 'IN_TRANSIT']),
+            // 'canDelete' => PermissionHelper::canDelete('main_transaction_purchase_delivery') && $purchaseDelivery->status === 'PENDING',
+            // 'canCancel' => PermissionHelper::canWrite('main_transaction_purchase_delivery') && in_array($purchaseDelivery->status, ['PENDING', 'IN_TRANSIT']),
         ]);
     }
 
