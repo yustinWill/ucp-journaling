@@ -188,9 +188,9 @@
                             @foreach ($purchaseOrderProducts as $purchaseOrderProduct)
                                 <tr>
                                     <td>{{ $purchaseOrderProduct->product_code }} - {{ $purchaseOrderProduct->product_name }}</td>
-                                    <td>{{ $purchaseOrderProduct->qty }}</td>
-                                    <td>{{ $purchaseOrderProduct->delivered_qty }}</td>
-                                    <td>{{ $purchaseOrderProduct->remaining_qty }}</td>
+                                    <td>{{ $purchaseOrderProduct->qty }} {{ $purchaseOrderProduct->unit_name }}</td>
+                                    <td>{{ $purchaseOrderProduct->delivered_qty }} {{ $purchaseOrderProduct->unit_name }}</td>
+                                    <td>{{ $purchaseOrderProduct->remaining_qty }} {{ $purchaseOrderProduct->unit_name }}</td>
                                     <td>
                                         <input type="hidden" name="products[{{ $counter }}][product_order_product_id]"
                                             value="{{ $purchaseOrderProduct->id }}" />

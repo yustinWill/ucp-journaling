@@ -265,14 +265,14 @@
                                     @forelse($purchaseDeliveryProducts ?? [] as $product)
                                         <tr>
                                             <td>{{ $product->product_name }}</td>
-                                            <td class="text-center">{{ number_format($product->ordered_qty ?? 0) }}</td>
+                                            <td class="text-center">{{ number_format($product->ordered_qty ?? 0) }} {{ $product->unit_name }}</td>
                                             <td class="text-center">
-                                                {{ number_format($product->delivered_qty_before ?? 0) }}
+                                                {{ number_format($product->delivered_qty_before ?? 0) }} {{ $product->unit_name }}
                                             </td>
-                                            <td class="text-center">{{ number_format($product->qty ?? 0) }}
+                                            <td class="text-center">{{ number_format($product->qty ?? 0) }} {{ $product->unit_name }}</td>
                                             </td>
                                             <td class="text-center">
-                                                {{ number_format($product->remaining_qty_after ?? 0) }}
+                                                {{ number_format($product->remaining_qty_after ?? 0) }} {{ $product->unit_name }}
                                             </td>
                                             <td class="text-end">
                                                 {{ number_format($product->price_per_qty ?? 0, 0, ',', '.') }}</td>

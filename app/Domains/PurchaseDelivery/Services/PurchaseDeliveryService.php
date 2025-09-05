@@ -226,11 +226,14 @@ class PurchaseDeliveryService
                 'pdp.note AS product_delivery_note',
                 'pop.qty AS ordered_qty',
                 'pop.price_per_qty AS price_per_qty',
-                'mp.name AS product_name'
+                'mp.name AS product_name',
+                'mu.code AS unit_code',
+                'mu.name AS unit_name',
             ])
             ->leftJoin('m_products as mp', 'pdp.f_product_id', '=', 'mp.id')
             ->leftJoin('t_purchase_order_products as pop', 'pdp.f_product_order_product_id', '=', 'pop.id')
             ->leftJoin('m_products as st', 'pdp.f_product_id', '=', 'st.id')
+            ->leftJoin('m_units as mu', 'mu.id', '=', 'pop.f_unit_id')
             ->where('pdp.f_purchase_delivery_id', $id)
             ->orderBy('pdp.id', 'ASC')
             ->get();

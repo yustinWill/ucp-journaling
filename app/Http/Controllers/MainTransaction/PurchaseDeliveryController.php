@@ -158,7 +158,7 @@ class PurchaseDeliveryController extends Controller
         if (! $purchaseDelivery) {
             abort(404, 'Purchase Delivery not found');
         }
-        // dd($purchaseDelivery);
+        
         $purchaseDeliveryProducts = app(PurchaseDeliveryService::class)->findAllProducts($id);
 
         // Load audit logs
