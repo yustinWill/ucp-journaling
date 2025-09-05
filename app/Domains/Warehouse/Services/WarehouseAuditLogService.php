@@ -2,8 +2,8 @@
 
 namespace App\Domains\Warehouse\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class WarehouseAuditLogService
 {
@@ -18,13 +18,13 @@ class WarehouseAuditLogService
             'description' => $data['description'],
             'metadata' => $data['metadata'],
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
     public function findAllBasedOnId($id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.f_warehouse_id',
                 't.action_type',
@@ -32,7 +32,7 @@ class WarehouseAuditLogService
                 't.metadata',
                 't.created_at',
                 't.created_by AS user_id',
-                'usr.name AS user_name'
+                'usr.name AS user_name',
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
             ->where('t.f_warehouse_id', $id)

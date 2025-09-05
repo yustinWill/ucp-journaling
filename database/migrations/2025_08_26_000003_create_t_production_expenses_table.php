@@ -22,10 +22,10 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             // Foreign key constraints
             $table->foreign('production_id')->references('id')->on('t_productions')->onDelete('cascade');
-            
+
             // Indexes
             $table->index(['production_id', 'expense_type']);
         });

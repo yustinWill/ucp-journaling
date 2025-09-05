@@ -2,15 +2,14 @@
 
 namespace App\Domains\Contact\Actions;
 
-use App\Domains\Contact\Services\ContactService;
-use App\Domains\Contact\Services\ContactAuditLogService;
 use App\Domains\Contact\Services\ContactAddressService;
+use App\Domains\Contact\Services\ContactAuditLogService;
 use App\Domains\Contact\Services\ContactBankService;
 use App\Domains\Contact\Services\ContactProductService;
-use Illuminate\Support\Facades\DB;
+use App\Domains\Contact\Services\ContactService;
 use App\Enums\ActionTypes;
 use App\Enums\ContactAddressTypes;
-
+use Illuminate\Support\Facades\DB;
 
 class UpdateContactAction
 {
@@ -74,7 +73,7 @@ class UpdateContactAction
                                 'branch_office' => $bank['branch_office'],
                                 'account_holder' => $bank['account_holder'],
                                 'account_number' => $bank['account_number'],
-                            ]
+                            ],
                         ]);
                     }
                 }
@@ -108,7 +107,7 @@ class UpdateContactAction
                                 'f_contact_id' => $contact_id,
                                 'f_product_code' => $product['product'],
                                 'price_per_qty' => $product['price'],
-                            ]
+                            ],
                         ]);
                     }
                 }
@@ -121,7 +120,7 @@ class UpdateContactAction
 
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan Kontak",
+                'description' => 'Perubahan Kontak',
                 'metadata' => json_encode([
                     'before' => $old_data,
                     'after' => $data,
@@ -267,8 +266,8 @@ class UpdateContactAction
                             'after' => $data['payment_term'] ?? null,
                         ],
 
-                    ]
-                ])
+                    ],
+                ]),
             ];
             app(ContactAuditLogService::class)->create($log_data, $contact_id);
         });

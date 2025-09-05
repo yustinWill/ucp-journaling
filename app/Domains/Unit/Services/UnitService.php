@@ -2,9 +2,9 @@
 
 namespace App\Domains\Unit\Services;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class UnitService
 {
@@ -20,7 +20,7 @@ class UnitService
             'f_unit_type_id' => $data['type'],
             'description' => $data['description'] ?? '',
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -35,13 +35,13 @@ class UnitService
                 'f_unit_type_id' => $data['type'],
                 'description' => $data['description'] ?? '',
                 'updated_at' => now(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
     }
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as t')
+        $query = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.code',
@@ -92,7 +92,7 @@ class UnitService
 
     public function findOne($id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',
@@ -103,7 +103,7 @@ class UnitService
                 'ut.code as unit_type_code',
                 't.description',
                 't.status',
-                't.updated_at'
+                't.updated_at',
             ])
             ->leftJoin('m_unit_types as ut', 't.f_unit_type_id', '=', 'ut.id')
             ->where('t.company_code', session('user_company_code'))
@@ -119,5 +119,5 @@ class UnitService
             ->where('company_code', session('user_company_code'))
             ->orderBy('name', 'asc')
             ->get();
-    }   
+    }
 }

@@ -20,11 +20,11 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
-            
+
             $table->index(['company_code', 'stock_adjustment_id'], 'idx_audit_company_adjustment');
             $table->index('action_type', 'idx_audit_action_type');
             $table->index('created_at', 'idx_audit_created_at');
-            
+
             $table->foreign('stock_adjustment_id')->references('id')->on('t_stock_adjustments')->onDelete('cascade');
         });
     }

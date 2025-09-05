@@ -17,21 +17,21 @@ return new class extends Migration
             $table->string('adjustment_number')->unique();
             $table->date('adjustment_date');
             $table->enum('adjustment_type', [
-                'MANUAL_ADJUSTMENT', 
-                'STOCK_OPNAME', 
-                'PRODUCT_RETURN', 
-                'DAMAGE_LOSS', 
+                'MANUAL_ADJUSTMENT',
+                'STOCK_OPNAME',
+                'PRODUCT_RETURN',
+                'DAMAGE_LOSS',
                 'EXPIRY_DISPOSAL',
-                'WAREHOUSE_TRANSFER'
+                'WAREHOUSE_TRANSFER',
             ]);
             $table->unsignedBigInteger('warehouse_id');
             $table->unsignedBigInteger('pic_id');
             $table->enum('status', [
                 'DRAFT',
-                'WAITING_APPROVAL', 
+                'WAITING_APPROVAL',
                 'APPROVED',
                 'COMPLETED',
-                'CANCELLED'
+                'CANCELLED',
             ])->default('DRAFT');
             $table->text('description');
             $table->text('memo')->nullable();
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             $table->index(['company_code', 'adjustment_date']);
             $table->index(['adjustment_type', 'status']);
             $table->index('warehouse_id');

@@ -2,9 +2,9 @@
 
 namespace App\Domains\PurchaseOrder\Services;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
 
 class PurchaseOrderService
 {
@@ -23,60 +23,61 @@ class PurchaseOrderService
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
-            "company_code" => session('user_company_code'),
-            "transaction_code" => $data['reference_no'],
-            "transaction_date" => $data['date'],
-            "f_supplier_id" => $data['supplier_id'],
-            "supplier_email" => $data['email'],
-            "supplier_address" => $data['address'],
-            "supplier_reference_no" => $data['supplier_reference'],
-            "f_payment_term_id" => $data['payment_terms'],
-            "payment_term_day_count" => $data['payment_term_day_count'] ?? null,
-            "payment_term_due_date" => $data['payment_term_due_date'] ?? null,
-            "f_warehouse_id" => $data['warehouse_id'],
-            "description" => $data['description'],
-            "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
-            "internal_memo" => $data['memo'] ?? null,
-            "is_price_include_tax" => $data['include_tax'] ?? false,
-            "subtotal" => $data['subtotal'] ?? 0,
-            "total_tax" => $data['tax_amount'] ?? 0,
-            "total_price_before_discount" => $data['total_before_discount'] ?? 0,
-            "discount" => $data['discount_amount'] ?? 0,
-            "grand_price" => $data['total'] ?? 0,
-            "attachment" => $data['attachment'] ?? null,
-            "created_at" => now(),
-            "created_by" => Auth::id()
+            'company_code' => session('user_company_code'),
+            'transaction_code' => $data['reference_no'],
+            'transaction_date' => $data['date'],
+            'f_supplier_id' => $data['supplier_id'],
+            'supplier_email' => $data['email'],
+            'supplier_address' => $data['address'],
+            'supplier_reference_no' => $data['supplier_reference'],
+            'f_payment_term_id' => $data['payment_terms'],
+            'payment_term_day_count' => $data['payment_term_day_count'] ?? null,
+            'payment_term_due_date' => $data['payment_term_due_date'] ?? null,
+            'f_warehouse_id' => $data['warehouse_id'],
+            'description' => $data['description'],
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
+            'internal_memo' => $data['memo'] ?? null,
+            'is_price_include_tax' => $data['include_tax'] ?? false,
+            'subtotal' => $data['subtotal'] ?? 0,
+            'total_tax' => $data['tax_amount'] ?? 0,
+            'total_price_before_discount' => $data['total_before_discount'] ?? 0,
+            'discount' => $data['discount_amount'] ?? 0,
+            'grand_price' => $data['total'] ?? 0,
+            'attachment' => $data['attachment'] ?? null,
+            'created_at' => now(),
+            'created_by' => Auth::id(),
         ]);
     }
 
     public function update($id, array $data)
     {
         $update_data = [
-            "transaction_date" => $data['date'],
-            "f_supplier_id" => $data['supplier_id'],
-            "supplier_email" => $data['email'],
-            "supplier_address" => $data['address'],
-            "supplier_reference_no" => $data['supplier_reference'],
-            "f_payment_term_id" => $data['payment_terms'],
-            "payment_term_day_count" => $data['payment_term_day_count'] ?? null,
-            "payment_term_due_date" => $data['payment_term_due_date'] ?? null,
-            "f_warehouse_id" => $data['warehouse_id'],
-            "description" => $data['description'],
-            "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
-            "internal_memo" => $data['memo'] ?? null,
-            "is_price_include_tax" => $data['include_tax'] ?? false,
-            "subtotal" => $data['subtotal'] ?? 0,
-            "total_tax" => $data['tax_amount'] ?? 0,
-            "total_price_before_discount" => $data['total_before_discount'] ?? 0,
-            "discount" => $data['discount_amount'] ?? 0,
-            "grand_price" => $data['total'] ?? 0,
-            "updated_at" => now(),
-            "updated_by" => Auth::id()
+            'transaction_date' => $data['date'],
+            'f_supplier_id' => $data['supplier_id'],
+            'supplier_email' => $data['email'],
+            'supplier_address' => $data['address'],
+            'supplier_reference_no' => $data['supplier_reference'],
+            'f_payment_term_id' => $data['payment_terms'],
+            'payment_term_day_count' => $data['payment_term_day_count'] ?? null,
+            'payment_term_due_date' => $data['payment_term_due_date'] ?? null,
+            'f_warehouse_id' => $data['warehouse_id'],
+            'description' => $data['description'],
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
+            'internal_memo' => $data['memo'] ?? null,
+            'is_price_include_tax' => $data['include_tax'] ?? false,
+            'subtotal' => $data['subtotal'] ?? 0,
+            'total_tax' => $data['tax_amount'] ?? 0,
+            'total_price_before_discount' => $data['total_before_discount'] ?? 0,
+            'discount' => $data['discount_amount'] ?? 0,
+            'grand_price' => $data['total'] ?? 0,
+            'updated_at' => now(),
+            'updated_by' => Auth::id(),
         ];
 
         if (isset($data['attachment'])) {
             $update_data['attachment'] = $data['attachment'];
         }
+
         return DB::table($this->table_name)
             ->where('id', $id)
             ->update($update_data);
@@ -84,7 +85,7 @@ class PurchaseOrderService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as po')
+        $query = DB::table($this->table_name.' as po')
             ->select(
                 'po.*',
                 'mc.name AS supplier_name',
@@ -122,7 +123,6 @@ class PurchaseOrderService
 
         $query->groupBy('po.id');
 
-
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
         $filteredQuery = clone $query;
@@ -145,7 +145,7 @@ class PurchaseOrderService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as po')
+        $data = DB::table($this->table_name.' as po')
             ->select(
                 'po.*',
                 'mc.name AS supplier_name',
@@ -179,5 +179,38 @@ class PurchaseOrderService
         }
 
         return $data;
+    }
+
+    public function findAvailableForDelivery()
+    {
+        return DB::table($this->table_name.' as po')
+            ->select([
+                'po.id as value',
+                DB::raw("CONCAT(po.transaction_code, ' - ', mc.name) as label"),
+                'mc.name as supplier',
+                'mc.id as supplier_id',
+                'po.supplier_email as email',
+                'po.supplier_address as address',
+                'po.f_warehouse_id as warehouse_id',
+                'po.transaction_code as reference_no',
+            ])
+            ->leftJoin('m_contacts as mc', 'mc.id', '=', 'po.f_supplier_id')
+            ->where('po.company_code', session('user_company_code'))
+            ->whereNotIn('po.status', ['CANCELLED', 'DRAFT'])
+            ->orderBy('po.created_at', 'DESC')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'value' => $item->value,
+                    'label' => $item->label,
+                    'supplier' => $item->supplier,
+                    'supplier_id' => $item->supplier_id,
+                    'email' => $item->email,
+                    'address' => $item->address,
+                    'warehouse_id' => $item->warehouse_id,
+                    'reference_no' => $item->reference_no,
+                ];
+            })
+            ->toArray();
     }
 }

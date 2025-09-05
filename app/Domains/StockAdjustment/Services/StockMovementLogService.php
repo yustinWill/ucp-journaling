@@ -31,7 +31,7 @@ class StockMovementLogService
             'total_value' => $data['total_value'] ?? 0,
             'notes' => $data['notes'] ?? null,
             'created_by' => Auth::id(),
-            'created_at' => now()
+            'created_at' => now(),
         ]);
     }
 
@@ -59,7 +59,7 @@ class StockMovementLogService
                 'total_value' => $movement['total_value'] ?? 0,
                 'notes' => $movement['notes'] ?? null,
                 'created_by' => Auth::id(),
-                'created_at' => now()
+                'created_at' => now(),
             ];
         }
 
@@ -68,10 +68,10 @@ class StockMovementLogService
 
     public function findByReference(string $reference_type, string $reference_number)
     {
-        return DB::table($this->table_name . ' as sml')
+        return DB::table($this->table_name.' as sml')
             ->select([
                 'sml.*',
-                'u.name as created_by_name'
+                'u.name as created_by_name',
             ])
             ->leftJoin('users as u', 'sml.created_by', '=', 'u.id')
             ->where('sml.reference_type', $reference_type)
@@ -83,10 +83,10 @@ class StockMovementLogService
 
     public function findByWarehouseAndProduct(int $warehouse_id, int $product_id, $limit = 50)
     {
-        return DB::table($this->table_name . ' as sml')
+        return DB::table($this->table_name.' as sml')
             ->select([
                 'sml.*',
-                'u.name as created_by_name'
+                'u.name as created_by_name',
             ])
             ->leftJoin('users as u', 'sml.created_by', '=', 'u.id')
             ->where('sml.warehouse_id', $warehouse_id)
@@ -99,10 +99,10 @@ class StockMovementLogService
 
     public function findAll($limit = 100)
     {
-        return DB::table($this->table_name . ' as sml')
+        return DB::table($this->table_name.' as sml')
             ->select([
                 'sml.*',
-                'u.name as created_by_name'
+                'u.name as created_by_name',
             ])
             ->leftJoin('users as u', 'sml.created_by', '=', 'u.id')
             ->where('sml.company_code', session('user_company_code'))

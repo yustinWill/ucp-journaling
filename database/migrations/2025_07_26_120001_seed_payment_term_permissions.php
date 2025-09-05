@@ -13,7 +13,7 @@ return new class extends Migration
         // Get the payment term module ID
         $paymentTermModule = DB::table('modules')->where('name', 'master_data_payment_term')->first();
 
-        if (!$paymentTermModule) {
+        if (! $paymentTermModule) {
             throw new Exception('Payment term module not found. Please ensure the payment term module is seeded first.');
         }
 
@@ -21,7 +21,7 @@ return new class extends Migration
             'read',
             'write',
             'delete',
-            'approval'
+            'approval',
         ];
 
         $permissions = [];
@@ -31,7 +31,7 @@ return new class extends Migration
             $permissions[] = [
                 'module_id' => $paymentTermModule->id,
                 'permission_type' => $action,
-                'created_at' => now()
+                'created_at' => now(),
             ];
         }
 

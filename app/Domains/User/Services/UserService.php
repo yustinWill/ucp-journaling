@@ -2,9 +2,9 @@
 
 namespace App\Domains\User\Services;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class UserService
 {
@@ -21,7 +21,7 @@ class UserService
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'password' => bcrypt($data['password']),
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -35,11 +35,12 @@ class UserService
             'role_id' => $data['role'],
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'updated_at' => now(),
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ];
         if (isset($data['password']) && $data['password'] !== '') {
             $updateData['password'] = bcrypt($data['password']);
         }
+
         return DB::table($this->table_name)
             ->where('id', $id)
             ->update($updateData);
@@ -47,7 +48,7 @@ class UserService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as t')
+        $query = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',
@@ -62,7 +63,7 @@ class UserService
                 't.updated_by',
                 'r.id AS role_id',
                 'r.name AS role_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
             ->leftJoin('roles as r', 't.role_id', '=', 'r.id')
@@ -93,7 +94,6 @@ class UserService
         }
         $query->groupBy('t.id');
 
-
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
         $filteredQuery = clone $query;
@@ -116,7 +116,7 @@ class UserService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as t')
+        $data = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.role_id',
@@ -128,7 +128,7 @@ class UserService
                 't.created_at as created_at',
                 't.last_login',
                 't.last_password_change',
-                'r.name as role_name'
+                'r.name as role_name',
             ])
             ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
             ->join('roles as r', 't.role_id', '=', 'r.id')
@@ -138,12 +138,13 @@ class UserService
             ->first();
 
         $data->f_tag_codes = json_decode($data->f_tag_codes);
+
         return $data;
     }
 
     public function findAllBasedOnRole($roleId)
     {
-        $data = DB::table($this->table_name . ' as t')
+        $data = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.role_id',
@@ -155,7 +156,7 @@ class UserService
                 't.created_at as created_at',
                 't.last_login',
                 't.last_password_change',
-                'r.name as role_name'
+                'r.name as role_name',
             ])
             ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
             ->join('roles as r', 't.role_id', '=', 'r.id')
@@ -166,12 +167,13 @@ class UserService
         foreach ($data as $item) {
             $item->f_tag_codes = json_decode($item->f_tag_codes);
         }
+
         return $data;
     }
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',

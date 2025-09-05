@@ -2,46 +2,47 @@
 
 namespace App\Http\Controllers\MasterData;
 
-//Main
+// Main
+use App\Domains\Role\Services\RoleService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\User\Actions\CreateUserAction;
+use App\Domains\User\Actions\UpdateUserAction;
+use App\Domains\User\Services\UserAuditLogService;
+use App\Domains\User\Services\UserService;
+use App\Enums\AuditLogTypes;
+use App\Enums\ErrorCodes;
+// Actions
+use App\Enums\SuccessCodes;
+use App\Exceptions\AppException;
+// Services
+use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
+use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
+// Enums
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-use App\Helpers\PermissionHelper;
-
-//Actions
-use App\Domains\User\Actions\CreateUserAction;
-use App\Domains\User\Actions\UpdateUserAction;
-//Services
-use App\Domains\User\Services\UserService;
-use App\Domains\User\Services\UserAuditLogService;
-use App\Domains\Role\Services\RoleService;
-use App\Domains\Tag\Services\TagService;
-//Enums
-use App\Enums\ErrorCodes;
-use App\Enums\SuccessCodes;
-use App\Enums\AuditLogTypes;
 
 class UserController extends Controller
 {
     private $statuses = [
         ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
     ];
 
     public function index()
     {
         $statuses = $this->statuses;
         $roles = app(RoleService::class)->findAll();
+
         return view('pages.master_data.user.index', compact('statuses', 'roles'));
     }
 
     public function index_data_table()
     {
         $data = app(UserService::class)->findAllDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -58,7 +59,7 @@ class UserController extends Controller
             'roles' => $roles,
             'tags' => $tags,
             'canAddTags' => $canAddTags,
-            'canAddRoles' => $canAddRoles
+            'canAddRoles' => $canAddRoles,
         ]);
     }
 
@@ -72,7 +73,7 @@ class UserController extends Controller
                 'role' => 'required|exists:m_tags,id',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->statuses, 'value'))
+                    Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'password' => 'required|string|min:8|max:50|same:password_confirmation',
                 'password_confirmation' => 'required|string|min:8|max:50',
@@ -82,7 +83,7 @@ class UserController extends Controller
             app(CreateUserAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_USER_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_USER_SUCCESS->message(),
             ], SuccessCodes::CREATE_USER_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -96,6 +97,7 @@ class UserController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -124,7 +126,7 @@ class UserController extends Controller
             'roles' => $roles,
             'tags' => $tags,
             'canAddTags' => $canAddTags,
-            'canAddRoles' => $canAddRoles
+            'canAddRoles' => $canAddRoles,
         ]);
     }
 
@@ -134,12 +136,12 @@ class UserController extends Controller
             $validated = $request->validate([
                 'id' => 'required|exists:users,id',
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $request->id,
-                'phone' => 'required|string|max:255|unique:users,phone,' . $request->id,
+                'email' => 'required|string|email|max:255|unique:users,email,'.$request->id,
+                'phone' => 'required|string|max:255|unique:users,phone,'.$request->id,
                 'role' => 'required|exists:m_tags,id',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->statuses, 'value'))
+                    Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'password' => 'nullable|string|min:8|max:50|same:password_confirmation',
                 'password_confirmation' => 'nullable|string|min:8|max:50',
@@ -149,7 +151,7 @@ class UserController extends Controller
             app(UpdateUserAction::class)->execute($request->id, $validated);
 
             return response()->json([
-                'message' => SuccessCodes::UPDATE_USER_SUCCESS->message()
+                'message' => SuccessCodes::UPDATE_USER_SUCCESS->message(),
             ], SuccessCodes::UPDATE_USER_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -163,6 +165,7 @@ class UserController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -180,22 +183,24 @@ class UserController extends Controller
         }
 
         $auditLogs = app(UserAuditLogService::class)->findAllBasedOnId($id);
+
         return view('pages.master_data.user.detail', compact('user', 'auditLogs'), [
-            'auditLogType' => AuditLogTypes::MASTER_DATA_USER->code()
+            'auditLogType' => AuditLogTypes::MASTER_DATA_USER->code(),
         ]);
     }
 
     public function export()
     {
         $data = [
-            ["no" => 1, "value" => "Nama User"],
-            ["no" => 2, "value" => "Email User"],
-            ["no" => 3, "value" => "Nomor Telepon"],
-            ["no" => 4, "value" => "Role"],
-            ["no" => 5, "value" => "Terakhir Login"],
-            ["no" => 6, "value" => "Password Terakhir Dirubah"],
-            ["no" => 7, "value" => "Status"],
+            ['no' => 1, 'value' => 'Nama User'],
+            ['no' => 2, 'value' => 'Email User'],
+            ['no' => 3, 'value' => 'Nomor Telepon'],
+            ['no' => 4, 'value' => 'Role'],
+            ['no' => 5, 'value' => 'Terakhir Login'],
+            ['no' => 6, 'value' => 'Password Terakhir Dirubah'],
+            ['no' => 7, 'value' => 'Status'],
         ];
+
         return view('pages.master_data.user.export', ['data' => $data]);
     }
 

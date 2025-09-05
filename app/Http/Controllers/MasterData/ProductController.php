@@ -2,30 +2,28 @@
 
 namespace App\Http\Controllers\MasterData;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-
+use App\Domains\Category\Services\CategoryService;
+use App\Domains\Coa\Services\CoaService;
 use App\Domains\Product\Actions\CreateProductAction;
 use App\Domains\Product\Actions\UpdateProductAction;
-use App\Domains\StockStatus\Services\StockStatusService;
-use App\Domains\Category\Services\CategoryService;
-use App\Domains\Unit\Services\UnitService;
-use App\Domains\Tag\Services\TagService;
-use App\Domains\Coa\Services\CoaService;
-use App\Domains\Tax\Services\TaxService;
-use App\Domains\Product\Services\ProductService;
 use App\Domains\Product\Services\ProductAuditLogService;
 use App\Domains\Product\Services\ProductCompositionService;
 use App\Domains\Product\Services\ProductExpenseService;
-//Enums
+use App\Domains\Product\Services\ProductService;
+use App\Domains\StockStatus\Services\StockStatusService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\Tax\Services\TaxService;
+use App\Domains\Unit\Services\UnitService;
+use App\Enums\AuditLogTypes;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
-use App\Enums\AuditLogTypes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\ValidationHelper;
+// Enums
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -37,68 +35,70 @@ class ProductController extends Controller
 
         $statuses = [
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
         ];
 
         return view('pages.master_data.product.index', [
             'productCategories' => $productCategories,
             'stockStatuses' => $stockStatuses,
-            'statuses' => $statuses
+            'statuses' => $statuses,
         ]);
     }
 
     public function index_data_table()
     {
         $data = app(ProductService::class)->findAllDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function index_warehouse_data_table()
     {
         $data = [
-            "data" => [
+            'data' => [
                 [
-                    "id" => 1,
-                    "warehouse_code" => "GDG-001",
-                    "warehouse_name" => "Gudang Utama Pusat",
-                    "pic_name" => "Yustinus",
-                    "address" => "Jl. Industri No. 12, Kawasan Bisnis, Jakarta",
-                    "status" => "ACTIVE"
+                    'id' => 1,
+                    'warehouse_code' => 'GDG-001',
+                    'warehouse_name' => 'Gudang Utama Pusat',
+                    'pic_name' => 'Yustinus',
+                    'address' => 'Jl. Industri No. 12, Kawasan Bisnis, Jakarta',
+                    'status' => 'ACTIVE',
                 ],
                 [
-                    "id" => 2,
-                    "warehouse_code" => "GDG-002",
-                    "warehouse_name" => "Gudang Cabang Bandung",
-                    "pic_name" => "Ririn",
-                    "address" => "Jl. Soekarno Hatta No. 88, Bandung",
-                    "status" => "ACTIVE"
+                    'id' => 2,
+                    'warehouse_code' => 'GDG-002',
+                    'warehouse_name' => 'Gudang Cabang Bandung',
+                    'pic_name' => 'Ririn',
+                    'address' => 'Jl. Soekarno Hatta No. 88, Bandung',
+                    'status' => 'ACTIVE',
                 ],
                 [
-                    "id" => 3,
-                    "warehouse_code" => "GDG-003",
-                    "warehouse_name" => "Gudang Cabang Surabaya",
-                    "pic_name" => "Hartono",
-                    "address" => "Jl. Pahlawan No. 45, Surabaya",
-                    "status" => "ACTIVE"
+                    'id' => 3,
+                    'warehouse_code' => 'GDG-003',
+                    'warehouse_name' => 'Gudang Cabang Surabaya',
+                    'pic_name' => 'Hartono',
+                    'address' => 'Jl. Pahlawan No. 45, Surabaya',
+                    'status' => 'ACTIVE',
                 ],
                 [
-                    "id" => 4,
-                    "warehouse_code" => "GDG-004",
-                    "warehouse_name" => "Gudang Cabang Medan",
-                    "pic_name" => "Sari",
-                    "address" => "Jl. Gatot Subroto No. 123, Medan",
-                    "status" => "ACTIVE"
+                    'id' => 4,
+                    'warehouse_code' => 'GDG-004',
+                    'warehouse_name' => 'Gudang Cabang Medan',
+                    'pic_name' => 'Sari',
+                    'address' => 'Jl. Gatot Subroto No. 123, Medan',
+                    'status' => 'ACTIVE',
                 ],
                 [
-                    "id" => 5,
-                    "warehouse_code" => "GDG-005",
-                    "warehouse_name" => "Gudang Cabang Makassar",
-                    "pic_name" => "Budi",
-                    "address" => "Jl. AP Pettarani No. 67, Makassar",
-                    "status" => "INACTIVE"
-                ]
-            ]
+                    'id' => 5,
+                    'warehouse_code' => 'GDG-005',
+                    'warehouse_name' => 'Gudang Cabang Makassar',
+                    'pic_name' => 'Budi',
+                    'address' => 'Jl. AP Pettarani No. 67, Makassar',
+                    'status' => 'INACTIVE',
+                ],
+            ],
         ];
+
         return response()->json($data, 200);
     }
 
@@ -120,7 +120,7 @@ class ProductController extends Controller
 
         $statuses = [
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
         ];
 
         return view('pages.master_data.product.add', [
@@ -135,7 +135,7 @@ class ProductController extends Controller
             'canAddUnits' => $canAddUnits,
             'canAddCategories' => $canAddCategories,
             'canAddAccounts' => $canAddAccounts,
-            'canAddTaxes' => $canAddTaxes
+            'canAddTaxes' => $canAddTaxes,
         ]);
     }
 
@@ -167,7 +167,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase price field is required when type is single and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'purchase_account' => [
                     'string',
@@ -179,7 +179,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase account field is required when type is single and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'purchase_tax' => [
                     'string',
@@ -191,7 +191,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase tax field is required when type is single and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'sales_price' => [
                     'string',
@@ -203,7 +203,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is single and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'sales_account' => [
                     'string',
@@ -215,7 +215,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is single and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'sales_tax' => [
                     'string',
@@ -227,7 +227,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is single and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'minimum_stock' => [
                     'string',
@@ -239,7 +239,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The minimum stock field is required when type is single and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'inventory_account' => [
                     'string',
@@ -251,7 +251,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The inventory account field is required when type is single and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'track_quantity' => [
                     'string',
@@ -263,7 +263,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The track quantity field is required when type is single and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
 
                 'track_batch' => [
@@ -276,7 +276,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The track batch field is required when type is single and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_purchase_enabled' => 'required_if:type,"bundle"|in:true,false',
                 'bundle_sales_enabled' => 'required_if:type,"bundle"|in:true,false',
@@ -291,7 +291,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase price field is required when type is bundle and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_purchase_account' => [
                     'string',
@@ -303,7 +303,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase account field is required when type is bundle and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_purchase_tax' => [
                     'string',
@@ -315,7 +315,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase tax field is required when type is bundle and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_sales_price' => [
                     'string',
@@ -327,7 +327,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is bundle and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_sales_account' => [
                     'string',
@@ -339,7 +339,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is bundle and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_sales_tax' => [
                     'string',
@@ -351,7 +351,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is bundle and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_minimum_stock' => [
                     'string',
@@ -363,7 +363,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The minimum stock field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_inventory_account' => [
                     'string',
@@ -375,7 +375,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The inventory account field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_track_quantity' => [
                     'string',
@@ -387,7 +387,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The track quantity field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_track_batch' => [
                     'string',
@@ -399,7 +399,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The track batchs field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
@@ -414,7 +414,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The bundle account field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_accounts.*.account' => [
                     function ($attribute, $value, $fail) use ($req) {
@@ -425,7 +425,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The bundle account acc field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_accounts.*.cost' => [
                     function ($attribute, $value, $fail) use ($req) {
@@ -436,14 +436,14 @@ class ProductController extends Controller
                         ) {
                             $fail('The bundle account cost field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
             ]);
 
             app(CreateProductAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_PRODUCT_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_PRODUCT_SUCCESS->message(),
             ], SuccessCodes::CREATE_PRODUCT_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -457,6 +457,7 @@ class ProductController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -468,18 +469,19 @@ class ProductController extends Controller
     public function export()
     {
         $data = [
-            ["no" => 1, "value" => "Nama Produk"],
-            ["no" => 2, "value" => "Kode Produk"],
-            ["no" => 3, "value" => "Kategori Produk"],
-            ["no" => 4, "value" => "Total Stok"],
-            ["no" => 5, "value" => "Qty Tersedia"],
-            ["no" => 6, "value" => "Batas Minimum"],
-            ["no" => 7, "value" => "Unit"],
-            ["no" => 8, "value" => "Harga Rata-Rata"],
-            ["no" => 9, "value" => "Harga Beli Terakhir"],
-            ["no" => 10, "value" => "Harga Beli"],
-            ["no" => 11, "value" => "Harga Jual"],
+            ['no' => 1, 'value' => 'Nama Produk'],
+            ['no' => 2, 'value' => 'Kode Produk'],
+            ['no' => 3, 'value' => 'Kategori Produk'],
+            ['no' => 4, 'value' => 'Total Stok'],
+            ['no' => 5, 'value' => 'Qty Tersedia'],
+            ['no' => 6, 'value' => 'Batas Minimum'],
+            ['no' => 7, 'value' => 'Unit'],
+            ['no' => 8, 'value' => 'Harga Rata-Rata'],
+            ['no' => 9, 'value' => 'Harga Beli Terakhir'],
+            ['no' => 10, 'value' => 'Harga Beli'],
+            ['no' => 11, 'value' => 'Harga Jual'],
         ];
+
         return view('pages.master_data.product.export', ['data' => $data]);
     }
 
@@ -508,7 +510,7 @@ class ProductController extends Controller
                 'reserved_stock' => 150,
                 'total_stock' => 2650,
                 'average_price' => 'Rp 2,750',
-                'inventory_value' => 'Rp 7,287,500'
+                'inventory_value' => 'Rp 7,287,500',
             ],
             [
                 'warehouse_id' => 2,
@@ -518,7 +520,7 @@ class ProductController extends Controller
                 'reserved_stock' => 50,
                 'total_stock' => 850,
                 'average_price' => 'Rp 2,700',
-                'inventory_value' => 'Rp 2,295,000'
+                'inventory_value' => 'Rp 2,295,000',
             ],
             [
                 'warehouse_id' => 3,
@@ -528,8 +530,8 @@ class ProductController extends Controller
                 'reserved_stock' => 80,
                 'total_stock' => 1280,
                 'average_price' => 'Rp 2,750',
-                'inventory_value' => 'Rp 3,520,000'
-            ]
+                'inventory_value' => 'Rp 3,520,000',
+            ],
         ];
 
         $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
@@ -538,7 +540,7 @@ class ProductController extends Controller
             'product' => $product,
             'inventoryData' => $inventoryData,
             'auditLogs' => $auditLogs,
-            'auditLogType' => AuditLogTypes::MASTER_DATA_PRODUCT->code()
+            'auditLogType' => AuditLogTypes::MASTER_DATA_PRODUCT->code(),
         ]);
     }
 
@@ -562,7 +564,7 @@ class ProductController extends Controller
 
         $statuses = [
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif']
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
         ];
 
         // Permission checks for adding new options
@@ -587,7 +589,7 @@ class ProductController extends Controller
             'canAddTaxes' => $canAddTaxes,
             'product' => $product,
             'productCompositions' => $productCompositions,
-            'productExpenses' => $productExpenses
+            'productExpenses' => $productExpenses,
         ]);
     }
 
@@ -620,7 +622,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase price field is required when type is single and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'purchase_account' => [
                     'string',
@@ -632,7 +634,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase account field is required when type is single and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'purchase_tax' => [
                     'string',
@@ -644,7 +646,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase tax field is required when type is single and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'sales_price' => [
                     'string',
@@ -656,7 +658,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is single and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'sales_account' => [
                     'string',
@@ -668,7 +670,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is single and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'sales_tax' => [
                     'string',
@@ -680,7 +682,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is single and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'minimum_stock' => [
                     'string',
@@ -692,7 +694,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The minimum stock field is required when type is single and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'inventory_account' => [
                     'string',
@@ -704,7 +706,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The inventory account field is required when type is single and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'track_quantity' => [
                     'string',
@@ -716,7 +718,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The track quantity field is required when type is single and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
 
                 'track_batch' => [
@@ -729,7 +731,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The track batch field is required when type is single and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_purchase_enabled' => 'required_if:type,"bundle"|in:true,false',
                 'bundle_sales_enabled' => 'required_if:type,"bundle"|in:true,false',
@@ -744,7 +746,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase price field is required when type is bundle and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_purchase_account' => [
                     'string',
@@ -756,7 +758,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase account field is required when type is bundle and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_purchase_tax' => [
                     'string',
@@ -768,7 +770,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The purchase tax field is required when type is bundle and purchase enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_sales_price' => [
                     'string',
@@ -780,7 +782,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is bundle and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_sales_account' => [
                     'string',
@@ -792,7 +794,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is bundle and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_sales_tax' => [
                     'string',
@@ -804,7 +806,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The sales price field is required when type is bundle and sales enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_minimum_stock' => [
                     'string',
@@ -816,7 +818,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The minimum stock field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_inventory_account' => [
                     'string',
@@ -828,7 +830,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The inventory account field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_track_quantity' => [
                     'string',
@@ -840,7 +842,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The track quantity field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_track_batch' => [
                     'string',
@@ -852,7 +854,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The track batch field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.composition_id' => [
@@ -864,7 +866,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The bundle account component composition id field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric|min:1',
@@ -878,7 +880,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The bundle account field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_accounts.*.expense_id' => [
                     'nullable',
@@ -890,7 +892,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The bundle account expense id field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_accounts.*.account' => [
                     function ($attribute, $value, $fail) use ($req) {
@@ -901,7 +903,7 @@ class ProductController extends Controller
                         ) {
                             $fail('The bundle account account field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
                 'bundle_accounts.*.cost' => [
                     function ($attribute, $value, $fail) use ($req) {
@@ -912,14 +914,14 @@ class ProductController extends Controller
                         ) {
                             $fail('The bundle account cost field is required when type is bundle and inventory enabled is true.');
                         }
-                    }
+                    },
                 ],
             ]);
 
             app(UpdateProductAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::UPDATE_PRODUCT_SUCCESS->message()
+                'message' => SuccessCodes::UPDATE_PRODUCT_SUCCESS->message(),
             ], SuccessCodes::UPDATE_PRODUCT_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -933,6 +935,7 @@ class ProductController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),

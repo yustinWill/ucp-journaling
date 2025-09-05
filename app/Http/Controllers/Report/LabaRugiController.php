@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\Report;
 
-//Main
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Traits\AccountingReportingLogic;
-use DateTime;
-
-//Services
+// Main
 use App\Domains\Coa\Services\CoaService;
+use App\Http\Controllers\Controller;
+use App\Traits\AccountingReportingLogic;
+// Services
+use Illuminate\Http\Request;
 
 class LabaRugiController extends Controller
 {
@@ -24,7 +22,7 @@ class LabaRugiController extends Controller
         $journal_data = [];
         $from = null;
         $to = null;
-        $html = "";
+        $html = '';
         $asset_amount = 0;
         $liability_amount = 0;
         $equity_amount = 0;
@@ -82,6 +80,7 @@ class LabaRugiController extends Controller
                 unset($report_data[$i]);
             }
         }
+
         return array_values($report_data);
     }
 }

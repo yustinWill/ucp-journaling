@@ -2,39 +2,37 @@
 
 namespace App\Http\Controllers\MasterData;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Validation\Rule;
-use Illuminate\Http\Request;
-use App\Helpers\PermissionHelper;
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-
-//Services
-use App\Domains\Role\Services\RoleService;
-use App\Domains\User\Services\UserService;
-use App\Domains\Tag\Services\TagService;
-use App\Domains\Permission\Services\PermissionService;
 use App\Domains\Module\Services\ModuleService;
-
-//Actions
+use App\Domains\Permission\Services\PermissionService;
 use App\Domains\Role\Actions\CreateRoleAction;
 use App\Domains\Role\Actions\UpdateRoleAction;
 use App\Domains\Role\Services\RoleAuditLogService;
-//Enums
+use App\Domains\Role\Services\RoleService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\User\Services\UserService;
+// Services
+use App\Enums\AuditLogTypes;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
-use App\Enums\AuditLogTypes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+// Actions
+use App\Helpers\PermissionHelper;
+use App\Helpers\ValidationHelper;
+use App\Http\Controllers\Controller;
+// Enums
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class RoleController extends Controller
 {
     private $statuses = [
         ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
     ];
 
-    private $permission_types =  [
+    private $permission_types = [
         ['value' => 'read', 'label' => 'Read'],
         ['value' => 'write', 'label' => 'Write'],
         ['value' => 'delete', 'label' => 'Delete'],
@@ -44,12 +42,14 @@ class RoleController extends Controller
     public function index()
     {
         $selectData = $this->getIndexSelectData();
+
         return view('pages.master_data.role.index', $selectData);
     }
 
     public function index_data_table()
     {
         $data = app(RoleService::class)->findAllDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -72,7 +72,7 @@ class RoleController extends Controller
             'statuses' => $this->statuses,
             'permission_types' => $this->permission_types,
             'modules' => $modules,
-            'permissions' => $permissions
+            'permissions' => $permissions,
         ]);
     }
 
@@ -95,7 +95,7 @@ class RoleController extends Controller
             app(CreateRoleAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_ROLE_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_ROLE_SUCCESS->message(),
             ], SuccessCodes::CREATE_ROLE_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -109,6 +109,7 @@ class RoleController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -143,7 +144,7 @@ class RoleController extends Controller
             'modules' => $modules,
             'permissions' => $permissions,
             'permission_types' => $this->permission_types,
-            'role_permissions' => $role_permissions_arr
+            'role_permissions' => $role_permissions_arr,
         ]);
     }
 
@@ -162,7 +163,7 @@ class RoleController extends Controller
             'role' => $role,
             'auditLogs' => $auditLogs,
             'userList' => $userList,
-            'auditLogType' =>  AuditLogTypes::MASTER_DATA_ROLE->code()
+            'auditLogType' => AuditLogTypes::MASTER_DATA_ROLE->code(),
         ]);
     }
 
@@ -175,7 +176,7 @@ class RoleController extends Controller
                 'description' => 'required|string|max:255',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->statuses, 'value'))
+                    Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'tags' => 'nullable|array',
                 'permissions' => 'required|array',
@@ -189,7 +190,7 @@ class RoleController extends Controller
             app(UpdateRoleAction::class)->execute($request->id, $validated);
 
             return response()->json([
-                'message' => SuccessCodes::UPDATE_ROLE_SUCCESS->message()
+                'message' => SuccessCodes::UPDATE_ROLE_SUCCESS->message(),
             ], SuccessCodes::UPDATE_ROLE_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -203,6 +204,7 @@ class RoleController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -214,21 +216,23 @@ class RoleController extends Controller
     public function export()
     {
         $data = [
-            ["no" => 1, "value" => "Nama Role"],
-            ["no" => 2, "value" => "Deskripsi Role"],
-            ["no" => 3, "value" => "Status Role"],
-            ["no" => 4, "value" => "Jumlah User"],
-            ["no" => 5, "value" => "Jumlah Permission"],
-            ["no" => 6, "value" => "Tanggal Dibuat"],
-            ["no" => 7, "value" => "Tanggal Diubah"],
+            ['no' => 1, 'value' => 'Nama Role'],
+            ['no' => 2, 'value' => 'Deskripsi Role'],
+            ['no' => 3, 'value' => 'Status Role'],
+            ['no' => 4, 'value' => 'Jumlah User'],
+            ['no' => 5, 'value' => 'Jumlah Permission'],
+            ['no' => 6, 'value' => 'Tanggal Dibuat'],
+            ['no' => 7, 'value' => 'Tanggal Diubah'],
         ];
         $selectData = $this->getExportSelectData();
+
         return view('pages.master_data.role.export', ['data' => $data] + $selectData);
     }
 
     public function import()
     {
         $selectData = $this->getImportSelectData();
+
         return view('pages.master_data.role.import', $selectData);
     }
 
@@ -240,7 +244,7 @@ class RoleController extends Controller
         foreach ($permissions as $perm) {
             $groupedData[$perm->module_name][] = [
                 'id' => $perm->id,
-                'name' => $perm->module_name . ' - ' . $perm->type,
+                'name' => $perm->module_name.' - '.$perm->type,
                 'type' => $perm->type,
                 'granted' => (bool) $perm->granted,
             ];
@@ -313,7 +317,7 @@ class RoleController extends Controller
                 ['value' => '1-5', 'label' => '1-5 - Satu hingga Lima User'],
                 ['value' => '6-10', 'label' => '6-10 - Enam hingga Sepuluh User'],
                 ['value' => '10+', 'label' => '10+ - Lebih dari Sepuluh User'],
-            ]
+            ],
         ];
     }
 
@@ -329,7 +333,7 @@ class RoleController extends Controller
                 ['value' => 'all', 'label' => 'All Roles'],
                 ['value' => 'active', 'label' => 'Active Roles Only'],
                 ['value' => 'inactive', 'label' => 'Inactive Roles Only'],
-            ]
+            ],
         ];
     }
 
@@ -345,7 +349,7 @@ class RoleController extends Controller
                 ['value' => 'skip', 'label' => 'Skip Duplicates'],
                 ['value' => 'overwrite', 'label' => 'Overwrite Duplicates'],
                 ['value' => 'append', 'label' => 'Append with Suffix'],
-            ]
+            ],
         ];
     }
 }

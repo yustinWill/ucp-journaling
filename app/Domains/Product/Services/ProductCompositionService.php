@@ -19,9 +19,10 @@ class ProductCompositionService
                 'qty' => $row['qty'],
                 'f_unit_id' => $row['f_unit_id'],
                 'created_by' => Auth::id(),
-                'created_at' => now()
+                'created_at' => now(),
             ];
         }
+
         return DB::table($this->table_name)->insert($insert_data);
     }
 
@@ -32,13 +33,13 @@ class ProductCompositionService
             'qty' => $data['qty'],
             'f_unit_id' => $data['f_unit_id'],
             'updated_by' => Auth::id(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
     }
 
     public function findAllBasedOnProductId($product_id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select('t.*', 'prd.total_stock', 'prd.name as product_name', 'unt.name as unit_name')
             ->join('m_products as prd', 'prd.id', '=', 't.f_product_composition_product_id')
             ->join('m_units as unt', 'unt.id', '=', 't.f_unit_id')

@@ -24,11 +24,11 @@ return new class extends Migration
             $table->timestamp('created_at');
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('created_by');
-            
+
             $table->foreign('f_storage_id')->references('id')->on('m_storages');
             $table->foreign('f_product_id')->references('id')->on('m_products');
             $table->foreign('created_by')->references('id')->on('users');
-            
+
             $table->unique(['f_storage_id', 'f_product_id', 'snapshot_date'], 'unq_storage_product_snapshot');
             $table->index(['company_code', 'snapshot_date'], 'idx_company_snapshot_date');
             $table->index(['f_storage_id', 'snapshot_date'], 'idx_storage_snapshot_date');

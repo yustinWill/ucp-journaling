@@ -2,10 +2,9 @@
 
 namespace App\Domains\Production\Actions;
 
-use App\Domains\Production\Services\ProductionService;
-use App\Domains\Production\Services\ProductionItemService;
-use App\Domains\Production\Services\ProductionExpenseService;
 use App\Domains\Production\Services\ProductionAuditLogService;
+use App\Domains\Production\Services\ProductionItemService;
+use App\Domains\Production\Services\ProductionService;
 use App\Domains\Production\Services\ProductionStockService;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +15,7 @@ class ReversalProductionAction
         return DB::transaction(function () use ($productionId, $reversalData) {
             // 1. Validate reversal is possible
             $validationResult = $this->validateReversal($productionId, $reversalData);
-            if (!$validationResult['can_reverse']) {
+            if (! $validationResult['can_reverse']) {
                 throw new \Exception($validationResult['reason']);
             }
 
@@ -26,7 +25,7 @@ class ReversalProductionAction
 
             // 3. Calculate reversal quantities
             $quantityToReverse = $reversalData['quantity_to_reverse'] ?? $production->quantity_produced;
-            
+
             // 4. Process stock movements reversal
             $stockResult = $this->processReversalStockMovements($productionId, $production, $items, $quantityToReverse);
 
@@ -40,7 +39,7 @@ class ReversalProductionAction
                 'reason' => $reversalData['reason'] ?? 'Manual reversal',
                 'stock_movements' => $stockResult,
                 'reversal_date' => now()->toISOString(),
-                'reversed_by' => auth()->user()->name ?? 'System'
+                'reversed_by' => auth()->user()->name ?? 'System',
             ]);
 
             return true;
@@ -50,8 +49,8 @@ class ReversalProductionAction
     public function validateReversal(int $productionId, array $reversalData = []): array
     {
         $production = app(ProductionService::class)->findOne($productionId);
-        
-        if (!$production) {
+
+        if (! $production) {
             return ['can_reverse' => false, 'reason' => 'Production not found'];
         }
 
@@ -74,9 +73,9 @@ class ReversalProductionAction
 
         if ($quantityToReverse > $production->quantity_produced) {
             return [
-                'can_reverse' => false, 
+                'can_reverse' => false,
                 'reason' => 'Cannot reverse more than produced quantity',
-                'max_reversible' => $production->quantity_produced
+                'max_reversible' => $production->quantity_produced,
             ];
         }
 
@@ -85,12 +84,12 @@ class ReversalProductionAction
             ->where('id', $production->bundle_product_id)
             ->first();
 
-        if (!$bundleProduct || $bundleProduct->total_stock < $quantityToReverse) {
+        if (! $bundleProduct || $bundleProduct->total_stock < $quantityToReverse) {
             return [
                 'can_reverse' => false,
                 'reason' => 'Insufficient bundle product stock for reversal',
                 'available_stock' => $bundleProduct->total_stock ?? 0,
-                'required_stock' => $quantityToReverse
+                'required_stock' => $quantityToReverse,
             ];
         }
 
@@ -102,12 +101,12 @@ class ReversalProductionAction
             ->where('reference_id', $productionId)
             ->first();
 
-        if (!$productionBatch || $productionBatch->remaining_quantity < $quantityToReverse) {
+        if (! $productionBatch || $productionBatch->remaining_quantity < $quantityToReverse) {
             return [
                 'can_reverse' => false,
                 'reason' => 'Production batch has insufficient quantity for reversal',
                 'batch_remaining' => $productionBatch->remaining_quantity ?? 0,
-                'required_quantity' => $quantityToReverse
+                'required_quantity' => $quantityToReverse,
             ];
         }
 
@@ -121,8 +120,8 @@ class ReversalProductionAction
                 'bundle_product_name' => $production->bundle_product_name,
                 'original_quantity' => $production->quantity_produced,
                 'quantity_to_reverse' => $quantityToReverse,
-                'impact_summary' => $impactSummary
-            ]
+                'impact_summary' => $impactSummary,
+            ],
         ];
     }
 
@@ -136,21 +135,21 @@ class ReversalProductionAction
                 'name' => $production->bundle_product_name,
                 'quantity_will_be_removed' => $quantityToReverse,
                 'current_stock' => $this->getCurrentStock($production->bundle_product_id),
-                'stock_after_reversal' => $this->getCurrentStock($production->bundle_product_id) - $quantityToReverse
+                'stock_after_reversal' => $this->getCurrentStock($production->bundle_product_id) - $quantityToReverse,
             ],
             'raw_materials' => [],
-            'financial_impact' => $this->calculateFinancialImpact($production, $quantityToReverse)
+            'financial_impact' => $this->calculateFinancialImpact($production, $quantityToReverse),
         ];
 
         // Calculate raw material restoration impact
         foreach ($items as $item) {
             $restorationQuantity = ($item->quantity_consumed / $production->quantity_produced) * $quantityToReverse;
-            
+
             $impactSummary['raw_materials'][] = [
                 'name' => $item->product_name,
                 'quantity_will_be_restored' => $restorationQuantity,
                 'current_stock' => $this->getCurrentStock($item->raw_material_product_id),
-                'stock_after_reversal' => $this->getCurrentStock($item->raw_material_product_id) + $restorationQuantity
+                'stock_after_reversal' => $this->getCurrentStock($item->raw_material_product_id) + $restorationQuantity,
             ];
         }
 
@@ -165,7 +164,7 @@ class ReversalProductionAction
         $reversalData = [
             'production' => (array) $production,
             'items' => $items,
-            'quantity_to_reverse' => $quantityToReverse
+            'quantity_to_reverse' => $quantityToReverse,
         ];
 
         return $stockService->reverseProductionStockMovements($productionId, $reversalData);
@@ -185,9 +184,9 @@ class ReversalProductionAction
             'total_raw_material_cost' => $production->total_raw_material_cost * $costRatio,
             'total_production_expense' => $production->total_production_expense * $costRatio,
             'total_production_cost' => $production->total_production_cost * $costRatio,
-            'notes' => ($production->notes ? $production->notes . "\n\n" : '') 
-                     . "REVERSAL: {$quantityToReverse} units reversed on " . now()->format('Y-m-d H:i:s') 
-                     . ". Reason: " . ($reversalData['reason'] ?? 'Manual reversal')
+            'notes' => ($production->notes ? $production->notes."\n\n" : '')
+                     ."REVERSAL: {$quantityToReverse} units reversed on ".now()->format('Y-m-d H:i:s')
+                     .'. Reason: '.($reversalData['reason'] ?? 'Manual reversal'),
         ];
 
         app(ProductionService::class)->update($productionId, $updateData);
@@ -208,14 +207,14 @@ class ReversalProductionAction
             ->update([
                 'quantity_consumed' => 0,
                 'total_cost' => 0,
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
         DB::table('t_production_expenses')
             ->where('production_id', $productionId)
             ->update([
                 'actual_amount' => 0,
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
     }
 
@@ -229,7 +228,7 @@ class ReversalProductionAction
                 ->update([
                     'quantity_consumed' => $item->quantity_consumed * $costRatio,
                     'total_cost' => $item->total_cost * $costRatio,
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
         }
 
@@ -240,7 +239,7 @@ class ReversalProductionAction
                 ->where('id', $expense->id)
                 ->update([
                     'actual_amount' => $expense->actual_amount * $costRatio,
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
         }
     }
@@ -248,6 +247,7 @@ class ReversalProductionAction
     private function getCurrentStock(int $productId): float
     {
         $product = DB::table('m_products')->where('id', $productId)->first();
+
         return $product ? $product->total_stock : 0;
     }
 
@@ -259,15 +259,15 @@ class ReversalProductionAction
             'raw_material_cost_impact' => $production->total_raw_material_cost * $impactRatio,
             'production_expense_impact' => $production->total_production_expense * $impactRatio,
             'total_cost_impact' => $production->total_production_cost * $impactRatio,
-            'unit_cost_impact' => $production->total_production_cost / $production->quantity_produced
+            'unit_cost_impact' => $production->total_production_cost / $production->quantity_produced,
         ];
     }
 
     public function getReversalConfirmationData(int $productionId, array $reversalData = []): array
     {
         $validationResult = $this->validateReversal($productionId, $reversalData);
-        
-        if (!$validationResult['can_reverse']) {
+
+        if (! $validationResult['can_reverse']) {
             return $validationResult;
         }
 
@@ -280,7 +280,7 @@ class ReversalProductionAction
             'reversal_quantity' => $quantityToReverse,
             'impact_summary' => $validationResult['reversal_details']['impact_summary'],
             'warnings' => $this->getReversalWarnings($production, $quantityToReverse),
-            'confirmation_required' => true
+            'confirmation_required' => true,
         ];
     }
 
@@ -291,18 +291,18 @@ class ReversalProductionAction
         // Check for high-value reversal
         $reversalValue = ($production->total_production_cost / $production->quantity_produced) * $quantityToReverse;
         if ($reversalValue > 100000) { // Configurable threshold
-            $warnings[] = "High-value reversal: Rp " . number_format($reversalValue, 0, ',', '.');
+            $warnings[] = 'High-value reversal: Rp '.number_format($reversalValue, 0, ',', '.');
         }
 
         // Check if this is a full reversal
         if ($quantityToReverse >= $production->quantity_produced) {
-            $warnings[] = "This is a complete production reversal. All produced quantity will be removed.";
+            $warnings[] = 'This is a complete production reversal. All produced quantity will be removed.';
         }
 
         // Check if production is recent
         $productionDate = \Carbon\Carbon::parse($production->production_date);
         if ($productionDate->diffInDays(now()) > 30) {
-            $warnings[] = "This production is over 30 days old. Please ensure reversal is still appropriate.";
+            $warnings[] = 'This production is over 30 days old. Please ensure reversal is still appropriate.';
         }
 
         return $warnings;

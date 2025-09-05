@@ -32,11 +32,11 @@ return new class extends Migration
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             $table->foreign('f_product_id')->references('id')->on('m_products');
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users');
-            
+
             $table->unique(['batch_reference_code', 'company_code']);
             $table->index(['f_product_id', 'status', 'batch_date']);
             $table->index(['company_code', 'source_type']);

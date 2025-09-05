@@ -23,10 +23,10 @@ return new class extends Migration
             $table->integer('quantity_produced')->default(0);
             $table->enum('status', [
                 'DRAFT',
-                'PLANNED', 
+                'PLANNED',
                 'IN_PROGRESS',
                 'COMPLETED',
-                'CANCELLED'
+                'CANCELLED',
             ])->default('DRAFT');
             $table->text('description')->nullable();
             $table->text('notes')->nullable();
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->decimal('total_production_cost', 15, 2)->default(0);
             $table->integer('total_items_consumed')->default(0);
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['company_code', 'production_date']);
             $table->index(['bundle_product_id', 'warehouse_id']);

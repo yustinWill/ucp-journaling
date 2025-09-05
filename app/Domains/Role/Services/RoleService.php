@@ -2,8 +2,8 @@
 
 namespace App\Domains\Role\Services;
 
-use Illuminate\Support\Facades\DB;
 use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\DB;
 
 class RoleService
 {
@@ -11,7 +11,7 @@ class RoleService
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',
@@ -23,15 +23,15 @@ class RoleService
 
     public function findOne(int $id)
     {
-        $data = DB::table($this->table_name . ' as t')
+        $data = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.created_at',
                 't.name',
                 't.description',
                 't.f_tag_codes',
-                DB::raw("COUNT(DISTINCT u.id) as user_count"),
-                DB::raw("COUNT(DISTINCT rp.id) as permission_count"),
+                DB::raw('COUNT(DISTINCT u.id) as user_count'),
+                DB::raw('COUNT(DISTINCT rp.id) as permission_count'),
                 // DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
                 't.is_active',
             ])
@@ -58,11 +58,11 @@ class RoleService
             ->groupBy('t.id')
             ->first();
 
-        if (!empty($data->tags)) {
+        if (! empty($data->tags)) {
             $tags = json_decode($data->tags, true);
             $uniqueTags = [];
             foreach ($tags as $tag) {
-                $key = $tag['code'] . '_' . $tag['preview'];
+                $key = $tag['code'].'_'.$tag['preview'];
                 $uniqueTags[$key] = $tag;
             }
             $data->tags = json_encode(array_values($uniqueTags));
@@ -73,14 +73,14 @@ class RoleService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as t')
+        $query = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.created_at',
                 't.name',
                 't.description',
-                DB::raw("COUNT(DISTINCT u.id) as user_count"),
-                DB::raw("COUNT(DISTINCT rp.id) as permission_count"),
+                DB::raw('COUNT(DISTINCT u.id) as user_count'),
+                DB::raw('COUNT(DISTINCT rp.id) as permission_count'),
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
                 't.is_active',
             ])
@@ -104,7 +104,6 @@ class RoleService
             ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id');
 
-
         if ($name = request()->input('name')) {
             $query->where('t.name', 'like', "%{$name}%");
         }
@@ -120,13 +119,13 @@ class RoleService
         $userCount = request()->input('user_count');
         if ($userCount == '0') {
             $query->having('user_count', '=', 0);
-        } else if ($userCount >= '1' && $userCount <= '5') {
+        } elseif ($userCount >= '1' && $userCount <= '5') {
             $query->having('user_count', '>=', 1)
                 ->having('user_count', '<=', 5);
-        } else if ($userCount >= '6' && $userCount <= '10') {
+        } elseif ($userCount >= '6' && $userCount <= '10') {
             $query->having('user_count', '>=', 6)
                 ->having('user_count', '<=', 10);
-        } else if ($userCount >= '11') {
+        } elseif ($userCount >= '11') {
             $query->having('user_count', '>=', 11);
         }
         $query->groupBy('t.id');
@@ -149,11 +148,11 @@ class RoleService
         $data = $query->get();
 
         foreach ($data as &$role) {
-            if (!empty($role->tags)) {
+            if (! empty($role->tags)) {
                 $tags = json_decode($role->tags, true);
                 $uniqueTags = [];
                 foreach ($tags as $tag) {
-                    $key = $tag['code'] . '_' . $tag['preview'];
+                    $key = $tag['code'].'_'.$tag['preview'];
                     $uniqueTags[$key] = $tag;
                 }
                 $role->tags = json_encode(array_values($uniqueTags));
@@ -188,7 +187,7 @@ class RoleService
                 'description' => $data['description'],
                 'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
                 'is_active' => $data['is_active'] ?? true,
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
     }
 }

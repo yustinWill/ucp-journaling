@@ -10,7 +10,7 @@ class ProductionItemService
 
     public function findByProductionId(int $productionId): array
     {
-        return DB::table($this->table_name . ' as pi')
+        return DB::table($this->table_name.' as pi')
             ->select(
                 'pi.*',
                 'p.name as product_name',
@@ -43,7 +43,7 @@ class ProductionItemService
                 'batch_consumption' => json_encode($item['batch_consumption'] ?? []),
                 'notes' => $item['notes'] ?? null,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ];
         }
 
@@ -82,7 +82,7 @@ class ProductionItemService
 
     public function getItemsForReversal(int $productionId): array
     {
-        return DB::table($this->table_name . ' as pi')
+        return DB::table($this->table_name.' as pi')
             ->select(
                 'pi.*',
                 'p.name as product_name',
@@ -122,20 +122,19 @@ class ProductionItemService
                 ->where('id', $item['raw_material_product_id'])
                 ->first();
 
-
             // dd($product->total_stock);
             // Check total stock
             $isAvailable = $product && $product->total_stock >= $item['quantity_required'];
             // Get available batches for this product in the warehouse
             $availableBatches = DB::table('t_product_stock_batches')
                 ->where('f_product_id', $item['raw_material_product_id'])
-                //warehouse tidak ada
+                // warehouse tidak ada
                 // ->where('warehouse_id', $warehouseId)
                 ->where('remaining_qty', '>', 0)
                 ->where('status', 'ACTIVE')
                 ->orderBy('created_at', 'ASC') // FIFO order
                 ->get();
-           
+
             $totalAvailableInBatches = $availableBatches->sum('remaining_qty');
 
             $validation[] = [
@@ -145,7 +144,7 @@ class ProductionItemService
                 'total_stock' => $product->total_stock ?? 0,
                 'available_in_warehouse' => $totalAvailableInBatches,
                 'is_available' => $isAvailable && $totalAvailableInBatches >= $item['quantity_required'],
-                'available_batches' => $availableBatches->toArray()
+                'available_batches' => $availableBatches->toArray(),
             ];
         }
 

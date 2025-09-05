@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('movement_date');
             $table->enum('movement_type', [
                 'ADJUSTMENT_IN',
-                'ADJUSTMENT_OUT', 
+                'ADJUSTMENT_OUT',
                 'TRANSFER_IN',
                 'TRANSFER_OUT',
                 'PURCHASE_IN',
@@ -25,7 +25,7 @@ return new class extends Migration
                 'RETURN_IN',
                 'RETURN_OUT',
                 'DAMAGE_OUT',
-                'EXPIRY_OUT'
+                'EXPIRY_OUT',
             ]);
             $table->string('reference_type'); // e.g., 'STOCK_ADJUSTMENT', 'PURCHASE_ORDER', etc.
             $table->string('reference_number');
@@ -44,7 +44,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
-            
+
             $table->index(['company_code', 'movement_date']);
             $table->index(['warehouse_id', 'product_id']);
             $table->index(['reference_type', 'reference_number']);

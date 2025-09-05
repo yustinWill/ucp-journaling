@@ -2,8 +2,8 @@
 
 namespace App\Domains\Production\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductionAuditLogService
 {
@@ -17,13 +17,13 @@ class ProductionAuditLogService
             'action_type' => $actionType,
             'description' => $description,
             'metadata' => json_encode($metadata),
-            'created_at' => now()
+            'created_at' => now(),
         ]);
     }
 
     public function findByProductionId(int $productionId): array
     {
-        return DB::table($this->table_name . ' as pal')
+        return DB::table($this->table_name.' as pal')
             ->select(
                 'pal.*',
                 'u.name as user_name'
@@ -36,6 +36,7 @@ class ProductionAuditLogService
                 if ($log->metadata) {
                     $log->metadata = json_decode($log->metadata, true);
                 }
+
                 return $log;
             })
             ->toArray();
@@ -50,7 +51,7 @@ class ProductionAuditLogService
             'total_raw_material_cost' => array_sum(array_column($items, 'total_cost')),
             'total_production_expense' => array_sum(array_column($expenses, 'actual_amount')),
             'items_summary' => $this->summarizeItems($items),
-            'expenses_summary' => $this->summarizeExpenses($expenses)
+            'expenses_summary' => $this->summarizeExpenses($expenses),
         ];
 
         return $this->create(
@@ -67,11 +68,11 @@ class ProductionAuditLogService
             'before' => $beforeData,
             'after' => $afterData,
             'changes' => $changes,
-            'changed_fields' => array_keys($changes)
+            'changed_fields' => array_keys($changes),
         ];
 
         $changedFieldsText = implode(', ', array_keys($changes));
-        
+
         return $this->create(
             $productionId,
             'UPDATE',
@@ -80,13 +81,13 @@ class ProductionAuditLogService
         );
     }
 
-    public function logStatusChange(int $productionId, string $fromStatus, string $toStatus, string $reason = null): int
+    public function logStatusChange(int $productionId, string $fromStatus, string $toStatus, ?string $reason = null): int
     {
         $metadata = [
             'from_status' => $fromStatus,
             'to_status' => $toStatus,
             'reason' => $reason,
-            'status_change_time' => now()->toISOString()
+            'status_change_time' => now()->toISOString(),
         ];
 
         return $this->create(
@@ -104,7 +105,7 @@ class ProductionAuditLogService
             'quantity_produced' => $completionData['quantity_produced'] ?? 0,
             'completion_time' => now()->toISOString(),
             'stock_movements' => $completionData['stock_movements'] ?? [],
-            'batch_created' => $completionData['batch_created'] ?? null
+            'batch_created' => $completionData['batch_created'] ?? null,
         ];
 
         return $this->create(
@@ -123,7 +124,7 @@ class ProductionAuditLogService
             'reversal_time' => now()->toISOString(),
             'stock_movements_reversed' => $reversalData['stock_movements'] ?? [],
             'batches_affected' => $reversalData['batches_affected'] ?? [],
-            'reversal_reason' => $reversalData['reason'] ?? null
+            'reversal_reason' => $reversalData['reason'] ?? null,
         ];
 
         return $this->create(
@@ -139,7 +140,7 @@ class ProductionAuditLogService
         $metadata = [
             'deleted_production' => $productionData,
             'deletion_time' => now()->toISOString(),
-            'had_stock_impact' => $productionData['status'] === 'COMPLETED'
+            'had_stock_impact' => $productionData['status'] === 'COMPLETED',
         ];
 
         return $this->create(
@@ -166,13 +167,13 @@ class ProductionAuditLogService
             'last_action' => DB::table($this->table_name)
                 ->where('production_id', $productionId)
                 ->orderBy('created_at', 'DESC')
-                ->value('action_type')
+                ->value('action_type'),
         ];
     }
 
     public function getUserActivity(int $userId, int $days = 30): array
     {
-        return DB::table($this->table_name . ' as pal')
+        return DB::table($this->table_name.' as pal')
             ->select(
                 'pal.action_type',
                 DB::raw('COUNT(*) as count'),
@@ -192,7 +193,7 @@ class ProductionAuditLogService
             return [
                 'product_id' => $item['raw_material_product_id'] ?? null,
                 'quantity' => $item['quantity_consumed'] ?? $item['quantity_required'] ?? 0,
-                'cost' => $item['total_cost'] ?? 0
+                'cost' => $item['total_cost'] ?? 0,
             ];
         }, $items);
     }
@@ -203,7 +204,7 @@ class ProductionAuditLogService
             return [
                 'type' => $expense['expense_type'] ?? null,
                 'name' => $expense['expense_name'] ?? null,
-                'amount' => $expense['actual_amount'] ?? 0
+                'amount' => $expense['actual_amount'] ?? 0,
             ];
         }, $expenses);
     }

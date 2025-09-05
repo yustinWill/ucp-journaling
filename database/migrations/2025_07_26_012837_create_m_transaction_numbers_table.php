@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('last_reset_date')->nullable()->comment('Last time counter was reset');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
-            
+
             // Add indexes for performance
             $table->index(['module_name', 'status']);
             $table->index('status');

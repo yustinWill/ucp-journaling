@@ -19,8 +19,10 @@ class PermissionHelper
 
             $formattedPermissions[$moduleName][$permissionType] = $permissionStatus;
         }
+
         return $formattedPermissions;
     }
+
     /**
      * Mock permissions for development - replace with actual Gate logic in production
      * All permissions set to true for development phase
@@ -118,7 +120,7 @@ class PermissionHelper
             'canShowEditButton' => $permissions['write'],
             'canShowDeleteButton' => $permissions['delete'],
             'canShowImportButton' => $permissions['write'],
-            'canShowExportButton' => $permissions['read']
+            'canShowExportButton' => $permissions['read'],
         ];
     }
 
@@ -194,11 +196,12 @@ class PermissionHelper
             'main_transaction.expense.tags' => ['main_transaction_expense', 'read'],
         ];
 
-        if (!isset($routePermissions[$route])) {
+        if (! isset($routePermissions[$route])) {
             return false;
         }
 
         [$module, $permission] = $routePermissions[$route];
+
         return self::hasPermission($module, $permission);
     }
 
@@ -229,7 +232,7 @@ class PermissionHelper
             if (self::hasAnyPermission($module)) {
                 $accessibleModules[$module] = [
                     'title' => $title,
-                    'permissions' => self::getModulePermissions($module)
+                    'permissions' => self::getModulePermissions($module),
                 ];
             }
         }

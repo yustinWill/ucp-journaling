@@ -30,6 +30,11 @@
                             <button type="button" class="btn btn-primary btn-md waves-effect waves-light" onclick="window.print()">
                                 <i class="icon-base ti tabler-printer me-2"></i>Print
                             </button>
+                            @if($canCreatePurchaseDelivery && !in_array($purchaseOrder['status'], ['DRAFT', 'CANCELLED']))
+                                <a href="{{ route('main_transaction.purchase_delivery.add', ['po_id' => $purchaseOrder['id']]) }}" class="btn btn-warning btn-md waves-effect waves-light">
+                                    <i class="icon-base ti tabler-truck-delivery me-2"></i>Buat Delivery
+                                </a>
+                            @endif
                             @if($canEditPurchaseOrder)
                                 <a href="{{ route('main_transaction.purchase_order.edit', $purchaseOrder['id']) }}" class="btn btn-success btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit

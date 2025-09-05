@@ -2,51 +2,50 @@
 
 namespace App\Http\Controllers\MasterData;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-use App\Helpers\PermissionHelper;
-
-//Actions
+use App\Domains\AccountingJournal\Services\AccountingJournalService;
 use App\Domains\Coa\Actions\CreateCoaAction;
 use App\Domains\Coa\Actions\UpdateCoaAction;
-
-//Services
-use App\Domains\Coa\Services\CoaService;
-use App\Domains\AccountingJournal\Services\AccountingJournalService;
 use App\Domains\Coa\Services\CoaAuditLogService;
+use App\Domains\Coa\Services\CoaService;
 use App\Domains\Tag\Services\TagService;
-
-//Enums
 use App\Enums\ErrorCodes;
+// Actions
 use App\Enums\SuccessCodes;
+use App\Exceptions\AppException;
+// Services
+use App\Helpers\DiscordNotifier;
+use App\Helpers\ValidationHelper;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+// Enums
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CoaController extends Controller
 {
     private $statuses = [
         ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
     ];
 
     public function index()
     {
         $statuses = $this->statuses;
+
         return view('pages.master_data.coa.index', compact('statuses'));
     }
 
     public function index_data_table()
     {
         $data = app(CoaService::class)->findAllDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function journal_log_per_coa_data_table()
     {
         $data = app(AccountingJournalService::class)->findAllPerCoaDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -60,7 +59,7 @@ class CoaController extends Controller
         return view('pages.master_data.coa.add', [
             'tags' => $tags,
             'statuses' => $statuses,
-            'coa_accounts' => $coa_accounts
+            'coa_accounts' => $coa_accounts,
         ]);
     }
 
@@ -75,7 +74,7 @@ class CoaController extends Controller
                 'note' => 'nullable|string|max:255',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->statuses, 'value'))
+                    Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'tags' => 'nullable|array',
             ]);
@@ -83,7 +82,7 @@ class CoaController extends Controller
             app(CreateCoaAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_COA_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_COA_SUCCESS->message(),
             ], SuccessCodes::CREATE_COA_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -97,6 +96,7 @@ class CoaController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -108,13 +108,14 @@ class CoaController extends Controller
     public function export()
     {
         $data = [
-            ["no" => 1, "value" => "Kode COA"],
-            ["no" => 2, "value" => "Nama COA"],
-            ["no" => 3, "value" => "Level COA"],
-            ["no" => 4, "value" => "Jenis COA"],
-            ["no" => 5, "value" => "Note"],
-            ["no" => 6, "value" => "Status"],
+            ['no' => 1, 'value' => 'Kode COA'],
+            ['no' => 2, 'value' => 'Nama COA'],
+            ['no' => 3, 'value' => 'Level COA'],
+            ['no' => 4, 'value' => 'Jenis COA'],
+            ['no' => 5, 'value' => 'Note'],
+            ['no' => 6, 'value' => 'Status'],
         ];
+
         return view('pages.master_data.coa.export', ['data' => $data]);
     }
 
@@ -145,7 +146,7 @@ class CoaController extends Controller
             'tags' => $tags,
             'statuses' => $statuses,
             'coa_accounts' => $coa_accounts,
-            'coa' => $coa
+            'coa' => $coa,
         ]);
     }
 
@@ -160,7 +161,7 @@ class CoaController extends Controller
                 'note' => 'nullable|string|max:255',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->statuses, 'value'))
+                    Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'tags' => 'nullable|array',
             ]);
@@ -168,7 +169,7 @@ class CoaController extends Controller
             app(UpdateCoaAction::class)->execute($validated['id'], $validated);
 
             return response()->json([
-                'message' => SuccessCodes::UPDATE_COA_SUCCESS->message()
+                'message' => SuccessCodes::UPDATE_COA_SUCCESS->message(),
             ], SuccessCodes::UPDATE_COA_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -182,6 +183,7 @@ class CoaController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),

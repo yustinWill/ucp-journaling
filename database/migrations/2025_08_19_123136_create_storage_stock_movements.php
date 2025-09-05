@@ -31,12 +31,12 @@ return new class extends Migration
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             $table->foreign('f_storage_id')->references('id')->on('m_storages');
             $table->foreign('f_product_id')->references('id')->on('m_products');
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users');
-            
+
             $table->index(['f_storage_id', 'f_product_id', 'movement_date'], 'idx_storage_product_movement');
             $table->index(['company_code', 'movement_type'], 'idx_company_movement_type');
             $table->index(['source_type', 'f_source_transaction_id'], 'idx_source_transaction');

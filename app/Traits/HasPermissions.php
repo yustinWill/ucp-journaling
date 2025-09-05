@@ -2,7 +2,6 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 trait HasPermissions
@@ -52,7 +51,7 @@ trait HasPermissions
      */
     protected function requirePermission(string $module, string $permission): void
     {
-        if (!$this->hasPermission($module, $permission)) {
+        if (! $this->hasPermission($module, $permission)) {
             abort(403, 'Insufficient permissions to access this resource.');
         }
     }
@@ -76,7 +75,7 @@ trait HasPermissions
     protected function getViewDataWithPermissions(string $module, array $data = []): array
     {
         return array_merge($data, [
-            'permissions' => $this->getUserPermissions($module)
+            'permissions' => $this->getUserPermissions($module),
         ]);
     }
 }

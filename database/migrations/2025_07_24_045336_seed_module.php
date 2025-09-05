@@ -59,7 +59,7 @@ return new class extends Migration
                 'description' => 'Master Data User',
                 'is_active' => true,
                 'created_at' => now(),
-            ]
+            ],
         ];
 
         DB::table('modules')->insert($modules);

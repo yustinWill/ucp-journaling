@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -20,7 +20,7 @@ return new class extends Migration
         // Step 2: Rename audit logs table and update foreign keys
         if (Schema::hasTable('m_storage_audit_logs')) {
             Schema::rename('m_storage_audit_logs', 'm_warehouse_audit_logs');
-            
+
             // Get the actual foreign key constraint name
             $foreignKeys = DB::select("
                 SELECT CONSTRAINT_NAME 
@@ -30,14 +30,14 @@ return new class extends Migration
                 AND COLUMN_NAME = 'f_storage_id'
                 AND CONSTRAINT_NAME != 'PRIMARY'
             ");
-            
+
             Schema::table('m_warehouse_audit_logs', function (Blueprint $table) use ($foreignKeys) {
-                if (!empty($foreignKeys)) {
+                if (! empty($foreignKeys)) {
                     $table->dropForeign($foreignKeys[0]->CONSTRAINT_NAME);
                 }
                 $table->renameColumn('f_storage_id', 'f_warehouse_id');
             });
-            
+
             Schema::table('m_warehouse_audit_logs', function (Blueprint $table) {
                 $table->foreign('f_warehouse_id')->references('id')->on('m_warehouses');
             });
@@ -46,7 +46,7 @@ return new class extends Migration
         // Step 3: Rename stock movements table and update foreign keys
         if (Schema::hasTable('t_storage_stock_movements')) {
             Schema::rename('t_storage_stock_movements', 't_warehouse_stock_movements');
-            
+
             // Get the actual foreign key constraint name
             $foreignKeys = DB::select("
                 SELECT CONSTRAINT_NAME 
@@ -56,15 +56,15 @@ return new class extends Migration
                 AND COLUMN_NAME = 'f_storage_id'
                 AND CONSTRAINT_NAME != 'PRIMARY'
             ");
-            
+
             Schema::table('t_warehouse_stock_movements', function (Blueprint $table) use ($foreignKeys) {
-                if (!empty($foreignKeys)) {
+                if (! empty($foreignKeys)) {
                     $table->dropForeign($foreignKeys[0]->CONSTRAINT_NAME);
                 }
                 $table->dropIndex('idx_storage_product_movement');
                 $table->renameColumn('f_storage_id', 'f_warehouse_id');
             });
-            
+
             Schema::table('t_warehouse_stock_movements', function (Blueprint $table) {
                 $table->foreign('f_warehouse_id')->references('id')->on('m_warehouses');
                 $table->index(['f_warehouse_id', 'f_product_id', 'movement_date'], 'idx_warehouse_product_movement');
@@ -74,7 +74,7 @@ return new class extends Migration
         // Step 4: Rename stock snapshots table and update foreign keys
         if (Schema::hasTable('t_storage_stock_snapshots')) {
             Schema::rename('t_storage_stock_snapshots', 't_warehouse_stock_snapshots');
-            
+
             // Get the actual foreign key constraint name
             $foreignKeys = DB::select("
                 SELECT CONSTRAINT_NAME 
@@ -84,16 +84,16 @@ return new class extends Migration
                 AND COLUMN_NAME = 'f_storage_id'
                 AND CONSTRAINT_NAME != 'PRIMARY'
             ");
-            
+
             Schema::table('t_warehouse_stock_snapshots', function (Blueprint $table) use ($foreignKeys) {
-                if (!empty($foreignKeys)) {
+                if (! empty($foreignKeys)) {
                     $table->dropForeign($foreignKeys[0]->CONSTRAINT_NAME);
                 }
                 $table->dropIndex('unq_storage_product_snapshot');
                 $table->dropIndex('idx_storage_snapshot_date');
                 $table->renameColumn('f_storage_id', 'f_warehouse_id');
             });
-            
+
             Schema::table('t_warehouse_stock_snapshots', function (Blueprint $table) {
                 $table->foreign('f_warehouse_id')->references('id')->on('m_warehouses');
                 $table->unique(['f_warehouse_id', 'f_product_id', 'snapshot_date'], 'unq_warehouse_product_snapshot');
@@ -115,13 +115,13 @@ return new class extends Migration
                 $table->dropIndex('idx_warehouse_snapshot_date');
                 $table->renameColumn('f_warehouse_id', 'f_storage_id');
             });
-            
+
             Schema::table('t_warehouse_stock_snapshots', function (Blueprint $table) {
                 $table->foreign('f_storage_id')->references('id')->on('m_storages');
                 $table->unique(['f_storage_id', 'f_product_id', 'snapshot_date'], 'unq_storage_product_snapshot');
                 $table->index(['f_storage_id', 'snapshot_date'], 'idx_storage_snapshot_date');
             });
-            
+
             Schema::rename('t_warehouse_stock_snapshots', 't_storage_stock_snapshots');
         }
 
@@ -131,12 +131,12 @@ return new class extends Migration
                 $table->dropIndex('idx_warehouse_product_movement');
                 $table->renameColumn('f_warehouse_id', 'f_storage_id');
             });
-            
+
             Schema::table('t_warehouse_stock_movements', function (Blueprint $table) {
                 $table->foreign('f_storage_id')->references('id')->on('m_storages');
                 $table->index(['f_storage_id', 'f_product_id', 'movement_date'], 'idx_storage_product_movement');
             });
-            
+
             Schema::rename('t_warehouse_stock_movements', 't_storage_stock_movements');
         }
 
@@ -145,11 +145,11 @@ return new class extends Migration
                 $table->dropForeign(['f_warehouse_id']);
                 $table->renameColumn('f_warehouse_id', 'f_storage_id');
             });
-            
+
             Schema::table('m_warehouse_audit_logs', function (Blueprint $table) {
                 $table->foreign('f_storage_id')->references('id')->on('m_storages');
             });
-            
+
             Schema::rename('m_warehouse_audit_logs', 'm_storage_audit_logs');
         }
 

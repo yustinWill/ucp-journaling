@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::table('t_stock_opnames', function (Blueprint $table) {
+        Schema::table('t_stock_opnames', function (Blueprint $table) {
             $table->unsignedInteger('count_variance')->after('count_product')->default(0);
         });
     }

@@ -2,30 +2,37 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
-use App\Http\Controllers\Controller;
+use App\Domains\Contact\Services\ContactService;
+use App\Domains\PurchaseDelivery\Actions\CreatePurchaseDeliveryAction;
+use App\Domains\PurchaseDelivery\Actions\UpdatePurchaseDeliveryAction;
+use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryAuditLogService;
+// Domain Services
+use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+// Enums
 use App\Helpers\PermissionHelper;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PurchaseDeliveryController extends Controller
 {
     public function index()
     {
         // Check read permission for purchase delivery module
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
         }
-        
+
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_delivery');
-        
-        $statuses = [
-            ['value' => 'PENDING', 'label' => 'PENDING - Menunggu'],
-            ['value' => 'IN_TRANSIT', 'label' => 'IN_TRANSIT - Dalam Perjalanan'],
-            ['value' => 'DELIVERED', 'label' => 'DELIVERED - Terkirim'],
-            ['value' => 'PARTIAL_DELIVERED', 'label' => 'PARTIAL_DELIVERED - Sebagian Terkirim'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
-        ];
+
+        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
 
         // Map permissions to view variables
         $canAddPurchaseDelivery = PermissionHelper::canWrite('main_transaction_purchase_delivery');
@@ -35,152 +42,64 @@ class PurchaseDeliveryController extends Controller
         $canEditPurchaseDelivery = PermissionHelper::canWrite('main_transaction_purchase_delivery');
 
         $data = [
-            'statuses' => $statuses,
+            'suppliers' => $suppliers,
             'canAddPurchaseDelivery' => $canAddPurchaseDelivery,
             'canImportPurchaseDelivery' => $canImportPurchaseDelivery,
             'canExportPurchaseDelivery' => $canExportPurchaseDelivery,
             'canViewPurchaseDelivery' => $canViewPurchaseDelivery,
             'canEditPurchaseDelivery' => $canEditPurchaseDelivery,
             'canViewUser' => PermissionHelper::canRead('master_data_user'),
-            'canViewPurchaseOrder' => PermissionHelper::canRead('main_transaction_purchase_order')
+            'canViewPurchaseOrder' => PermissionHelper::canRead('main_transaction_purchase_order'),
         ];
-        
+
         return view('pages.main_transaction.purchase_delivery.index', array_merge($data, $permissionData));
     }
 
     public function index_data_table(Request $request)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Mock data specific to Purchase Deliveries
-        $data = [
-            "data" => [
-                [
-                    "id" => 1,
-                    "date" => "2025-07-05",
-                    "reference_no" => "PD-2025-001",
-                    "supplier" => "CV Plastik Prima",
-                    "supplier_id" => 1,
-                    "delivery_date" => "2025-07-10",
-                    "status" => "DELIVERED",
-                    "status_badge_class" => "bg-label-success",
-                    "po_reference" => "PO-2025-001",
-                    "po_id" => 1,
-                    "total_items" => 1000,
-                    "delivered_items" => 1000,
-                    "created_by" => "Warehouse Staff",
-                    "created_by_id" => "USR-003",
-                    "tags" => [
-                        ["name" => "Urgent", "preview" => "bg-label-warning"],
-                        ["name" => "Bahan Baku", "preview" => "bg-label-primary"]
-                    ],
-                ],
-                [
-                    "id" => 2,
-                    "date" => "2025-07-06",
-                    "reference_no" => "PD-2025-002",
-                    "supplier" => "PT Grafika Mandiri",
-                    "supplier_id" => 2,
-                    "delivery_date" => "2025-07-12",
-                    "status" => "IN_TRANSIT",
-                    "status_badge_class" => "bg-label-warning",
-                    "po_reference" => "PO-2025-002",
-                    "po_id" => 2,
-                    "total_items" => 500,
-                    "delivered_items" => 0,
-                    "created_by" => "Logistics Staff",
-                    "created_by_id" => "USR-004",
-                    "tags" => [
-                        ["name" => "Kemasan", "preview" => "bg-label-success"]
-                    ],
-                ]
-            ]
-        ];
-        return response()->json($data, 200);
+        $data = app(PurchaseDeliveryService::class)->findAllDatatable();
+
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
-    public function add()
+    public function add(Request $request)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
 
-        // Get Purchase Orders with enhanced supplier information
-        $purchaseOrders = [
-            [
-                'value' => '1', 
-                'label' => 'PO-2025-001 - CV Plastik Prima',
-                'supplier' => 'CV Plastik Prima',
-                'supplier_id' => 1,
-                'email' => 'plastik@prima.com',
-                'address' => 'Jl. Industri No. 123, Jakarta Timur',
-                'warehouse_id' => '1' // Default warehouse from PO
-            ],
-            [
-                'value' => '2', 
-                'label' => 'PO-2025-002 - PT Grafika Mandiri',
-                'supplier' => 'PT Grafika Mandiri',
-                'supplier_id' => 2,
-                'email' => 'info@grafika.com',
-                'address' => 'Jl. Percetakan Raya No. 45, Tangerang',
-                'warehouse_id' => '2' // Default warehouse from PO
-            ],
-            [
-                'value' => '3', 
-                'label' => 'PO-2025-003 - CV Kemasan Sejahtera',
-                'supplier' => 'CV Kemasan Sejahtera',
-                'supplier_id' => 3,
-                'email' => 'kemasan@sejahtera.co.id',
-                'address' => 'Jl. Kemasan Indah No. 67, Bekasi',
-                'warehouse_id' => '1' // Default warehouse from PO
-            ]
-        ];
+        // Get available Purchase Orders for delivery
+        $purchaseOrders = app(PurchaseOrderService::class)->findAvailableForDelivery();
+        $warehouses = app(WarehouseService::class)->findAll();
+        $availableTags = app(TagService::class)->findAll();
 
-        // Get Suppliers for manual entry mode
-        $suppliers = [
-            ['value' => '1', 'label' => 'SUP-001 - CV Plastik Prima', 'email' => 'plastik@prima.com', 'address' => 'Jl. Industri No. 123, Jakarta Timur'],
-            ['value' => '2', 'label' => 'SUP-002 - PT Grafika Mandiri', 'email' => 'info@grafika.com', 'address' => 'Jl. Percetakan Raya No. 45, Tangerang'],
-            ['value' => '3', 'label' => 'SUP-003 - CV Kemasan Sejahtera', 'email' => 'kemasan@sejahtera.co.id', 'address' => 'Jl. Kemasan Indah No. 67, Bekasi'],
-            ['value' => '4', 'label' => 'SUP-004 - PT Supplier Bahan Kimia', 'email' => 'kimia@supplier.com', 'address' => 'Jl. Kimia Industri No. 89, Cikarang']
-        ];
-
-        $warehouses = [
-            ['value' => '1', 'label' => 'GD-001 - Gudang Utama Jakarta'],
-            ['value' => '2', 'label' => 'GD-002 - Gudang Produksi Tangerang'],
-            ['value' => '3', 'label' => 'GD-003 - Gudang Distribusi Bekasi']
-        ];
-
-        $availableTags = [
-            ['value' => '1', 'label' => 'Urgent', 'preview' => 'bg-label-danger'],
-            ['value' => '2', 'label' => 'Normal', 'preview' => 'bg-label-primary'],
-            ['value' => '3', 'label' => 'Bahan Baku', 'preview' => 'bg-label-info'],
-            ['value' => '4', 'label' => 'Kemasan', 'preview' => 'bg-label-warning']
-        ];
-
-        // Permission checks
-        $canAddSuppliers = PermissionHelper::canWrite('master_data_contact');
+        // Permission checks for related data creation
         $canAddStorages = PermissionHelper::canWrite('master_data_warehouse');
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
+        // Check if coming from PO detail page
+        $preselectedPOId = $request->get('po_id');
+
         return view('pages.main_transaction.purchase_delivery.add', [
             'purchaseOrders' => $purchaseOrders,
-            'suppliers' => $suppliers,
             'warehouses' => $warehouses,
             'availableTags' => $availableTags,
-            'canAddSuppliers' => $canAddSuppliers,
             'canAddStorages' => $canAddStorages,
-            'canAddTags' => $canAddTags
+            'canAddTags' => $canAddTags,
+            'preselectedPOId' => $preselectedPOId,
         ]);
     }
 
     public function store(Request $request)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk menambah data.',
                 'error' => 'PERMISSION_DENIED',
@@ -188,355 +107,118 @@ class PurchaseDeliveryController extends Controller
         }
 
         try {
-            $deliveryMode = $request->input('delivery_mode', 'manual');
-            
-            // Base validation rules
-            $validationRules = [
-                'date' => 'required|date',
-                'reference_no' => 'required|string|max:50',
-                'delivery_mode' => 'required|in:po,manual',
-                'warehouse_id' => 'required|integer',
-                'supplier_reference' => 'nullable|string|max:100',
-                'expected_date' => 'nullable|date',
-                'tags' => 'nullable|array',
-                'tags.*' => 'integer',
-                'message' => 'nullable|string|max:500',
-                'memo' => 'nullable|string|max:500',
-                'attachment' => 'nullable|file|max:10240', // 10MB
-                'products' => 'required|array|min:1'
-            ];
+            $data = $request->all();
 
-            // Conditional validation rules based on delivery mode
-            if ($deliveryMode === 'po') {
-                // PO-based delivery validation
-                $validationRules['purchase_order_id'] = 'required|integer';
-                $validationRules['allow_over_delivery'] = 'nullable|boolean';
-                $validationRules['products.*.product_id'] = 'required|integer';
-                $validationRules['products.*.ordered_qty'] = 'required|numeric|min:0';
-                $validationRules['products.*.delivered_qty'] = 'required|numeric|min:0';
-                $validationRules['products.*.delivery_qty'] = 'required|numeric|min:1';
-                $validationRules['products.*.unit'] = 'required|string';
-                $validationRules['products.*.status'] = 'required|in:GOOD,DAMAGED,PARTIAL';
-            } else {
-                // Manual delivery validation
-                $validationRules['supplier_id'] = 'required|integer';
-                $validationRules['email'] = 'nullable|email';
-                $validationRules['address'] = 'nullable|string|max:500';
-                $validationRules['products.*.product_id'] = 'required|integer';
-                $validationRules['products.*.quantity'] = 'required|numeric|min:1';
-                $validationRules['products.*.unit'] = 'required|string';
-                $validationRules['products.*.notes'] = 'nullable|string|max:200';
-                $validationRules['products.*.status'] = 'required|in:GOOD,DAMAGED,PARTIAL';
-            }
+            // Use action for validation and creation
+            $createAction = app(CreatePurchaseDeliveryAction::class);
+            $validation = $createAction->validatePurchaseDeliveryData($data);
 
-            $validated = $request->validate($validationRules);
-
-            // Additional validation for PO mode
-            if ($deliveryMode === 'po' && !$request->input('allow_over_delivery', false)) {
-                foreach ($validated['products'] as $product) {
-                    $remaining = $product['ordered_qty'] - $product['delivered_qty'];
-                    if ($product['delivery_qty'] > $remaining) {
-                        return response()->json([
-                            'message' => 'Kuantitas pengiriman tidak boleh melebihi sisa yang belum dikirim. Aktifkan "Izinkan Over Delivery" jika diperlukan.',
-                            'error' => 'VALIDATION_ERROR',
-                        ], 422);
-                    }
-                }
-            }
-
-            // Use transaction to ensure data consistency
-            DB::beginTransaction();
-
-            try {
-                // Prepare data for service layer
-                $deliveryData = [
-                    'reference_no' => $validated['reference_no'],
-                    'date' => $validated['date'],
-                    'warehouse_id' => $validated['warehouse_id'],
-                    'supplier_reference' => $validated['supplier_reference'] ?? null,
-                    'expected_date' => $validated['expected_date'] ?? null,
-                    'message' => $validated['message'] ?? null,
-                    'memo' => $validated['memo'] ?? null,
-                    'attachment' => null, // Handle file upload separately
-                    'delivery_mode' => $deliveryMode,
-                    'status' => 'PENDING'
-                ];
-
-                // Add mode-specific data
-                if ($deliveryMode === 'po') {
-                    $deliveryData['purchase_order_id'] = $validated['purchase_order_id'];
-                    $deliveryData['allow_over_delivery'] = $request->input('allow_over_delivery', false);
-                    // Get supplier from PO (in real implementation, fetch from database)
-                    $deliveryData['supplier_id'] = 1; // Mock supplier ID from PO
-                } else {
-                    $deliveryData['supplier_id'] = $validated['supplier_id'];
-                    $deliveryData['email'] = $validated['email'] ?? null;
-                    $deliveryData['address'] = $validated['address'] ?? null;
-                }
-
-                // Create purchase delivery record
-                $deliveryService = app(\App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService::class);
-                $deliveryId = $deliveryService->create($deliveryData);
-
-                // Create delivery products based on mode
-                if ($deliveryMode === 'po') {
-                    // PO-based products
-                    $productData = [];
-                    foreach ($validated['products'] as $product) {
-                        if ($product['delivery_qty'] > 0) {
-                            $productData[] = [
-                                'product_id' => $product['product_id'],
-                                'ordered_qty' => $product['ordered_qty'],
-                                'delivered_qty' => $product['delivered_qty'],
-                                'delivery_qty' => $product['delivery_qty'],
-                                'unit' => $product['unit'],
-                                'status' => $product['status']
-                            ];
-                        }
-                    }
-                } else {
-                    // Manual products
-                    $productData = [];
-                    foreach ($validated['products'] as $product) {
-                        if ($product['quantity'] > 0) {
-                            $productData[] = [
-                                'product_id' => $product['product_id'],
-                                'quantity' => $product['quantity'],
-                                'unit' => $product['unit'],
-                                'notes' => $product['notes'] ?? null,
-                                'status' => $product['status']
-                            ];
-                        }
-                    }
-                }
-
-                $deliveryService->createDeliveryProducts($deliveryId, $productData);
-
-                // Handle tags if provided
-                if (!empty($validated['tags'])) {
-                    // In real implementation, create delivery tag relationships
-                    // DB::table('t_purchase_delivery_tags')->insert($tagData);
-                }
-
-                DB::commit();
-
+            if (! $validation['is_valid']) {
                 return response()->json([
-                    'message' => 'Purchase Delivery berhasil dibuat',
-                    'id' => $deliveryId,
-                    'mode' => $deliveryMode
-                ], 201);
-
-            } catch (\Exception $e) {
-                DB::rollback();
-                throw $e;
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validation['errors'],
+                ], 422);
             }
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Execute creation
+            $deliveryId = $createAction->execute($data);
+
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function($errors) {
-                    return implode(', ', $errors);
-                }, $e->errors())),
-                'error' => 'VALIDATION_ERROR',
-            ], 422);
+                'message' => SuccessCodes::CREATE_PURCHASE_DELIVERY_SUCCESS->message(),
+            ], SuccessCodes::CREATE_PURCHASE_DELIVERY_SUCCESS->httpStatus());
+
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
         } catch (\Exception $e) {
+            DiscordNotifier::reportException($e);
+
             return response()->json([
-                'message' => 'Terjadi kesalahan saat menyimpan data.',
-                'error' => 'INTERNAL_SERVER_ERROR',
-            ], 500);
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
     public function detail($id)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
         }
-        
-        // Get permission data for view
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_delivery');
-        
-        // Mock purchase delivery data
-        $purchaseDelivery = [
-            'id' => $id,
-            'reference_no' => 'PD-2025-001',
-            'date' => '2025-07-05',
-            'supplier' => 'CV Plastik Prima',
-            'supplier_id' => 1,
-            'status' => 'DELIVERED',
-            'delivery_date' => '2025-07-10',
-            'po_reference' => 'PO-2025-001',
-            'carrier' => 'Internal Transport',
-            'tracking_number' => 'INT-2025-0001',
-            'total_items' => 1000,
-            'delivered_items' => 1000,
-            'warehouse' => 'Gudang Utama',
-            'received_by' => 'Ahmad Supardi',
-            'delivery_notes' => 'Pengiriman botol PET 330ml sesuai PO-2025-001, kondisi barang baik',
-            'created_at' => '2025-07-05 08:00:00',
-            'updated_at' => '2025-07-10 14:30:00'
-        ];
-        
-        // Mock audit logs
-        $auditLogs = [
-            [
-                'created_at' => '2025-07-10 14:30:00',
-                'user_id' => 1,
-                'user_name' => 'Warehouse Staff',
-                'action_type' => 'UPDATE',
-                'description' => 'Status pengiriman diubah dari IN_TRANSIT menjadi DELIVERED'
-            ],
-            [
-                'created_at' => '2025-07-08 10:00:00',
-                'user_id' => 2,
-                'user_name' => 'Logistics Coordinator',
-                'action_type' => 'UPDATE',
-                'description' => 'Status pengiriman diubah dari PENDING menjadi IN_TRANSIT'
-            ],
-            [
-                'created_at' => '2025-07-05 08:00:00',
-                'user_id' => 3,
-                'user_name' => 'Purchasing Staff',
-                'action_type' => 'CREATE',
-                'description' => 'Purchase Delivery dibuat untuk PO-2025-001 dengan 1000 items'
-            ]
-        ];
-        
-        $data = [
+
+        $purchaseDelivery = app(PurchaseDeliveryService::class)->findOne($id);
+        if (! $purchaseDelivery) {
+            abort(404, 'Purchase Delivery not found');
+        }
+
+        // Load audit logs
+        $auditLogs = app(PurchaseDeliveryAuditLogService::class)->findByPurchaseDeliveryId($id);
+
+        return view('pages.main_transaction.purchase_delivery.detail', [
             'purchaseDelivery' => $purchaseDelivery,
             'auditLogs' => $auditLogs,
-            'canEditPurchaseDelivery' => PermissionHelper::canWrite('main_transaction_purchase_delivery'),
-            'canDeletePurchaseDelivery' => PermissionHelper::canDelete('main_transaction_purchase_delivery'),
-            'canApprovePurchaseDelivery' => PermissionHelper::canApprove('main_transaction_purchase_delivery')
-        ];
-        
-        return view('pages.main_transaction.purchase_delivery.detail', array_merge($data, $permissionData));
+            'canEdit' => PermissionHelper::canWrite('main_transaction_purchase_delivery') && in_array($purchaseDelivery->status, ['PENDING', 'IN_TRANSIT']),
+            'canDelete' => PermissionHelper::canDelete('main_transaction_purchase_delivery') && $purchaseDelivery->status === 'PENDING',
+            'canCancel' => PermissionHelper::canWrite('main_transaction_purchase_delivery') && in_array($purchaseDelivery->status, ['PENDING', 'IN_TRANSIT']),
+        ]);
     }
 
     public function auditLogDataTable($id)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Mock audit log data - in real implementation, get from audit log service
-        $auditLogs = [
-            [
-                'created_at' => '2025-07-10 14:30:00',
-                'user_id' => 1,
-                'user_name' => 'Warehouse Staff',
-                'action_type' => 'UPDATE',
-                'description' => 'Status pengiriman diubah dari IN_TRANSIT menjadi DELIVERED'
-            ],
-            [
-                'created_at' => '2025-07-08 10:00:00',
-                'user_id' => 2,
-                'user_name' => 'Logistics Coordinator',
-                'action_type' => 'UPDATE',
-                'description' => 'Status pengiriman diubah dari PENDING menjadi IN_TRANSIT'
-            ],
-            [
-                'created_at' => '2025-07-05 08:00:00',
-                'user_id' => 3,
-                'user_name' => 'Purchasing Staff',
-                'action_type' => 'CREATE',
-                'description' => 'Purchase Delivery dibuat untuk PO-2025-001 dengan 1000 items'
-            ]
-        ];
+        $data = app(PurchaseDeliveryAuditLogService::class)->findAllDatatableByPurchaseDeliveryId($id);
 
-        return response()->json(['data' => $auditLogs], 200);
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function edit($id)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
         }
-        
-        // Get permission data for view
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_delivery');
-        
-        // Mock purchase delivery data
-        $purchaseDelivery = [
-            'id' => $id,
-            'reference_no' => 'PD-2025-001',
-            'date' => '2025-07-05',
-            'supplier_id' => 1,
-            'status' => 'IN_TRANSIT',
-            'delivery_date' => '2025-07-10',
-            'po_reference' => 'PO-2025-001',
-            'carrier' => 'Internal Transport',
-            'tracking_number' => 'INT-2025-0001',
-            'total_items' => 1000,
-            'delivered_items' => 800,
-            'warehouse_id' => 1,
-            'received_by' => 'Ahmad Supardi',
-            'delivery_notes' => 'Pengiriman botol PET 330ml sesuai PO-2025-001'
-        ];
-        
-        // Options for form
-        $suppliers = [
-            ['value' => '1', 'label' => 'SUP-001 - CV Plastik Prima'],
-            ['value' => '2', 'label' => 'SUP-002 - PT Grafika Mandiri'],
-            ['value' => '3', 'label' => 'SUP-003 - CV Kemasan Sejahtera'],
-            ['value' => '4', 'label' => 'SUP-004 - PT Supplier Bahan Kimia']
-        ];
 
-        $statuses = [
-            ['value' => 'PENDING', 'label' => 'PENDING - Menunggu'],
-            ['value' => 'IN_TRANSIT', 'label' => 'IN_TRANSIT - Dalam Perjalanan'],
-            ['value' => 'DELIVERED', 'label' => 'DELIVERED - Terkirim'],
-            ['value' => 'PARTIAL_DELIVERED', 'label' => 'PARTIAL_DELIVERED - Sebagian Terkirim'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
-        ];
+        $purchaseDelivery = app(PurchaseDeliveryService::class)->findOne($id);
+        if (! $purchaseDelivery) {
+            abort(404, 'Purchase Delivery not found');
+        }
 
-        $purchaseOrders = [
-            ['value' => 'PO-2025-001', 'label' => 'PO-2025-001 - CV Plastik Prima'],
-            ['value' => 'PO-2025-002', 'label' => 'PO-2025-002 - PT Grafika Mandiri'],
-            ['value' => 'PO-2025-003', 'label' => 'PO-2025-003 - CV Kemasan Sejahtera']
-        ];
+        // Check if delivery can be edited
+        if (! in_array($purchaseDelivery->status, ['PENDING', 'IN_TRANSIT'])) {
+            abort(403, 'Cannot edit delivery in current status');
+        }
 
-        $carriers = [
-            ['value' => 'Internal Transport', 'label' => 'Internal Transport'],
-            ['value' => 'JNE Express', 'label' => 'JNE Express'],
-            ['value' => 'TIKI Delivery', 'label' => 'TIKI Delivery'],
-            ['value' => 'Pos Indonesia', 'label' => 'Pos Indonesia']
-        ];
+        $purchaseOrders = app(PurchaseOrderService::class)->findAvailableForDelivery();
+        $warehouses = app(WarehouseService::class)->findAll();
+        $availableTags = app(TagService::class)->findAll();
 
-        $warehouses = [
-            ['value' => '1', 'label' => 'GDG-001 - Gudang Utama'],
-            ['value' => '2', 'label' => 'GDG-002 - Gudang Cabang A'],
-            ['value' => '3', 'label' => 'GDG-003 - Gudang Cabang B']
-        ];
+        // Permission checks
+        $canAddStorages = PermissionHelper::canWrite('master_data_warehouse');
+        $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
-        $receiverOptions = [
-            ['value' => 'Ahmad Supardi', 'label' => 'Ahmad Supardi'],
-            ['value' => 'Siti Nurhaliza', 'label' => 'Siti Nurhaliza'],
-            ['value' => 'Budi Santoso', 'label' => 'Budi Santoso']
-        ];
-        
-        $data = [
+        return view('pages.main_transaction.purchase_delivery.edit', [
             'purchaseDelivery' => $purchaseDelivery,
-            'suppliers' => $suppliers,
-            'statuses' => $statuses,
             'purchaseOrders' => $purchaseOrders,
-            'carriers' => $carriers,
             'warehouses' => $warehouses,
-            'receiverOptions' => $receiverOptions,
-            'canWrite' => PermissionHelper::canWrite('main_transaction_purchase_delivery'),
-            'canAddSuppliers' => PermissionHelper::canWrite('master_data_contact'),
-            'canAddStorages' => PermissionHelper::canWrite('master_data_warehouse')
-        ];
-        
-        return view('pages.main_transaction.purchase_delivery.edit', array_merge($data, $permissionData));
+            'availableTags' => $availableTags,
+            'canAddStorages' => $canAddStorages,
+            'canAddTags' => $canAddTags,
+        ]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
                 'error' => 'PERMISSION_DENIED',
@@ -544,87 +226,88 @@ class PurchaseDeliveryController extends Controller
         }
 
         try {
-            $validated = $request->validate([
-                'id' => 'required|integer',
-                'date' => 'required|date',
-                'supplier_id' => 'required|integer',
-                'status' => 'required|string',
-                'delivery_date' => 'nullable|date',
-                'purchase_order_id' => 'required|integer',
-                'carrier' => 'nullable|string',
-                'tracking_number' => 'nullable|string',
-                'total_items' => 'required|integer|min:0',
-                'delivered_items' => 'required|integer|min:0',
-                'warehouse_id' => 'nullable|integer',
-                'received_by' => 'nullable|string',
-                'delivery_notes' => 'nullable|string|max:500'
-            ]);
+            $data = $request->all();
+            $data['id'] = $id;
 
-            // Mock update logic - in real implementation, update database
-            // app(UpdatePurchaseDeliveryAction::class)->execute($request->id, $validated);
+            // Use action for validation and update
+            $updateAction = app(UpdatePurchaseDeliveryAction::class);
+            $validation = $updateAction->validatePurchaseDeliveryData($data);
+
+            if (! $validation['is_valid']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validation['errors'],
+                ], 422);
+            }
+
+            // Execute update
+            $updateAction->execute($id, $data);
 
             return response()->json([
-                'message' => 'Purchase Delivery berhasil diperbarui'
-            ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+                'message' => SuccessCodes::UPDATE_PURCHASE_DELIVERY_SUCCESS->message(),
+            ], SuccessCodes::UPDATE_PURCHASE_DELIVERY_SUCCESS->httpStatus());
+
+        } catch (AppException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function($errors) {
-                    return implode(', ', $errors);
-                }, $e->errors())),
-                'error' => 'VALIDATION_ERROR',
-            ], 422);
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
         } catch (\Exception $e) {
+            DiscordNotifier::reportException($e);
+
             return response()->json([
-                'message' => 'Terjadi kesalahan saat menyimpan data.',
-                'error' => 'INTERNAL_SERVER_ERROR',
-            ], 500);
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
-    // Import/Export Methods
+    // Import/Export Methods following Purchase Order patterns
     public function import(Request $request)
     {
         // Check write permission for import
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
         }
 
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
-            ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
+            ['value' => '3', 'label' => 'CV Kemasan Sejahtera'],
         ];
 
         $warehouses = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
-            ['value' => '3', 'label' => 'Gudang Finished Goods']
+            ['value' => '3', 'label' => 'Gudang Finished Goods'],
         ];
 
         return view('pages.main_transaction.purchase_delivery.import', [
             'suppliers' => $suppliers,
-            'warehouses' => $warehouses
+            'warehouses' => $warehouses,
         ]);
     }
 
     public function downloadTemplate(Request $request)
     {
         // Check write permission for template download
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
         }
 
         // Mock template download - in real implementation, generate Excel file
         return response()->json([
             'message' => 'Template download untuk Purchase Delivery akan segera tersedia.',
-            'file_url' => '/templates/purchase_delivery_template.xlsx'
+            'file_url' => '/templates/purchase_delivery_template.xlsx',
         ]);
     }
 
     public function validateImport(Request $request)
     {
         // Check write permission for import validation
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -640,10 +323,10 @@ class PurchaseDeliveryController extends Controller
                     'supplier' => 'CV Plastik Prima',
                     'po_reference' => 'PO-2025-001',
                     'total_items' => 500,
-                    'status' => 'PENDING'
-                ]
+                    'status' => 'PENDING',
+                ],
             ],
-            'validation_key' => 'pd_validation_' . time()
+            'validation_key' => 'pd_validation_'.time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -652,7 +335,7 @@ class PurchaseDeliveryController extends Controller
     public function processImport(Request $request)
     {
         // Check write permission for import processing
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'write')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -660,58 +343,58 @@ class PurchaseDeliveryController extends Controller
         return response()->json([
             'success' => true,
             'imported_count' => 3,
-            'message' => 'Purchase Delivery berhasil diimport ke sistem.'
+            'message' => 'Purchase Delivery berhasil diimport ke sistem.',
         ]);
     }
 
     public function export()
     {
         // Check read permission for export
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
         }
 
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
-            ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
+            ['value' => '3', 'label' => 'CV Kemasan Sejahtera'],
         ];
 
         $warehouses = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
-            ['value' => '3', 'label' => 'Gudang Finished Goods']
+            ['value' => '3', 'label' => 'Gudang Finished Goods'],
         ];
 
         return view('pages.main_transaction.purchase_delivery.export', [
             'suppliers' => $suppliers,
-            'warehouses' => $warehouses
+            'warehouses' => $warehouses,
         ]);
     }
 
     public function processExport(Request $request)
     {
         // Check read permission for export processing
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_deliveries_export_' . date('Y-m-d_H-i-s') . '.' . $format;
+        $filename = 'purchase_deliveries_export_'.date('Y-m-d_H-i-s').'.'.$format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/' . $filename
+            'download_url' => '/exports/'.$filename,
         ]);
     }
 
     public function printPDF($poId)
     {
         // Check read permission for PDF generation
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk mencetak PDF.');
         }
 
@@ -720,28 +403,28 @@ class PurchaseDeliveryController extends Controller
         // 1. Fetch PO data and related products
         // 2. Generate PDF using a library like TCPDF or DomPDF
         // 3. Return the PDF as a downloadable response
-        
-        $filename = 'purchase_delivery_form_PO-' . $poId . '_' . date('Y-m-d_H-i-s') . '.pdf';
-        
+
+        $filename = 'purchase_delivery_form_PO-'.$poId.'_'.date('Y-m-d_H-i-s').'.pdf';
+
         // For now, return a JSON response indicating success
         // In production, this would return: return response()->file($pdfPath);
         return response()->json([
             'success' => true,
             'message' => 'PDF berhasil digenerate.',
             'filename' => $filename,
-            'download_url' => '/temp/' . $filename
+            'download_url' => '/temp/'.$filename,
         ]);
     }
 
     public function getPOProducts(Request $request)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $poId = $request->input('po_id');
-        if (!$poId) {
+        if (! $poId) {
             return response()->json(['error' => 'PO ID required'], 400);
         }
 
@@ -753,7 +436,7 @@ class PurchaseDeliveryController extends Controller
                 'unit' => 'pcs',
                 'ordered_qty' => 1000,
                 'delivered_qty' => 400,
-                'remaining_qty' => 600
+                'remaining_qty' => 600,
             ],
             [
                 'product_id' => 2,
@@ -761,7 +444,7 @@ class PurchaseDeliveryController extends Controller
                 'unit' => 'lembar',
                 'ordered_qty' => 500,
                 'delivered_qty' => 200,
-                'remaining_qty' => 300
+                'remaining_qty' => 300,
             ],
             [
                 'product_id' => 3,
@@ -769,8 +452,8 @@ class PurchaseDeliveryController extends Controller
                 'unit' => 'pcs',
                 'ordered_qty' => 800,
                 'delivered_qty' => 800,
-                'remaining_qty' => 0
-            ]
+                'remaining_qty' => 0,
+            ],
         ];
 
         return response()->json(['products' => $products]);
@@ -779,12 +462,12 @@ class PurchaseDeliveryController extends Controller
     public function getPreviousDeliveries(Request $request)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $poId = $request->input('po_id');
-        if (!$poId) {
+        if (! $poId) {
             return response()->json(['error' => 'PO ID required'], 400);
         }
 
@@ -794,14 +477,14 @@ class PurchaseDeliveryController extends Controller
                 'reference_no' => 'PD-2025-001',
                 'date' => '2025-07-10',
                 'status' => 'DELIVERED',
-                'total_items' => 300
+                'total_items' => 300,
             ],
             [
                 'reference_no' => 'PD-2025-002',
                 'date' => '2025-07-15',
                 'status' => 'DELIVERED',
-                'total_items' => 100
-            ]
+                'total_items' => 100,
+            ],
         ];
 
         return response()->json(['deliveries' => $deliveries]);
@@ -810,12 +493,12 @@ class PurchaseDeliveryController extends Controller
     public function getProducts(Request $request)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $supplierId = $request->input('supplier_id');
-        if (!$supplierId) {
+        if (! $supplierId) {
             return response()->json(['error' => 'Supplier ID required'], 400);
         }
 
@@ -824,25 +507,129 @@ class PurchaseDeliveryController extends Controller
             [
                 'product_id' => 1,
                 'product_name' => 'PRD-001 - Botol PET 330ml',
-                'unit' => 'pcs'
+                'unit' => 'pcs',
             ],
             [
                 'product_id' => 2,
                 'product_name' => 'PRD-002 - Label Kemasan',
-                'unit' => 'lembar'
+                'unit' => 'lembar',
             ],
             [
                 'product_id' => 3,
                 'product_name' => 'PRD-003 - Tutup Botol',
-                'unit' => 'pcs'
+                'unit' => 'pcs',
             ],
             [
                 'product_id' => 4,
                 'product_name' => 'PRD-004 - Kardus Packaging',
-                'unit' => 'dus'
-            ]
+                'unit' => 'dus',
+            ],
         ];
 
         return response()->json(['products' => $products]);
+    }
+
+    public function generateTransactionNumber()
+    {
+        // Check read permission
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Generate unique purchase delivery number
+        $year = date('Y');
+        $month = date('m');
+        $timestamp = time();
+
+        // Mock generation - in real implementation, use proper sequence
+        $number = "PD{$year}{$month}.".str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT).'/DO/STG';
+
+        return response()->json([
+            'success' => true,
+            'transaction_number' => $number,
+        ]);
+    }
+
+    public function generateDeliveryNumber()
+    {
+        // Check read permission
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Generate unique delivery number
+        $year = date('Y');
+        $month = date('m');
+
+        // Mock generation - in real implementation, use proper sequence
+        $number = 'DN-'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+
+        return response()->json([
+            'success' => true,
+            'delivery_number' => $number,
+        ]);
+    }
+
+    public function getPODetails(Request $request)
+    {
+        // Check read permission
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_delivery', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $poId = $request->get('po_id');
+        if (! $poId) {
+            return response()->json(['error' => 'PO ID required'], 400);
+        }
+
+        try {
+            // Get PO details
+            $poData = app(PurchaseOrderService::class)->findOne($poId);
+            if (! $poData) {
+                return response()->json(['error' => 'PO not found'], 404);
+            }
+
+            // Get PO products with delivery tracking
+            $poProducts = app(\App\Domains\PurchaseOrder\Services\PurchaseOrderProductService::class)->findAllBasedOnPOId($poId);
+
+            $items = [];
+            foreach ($poProducts as $product) {
+                // Mock delivered quantity - in real implementation, calculate from existing deliveries
+                $deliveredQty = 0; // This should be calculated from t_purchase_delivery_products
+                $remainingQty = $product->qty - $deliveredQty;
+
+                $items[] = [
+                    'product_id' => $product->product_id,
+                    'product_name' => $product->product_code.' - '.$product->product_name,
+                    'unit_name' => $product->unit_code,
+                    'ordered_qty' => $product->qty,
+                    'delivered_qty' => $deliveredQty,
+                    'remaining_qty' => $remainingQty,
+                    'unit_price' => $product->price_per_qty,
+                    'tax_name' => $product->tax_name,
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'po_data' => [
+                    'id' => $poData->id,
+                    'reference_no' => $poData->transaction_code,
+                    'supplier_name' => $poData->supplier_name,
+                    'supplier_id' => $poData->f_supplier_id,
+                    'supplier_email' => $poData->supplier_email,
+                    'supplier_address' => $poData->supplier_address,
+                    'warehouse_id' => $poData->f_warehouse_id,
+                    'warehouse_name' => $poData->warehouse_code.' - '.$poData->warehouse_name,
+                    'date' => $poData->transaction_date,
+                ],
+                'items' => $items,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to load PO details: '.$e->getMessage(),
+            ], 500);
+        }
     }
 }

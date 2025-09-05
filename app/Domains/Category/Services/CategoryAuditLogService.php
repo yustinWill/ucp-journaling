@@ -2,8 +2,8 @@
 
 namespace App\Domains\Category\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CategoryAuditLogService
 {
@@ -20,7 +20,7 @@ class CategoryAuditLogService
             'description' => $data['description'],
             'metadata' => $data['metadata'],
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -28,7 +28,7 @@ class CategoryAuditLogService
     {
         $companyCode = session('user_company_code');
 
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.f_category_id',
@@ -38,7 +38,7 @@ class CategoryAuditLogService
                 't.created_at',
                 't.created_by AS user_id',
                 'usr.name AS user_name',
-                't.created_at'
+                't.created_at',
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
             ->where('t.company_code', $companyCode)

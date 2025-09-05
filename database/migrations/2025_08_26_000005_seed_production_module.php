@@ -12,8 +12,8 @@ return new class extends Migration
     {
         // Insert Production module into modules table (if it doesn't exist)
         $existingModule = DB::table('modules')->where('name', 'main_transaction_production')->first();
-        
-        if (!$existingModule) {
+
+        if (! $existingModule) {
             DB::table('modules')->insert([
                 [
                     'name' => 'main_transaction_production',
@@ -23,7 +23,7 @@ return new class extends Migration
                     'is_active' => true,
                     'created_at' => now(),
                     'updated_at' => now(),
-                ]
+                ],
             ]);
         }
 
@@ -36,7 +36,7 @@ return new class extends Migration
         // Insert Production permissions into permissions table
         // Note: Using only valid ENUM values - reversal and export will need custom implementation
         $permissionTypes = ['read', 'write', 'delete', 'approval']; // approval can be used for reversal
-        
+
         foreach ($permissionTypes as $type) {
             DB::table('permissions')->insert([
                 'module_id' => $moduleId,

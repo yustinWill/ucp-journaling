@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Exceptions;
 
@@ -8,7 +8,7 @@ use Exception;
 class AppException extends Exception
 {
     public function __construct(
-        public readonly ErrorCodes $errorCode, 
+        public readonly ErrorCodes $errorCode,
         string $message = ''
     ) {
         parent::__construct($message ?: $errorCode->message(), $errorCode->httpStatus());

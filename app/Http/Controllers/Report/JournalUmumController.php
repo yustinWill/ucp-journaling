@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\Report;
 
-//Main
+// Main
+use App\Domains\Coa\Services\CoaService;
+use App\Domains\JournalUmumReport\Services\JournalUmumReportService;
+// Services
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use DateTime;
-
-//Services
-use App\Domains\JournalUmumReport\Services\JournalUmumReportService;
-use App\Domains\Coa\Services\CoaService;
 
 class JournalUmumController extends Controller
 {

@@ -2,8 +2,8 @@
 
 namespace App\Domains\Contact\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ContactBankService
 {
@@ -15,6 +15,7 @@ class ContactBankService
             $item['created_by'] = Auth::id();
             $item['created_at'] = now();
         }
+
         return DB::table($this->table_name)->insert($data);
     }
 
@@ -22,6 +23,7 @@ class ContactBankService
     {
         $data['updated_by'] = Auth::id();
         $data['updated_at'] = now();
+
         return DB::table($this->table_name)
             ->where('id', $data['id'])
             ->update($data);
@@ -37,7 +39,7 @@ class ContactBankService
 
     public function findAllBasedOnContactId($id)
     {
-        return DB::table($this->table_name . ' AS t')
+        return DB::table($this->table_name.' AS t')
             ->select('t.id', 'f_bank_code', 'branch_office', 'account_holder', 'account_number', 'm_banks.name AS bank_name')
             ->join('m_banks', 'm_banks.code', '=', 't.f_bank_code')
             ->where('t.f_contact_id', $id)

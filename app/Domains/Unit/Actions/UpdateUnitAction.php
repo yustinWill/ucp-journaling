@@ -2,11 +2,11 @@
 
 namespace App\Domains\Unit\Actions;
 
+use App\Domains\Unit\Services\UnitAuditLogService;
 use App\Domains\Unit\Services\UnitService;
 use App\Domains\Unit\Services\UnitTypeService;
-use App\Domains\Unit\Services\UnitAuditLogService;
-use Illuminate\Support\Facades\DB;
 use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class UpdateUnitAction
 {
@@ -21,7 +21,7 @@ class UpdateUnitAction
             app(UnitService::class)->update($id, $data);
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan Unit",
+                'description' => 'Perubahan Unit',
                 'metadata' => json_encode([
                     'before' => $old_data,
                     'after' => $data,
@@ -38,8 +38,8 @@ class UpdateUnitAction
                         ],
                         'type' => [
                             'label' => 'Tipe Unit',
-                            'before' => $old_data->unit_type_id . " - " . $before_unit->name,
-                            'after' => $data['type'] . " - " . $after_unit->name,
+                            'before' => $old_data->unit_type_id.' - '.$before_unit->name,
+                            'after' => $data['type'].' - '.$after_unit->name,
                         ],
                         'status' => [
                             'label' => 'Status',
@@ -51,8 +51,8 @@ class UpdateUnitAction
                             'before' => $old_data->description,
                             'after' => $data['description'] ?? null,
                         ],
-                    ]
-                ])
+                    ],
+                ]),
             ];
             app(UnitAuditLogService::class)->create($log_data, $id);
         });

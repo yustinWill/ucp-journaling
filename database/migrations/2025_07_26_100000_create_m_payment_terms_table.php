@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive'])->default('active')->comment('Status of payment term');
             $table->boolean('is_default')->default(false)->comment('Is this the default payment term');
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['status', 'code']);
             $table->index('type');

@@ -2,8 +2,8 @@
 
 namespace App\Domains\Tax\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TaxService
 {
@@ -20,7 +20,7 @@ class TaxService
             'status' => $data['status'],
             'description' => $data['description'] ?? '',
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -36,13 +36,13 @@ class TaxService
                 'status' => $data['status'],
                 'description' => $data['description'] ?? '',
                 'updated_at' => now(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
     }
 
-    public function findAllDatatable(string $status = null, string $type = null, string $name = null)
+    public function findAllDatatable(?string $status = null, ?string $type = null, ?string $name = null)
     {
-        $query = DB::table($this->table_name . ' as t')
+        $query = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.code',
@@ -54,7 +54,7 @@ class TaxService
                 't.created_at',
                 't.updated_at',
                 't.created_by',
-                't.updated_by'
+                't.updated_by',
             ]);
 
         // Filter by status
@@ -69,7 +69,7 @@ class TaxService
 
         // Filter by name
         if ($name = request()->input('name')) {
-            $query->where('t.name', 'LIKE', '%' . $name . '%');
+            $query->where('t.name', 'LIKE', '%'.$name.'%');
         }
         $query->where('t.company_code', session('user_company_code'));
 
@@ -88,13 +88,13 @@ class TaxService
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'data' => $data,
         ];
     }
 
     public function findOne($id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',
@@ -104,7 +104,7 @@ class TaxService
                 't.status',
                 't.description',
                 't.created_at',
-                't.updated_at'
+                't.updated_at',
             ])
             ->where('t.id', $id)
             ->where('t.company_code', session('user_company_code'))

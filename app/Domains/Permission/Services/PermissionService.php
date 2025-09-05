@@ -10,7 +10,7 @@ class PermissionService
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.module_id',
@@ -23,7 +23,7 @@ class PermissionService
 
     public function findOneBasedOnModuleAndPermission($module_id, $permission_type)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.module_id',
@@ -41,10 +41,10 @@ class PermissionService
                 'm.name as module_name',
                 'p.id',
                 'p.permission_type as type',
-                DB::raw('IF(rp.id IS NULL, false, true) as granted')
+                DB::raw('IF(rp.id IS NULL, false, true) as granted'),
             ])
             ->join('modules as m', 'p.module_id', '=', 'm.id')
-            ->leftJoin('role_permissions as rp', function ($join) use ($roleId) {
+            ->leftJoin('role_permissions as rp', function ($join) {
                 $join->on('rp.permission_id', '=', 'p.id');
             })
             ->where('rp.role_id', '=', $roleId)

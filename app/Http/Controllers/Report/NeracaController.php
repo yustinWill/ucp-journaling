@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\Report;
 
-//Main
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Traits\AccountingReportingLogic;
-use DateTime;
-
-//Services
+// Main
 use App\Domains\Coa\Services\CoaService;
+use App\Http\Controllers\Controller;
+use App\Traits\AccountingReportingLogic;
+// Services
+use Illuminate\Http\Request;
 
 class NeracaController extends Controller
 {
@@ -24,14 +22,13 @@ class NeracaController extends Controller
         $journal_data = [];
         $from = null;
         $to = null;
-        $html = "";
+        $html = '';
         $asset_amount = 0;
         $liability_amount = 0;
         $equity_amount = 0;
         $revenue_amount = 0;
         $expense_amount = 0;
-        $html = "";
-
+        $html = '';
 
         if ($as_of_date != null) {
             $report_data = $this->get_data_logic($as_of_date);
@@ -55,7 +52,7 @@ class NeracaController extends Controller
             'asset_amount' => $asset_amount,
             'liability_amount' => $liability_amount,
             'equity_amount' => $equity_amount,
-            'variance_amount' =>  $asset_amount - ($liability_amount + $equity_amount),
+            'variance_amount' => $asset_amount - ($liability_amount + $equity_amount),
         ]);
     }
 
@@ -85,14 +82,13 @@ class NeracaController extends Controller
         foreach ($laba_rugi_report as $lr_row) {
             if (substr($lr_row['coa_code'], 0, 1) == 4) {
                 $pendapatan_amount += $lr_row['amount'];
-            } else if (substr($lr_row['coa_code'], 0, 1) > 4) {
+            } elseif (substr($lr_row['coa_code'], 0, 1) > 4) {
                 $beban_amount += $lr_row['amount'];
             }
         }
 
         return abs($pendapatan_amount) - abs($beban_amount);
     }
-
 
     private function get_data_logic(string $as_of_date)
     {
@@ -129,9 +125,10 @@ class NeracaController extends Controller
                 unset($report_data[$i]);
             }
         }
+
         return [
             'report_data' => $report_data,
-            'laba_rugi_berjalan' => $laba_rugi_berjalan
+            'laba_rugi_berjalan' => $laba_rugi_berjalan,
         ];
     }
 }

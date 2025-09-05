@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -21,7 +19,7 @@ return new class extends Migration
                 'description' => 'Pajak Pertambahan Nilai standar Indonesia',
                 'status' => 'ACTIVE',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'code' => 'PPN0',
@@ -31,7 +29,7 @@ return new class extends Migration
                 'description' => 'Pajak Pertambahan Nilai untuk barang tertentu',
                 'status' => 'ACTIVE',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'code' => 'PPH21',
@@ -41,7 +39,7 @@ return new class extends Migration
                 'description' => 'Pajak Penghasilan atas gaji dan upah',
                 'status' => 'ACTIVE',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'code' => 'PPH23',
@@ -51,7 +49,7 @@ return new class extends Migration
                 'description' => 'Pajak Penghasilan atas jasa profesional',
                 'status' => 'ACTIVE',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'code' => 'NOTAX',
@@ -61,8 +59,8 @@ return new class extends Migration
                 'description' => 'Untuk transaksi yang tidak dikenai pajak',
                 'status' => 'INACTIVE',
                 'created_at' => now(),
-                'updated_at' => now()
-            ]
+                'updated_at' => now(),
+            ],
         ];
 
         DB::table('m_taxes')->insert($taxes);

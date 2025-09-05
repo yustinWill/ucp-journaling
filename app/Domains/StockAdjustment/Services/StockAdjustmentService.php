@@ -2,8 +2,8 @@
 
 namespace App\Domains\StockAdjustment\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StockAdjustmentService
 {
@@ -19,7 +19,7 @@ class StockAdjustmentService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as t')
+        $data = DB::table($this->table_name.' as t')
             ->select('t.*', 'w.name as warehouse_name', 'u.name as pic_name')
             ->leftJoin('m_warehouses as w', 't.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 't.pic_id', '=', 'u.id')
@@ -52,7 +52,7 @@ class StockAdjustmentService
             'total_adjustment_qty' => $data['total_adjustment_qty'] ?? 0,
             'total_adjustment_value' => $data['total_adjustment_value'] ?? 0,
             'created_by' => Auth::id(),
-            'created_at' => now()
+            'created_at' => now(),
         ];
 
         return DB::table($this->table_name)->insertGetId($stockAdjustmentData);
@@ -74,7 +74,7 @@ class StockAdjustmentService
             'total_adjustment_qty' => $data['total_adjustment_qty'] ?? 0,
             'total_adjustment_value' => $data['total_adjustment_value'] ?? 0,
             'updated_by' => Auth::id(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ];
 
         return DB::table($this->table_name)
@@ -87,7 +87,7 @@ class StockAdjustmentService
     {
         $tab = request()->input('tab', 'waiting_adjustment');
 
-        $query = DB::table($this->table_name . ' as sa')
+        $query = DB::table($this->table_name.' as sa')
             ->select([
                 'sa.id',
                 'sa.adjustment_number',
@@ -102,7 +102,7 @@ class StockAdjustmentService
                 'sa.created_at as created_date',
                 'w.name as warehouse_name',
                 'u.name as pic_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', t.code, 'name', t.name, 'color', tc.code)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', t.code, 'name', t.name, 'color', tc.code)) as tags"),
             ])
             ->leftJoin('m_warehouses as w', 'sa.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'sa.pic_id', '=', 'u.id')
@@ -193,7 +193,7 @@ class StockAdjustmentService
                 'u.code as unit', // Get unit from units table
                 'pc.name as category_name',
                 DB::raw('COALESCE(p.total_stock, 0) as current_stock'), // Use existing total_stock field
-                DB::raw('COALESCE(p.average_price, p.unit_purchase_price, 0) as unit_cost')
+                DB::raw('COALESCE(p.average_price, p.unit_purchase_price, 0) as unit_cost'),
             ])
             ->leftJoin('m_categories as pc', 'p.f_category_id', '=', 'pc.id')
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
@@ -217,11 +217,11 @@ class StockAdjustmentService
     private function generateAdjustmentNumber()
     {
         $today = now()->format('Ymd');
-        $prefix = 'SA-' . $today . '-';
+        $prefix = 'SA-'.$today.'-';
 
         $lastNumber = DB::table($this->table_name)
             ->where('company_code', session('user_company_code'))
-            ->where('adjustment_number', 'like', $prefix . '%')
+            ->where('adjustment_number', 'like', $prefix.'%')
             ->orderBy('id', 'desc')
             ->value('adjustment_number');
 
@@ -232,7 +232,7 @@ class StockAdjustmentService
             $newSequence = '001';
         }
 
-        return $prefix . $newSequence;
+        return $prefix.$newSequence;
     }
 
     public function getAdjustmentItems($stockAdjustmentId)

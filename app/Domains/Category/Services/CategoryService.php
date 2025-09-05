@@ -3,23 +3,24 @@
 namespace App\Domains\Category\Services;
 
 use App\Enums\GeneralStatuses;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CategoryService
 {
     private $table_name = 'm_categories';
+
     public function findAllDatatable()
     {
         $query = DB::table('m_categories as c')
             ->select([
                 'c.id',
                 'c.code as category_code',
-                'c.name as category_name', 
+                'c.name as category_name',
                 'c.type as category_type',
                 'c.status',
                 'c.description',
-                'c.created_at'
+                'c.created_at',
             ]);
 
         $query->where('c.company_code', session('user_company_code'));
@@ -29,15 +30,15 @@ class CategoryService
         }
 
         // Filter by category type
-        if ($type = request()->input('category_type_filter')) { 
+        if ($type = request()->input('category_type_filter')) {
             $query->where('c.type', $type);
         }
 
         // Search functionality
         if ($search = request()->input('search.value')) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('c.name', 'LIKE', "%{$search}%")
-                  ->orWhere('c.code', 'LIKE', "%{$search}%");
+                    ->orWhere('c.code', 'LIKE', "%{$search}%");
             });
         }
 
@@ -50,10 +51,11 @@ class CategoryService
         $query->skip($start)->take($length);
         $recordsFiltered = $filteredQuery->count();
         $query->orderBy('c.created_at', 'DESC');
-        
-        $data = $query->get()->map(function($row) {
+
+        $data = $query->get()->map(function ($row) {
             // Add product_count calculation
             $row->product_count = rand(0, 50); // TODO: Calculate actual product count
+
             return $row;
         });
 
@@ -61,7 +63,7 @@ class CategoryService
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'data' => $data,
         ];
     }
 
@@ -91,7 +93,7 @@ class CategoryService
             'status' => $data['status'],
             'description' => $data['description'] ?? '',
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -106,7 +108,7 @@ class CategoryService
                 'status' => $data['status'],
                 'description' => $data['description'] ?? '',
                 'updated_at' => now(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
     }
 

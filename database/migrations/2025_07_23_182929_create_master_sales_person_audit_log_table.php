@@ -20,12 +20,12 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             // Foreign keys
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('f_sales_person_id')->references('id')->on('m_sales_persons')->onDelete('cascade');
-            
+
             // Indexes
             $table->index(['f_sales_person_id']);
             $table->index(['action_type']);

@@ -2,10 +2,10 @@
 
 namespace App\Domains\SalesPerson\Actions;
 
-use App\Domains\SalesPerson\Services\SalesPersonService;
 use App\Domains\SalesPerson\Services\SalesPersonAuditLogService;
-use Illuminate\Support\Facades\DB;
+use App\Domains\SalesPerson\Services\SalesPersonService;
 use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class UpdateSalesPersonAction
 {
@@ -17,7 +17,7 @@ class UpdateSalesPersonAction
             app(SalesPersonService::class)->update($id, $data);
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan Sales Person",
+                'description' => 'Perubahan Sales Person',
                 'metadata' => json_encode([
                     'before' => $old_data,
                     'after' => $data,
@@ -47,8 +47,8 @@ class UpdateSalesPersonAction
                             'before' => $old_data->description,
                             'after' => $data['description'],
                         ],
-                    ]
-                ])
+                    ],
+                ]),
             ];
             app(SalesPersonAuditLogService::class)->create($log_data, $id);
 

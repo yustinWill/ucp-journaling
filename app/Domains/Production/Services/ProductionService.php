@@ -2,8 +2,8 @@
 
 namespace App\Domains\Production\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductionService
 {
@@ -11,7 +11,7 @@ class ProductionService
 
     public function findAll(array $filters = [])
     {
-        $query = DB::table($this->table_name . ' as p')
+        $query = DB::table($this->table_name.' as p')
             ->select(
                 'p.*',
                 'bp.name as bundle_product_name',
@@ -27,19 +27,19 @@ class ProductionService
             ->orderBy('p.created_at', 'DESC');
 
         // Apply filters
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('p.status', $filters['status']);
         }
 
-        if (!empty($filters['warehouse_id'])) {
+        if (! empty($filters['warehouse_id'])) {
             $query->where('p.warehouse_id', $filters['warehouse_id']);
         }
 
-        if (!empty($filters['date_from'])) {
+        if (! empty($filters['date_from'])) {
             $query->where('p.production_date', '>=', $filters['date_from']);
         }
 
-        if (!empty($filters['date_to'])) {
+        if (! empty($filters['date_to'])) {
             $query->where('p.production_date', '<=', $filters['date_to']);
         }
 
@@ -48,7 +48,7 @@ class ProductionService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as p')
+        $query = DB::table($this->table_name.' as p')
             ->select(
                 'p.*',
                 'bp.name as bundle_product_name',
@@ -80,13 +80,11 @@ class ProductionService
             $query->where('p.warehouse_id', $warehouse_id);
         }
 
-
         if ($production_no = request()->input('production_no')) {
             $query->where('p.production_number', 'like', "%{$production_no}%");
         }
 
         $query->groupBy('p.id');
-
 
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
@@ -110,7 +108,7 @@ class ProductionService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as p')
+        $data = DB::table($this->table_name.' as p')
             ->select(
                 'p.*',
                 'bp.name as bundle_product_name',
@@ -184,7 +182,7 @@ class ProductionService
             'total_production_cost' => $data['total_production_cost'] ?? 0,
             'total_items_consumed' => $data['total_items_consumed'] ?? 0,
             'updated_by_user_id' => Auth::id(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ];
 
         return DB::table($this->table_name)
@@ -209,7 +207,7 @@ class ProductionService
             ->update([
                 'status' => $status,
                 'updated_by_user_id' => Auth::id(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
     }
 
@@ -231,7 +229,7 @@ class ProductionService
             $sequence = $lastSequence + 1;
         }
 
-        return "PROD-{$year}{$month}-" . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        return "PROD-{$year}{$month}-".str_pad($sequence, 4, '0', STR_PAD_LEFT);
     }
 
     public function getBundleProductFormula(int $bundleProductId): array
@@ -269,7 +267,7 @@ class ProductionService
     {
         $production = $this->findOne($id);
 
-        if (!$production) {
+        if (! $production) {
             return ['can_reverse' => false, 'reason' => 'Production not found'];
         }
 
@@ -282,12 +280,12 @@ class ProductionService
             ->where('id', $production->bundle_product_id)
             ->first();
 
-        if (!$bundleProduct || $bundleProduct->total_stock < $production->quantity_produced) {
+        if (! $bundleProduct || $bundleProduct->total_stock < $production->quantity_produced) {
             return [
                 'can_reverse' => false,
                 'reason' => 'Insufficient bundle product stock for reversal',
                 'available_stock' => $bundleProduct->total_stock ?? 0,
-                'required_stock' => $production->quantity_produced
+                'required_stock' => $production->quantity_produced,
             ];
         }
 

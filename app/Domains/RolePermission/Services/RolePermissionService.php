@@ -10,11 +10,11 @@ class RolePermissionService
 
     public function findAllBasedOnRoleId($id)
     {
-        return DB::table($this->table_name . ' as rp')
+        return DB::table($this->table_name.' as rp')
             ->select([
                 'm.name AS module_name',
                 'p.permission_type AS permission_type',
-                'rp.status AS status'
+                'rp.status AS status',
             ])
             ->join('permissions as p', 'p.id', '=', 'rp.permission_id')
             ->join('modules as m', 'm.id', '=', 'p.module_id')
@@ -32,7 +32,7 @@ class RolePermissionService
             'role_id' => $data['role_id'],
             'permission_id' => $data['permission_id'],
             'status' => $data['status'],
-            'created_at' => now()
+            'created_at' => now(),
         ]);
     }
 

@@ -11,7 +11,7 @@ class WarehouseService
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as m_warehouses')
+        return DB::table($this->table_name.' as m_warehouses')
             ->select('m_warehouses.id', 'm_warehouses.name', 'm_warehouses.code')
             ->where('m_warehouses.company_code', session('user_company_code'))
             ->orderBy('m_warehouses.name', 'asc')
@@ -20,10 +20,10 @@ class WarehouseService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as m_warehouses')
+        $data = DB::table($this->table_name.' as m_warehouses')
             ->select([
                 'm_warehouses.*',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin(DB::raw("JSON_TABLE(m_warehouses.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
@@ -56,38 +56,38 @@ class WarehouseService
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
-            "company_code" => session('user_company_code'),
-            "code" => $data['code'],
-            "name" => $data['name'],
-            "f_pic_ids" => isset($data['pic_users']) ? json_encode($data['pic_users']) : null,
-            "province" => $data['province'] ?? null,
-            "city" => $data['city'] ?? null,
-            "district" => $data['district'] ?? null,
-            "sub_district" => $data['sub_district'] ?? null,
-            "address" => $data['address'] ?? null,
-            "postal_code" => $data['postal_code'] ?? null,
-            "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
-            "status" => $data['status'],
-            "created_by" => Auth::id(),
-            "created_at" => now()
+            'company_code' => session('user_company_code'),
+            'code' => $data['code'],
+            'name' => $data['name'],
+            'f_pic_ids' => isset($data['pic_users']) ? json_encode($data['pic_users']) : null,
+            'province' => $data['province'] ?? null,
+            'city' => $data['city'] ?? null,
+            'district' => $data['district'] ?? null,
+            'sub_district' => $data['sub_district'] ?? null,
+            'address' => $data['address'] ?? null,
+            'postal_code' => $data['postal_code'] ?? null,
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
+            'status' => $data['status'],
+            'created_by' => Auth::id(),
+            'created_at' => now(),
         ]);
     }
 
     public function update(int $id, array $data): int
     {
         $update_data = [
-            "name" => $data['name'],
-            "f_pic_ids" => isset($data['pic_users']) ? json_encode($data['pic_users']) : null,
-            "province" => $data['province'] ?? null,
-            "city" => $data['city'] ?? null,
-            "district" => $data['district'] ?? null,
-            "sub_district" => $data['sub_district'] ?? null,
-            "address" => $data['address'] ?? null,
-            "postal_code" => $data['postal_code'] ?? null,
-            "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
-            "status" => $data['status'],
-            "updated_by" => Auth::id(),
-            "updated_at" => now()
+            'name' => $data['name'],
+            'f_pic_ids' => isset($data['pic_users']) ? json_encode($data['pic_users']) : null,
+            'province' => $data['province'] ?? null,
+            'city' => $data['city'] ?? null,
+            'district' => $data['district'] ?? null,
+            'sub_district' => $data['sub_district'] ?? null,
+            'address' => $data['address'] ?? null,
+            'postal_code' => $data['postal_code'] ?? null,
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
+            'status' => $data['status'],
+            'updated_by' => Auth::id(),
+            'updated_at' => now(),
         ];
 
         return DB::table($this->table_name)
@@ -97,7 +97,7 @@ class WarehouseService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as t')
+        $query = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.code',
@@ -105,7 +105,7 @@ class WarehouseService
                 't.address',
                 't.status',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
-                DB::raw("GROUP_CONCAT(users.name SEPARATOR ', ') as pic_names")
+                DB::raw("GROUP_CONCAT(users.name SEPARATOR ', ') as pic_names"),
             ])
             ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
@@ -153,6 +153,7 @@ class WarehouseService
                 $row->tags = collect($tags)->unique('code')->values()->all();
             }
         }
+
         return [
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,

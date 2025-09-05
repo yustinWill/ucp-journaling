@@ -10,7 +10,7 @@ class TagUsageLogService
 
     public function findAllBasedOnTagId($id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.f_tag_id',
                 't.module',
@@ -19,7 +19,7 @@ class TagUsageLogService
                 't.amount',
                 't.created_at',
                 't.created_by',
-                'usr.name AS user_name'
+                'usr.name AS user_name',
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
             ->where('t.company_code', session('user_company_code'))

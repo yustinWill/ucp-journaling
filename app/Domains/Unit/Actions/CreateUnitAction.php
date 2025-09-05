@@ -2,10 +2,10 @@
 
 namespace App\Domains\Unit\Actions;
 
-use App\Domains\Unit\Services\UnitService;
 use App\Domains\Unit\Services\UnitAuditLogService;
-use Illuminate\Support\Facades\DB;
+use App\Domains\Unit\Services\UnitService;
 use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class CreateUnitAction
 {
@@ -15,11 +15,11 @@ class CreateUnitAction
             $id = app(UnitService::class)->create($data);
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembuatan Unit",
+                'description' => 'Pembuatan Unit',
                 'metadata' => json_encode([
                     'before' => null,
-                    'after' => $data
-                ])
+                    'after' => $data,
+                ]),
             ];
             app(UnitAuditLogService::class)->create($log_data, $id);
         });

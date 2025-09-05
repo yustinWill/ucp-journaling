@@ -2,14 +2,14 @@
 
 namespace App\Domains\Production\Actions;
 
-use App\Domains\Production\Services\ProductionService;
-use App\Domains\Production\Services\ProductionItemService;
-use App\Domains\Production\Services\ProductionExpenseService;
 use App\Domains\Production\Services\ProductionAuditLogService;
+use App\Domains\Production\Services\ProductionExpenseService;
+use App\Domains\Production\Services\ProductionItemService;
+use App\Domains\Production\Services\ProductionService;
 use App\Domains\Production\Services\ProductionStockService;
-use Illuminate\Support\Facades\DB;
-use App\Exceptions\AppException;
 use App\Enums\ErrorCodes;
+use App\Exceptions\AppException;
+use Illuminate\Support\Facades\DB;
 
 class CreateProductionAction
 {
@@ -33,13 +33,12 @@ class CreateProductionAction
 
             $productionId = app(ProductionService::class)->create($productionData);
 
-
             // 4. Create production items (raw materials)
-            if (!empty($data['items'])) {
+            if (! empty($data['items'])) {
                 app(ProductionItemService::class)->createBulk($productionId, $data['items']);
             }
 
-             //IMPORTANT
+            // IMPORTANT
             // 5. Create production expenses
             // if (!empty($data['expenses'])) {
             //     app(ProductionExpenseService::class)->createBulk($productionId, $data['expenses']);
@@ -79,14 +78,14 @@ class CreateProductionAction
         );
 
         $insufficientItems = array_filter($validationResult, function ($item) {
-            return !$item['is_available'];
+            return ! $item['is_available'];
         });
 
-        if (!empty($insufficientItems)) {
+        if (! empty($insufficientItems)) {
             $itemNames = array_column($insufficientItems, 'product_name');
             throw new AppException(
                 ErrorCodes::INSUFFICIENT_STOCK, // Use your actual error code here
-                'Insufficient stock for raw materials: ' . implode(', ', $itemNames)
+                'Insufficient stock for raw materials: '.implode(', ', $itemNames)
             );
         }
     }
@@ -98,7 +97,7 @@ class CreateProductionAction
         $totalItemsConsumed = 0;
 
         // Calculate raw material costs
-        if (!empty($data['items'])) {
+        if (! empty($data['items'])) {
             foreach ($data['items'] as $item) {
                 $totalRawMaterialCost += ($item['quantity_consumed'] ?? $item['quantity_required']) * ($item['unit_cost'] ?? 0);
             }
@@ -106,7 +105,7 @@ class CreateProductionAction
         }
 
         // Calculate production expenses
-        if (!empty($data['expenses'])) {
+        if (! empty($data['expenses'])) {
             foreach ($data['expenses'] as $expense) {
                 $totalProductionExpense += $expense['actual_amount'] ?? 0;
             }
@@ -116,7 +115,7 @@ class CreateProductionAction
             'total_raw_material_cost' => $totalRawMaterialCost,
             'total_production_expense' => $totalProductionExpense,
             'total_production_cost' => $totalRawMaterialCost + $totalProductionExpense,
-            'total_items_consumed' => $totalItemsConsumed
+            'total_items_consumed' => $totalItemsConsumed,
         ];
     }
 
@@ -131,7 +130,7 @@ class CreateProductionAction
             'bundle_product_id' => $data['bundle_product_id'],
             'warehouse_id' => $data['warehouse_id'],
             'quantity_produced' => $data['quantity_produced'] ?? $data['quantity_planned'],
-            'total_production_cost' => $data['total_production_cost'] ?? 0
+            'total_production_cost' => $data['total_production_cost'] ?? 0,
         ];
 
         return $stockService->createProductionStockMovements(
@@ -151,7 +150,7 @@ class CreateProductionAction
             'bundle_product_id' => 'Bundle product is required',
             'warehouse_id' => 'Warehouse is required',
             'pic_id' => 'PIC is required',
-            'quantity_planned' => 'Quantity planned is required'
+            'quantity_planned' => 'Quantity planned is required',
         ];
 
         foreach ($requiredFields as $field => $message) {
@@ -161,11 +160,11 @@ class CreateProductionAction
         }
 
         // Business logic validation
-        if (!empty($data['quantity_planned']) && $data['quantity_planned'] <= 0) {
+        if (! empty($data['quantity_planned']) && $data['quantity_planned'] <= 0) {
             $errors[] = 'Quantity planned must be greater than 0';
         }
 
-        if (!empty($data['production_date'])) {
+        if (! empty($data['production_date'])) {
             $productionDate = \Carbon\Carbon::parse($data['production_date']);
             if ($productionDate->isFuture()) {
                 $errors[] = 'Production date cannot be in the future';
@@ -173,31 +172,31 @@ class CreateProductionAction
         }
 
         // Validate bundle product exists and is of type bundle
-        if (!empty($data['bundle_product_id'])) {
+        if (! empty($data['bundle_product_id'])) {
             $bundleProduct = DB::table('m_products')
                 ->where('id', $data['bundle_product_id'])
                 ->where('status', 'ACTIVE')
                 ->first();
 
-            if (!$bundleProduct) {
+            if (! $bundleProduct) {
                 $errors[] = 'Selected bundle product is not found or inactive';
             }
         }
 
         // Validate warehouse exists
-        if (!empty($data['warehouse_id'])) {
+        if (! empty($data['warehouse_id'])) {
             $warehouse = DB::table('m_warehouses')
                 ->where('id', $data['warehouse_id'])
                 ->where('status', 'ACTIVE')
                 ->first();
 
-            if (!$warehouse) {
+            if (! $warehouse) {
                 $errors[] = 'Selected warehouse is not found or inactive';
             }
         }
 
         // Validate items
-        if (!empty($data['items'])) {
+        if (! empty($data['items'])) {
             foreach ($data['items'] as $index => $item) {
                 $itemErrors = $this->validateItemData($item, $index);
                 $errors = array_merge($errors, $itemErrors);
@@ -205,20 +204,20 @@ class CreateProductionAction
         }
 
         // Validate expenses
-        if (!empty($data['expenses'])) {
+        if (! empty($data['expenses'])) {
             $expenseService = app(ProductionExpenseService::class);
             $expenseValidation = $expenseService->validateExpenseData($data['expenses']);
 
             foreach ($expenseValidation as $index => $validation) {
-                if (!$validation['is_valid']) {
-                    $errors[] = "Expense #{$index}: " . implode(', ', $validation['errors']);
+                if (! $validation['is_valid']) {
+                    $errors[] = "Expense #{$index}: ".implode(', ', $validation['errors']);
                 }
             }
         }
 
         return [
             'is_valid' => empty($errors),
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
 
@@ -264,12 +263,12 @@ class CreateProductionAction
             return [
                 'raw_material_product_id' => $element->raw_material_product_id,
                 'quantity_required' => $quantityRequired,
-                //IMPORTANT
+                // IMPORTANT
                 'quantity_consumed' => $quantityRequired,
                 'unit_code' => $element->unit_code,
                 'unit_cost' => $unitCost,
                 'total_cost' => $quantityRequired * $unitCost,
-                'product_name' => $element->product_name
+                'product_name' => $element->product_name,
             ];
         })->toArray();
     }
@@ -277,6 +276,7 @@ class CreateProductionAction
     public function prepareExpensesFromProduct(int $bundleProductId): array
     {
         $expenseService = app(ProductionExpenseService::class);
+
         return $expenseService->getDefaultExpensesForProduct($bundleProductId);
     }
 }

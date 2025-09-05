@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Report;
 
-//Main
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Traits\ArrayObjectManipulator;
-use DateTime;
-
-//Services
+// Main
 use App\Domains\BukuBesarReport\Services\BukuBesarReportService;
 use App\Domains\Coa\Services\CoaService;
+use App\Http\Controllers\Controller;
+// Services
+use App\Traits\ArrayObjectManipulator;
+use Illuminate\Http\Request;
 
 class BukuBesarController extends Controller
 {
@@ -48,8 +46,8 @@ class BukuBesarController extends Controller
                 foreach ($row as $journal_row) {
                     if ($journal_row->date >= $from) {
                         $valid_date_row[] = $journal_row;
-                    } else if ($journal_row->date < $from) {
-                        if ($journal_row->debit_credit == "D") {
+                    } elseif ($journal_row->date < $from) {
+                        if ($journal_row->debit_credit == 'D') {
                             $opening_balance_amount += $journal_row->amount;
                         } else {
                             $opening_balance_amount -= $journal_row->amount;
@@ -61,12 +59,12 @@ class BukuBesarController extends Controller
                     'coa_code' => $coa_data->code,
                     'coa_name' => $coa_data->name,
                     'opening_balance_amount' => $opening_balance_amount,
-                    'journal_data' => $valid_date_row
+                    'journal_data' => $valid_date_row,
                 ];
 
                 $closing_balance_amount = $get_closing_balance->closing_balance;
                 foreach ($row as $jurnal_row) {
-                    if ($jurnal_row->debit_credit == "D") {
+                    if ($jurnal_row->debit_credit == 'D') {
                         $closing_balance_amount += $jurnal_row->amount;
                     } else {
                         $closing_balance_amount -= $jurnal_row->amount;

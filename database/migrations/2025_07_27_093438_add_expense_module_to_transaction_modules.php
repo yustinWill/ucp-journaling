@@ -12,8 +12,8 @@ return new class extends Migration
     {
         // Check if expense module already exists
         $existingModule = DB::table('modules')->where('name', 'main_transaction_expense')->first();
-        
-        if (!$existingModule) {
+
+        if (! $existingModule) {
             // Insert the expense module
             $moduleId = DB::table('modules')->insertGetId([
                 'name' => 'main_transaction_expense',
@@ -31,7 +31,7 @@ return new class extends Migration
                 $permissions[] = [
                     'module_id' => $moduleId,
                     'permission_type' => $action,
-                    'created_at' => now()
+                    'created_at' => now(),
                 ];
             }
 
@@ -46,7 +46,7 @@ return new class extends Migration
     {
         // Remove expense module permissions first
         $expenseModule = DB::table('modules')->where('name', 'main_transaction_expense')->first();
-        
+
         if ($expenseModule) {
             DB::table('permissions')->where('module_id', $expenseModule->id)->delete();
             DB::table('modules')->where('name', 'main_transaction_expense')->delete();

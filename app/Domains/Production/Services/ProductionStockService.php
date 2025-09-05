@@ -2,13 +2,14 @@
 
 namespace App\Domains\Production\Services;
 
-use Illuminate\Support\Facades\DB;
-use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\Product\Services\ProductService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use Illuminate\Support\Facades\DB;
 
 class ProductionStockService
 {
     private $movement_table = 't_stock_movement_logs';
+
     private $batch_table = 't_product_stock_batches';
 
     public function createProductionStockMovements(int $productionId, array $items, array $productionData): array
@@ -35,7 +36,7 @@ class ProductionStockService
                 'warehouse_code' => $warehouse->code,
                 'warehouse_name' => $warehouse->name,
                 'movement_type' => 'PRODUCTION_CONSUME',
-                //IMPORTANT
+                // IMPORTANT
                 'stock_before' => 0,
                 'movement_qty' => -$item['quantity_consumed'], // Negative for consumption
                 'stock_after' => 0,
@@ -47,7 +48,7 @@ class ProductionStockService
                 'notes' => "Raw material consumed for production {$productionData['production_number']}",
                 // 'batch_details' => json_encode($batchConsumption),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ];
 
             // Update item with batch consumption details
@@ -66,7 +67,7 @@ class ProductionStockService
             'warehouse_code' => $warehouse->code,
             'warehouse_name' => $warehouse->name,
             'movement_type' => 'PRODUCTION_CREATE',
-            //IMPORTANT
+            // IMPORTANT
             'stock_before' => 0,
             'movement_qty' => $productionData['quantity_produced'],
             'stock_after' => 0,
@@ -78,7 +79,7 @@ class ProductionStockService
             'notes' => "Bundle product created from production {$productionData['production_number']}",
             // 'batch_details' => null,
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ];
 
         $movements[] = $bundleMovement;
@@ -87,7 +88,7 @@ class ProductionStockService
         DB::table($this->movement_table)->insert($movements);
 
         // 3. Create new batch for bundle product
-        //IMPORTANT terlalu banyak beda field takut salah mapping
+        // IMPORTANT terlalu banyak beda field takut salah mapping
         // $this->createProductionBatch(
         //     $productionData['bundle_product_id'],
         //     $productionData['warehouse_id'],
@@ -103,7 +104,7 @@ class ProductionStockService
             'movements_created' => count($movements),
             'raw_material_movements' => count($items),
             'bundle_product_batch_created' => true,
-            'items_with_batch_details' => $items
+            'items_with_batch_details' => $items,
         ];
     }
 
@@ -131,12 +132,12 @@ class ProductionStockService
             'unit' => $this->getBundleProductUnitCode($production['bundle_product_id']),
             'reference_type' => 'PRODUCTION_REVERSAL',
             // 'reference_id' => $productionId,
-            'reference_number' => $production['production_number'] . '-REV',
+            'reference_number' => $production['production_number'].'-REV',
             'movement_date' => now()->format('Y-m-d'),
             'notes' => "Bundle product removed for production reversal {$production['production_number']}",
             'batch_details' => json_encode($bundleBatch),
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ];
 
         // 2. Restore raw materials (positive movements)
@@ -158,12 +159,12 @@ class ProductionStockService
                 'unit' => $item['unit_code'],
                 'reference_type' => 'PRODUCTION_REVERSAL',
                 // 'reference_id' => $productionId,
-                'reference_number' => $production['production_number'] . '-REV',
+                'reference_number' => $production['production_number'].'-REV',
                 'movement_date' => now()->format('Y-m-d'),
                 'notes' => "Raw material restored from production reversal {$production['production_number']}",
                 'batch_details' => json_encode($restoredBatch),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ];
         }
 
@@ -176,7 +177,7 @@ class ProductionStockService
         return [
             'movements_created' => count($movements),
             'bundle_batch_removed' => $bundleBatch,
-            'raw_materials_restored' => count($items)
+            'raw_materials_restored' => count($items),
         ];
     }
 
@@ -195,7 +196,9 @@ class ProductionStockService
         $remainingToConsume = $quantityNeeded;
 
         foreach ($batches as $batch) {
-            if ($remainingToConsume <= 0) break;
+            if ($remainingToConsume <= 0) {
+                break;
+            }
 
             $consumeFromThisBatch = min($remainingToConsume, $batch->remaining_qty);
 
@@ -209,7 +212,7 @@ class ProductionStockService
                 'batch_number' => $batch->batch_reference_code,
                 'quantity_consumed' => $consumeFromThisBatch,
                 'original_quantity' => $batch->initial_qty,
-                'remaining_after' => $batch->remaining_qty - $consumeFromThisBatch
+                'remaining_after' => $batch->remaining_qty - $consumeFromThisBatch,
             ];
 
             $remainingToConsume -= $consumeFromThisBatch;
@@ -229,8 +232,8 @@ class ProductionStockService
             ->where('remaining_quantity', '>=', $quantityToRemove)
             ->first();
 
-        if (!$batch) {
-            throw new \Exception("Insufficient quantity in production batch for reversal");
+        if (! $batch) {
+            throw new \Exception('Insufficient quantity in production batch for reversal');
         }
 
         // Update batch remaining quantity
@@ -242,7 +245,7 @@ class ProductionStockService
             'batch_id' => $batch->id,
             'batch_number' => $batch->batch_number,
             'quantity_removed' => $quantityToRemove,
-            'remaining_after' => $batch->remaining_quantity - $quantityToRemove
+            'remaining_after' => $batch->remaining_quantity - $quantityToRemove,
         ];
     }
 
@@ -262,15 +265,15 @@ class ProductionStockService
             'reference_id' => $productionId,
             'batch_date' => now(),
             'expiry_date' => null,
-            'notes' => "Restored from production reversal",
+            'notes' => 'Restored from production reversal',
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
         return [
             'batch_id' => $batchId,
             'batch_number' => $batchNumber,
-            'quantity_restored' => $quantityToRestore
+            'quantity_restored' => $quantityToRestore,
         ];
     }
 
@@ -282,7 +285,7 @@ class ProductionStockService
             'batch_reference_code' => $batchNumber,
             'company_code' => session('user_company_code'),
             'f_product_id' => $productId,
-            //IMPORTANT
+            // IMPORTANT
             // 'warehouse_id' => $warehouseId,
             'initial_qty' => $quantity,
             'remaining_qty' => $quantity,
@@ -334,7 +337,7 @@ class ProductionStockService
 
     private function generateBatchNumber(string $prefix): string
     {
-        return $prefix . '-' . date('YmdHis') . '-' . substr(uniqid(), -4);
+        return $prefix.'-'.date('YmdHis').'-'.substr(uniqid(), -4);
     }
 
     private function getBundleProductUnitCode(int $productId): string
@@ -362,6 +365,7 @@ class ProductionStockService
         if ($productionData['quantity_produced'] > 0) {
             return $productionData['total_production_cost'] / $productionData['quantity_produced'];
         }
+
         return 0;
     }
 }

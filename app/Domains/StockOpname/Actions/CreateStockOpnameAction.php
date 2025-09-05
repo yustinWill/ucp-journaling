@@ -2,11 +2,10 @@
 
 namespace App\Domains\StockOpname\Actions;
 
-use App\Domains\StockOpname\Services\StockOpnameService;
-use App\Domains\StockOpname\Services\StockOpnameProductService;
 use App\Domains\StockOpname\Services\StockOpnameAuditLogService;
+use App\Domains\StockOpname\Services\StockOpnameProductService;
+use App\Domains\StockOpname\Services\StockOpnameService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 
 class CreateStockOpnameAction
 {
@@ -37,7 +36,7 @@ class CreateStockOpnameAction
                     'note' => $product['note'],
                 ];
             }
-            if (!empty($items)) {
+            if (! empty($items)) {
                 app(StockOpnameProductService::class)->createMany($items);
             }
 

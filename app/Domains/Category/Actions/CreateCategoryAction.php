@@ -2,10 +2,10 @@
 
 namespace App\Domains\Category\Actions;
 
-use App\Domains\Category\Services\CategoryService;
 use App\Domains\Category\Services\CategoryAuditLogService;
-use Illuminate\Support\Facades\DB;
+use App\Domains\Category\Services\CategoryService;
 use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class CreateCategoryAction
 {
@@ -16,11 +16,11 @@ class CreateCategoryAction
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembuatan Kategori",
+                'description' => 'Pembuatan Kategori',
                 'metadata' => json_encode([
                     'before' => null,
                     'after' => $data,
-                ])
+                ]),
             ];
             app(CategoryAuditLogService::class)->create($log_data, $tag_id);
         });

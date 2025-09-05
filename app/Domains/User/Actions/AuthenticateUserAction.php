@@ -2,12 +2,12 @@
 
 namespace App\Domains\User\Actions;
 
-use Illuminate\Support\Facades\Auth;
-use App\Exceptions\AppException;
-use App\Enums\ErrorCodes;
+use App\Domains\GlobalConfig\Services\GlobalConfigService;
 use App\Domains\RolePermission\Services\RolePermissionService;
 use App\Domains\UserCompany\Services\UserCompanyService;
-use App\Domains\GlobalConfig\Services\GlobalConfigService;
+use App\Enums\ErrorCodes;
+use App\Exceptions\AppException;
+use Illuminate\Support\Facades\Auth;
 
 class AuthenticateUserAction
 {
@@ -34,14 +34,14 @@ class AuthenticateUserAction
                 }
             }
 
-
             $config_data = app(GlobalConfigService::class)->findAll();
 
             foreach ($config_data as $config) {
                 session([$config->code => $config->value]);
             }
-            
+
             session(['permissions' => $permissions, 'user_company' => $user_company, 'user_company_code' => $user_company_code, 'user_company_name' => $user_company_name]);
+
             return true;
         } else {
             throw new AppException(ErrorCodes::INVALID_LOGIN_CREDENTIALS);
@@ -51,6 +51,7 @@ class AuthenticateUserAction
     public function logout()
     {
         Auth::logout();
+
         return true;
     }
 }

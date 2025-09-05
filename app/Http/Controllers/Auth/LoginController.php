@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-
 use App\Domains\User\Actions\AuthenticateUserAction;
+use App\Exceptions\AppException;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -25,6 +24,7 @@ class LoginController extends Controller
             ]);
 
             $authenticateUserAction->login($credentials);
+
             return redirect()->route('home.view');
         } catch (ValidationException $e) {
             return redirect()->back()

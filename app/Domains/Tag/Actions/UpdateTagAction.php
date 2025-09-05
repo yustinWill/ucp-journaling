@@ -2,11 +2,11 @@
 
 namespace App\Domains\Tag\Actions;
 
-use App\Domains\Tag\Services\TagService;
-use App\Domains\Tag\Services\TagColorService;
 use App\Domains\Tag\Services\TagAuditLogService;
-use Illuminate\Support\Facades\DB;
+use App\Domains\Tag\Services\TagColorService;
+use App\Domains\Tag\Services\TagService;
 use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class UpdateTagAction
 {
@@ -21,7 +21,7 @@ class UpdateTagAction
             app(TagService::class)->update($id, $data);
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan Tag",
+                'description' => 'Perubahan Tag',
                 'metadata' => json_encode([
                     'before' => $old_data,
                     'after' => $data,
@@ -38,8 +38,8 @@ class UpdateTagAction
                         ],
                         'type' => [
                             'label' => 'Warna Badge',
-                            'before' => $old_data->tag_color_id . " - " . $before_color->name,
-                            'after' => $data['f_tag_color_id'] . " - " . $after_color->name,
+                            'before' => $old_data->tag_color_id.' - '.$before_color->name,
+                            'after' => $data['f_tag_color_id'].' - '.$after_color->name,
                         ],
                         'status' => [
                             'label' => 'Status',
@@ -56,8 +56,8 @@ class UpdateTagAction
                             'before' => $old_data->memo,
                             'after' => $data['memo'] ?? null,
                         ],
-                    ]
-                ])
+                    ],
+                ]),
             ];
             app(TagAuditLogService::class)->create($log_data, $id);
         });

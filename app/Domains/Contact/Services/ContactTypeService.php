@@ -2,8 +2,8 @@
 
 namespace App\Domains\Contact\Services;
 
-use Illuminate\Support\Facades\DB;
 use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\DB;
 
 class ContactTypeService
 {

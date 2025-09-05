@@ -2,13 +2,12 @@
 
 namespace App\Domains\User\Actions;
 
-use Illuminate\Support\Facades\DB;
+use App\Domains\User\Services\UserAuditLogService;
+use App\Domains\User\Services\UserService;
+use App\Domains\UserCompany\Services\UserCompanyService;
 use App\Enums\ActionTypes;
 use App\Enums\GeneralStatuses;
-use App\Domains\UserCompany\Services\UserCompanyService;
-use App\Domains\User\Services\UserService;
-use App\Domains\User\Services\UserAuditLogService;
-
+use Illuminate\Support\Facades\DB;
 
 class CreateUserAction
 {
@@ -26,13 +25,13 @@ class CreateUserAction
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembuatan User",
+                'description' => 'Pembuatan User',
                 'metadata' => json_encode([
                     'before' => null,
                     'after' => $data,
-                ])
+                ]),
             ];
-            
+
             app(UserAuditLogService::class)->create($log_data, $user_id);
         });
     }

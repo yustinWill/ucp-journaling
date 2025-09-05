@@ -2,8 +2,8 @@
 
 namespace App\Domains\Tag\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TagAuditLogService
 {
@@ -18,13 +18,13 @@ class TagAuditLogService
             'description' => $data['description'],
             'metadata' => $data['metadata'],
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
     public function findAllBasedOnTagId($id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.f_tag_id',
@@ -32,7 +32,7 @@ class TagAuditLogService
                 't.description',
                 't.created_at',
                 't.created_by AS user_id',
-                'usr.name AS user_name'
+                'usr.name AS user_name',
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
             ->where('t.company_code', session('user_company_code'))

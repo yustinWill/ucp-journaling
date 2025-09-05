@@ -2,26 +2,23 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-use App\Exceptions\AppException;
-use Illuminate\Validation\ValidationException;
-use App\Helpers\PermissionHelper;
-
 use App\Domains\AccountingJournal\Actions\CreateAccountingJournalAction;
 use App\Domains\AccountingJournal\Actions\UpdateAccountingJournalAction;
-
-use App\Domains\AccountingJournal\Services\AccountingJournalService;
 use App\Domains\AccountingJournal\Services\AccountingJournalAuditLogService;
+use App\Domains\AccountingJournal\Services\AccountingJournalService;
 use App\Domains\Coa\Services\CoaService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\User\Services\UserService;
-
-use App\Enums\ErrorCodes;
 use App\Enums\AuditLogTypes;
+use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
+use App\Helpers\ValidationHelper;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class JournalController extends Controller
 {
@@ -30,7 +27,7 @@ class JournalController extends Controller
         $createdByUsers = app(UserService::class)->findAll();
 
         return view('pages.main_transaction.journal.index', [
-            'createdByUsers' => $createdByUsers
+            'createdByUsers' => $createdByUsers,
         ]);
     }
 
@@ -60,7 +57,7 @@ class JournalController extends Controller
             'canAddTags' => $canAddTags,
             'tags' => $tags,
             'coas' => $coas,
-            'referenceNo' => $referenceNo
+            'referenceNo' => $referenceNo,
         ]);
     }
 
@@ -77,13 +74,13 @@ class JournalController extends Controller
                 'journals.*.account_code' => 'required|string|max:20',
                 'journals.*.description' => 'nullable|string|max:255',
                 'journals.*.debit_amount' => 'nullable|numeric|min:0',
-                'journals.*.credit_amount' => 'nullable|numeric|min:0'
+                'journals.*.credit_amount' => 'nullable|numeric|min:0',
             ]);
 
             app(CreateAccountingJournalAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_ACCOUNTING_JOURNAL_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_ACCOUNTING_JOURNAL_SUCCESS->message(),
             ], SuccessCodes::CREATE_ACCOUNTING_JOURNAL_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -97,6 +94,7 @@ class JournalController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -118,11 +116,11 @@ class JournalController extends Controller
             ['field' => 'notes', 'label' => 'Keterangan', 'export_name' => 'Keterangan'],
             ['field' => 'amount', 'label' => 'Nominal', 'export_name' => 'Nominal'],
             ['field' => 'created_by', 'label' => 'Dibuat Oleh', 'export_name' => 'Dibuat Oleh'],
-            ['field' => 'created_at', 'label' => 'Tanggal Input', 'export_name' => 'Tanggal Input']
+            ['field' => 'created_at', 'label' => 'Tanggal Input', 'export_name' => 'Tanggal Input'],
         ];
 
         return view('pages.main_transaction.journal.export', [
-            'exportColumns' => $exportColumns
+            'exportColumns' => $exportColumns,
         ]);
     }
 
@@ -148,8 +146,8 @@ class JournalController extends Controller
                 'account_code' => $row->f_coa_code,
                 'account_name' => $row->coa_name,
                 'description' => $row->coa_description,
-                'debit_amount' => $row->debit_credit == 'D' ? 'Rp ' . number_format($row->amount, 0, ',', '.') : null,
-                'credit_amount' => $row->debit_credit == 'C' ? 'Rp ' . number_format($row->amount, 0, ',', '.') : null
+                'debit_amount' => $row->debit_credit == 'D' ? 'Rp '.number_format($row->amount, 0, ',', '.') : null,
+                'credit_amount' => $row->debit_credit == 'C' ? 'Rp '.number_format($row->amount, 0, ',', '.') : null,
             ];
         }
 
@@ -164,12 +162,12 @@ class JournalController extends Controller
             'description' => $header->description,
             'memo' => $header->internal_memo,
             'tags' => json_decode($header->tags, true),
-            'total_debit' => 'Rp ' . number_format($total_debit, 0, ',', '.'),
-            'total_credit' => 'Rp ' . number_format($total_credit, 0, ',', '.'),
-            'difference' => 'Rp ' . number_format($total_debit - $total_credit, 0, ',', '.'),
+            'total_debit' => 'Rp '.number_format($total_debit, 0, ',', '.'),
+            'total_credit' => 'Rp '.number_format($total_credit, 0, ',', '.'),
+            'difference' => 'Rp '.number_format($total_debit - $total_credit, 0, ',', '.'),
             'entries' => $entries,
             'audit_logs' => $auditLogs,
-            'auditLogType' =>  AuditLogTypes::MAIN_TRANSACTION_JOURNAL->code()
+            'auditLogType' => AuditLogTypes::MAIN_TRANSACTION_JOURNAL->code(),
         ];
 
         return view('pages.main_transaction.journal.detail', compact('journal'));
@@ -203,7 +201,7 @@ class JournalController extends Controller
                 'account_name' => $row->coa_name,
                 'description' => $row->coa_description,
                 'debit_amount' => $row->debit_credit == 'D' ? $row->amount : null,
-                'credit_amount' => $row->debit_credit == 'C' ? $row->amount : null
+                'credit_amount' => $row->debit_credit == 'C' ? $row->amount : null,
             ];
         }
         $header = $data[0];
@@ -216,17 +214,17 @@ class JournalController extends Controller
             'memo' => $header->internal_memo,
             'tags' => json_decode($header->tags, true),
             'f_tag_codes' => json_decode($header->f_tag_codes, true),
-            'total_debit' => 'Rp ' . number_format($total_debit, 0, ',', '.'),
-            'total_credit' => 'Rp ' . number_format($total_credit, 0, ',', '.'),
-            'difference' => 'Rp ' . number_format($total_debit - $total_credit, 0, ',', '.'),
-            'entries' => $entries
+            'total_debit' => 'Rp '.number_format($total_debit, 0, ',', '.'),
+            'total_credit' => 'Rp '.number_format($total_credit, 0, ',', '.'),
+            'difference' => 'Rp '.number_format($total_debit - $total_credit, 0, ',', '.'),
+            'entries' => $entries,
         ];
 
         return view('pages.main_transaction.journal.edit', [
             'journal' => $journal,
             'coas' => $coas,
             'tags' => $tags,
-            'canAddTags' => $canAddTags
+            'canAddTags' => $canAddTags,
         ]);
     }
 
@@ -245,13 +243,13 @@ class JournalController extends Controller
                 'journals.*.account_code' => 'required|string|max:20',
                 'journals.*.description' => 'nullable|string|max:255',
                 'journals.*.debit_amount' => 'nullable|numeric|min:0',
-                'journals.*.credit_amount' => 'nullable|numeric|min:0'
+                'journals.*.credit_amount' => 'nullable|numeric|min:0',
             ]);
 
             app(UpdateAccountingJournalAction::class)->execute($validated['reference_no'], $validated);
 
             return response()->json([
-                'message' => SuccessCodes::UPDATE_ACCOUNTING_JOURNAL_SUCCESS->message()
+                'message' => SuccessCodes::UPDATE_ACCOUNTING_JOURNAL_SUCCESS->message(),
             ], SuccessCodes::UPDATE_ACCOUNTING_JOURNAL_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -265,6 +263,7 @@ class JournalController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),

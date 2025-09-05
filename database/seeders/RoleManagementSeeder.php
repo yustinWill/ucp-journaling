@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -54,31 +53,31 @@ class RoleManagementSeeder extends Seeder
                 'name' => 'Super Admin',
                 'description' => 'Full system access with all permissions',
                 'is_active' => true,
-                'permissions' => 'all' // Special case for all permissions
+                'permissions' => 'all', // Special case for all permissions
             ],
             [
                 'name' => 'Admin',
                 'description' => 'Administrative access with limited permissions',
                 'is_active' => true,
-                'permissions' => ['user.read', 'user.write', 'contact.read', 'contact.write', 'product.read', 'product.write', 'sales.read', 'sales.write']
+                'permissions' => ['user.read', 'user.write', 'contact.read', 'contact.write', 'product.read', 'product.write', 'sales.read', 'sales.write'],
             ],
             [
                 'name' => 'Accounting',
                 'description' => 'Financial and accounting module access',
                 'is_active' => true,
-                'permissions' => ['journal.read', 'journal.write', 'expense.read', 'expense.write', 'coa.read', 'coa.write']
+                'permissions' => ['journal.read', 'journal.write', 'expense.read', 'expense.write', 'coa.read', 'coa.write'],
             ],
             [
                 'name' => 'Sales',
                 'description' => 'Sales and customer management access',
                 'is_active' => true,
-                'permissions' => ['contact.read', 'contact.write', 'product.read', 'sales.read', 'sales.write']
+                'permissions' => ['contact.read', 'contact.write', 'product.read', 'sales.read', 'sales.write'],
             ],
             [
                 'name' => 'Purchase',
                 'description' => 'Purchase and supplier management access',
                 'is_active' => true,
-                'permissions' => ['contact.read', 'contact.write', 'product.read', 'purchase.read', 'purchase.write']
+                'permissions' => ['contact.read', 'contact.write', 'product.read', 'purchase.read', 'purchase.write'],
             ],
         ];
 
@@ -107,14 +106,14 @@ class RoleManagementSeeder extends Seeder
                 // Assign specific permissions
                 foreach ($roleData['permissions'] as $permissionSlug) {
                     [$moduleSlug, $permissionType] = explode('.', $permissionSlug);
-                    
+
                     $permission = DB::table('permissions')
                         ->join('modules', 'permissions.module_id', '=', 'modules.id')
                         ->where('modules.slug', $moduleSlug)
                         ->where('permissions.permission_type', $permissionType)
                         ->select('permissions.id')
                         ->first();
-                    
+
                     if ($permission) {
                         DB::table('role_permissions')->insert([
                             'role_id' => $roleId,

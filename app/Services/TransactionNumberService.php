@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class TransactionNumberService
 {
@@ -15,7 +15,7 @@ class TransactionNumberService
     public function generateNumber(string $module): string
     {
         DB::beginTransaction();
-        
+
         try {
             // Get module configuration
             $config = DB::table($this->table_name)
@@ -23,13 +23,13 @@ class TransactionNumberService
                 ->where('status', 'active')
                 ->first();
 
-            if (!$config) {
+            if (! $config) {
                 throw new Exception("Transaction number configuration not found for module: {$module}");
             }
 
             // Check if counter needs to be reset based on frequency
             $shouldReset = $this->shouldResetCounter($config);
-            
+
             if ($shouldReset) {
                 // Reset counter to 1 and update last reset date
                 DB::table($this->table_name)
@@ -37,16 +37,16 @@ class TransactionNumberService
                     ->update([
                         'current_counter' => 1,
                         'last_reset_date' => now()->toDateString(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
-                
+
                 $currentCounter = 1;
             } else {
                 // Increment counter
                 DB::table($this->table_name)
                     ->where('id', $config->id)
                     ->increment('current_counter');
-                
+
                 $currentCounter = $config->current_counter + 1;
             }
 
@@ -60,7 +60,7 @@ class TransactionNumberService
             );
 
             DB::commit();
-            
+
             return $generatedNumber;
         } catch (Exception $e) {
             DB::rollBack();
@@ -93,13 +93,13 @@ class TransactionNumberService
     public function getNextNumberPreview(string $module): string
     {
         $config = $this->getModuleConfig($module);
-        
-        if (!$config) {
+
+        if (! $config) {
             throw new Exception("Transaction number configuration not found for module: {$module}");
         }
 
         $nextCounter = $config->current_counter + 1;
-        
+
         return $this->interpolateTemplate(
             $config->format_template,
             $config->module_initial,
@@ -151,7 +151,7 @@ class TransactionNumberService
             ->update([
                 'current_counter' => $newCounter,
                 'last_reset_date' => now()->toDateString(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
         return $result > 0;
@@ -165,32 +165,32 @@ class TransactionNumberService
         return [
             '{YEAR}' => [
                 'description' => 'Current year (2025)',
-                'example' => date('Y')
+                'example' => date('Y'),
             ],
             '{YY}' => [
                 'description' => 'Year 2-digit (25)',
-                'example' => date('y')
+                'example' => date('y'),
             ],
             '{MM}' => [
                 'description' => 'Month (07)',
-                'example' => date('m')
+                'example' => date('m'),
             ],
             '{DD}' => [
                 'description' => 'Date (25)',
-                'example' => date('d')
+                'example' => date('d'),
             ],
             '{MODULE_INITIAL}' => [
                 'description' => 'Module code (EX, PO)',
-                'example' => 'EX'
+                'example' => 'EX',
             ],
             '{MODULE_NAME}' => [
                 'description' => 'Full name (EXPENSE)',
-                'example' => 'EXPENSE'
+                'example' => 'EXPENSE',
             ],
             '{COUNTER}' => [
                 'description' => 'Counter (required)',
-                'example' => '00001'
-            ]
+                'example' => '00001',
+            ],
         ];
     }
 
@@ -200,22 +200,22 @@ class TransactionNumberService
     public function validateTemplate(string $template): array
     {
         $errors = [];
-        
+
         // Check if {COUNTER} is present (required)
         if (strpos($template, '{COUNTER}') === false) {
             $errors[] = 'Template must contain {COUNTER} placeholder';
         }
-        
+
         // Check for unknown placeholders
         $validPlaceholders = array_keys($this->getAvailablePlaceholders());
         preg_match_all('/\{([^}]+)\}/', $template, $matches);
-        
+
         foreach ($matches[0] as $placeholder) {
-            if (!in_array($placeholder, $validPlaceholders)) {
+            if (! in_array($placeholder, $validPlaceholders)) {
                 $errors[] = "Unknown placeholder: {$placeholder}";
             }
         }
-        
+
         return $errors;
     }
 
@@ -231,7 +231,7 @@ class TransactionNumberService
             '{DD}' => date('d'),
             '{MODULE_INITIAL}' => strtoupper($moduleInitial),
             '{MODULE_NAME}' => strtoupper($moduleName),
-            '{COUNTER}' => str_pad($counter, $padding, '0', STR_PAD_LEFT)
+            '{COUNTER}' => str_pad($counter, $padding, '0', STR_PAD_LEFT),
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $template);
@@ -247,9 +247,9 @@ class TransactionNumberService
         }
 
         $lastReset = $config->last_reset_date ? new \DateTime($config->last_reset_date) : null;
-        $now = new \DateTime();
+        $now = new \DateTime;
 
-        if (!$lastReset) {
+        if (! $lastReset) {
             return true; // First time, should reset
         }
 

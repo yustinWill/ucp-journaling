@@ -2,51 +2,51 @@
 
 namespace App\Http\Controllers\MasterData;
 
-//Main
+// Main
+use App\Domains\Bank\Services\BankService;
+use App\Domains\Coa\Services\CoaService;
+use App\Domains\Contact\Actions\CreateContactAction;
+use App\Domains\Contact\Actions\UpdateContactAction;
+use App\Domains\Contact\Services\ContactAddressService;
+use App\Domains\Contact\Services\ContactAuditLogService;
+// Actions
+use App\Domains\Contact\Services\ContactBankService;
+use App\Domains\Contact\Services\ContactProductService;
+// Services
+use App\Domains\Contact\Services\ContactService;
+use App\Domains\Contact\Services\ContactTypeService;
+use App\Domains\IdentityTypes\Services\IdentityTypesService;
+use App\Domains\PaymentTerm\Services\PaymentTermService;
+use App\Domains\Product\Services\ProductService;
+use App\Domains\SalesPerson\Services\SalesPersonService;
+use App\Domains\Tag\Services\TagService;
+use App\Enums\AuditLogTypes;
+use App\Enums\ContactAddressTypes;
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+// Enums
+use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-//Actions
-use App\Domains\Contact\Actions\CreateContactAction;
-use App\Domains\Contact\Actions\UpdateContactAction;
-
-//Services
-use App\Domains\IdentityTypes\Services\IdentityTypesService;
-use App\Domains\Coa\Services\CoaService;
-use App\Domains\Bank\Services\BankService;
-use App\Domains\Contact\Services\ContactAddressService;
-use App\Domains\Contact\Services\ContactBankService;
-use App\Domains\Contact\Services\ContactProductService;
-use App\Domains\PaymentTerm\Services\PaymentTermService;
-use App\Domains\Tag\Services\TagService;
-use App\Domains\Contact\Services\ContactService;
-use App\Domains\Contact\Services\ContactTypeService;
-use App\Domains\Contact\Services\ContactAuditLogService;
-use App\Domains\SalesPerson\Services\SalesPersonService;
-use App\Domains\Product\Services\ProductService;
-
-//Enums
-use App\Enums\ErrorCodes;
-use App\Enums\SuccessCodes;
-use App\Enums\AuditLogTypes;
-use App\Enums\ContactAddressTypes;
 
 class ContactController extends Controller
 {
     public function index()
     {
         $contact_types = app(ContactTypeService::class)->findAll();
+
         return view('pages.master_data.contact.index', [
-            'contact_types' => $contact_types
+            'contact_types' => $contact_types,
         ]);
     }
 
     public function index_data_table()
     {
         $data = app(ContactService::class)->findAllDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -71,7 +71,7 @@ class ContactController extends Controller
             'contact_types' => $contact_types,
             'products' => $products,
             'tags' => $tags,
-            'canAddTags' => true // Mock permission check
+            'canAddTags' => true, // Mock permission check
         ];
 
         return view('pages.master_data.contact.add', $selectData);
@@ -128,7 +128,7 @@ class ContactController extends Controller
             app(CreateContactAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_CONTACT_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_CONTACT_SUCCESS->message(),
             ], SuccessCodes::CREATE_CONTACT_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -142,6 +142,7 @@ class ContactController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -189,7 +190,7 @@ class ContactController extends Controller
             'payable_accounts' => $coa_accounts,
             'receivable_accounts' => $coa_accounts,
             'canAddTags' => true, // Mock permission check
-            'products' => $products
+            'products' => $products,
         ]);
     }
 
@@ -247,7 +248,7 @@ class ContactController extends Controller
             app(UpdateContactAction::class)->execute($request->contact_id, $validated);
 
             return response()->json([
-                'message' => SuccessCodes::UPDATE_CONTACT_SUCCESS->message()
+                'message' => SuccessCodes::UPDATE_CONTACT_SUCCESS->message(),
             ], SuccessCodes::UPDATE_CONTACT_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -261,6 +262,7 @@ class ContactController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -272,29 +274,30 @@ class ContactController extends Controller
     public function export()
     {
         $data = [
-            ["no" => 1, "value" => "Nama Kontak"],
-            ["no" => 2, "value" => "Tipe Kontak"],
-            ["no" => 3, "value" => "Status Kontak"],
-            ["no" => 4, "value" => "Jenis Identitas"],
-            ["no" => 5, "value" => "No Identitas"],
-            ["no" => 6, "value" => "Email"],
-            ["no" => 7, "value" => "No Telepon"],
-            ["no" => 8, "value" => "Nama Perusahaan"],
-            ["no" => 9, "value" => "No NPWP"],
-            ["no" => 10, "value" => "No Telepon Perusahaan"],
-            ["no" => 11, "value" => "No Fax"],
-            ["no" => 12, "value" => "Alamat Penagihan - Provinsi"],
-            ["no" => 13, "value" => "Alamat Penagihan - Kota"],
-            ["no" => 14, "value" => "Alamat Penagihan - Kecamatan"],
-            ["no" => 15, "value" => "Alamat Penagihan - Kelurahan"],
-            ["no" => 16, "value" => "Alamat Pengriman - Provinsi"],
-            ["no" => 17, "value" => "Alamat Pengriman - Kota"],
-            ["no" => 18, "value" => "Alamat Pengriman - Kecamatan"],
-            ["no" => 19, "value" => "Alamat Pengriman - Kelurahan"],
-            ["no" => 20, "value" => "Akun Hutang"],
-            ["no" => 21, "value" => "Akun Piutang"],
-            ["no" => 22, "value" => "Syarat Pembayaran"],
+            ['no' => 1, 'value' => 'Nama Kontak'],
+            ['no' => 2, 'value' => 'Tipe Kontak'],
+            ['no' => 3, 'value' => 'Status Kontak'],
+            ['no' => 4, 'value' => 'Jenis Identitas'],
+            ['no' => 5, 'value' => 'No Identitas'],
+            ['no' => 6, 'value' => 'Email'],
+            ['no' => 7, 'value' => 'No Telepon'],
+            ['no' => 8, 'value' => 'Nama Perusahaan'],
+            ['no' => 9, 'value' => 'No NPWP'],
+            ['no' => 10, 'value' => 'No Telepon Perusahaan'],
+            ['no' => 11, 'value' => 'No Fax'],
+            ['no' => 12, 'value' => 'Alamat Penagihan - Provinsi'],
+            ['no' => 13, 'value' => 'Alamat Penagihan - Kota'],
+            ['no' => 14, 'value' => 'Alamat Penagihan - Kecamatan'],
+            ['no' => 15, 'value' => 'Alamat Penagihan - Kelurahan'],
+            ['no' => 16, 'value' => 'Alamat Pengriman - Provinsi'],
+            ['no' => 17, 'value' => 'Alamat Pengriman - Kota'],
+            ['no' => 18, 'value' => 'Alamat Pengriman - Kecamatan'],
+            ['no' => 19, 'value' => 'Alamat Pengriman - Kelurahan'],
+            ['no' => 20, 'value' => 'Akun Hutang'],
+            ['no' => 21, 'value' => 'Akun Piutang'],
+            ['no' => 22, 'value' => 'Syarat Pembayaran'],
         ];
+
         return view('pages.master_data.contact.export', ['data' => $data]);
     }
 
@@ -325,7 +328,7 @@ class ContactController extends Controller
             'billing_contact_address' => $billing_contact_address,
             'shipping_contact_address' => $shipping_contact_address,
             'audit_log_data' => $audit_log_data,
-            'auditLogType' => AuditLogTypes::MASTER_DATA_CONTACT->code()
+            'auditLogType' => AuditLogTypes::MASTER_DATA_CONTACT->code(),
         ]);
     }
 
@@ -354,7 +357,7 @@ class ContactController extends Controller
             'account_number' => '541-002-7891',
             'debt_account' => '(2-20100) Hutang',
             'receivable_account' => '(1-20100) Piutang',
-            'payment_terms' => ''
+            'payment_terms' => '',
         ];
 
         return response()->json($contact);
@@ -366,7 +369,7 @@ class ContactController extends Controller
             'summary' => [
                 'monthly_invoiced' => 5,
                 'total_amount' => 5,
-                'delivery_receivables' => 0
+                'delivery_receivables' => 0,
             ],
             'transactions' => [
                 [
@@ -374,16 +377,16 @@ class ContactController extends Controller
                     'transaction_number' => 'Sales Invoice #100002',
                     'due_date' => '2/12/2024',
                     'status' => 'Paid',
-                    'total' => 'Rp 5,000,000.00'
+                    'total' => 'Rp 5,000,000.00',
                 ],
                 [
                     'date' => '8/12/2024',
                     'transaction_number' => 'Purchase Order #10001',
                     'due_date' => '3/1/2025',
                     'status' => 'Open',
-                    'total' => 'Rp 3,000,000.00'
-                ]
-            ]
+                    'total' => 'Rp 3,000,000.00',
+                ],
+            ],
         ];
 
         return response()->json($data);
@@ -399,7 +402,7 @@ class ContactController extends Controller
                     'original_amount' => 'Rp 5,000,000.00',
                     'used_amount' => 'Rp 500,000.00',
                     'remaining_balance' => 'Rp 4,500,000.00',
-                    'selected' => true
+                    'selected' => true,
                 ],
                 [
                     'date' => '5/5/2024',
@@ -407,7 +410,7 @@ class ContactController extends Controller
                     'original_amount' => 'Rp 4,000,000.00',
                     'used_amount' => 'Rp 4,000,000.00',
                     'remaining_balance' => 'Rp -',
-                    'selected' => false
+                    'selected' => false,
                 ],
                 [
                     'date' => '5/5/2024',
@@ -415,9 +418,9 @@ class ContactController extends Controller
                     'original_amount' => 'Rp 500,000.00',
                     'used_amount' => 'Rp 500,000.00',
                     'remaining_balance' => 'Rp -',
-                    'selected' => false
-                ]
-            ]
+                    'selected' => false,
+                ],
+            ],
         ];
 
         return response()->json($data);
@@ -439,7 +442,7 @@ class ContactController extends Controller
                 ['value' => 'SUPPLIER', 'label' => 'SUPPLIER - Supplier'],
                 ['value' => 'KARYAWAN', 'label' => 'KARYAWAN - Karyawan'],
                 ['value' => 'LAINNYA', 'label' => 'LAINNYA - Lainnya'],
-            ]
+            ],
         ];
     }
 }

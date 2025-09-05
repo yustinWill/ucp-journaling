@@ -2,14 +2,12 @@
 
 namespace App\Domains\Product\Actions;
 
-use Illuminate\Support\Facades\DB;
-use App\Enums\ActionTypes;
-
-use App\Domains\Product\Services\ProductService;
-use App\Domains\Product\Services\ProductExpenseService;
-use App\Domains\Product\Services\ProductCompositionService;
 use App\Domains\Product\Services\ProductAuditLogService;
-
+use App\Domains\Product\Services\ProductCompositionService;
+use App\Domains\Product\Services\ProductExpenseService;
+use App\Domains\Product\Services\ProductService;
+use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class CreateProductAction
 {
@@ -51,11 +49,11 @@ class CreateProductAction
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembuatan Product",
+                'description' => 'Pembuatan Product',
                 'metadata' => json_encode([
                     'before' => null,
                     'after' => $data,
-                ])
+                ]),
             ];
             app(ProductAuditLogService::class)->create($log_data, $product_id);
         });

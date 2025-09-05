@@ -2,14 +2,14 @@
 
 namespace App\Domains\Contact\Actions;
 
-use Illuminate\Support\Facades\DB;
-use App\Enums\ActionTypes;
-use App\Domains\Contact\Services\ContactService;
-use App\Domains\Contact\Services\ContactAuditLogService;
 use App\Domains\Contact\Services\ContactAddressService;
+use App\Domains\Contact\Services\ContactAuditLogService;
 use App\Domains\Contact\Services\ContactBankService;
 use App\Domains\Contact\Services\ContactProductService;
+use App\Domains\Contact\Services\ContactService;
+use App\Enums\ActionTypes;
 use App\Enums\ContactAddressTypes;
+use Illuminate\Support\Facades\DB;
 
 class CreateContactAction
 {
@@ -38,7 +38,7 @@ class CreateContactAction
                     'subdistrict' => $data['shipping_subdistrict'] ?? null,
                     'address' => $data['shipping_address'],
                     'postal_code' => $data['shipping_postal_code'] ?? null,
-                ]
+                ],
             ]);
 
             $contactBank = [];
@@ -73,11 +73,11 @@ class CreateContactAction
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembentukan Kontak",
+                'description' => 'Pembentukan Kontak',
                 'metadata' => json_encode([
                     'before' => null,
                     'after' => $data,
-                ])
+                ]),
             ];
             app(ContactAuditLogService::class)->create($log_data, $contact_id);
         });

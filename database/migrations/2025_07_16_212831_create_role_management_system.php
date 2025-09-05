@@ -36,7 +36,7 @@ return new class extends Migration
             $table->foreignId('module_id')->constrained('modules')->onDelete('cascade');
             $table->enum('permission_type', ['read', 'write', 'delete', 'approval']);
             $table->timestamps();
-            
+
             $table->unique(['module_id', 'permission_type']);
         });
 
@@ -46,12 +46,12 @@ return new class extends Migration
             $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->foreignId('permission_id')->constrained('permissions')->onDelete('cascade');
             $table->timestamps();
-            
+
             $table->unique(['role_id', 'permission_id']);
         });
 
         // Add role_id to users table if it doesn't exist
-        if (!Schema::hasColumn('users', 'role_id')) {
+        if (! Schema::hasColumn('users', 'role_id')) {
             Schema::table('users', function (Blueprint $table) {
                 $table->foreignId('role_id')->nullable()->after('id')->constrained('roles')->onDelete('set null');
             });

@@ -2,7 +2,6 @@
 
 namespace App\Domains\Product\Services;
 
-use App\Enums\StockStatuses;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -19,9 +18,10 @@ class ProductExpenseService
                 'f_expense_coa_code' => $row['f_expense_coa_code'],
                 'expense_price' => $row['expense_price'],
                 'created_by' => Auth::id(),
-                'created_at' => now()
+                'created_at' => now(),
             ];
         }
+
         return DB::table($this->table_name)->insert($insert_data);
     }
 
@@ -31,13 +31,13 @@ class ProductExpenseService
             'f_expense_coa_code' => $data['f_expense_coa_code'],
             'expense_price' => $data['expense_price'],
             'updated_by' => Auth::id(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
     }
 
     public function findAllBasedOnProductId($product_id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select('t.*')
             ->where('t.f_product_id', $product_id)
             ->get();

@@ -17,20 +17,20 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id'); // References users
             $table->enum('action_type', [
                 'CREATE',
-                'UPDATE', 
+                'UPDATE',
                 'DELETE',
                 'COMPLETE',
                 'CANCEL',
                 'REVERSAL',
-                'STATUS_CHANGE'
+                'STATUS_CHANGE',
             ]);
             $table->string('description');
             $table->json('metadata')->nullable(); // Before/after data, stock movements, batch info
             $table->timestamp('created_at');
-            
+
             // Foreign key constraints
             $table->foreign('production_id')->references('id')->on('t_productions')->onDelete('cascade');
-            
+
             // Indexes
             $table->index(['production_id', 'created_at']);
             $table->index(['user_id', 'action_type']);

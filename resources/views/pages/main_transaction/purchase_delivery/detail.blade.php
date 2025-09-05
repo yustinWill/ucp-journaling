@@ -188,6 +188,55 @@
                         </div>
                     </div>
 
+                    <!-- Items Delivery Section -->
+                    <div class="section-header mt-12">
+                        <h6>Items Delivery</h6>
+                    </div>
+
+                    <div class="mb-4 mx-n5">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="product-detail-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30%;">Produk</th>
+                                        <th style="width: 12%;">Qty PO</th>
+                                        <th style="width: 12%;">Previously Delivered</th>
+                                        <th style="width: 12%;">This Delivery</th>
+                                        <th style="width: 12%;">Remaining</th>
+                                        <th style="width: 14%;">Unit Price</th>
+                                        <th style="width: 8%;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($purchaseDelivery['products'] ?? [] as $product)
+                                        <tr>
+                                            <td>{{ $product['product_name'] ?? 'N/A' }}</td>
+                                            <td class="text-center">{{ number_format($product['ordered_qty'] ?? 0) }}</td>
+                                            <td class="text-center">{{ number_format(($product['total_delivered_qty'] ?? 0) - ($product['delivery_qty'] ?? 0)) }}</td>
+                                            <td class="text-center">{{ number_format($product['delivery_qty'] ?? 0) }}</td>
+                                            <td class="text-center">{{ number_format(($product['ordered_qty'] ?? 0) - ($product['total_delivered_qty'] ?? 0)) }}</td>
+                                            <td class="text-end">{{ number_format($product['unit_price'] ?? 0, 0, ',', '.') }}</td>
+                                            <td class="text-center">
+                                                @php
+                                                    $remaining = ($product['ordered_qty'] ?? 0) - ($product['total_delivered_qty'] ?? 0);
+                                                    if ($remaining > 0) {
+                                                        echo '<span class="badge bg-label-warning">Partial</span>';
+                                                    } else {
+                                                        echo '<span class="badge bg-label-success">Complete</span>';
+                                                    }
+                                                @endphp
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">Tidak ada produk delivery</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                                </div>
+                    </div>
+
                     <!-- Timestamps Section -->
                     <div class="section-header mt-12">
                         <h6>Informasi Sistem</h6>

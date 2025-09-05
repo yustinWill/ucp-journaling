@@ -2,8 +2,8 @@
 
 namespace App\Domains\StockOpname\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StockOpnameService
 {
@@ -19,7 +19,7 @@ class StockOpnameService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as t')
+        $data = DB::table($this->table_name.' as t')
             ->select('t.*', 'w.code as warehouse_code', 'w.name as warehouse_name', 'u.name as pic_name')
             ->leftJoin('m_warehouses as w', 't.f_warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 't.f_pic_id', '=', 'u.id')
@@ -80,7 +80,7 @@ class StockOpnameService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as so')
+        $query = DB::table($this->table_name.' as so')
             ->select([
                 'so.id',
                 'so.stock_opname_no',
@@ -120,7 +120,6 @@ class StockOpnameService
         if ($no_opname = request()->input('no_opname')) {
             $query->where('so.stock_opname_no', 'like', "%{$no_opname}%");
         }
-
 
         $query->groupBy('so.id');
 

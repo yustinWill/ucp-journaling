@@ -2,13 +2,13 @@
 
 namespace App\Domains\StockAdjustment\Actions;
 
-use App\Exceptions\AppException;
-use App\Enums\ErrorCodes;
-use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
+use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockAdjustment\Services\StockMovementLogService;
-use Illuminate\Support\Facades\DB;
+use App\Enums\ErrorCodes;
+use App\Exceptions\AppException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class UpdateStockAdjustmentAction
 {
@@ -35,7 +35,7 @@ class UpdateStockAdjustmentAction
                 'reference_number' => $data['reference_number'] ?? null,
                 'total_items' => count($data['products'] ?? []),
                 'total_adjustment_qty' => $this->calculateTotalQty($data['products'] ?? []),
-                'total_adjustment_value' => $this->calculateTotalValue($data['products'] ?? [])
+                'total_adjustment_value' => $this->calculateTotalValue($data['products'] ?? []),
             ]);
 
             // Update adjustment items if products are provided
@@ -51,7 +51,7 @@ class UpdateStockAdjustmentAction
                 'Stock adjustment updated',
                 [
                     'changes' => $this->getChanges($originalData, $data),
-                    'updated_fields' => array_keys($data)
+                    'updated_fields' => array_keys($data),
                 ]
             );
 
@@ -70,6 +70,7 @@ class UpdateStockAdjustmentAction
         foreach ($products as $product) {
             $totalValue += ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0));
         }
+
         return $totalValue;
     }
 
@@ -82,7 +83,7 @@ class UpdateStockAdjustmentAction
             ->delete();
 
         // Insert new items
-        if (!empty($products)) {
+        if (! empty($products)) {
             $items = [];
             foreach ($products as $product) {
                 $items[] = [
@@ -99,7 +100,7 @@ class UpdateStockAdjustmentAction
                     'total_value' => ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0)),
                     'reason' => $product['reason'] ?? null,
                     'created_by' => Auth::id(),
-                    'created_at' => now()
+                    'created_at' => now(),
                 ];
             }
 
@@ -142,12 +143,12 @@ class UpdateStockAdjustmentAction
                     'stock_after' => $product['stock_before'] + $product['adjustment_qty'],
                     'unit_cost' => $product['unit_cost'] ?? 0,
                     'total_value' => ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0)),
-                    'notes' => $product['reason'] ?? $mainData['description']
+                    'notes' => $product['reason'] ?? $mainData['description'],
                 ];
             }
         }
 
-        if (!empty($movements)) {
+        if (! empty($movements)) {
             app(StockMovementLogService::class)->createBulk($movements);
         }
     }
@@ -164,14 +165,14 @@ class UpdateStockAdjustmentAction
             'status',
             'description',
             'memo',
-            'reference_number'
+            'reference_number',
         ];
 
         foreach ($trackableFields as $field) {
-            if (isset($newData[$field]) && $originalData->$field != $newData[$field]) {
+            if (isset($newData[$field]) && $newData[$field] != $originalData->$field) {
                 $changes[$field] = [
                     'old' => $originalData->$field,
-                    'new' => $newData[$field]
+                    'new' => $newData[$field],
                 ];
             }
         }

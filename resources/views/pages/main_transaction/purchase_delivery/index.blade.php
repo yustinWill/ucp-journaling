@@ -59,18 +59,27 @@
             <div class="card-body">
                 <!-- Advanced Search Form -->
                 <div class="row mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label">Status:</label>
-                        <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
-                            <option value="">Semua Status</option>
-                            @foreach($statuses as $status)
-                                <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">Tanggal Transaksi:</label>
+                        <input type="text" id="date-range-picker" class="form-control" />
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">Tanggal Delivery:</label>
+                        <input type="date" class="form-control global-single-date-picker" id="delivery-date-filter" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Supplier:</label>
+                        <select class="global-select2 form-select" id="supplier-filter" data-allow-clear="true">
+                            <option value="">Pilih Supplier</option>
+                            @foreach ($suppliers as $supplier)
+                                <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Pencarian:</label>
-                        <input type="text" class="form-control" id="search-field" placeholder="Cari Purchase Delivery">
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">No Purchase Delivery / PO:</label>
+                        <input type="text" class="form-control" id="delivery-search-filter"
+                            placeholder="Cari Delivery atau PO">
                     </div>
                 </div>
                 
@@ -90,20 +99,10 @@
                         </div>
                         
                         <div class="d-flex gap-2">
-                            @if($canImportPurchaseDelivery)
-                                <a href="{{ route('main_transaction.purchase_delivery.import') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                            @endif
                             @if($canExportPurchaseDelivery)
                                 <a href="{{ route('main_transaction.purchase_delivery.export') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif
-                            @if($canAddPurchaseDelivery)
-                                <a href="{{ route('main_transaction.purchase_delivery.add') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                             @endif
                         </div>
                     </div>
@@ -116,9 +115,10 @@
                     <thead>
                         <tr>
                             <th style="width: 100px;">Tanggal</th>
+                            <th style="width: 140px;">No Transaksi</th>
                             <th style="width: 140px;">No Delivery</th>
                             <th style="width: 180px;">Supplier</th>
-                            <th style="width: 120px;">Tgl Pengiriman</th>
+                            <th style="width: 120px;">Tgl Delivery</th>
                             <th style="width: 140px;">PO Reference</th>
                             <th style="width: 100px;">Status</th>
                             <th style="width: 120px;">Diinput Oleh</th>
@@ -152,23 +152,37 @@ $(function() {
         }
         
         purchaseDeliveryTable = new DataTable('#purchase-delivery-table', {
+            processing: true,
+            serverSide: true,
             ajax: {
                 url: '{{ route("main_transaction.purchase_delivery.index_data_table") }}',
                 data: function(d) {
-                    d.status = $('#status-filter').val();
+                    d.date_range_filter = $('#date-range-picker').val();
+                    d.delivery_date_filter = $('#delivery-date-filter').val();
+                    d.supplier_filter = $('#supplier-filter').val();
+                    d.delivery_search_filter = $('#delivery-search-filter').val();
                 }
             },
-            columns: [
-                { data: 'date', width: '100px' },
-                { 
+            columns: [{
+                    data: 'transaction_date',
+                    width: '100px'
+                },
+                {
                     data: 'reference_no',
                     width: '140px',
                     render: function(data, type, row) {
                         return data; // Non-clickable as per standard
                     }
                 },
-                { 
-                    data: 'supplier',
+                {
+                    data: 'delivery_number',
+                    width: '140px',
+                    render: function(data, type, row) {
+                        return data || '-';
+                    }
+                },
+                {
+                    data: 'supplier_name',
                     width: '180px',
                     render: function(data, type, row) {
                         if (!data) return '-';
@@ -180,8 +194,11 @@ $(function() {
                         return data;
                     }
                 },
-                { data: 'delivery_date', width: '120px' },
-                { 
+                {
+                    data: 'delivery_date',
+                    width: '120px'
+                },
+                {
                     data: 'po_reference',
                     width: '140px',
                     render: function(data, type, row) {
@@ -194,38 +211,50 @@ $(function() {
                         return data;
                     }
                 },
-                { 
+                {
                     data: 'status',
                     width: '100px',
                     render: function(data, type, row) {
-                        return `<span class="badge ${row.status_badge_class}">${data}</span>`;
+                        let badgeClass = 'bg-label-secondary';
+                        switch(data) {
+                            case 'PENDING': badgeClass = 'bg-label-warning'; break;
+                            case 'IN_TRANSIT': badgeClass = 'bg-label-info'; break;
+                            case 'DELIVERED': badgeClass = 'bg-label-success'; break;
+                            case 'CANCELLED': badgeClass = 'bg-label-danger'; break;
+                        }
+                        return `<span class="badge ${badgeClass}">${data}</span>`;
                     }
                 },
-                { 
-                    data: 'created_by',
+                {
+                    data: 'created_by_name',
                     width: '120px',
                     render: function(data, type, row) {
                         if (canViewUser) {
                             const detailUrl = `{{ route('master_data.user.detail', ':id') }}`
-                                .replace(':id', row.created_by_id);
+                                .replace(':id', row.created_by);
                             return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                         }
                         return data;
                     }
                 },
-                { 
+                {
                     data: 'tags',
                     width: '120px',
                     render: function(data, type, row) {
-                        if (!data || data.length === 0) {
+                        if (!data || data === '[]') {
                             return '-';
                         }
-                        let tagsHtml = '';
-                        data.forEach(function(tag) {
-                            let badgeClass = tag.preview || 'bg-label-secondary';
-                            tagsHtml += `<span class="badge me-1 ${badgeClass}">${tag.name}</span>`;
-                        });
-                        return tagsHtml;
+                        try {
+                            let tags = JSON.parse(data);
+                            return tags.map(tag => {
+                                if (tag.code == null) {
+                                    return '';
+                                }
+                                return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
+                            }).join('');
+                        } catch (e) {
+                            return '-';
+                        }
                     }
                 },
                 {
@@ -280,23 +309,23 @@ $(function() {
     // Initialize table
     initPurchaseDeliveryTable();
     
-    // Search functionality
-    $('#search-field').on('keyup', function() {
-        if (purchaseDeliveryTable) {
-            purchaseDeliveryTable.search(this.value).draw();
-        }
-    });
-    
-    // Filter functionality
-    $('#status-filter').on('change', function() {
-        if (purchaseDeliveryTable) {
-            purchaseDeliveryTable.draw();
-        }
-    });
+    // Filter functionality with timeout
+    let searchTimeout;
+    $('#date-range-picker, #delivery-date-filter, #supplier-filter, #delivery-search-filter').on(
+        'keyup change',
+        function() {
+            clearTimeout(searchTimeout);
+            const input = this;
+            searchTimeout = setTimeout(function() {
+                if (purchaseDeliveryTable) {
+                    purchaseDeliveryTable.draw();
+                }
+            }, 400); // 400ms delay
+        });
     
     // Tag Column Toggle Functionality
     $('#toggleTagColumn').on('change', function() {
-        const tagColumn = purchaseDeliveryTable.column(7); // Tag column index (0-based)
+        const tagColumn = purchaseDeliveryTable.column(8); // Tag column index (0-based, adjusted for new column)
         tagColumn.visible(this.checked);
     });
 });

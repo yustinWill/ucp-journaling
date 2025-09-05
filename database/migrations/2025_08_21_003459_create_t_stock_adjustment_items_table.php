@@ -28,11 +28,11 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             $table->index(['company_code', 'stock_adjustment_id']);
             $table->index('product_id');
             $table->index('product_code');
-            
+
             $table->foreign('stock_adjustment_id')->references('id')->on('t_stock_adjustments')->onDelete('cascade');
         });
     }

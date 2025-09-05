@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\MasterData;
 
-use App\Http\Controllers\Controller;
 use App\Helpers\PermissionHelper;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +14,7 @@ class PaymentTermController extends Controller
     public function index()
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('master_data_payment_term', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_payment_term', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
         }
 
@@ -28,14 +28,14 @@ class PaymentTermController extends Controller
 
         $statuses = [
             ['value' => 'active', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'inactive', 'label' => 'INACTIVE - Tidak Aktif']
+            ['value' => 'inactive', 'label' => 'INACTIVE - Tidak Aktif'],
         ];
 
         $types = [
             ['value' => 'net', 'label' => 'NET - Net Payment'],
             ['value' => 'immediate', 'label' => 'IMMEDIATE - Immediate Payment'],
             ['value' => 'cod', 'label' => 'COD - Cash on Delivery'],
-            ['value' => 'custom', 'label' => 'CUSTOM - Custom Terms']
+            ['value' => 'custom', 'label' => 'CUSTOM - Custom Terms'],
         ];
 
         // Check permissions
@@ -60,12 +60,12 @@ class PaymentTermController extends Controller
     public function indexDataTable(Request $request)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('master_data_payment_term', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_payment_term', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $query = DB::table($this->table_name)->select([
-            'id', 'code', 'name', 'description', 'days', 'type', 'status', 'is_default', 'created_at'
+            'id', 'code', 'name', 'description', 'days', 'type', 'status', 'is_default', 'created_at',
         ]);
 
         // Apply filters
@@ -77,10 +77,10 @@ class PaymentTermController extends Controller
         }
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
-                  ->orWhere('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -92,32 +92,32 @@ class PaymentTermController extends Controller
     public function add()
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('master_data_payment_term', 'write')) {
+        if (! PermissionHelper::hasPermission('master_data_payment_term', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
 
         $statuses = [
             ['value' => 'active', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'inactive', 'label' => 'INACTIVE - Tidak Aktif']
+            ['value' => 'inactive', 'label' => 'INACTIVE - Tidak Aktif'],
         ];
 
         $types = [
             ['value' => 'net', 'label' => 'NET - Net Payment'],
             ['value' => 'immediate', 'label' => 'IMMEDIATE - Immediate Payment'],
             ['value' => 'cod', 'label' => 'COD - Cash on Delivery'],
-            ['value' => 'custom', 'label' => 'CUSTOM - Custom Terms']
+            ['value' => 'custom', 'label' => 'CUSTOM - Custom Terms'],
         ];
 
         return view('pages.master_data.payment_term.add', [
             'statuses' => $statuses,
-            'types' => $types
+            'types' => $types,
         ]);
     }
 
     public function store(Request $request)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('master_data_payment_term', 'write')) {
+        if (! PermissionHelper::hasPermission('master_data_payment_term', 'write')) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk menambah data.',
                 'error' => 'PERMISSION_DENIED',
@@ -132,7 +132,7 @@ class PaymentTermController extends Controller
                 'days' => 'required|integer|min:0',
                 'type' => 'required|in:net,immediate,cod,custom',
                 'status' => 'required|in:active,inactive',
-                'is_default' => 'boolean'
+                'is_default' => 'boolean',
             ]);
 
             DB::transaction(function () use ($validated) {
@@ -155,12 +155,12 @@ class PaymentTermController extends Controller
             });
 
             return response()->json([
-                'message' => 'Payment Term berhasil disimpan'
+                'message' => 'Payment Term berhasil disimpan',
             ], 200);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function($errors) {
+                'message' => 'Kesalahan validasi: '.implode(', ', array_map(function ($errors) {
                     return implode(', ', $errors);
                 }, $e->errors())),
                 'error' => 'VALIDATION_ERROR',
@@ -176,13 +176,13 @@ class PaymentTermController extends Controller
     public function detail($id)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('master_data_payment_term', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_payment_term', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
         }
 
         $paymentTerm = DB::table($this->table_name)->where('id', $id)->first();
-        
-        if (!$paymentTerm) {
+
+        if (! $paymentTerm) {
             abort(404, 'Payment Term tidak ditemukan.');
         }
 
@@ -201,26 +201,26 @@ class PaymentTermController extends Controller
     public function edit($id)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('master_data_payment_term', 'write')) {
+        if (! PermissionHelper::hasPermission('master_data_payment_term', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
         }
 
         $paymentTerm = DB::table($this->table_name)->where('id', $id)->first();
-        
-        if (!$paymentTerm) {
+
+        if (! $paymentTerm) {
             abort(404, 'Payment Term tidak ditemukan.');
         }
 
         $statuses = [
             ['value' => 'active', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'inactive', 'label' => 'INACTIVE - Tidak Aktif']
+            ['value' => 'inactive', 'label' => 'INACTIVE - Tidak Aktif'],
         ];
 
         $types = [
             ['value' => 'net', 'label' => 'NET - Net Payment'],
             ['value' => 'immediate', 'label' => 'IMMEDIATE - Immediate Payment'],
             ['value' => 'cod', 'label' => 'COD - Cash on Delivery'],
-            ['value' => 'custom', 'label' => 'CUSTOM - Custom Terms']
+            ['value' => 'custom', 'label' => 'CUSTOM - Custom Terms'],
         ];
 
         // Get permission data for view
@@ -239,7 +239,7 @@ class PaymentTermController extends Controller
     public function update(Request $request)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('master_data_payment_term', 'write')) {
+        if (! PermissionHelper::hasPermission('master_data_payment_term', 'write')) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
                 'error' => 'PERMISSION_DENIED',
@@ -249,13 +249,13 @@ class PaymentTermController extends Controller
         try {
             $validated = $request->validate([
                 'id' => 'required|integer|exists:m_payment_terms,id',
-                'code' => 'required|string|max:20|unique:m_payment_terms,code,' . $request->id,
+                'code' => 'required|string|max:20|unique:m_payment_terms,code,'.$request->id,
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
                 'days' => 'required|integer|min:0',
                 'type' => 'required|in:net,immediate,cod,custom',
                 'status' => 'required|in:active,inactive',
-                'is_default' => 'boolean'
+                'is_default' => 'boolean',
             ]);
 
             DB::transaction(function () use ($validated) {
@@ -277,12 +277,12 @@ class PaymentTermController extends Controller
             });
 
             return response()->json([
-                'message' => 'Payment Term berhasil diperbarui'
+                'message' => 'Payment Term berhasil diperbarui',
             ], 200);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function($errors) {
+                'message' => 'Kesalahan validasi: '.implode(', ', array_map(function ($errors) {
                     return implode(', ', $errors);
                 }, $e->errors())),
                 'error' => 'VALIDATION_ERROR',
@@ -298,7 +298,7 @@ class PaymentTermController extends Controller
     public function delete(Request $request)
     {
         // Check delete permission
-        if (!PermissionHelper::hasPermission('master_data_payment_term', 'delete')) {
+        if (! PermissionHelper::hasPermission('master_data_payment_term', 'delete')) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk menghapus data.',
                 'error' => 'PERMISSION_DENIED',
@@ -307,11 +307,11 @@ class PaymentTermController extends Controller
 
         try {
             $validated = $request->validate([
-                'id' => 'required|integer|exists:m_payment_terms,id'
+                'id' => 'required|integer|exists:m_payment_terms,id',
             ]);
 
             $paymentTerm = DB::table($this->table_name)->where('id', $validated['id'])->first();
-            
+
             if ($paymentTerm->is_default) {
                 return response()->json([
                     'message' => 'Tidak dapat menghapus payment term default.',
@@ -322,7 +322,7 @@ class PaymentTermController extends Controller
             DB::table($this->table_name)->where('id', $validated['id'])->delete();
 
             return response()->json([
-                'message' => 'Payment Term berhasil dihapus'
+                'message' => 'Payment Term berhasil dihapus',
             ], 200);
 
         } catch (\Exception $e) {

@@ -2,15 +2,14 @@
 
 namespace App\Domains\Product\Actions;
 
-use Illuminate\Support\Facades\DB;
-use App\Enums\ActionTypes;
-
-use App\Domains\Product\Services\ProductService;
-use App\Domains\Product\Services\ProductExpenseService;
-use App\Domains\Product\Services\ProductCompositionService;
-use App\Domains\Product\Services\ProductAuditLogService;
-use App\Domains\Unit\Services\UnitService;
 use App\Domains\Category\Services\CategoryService;
+use App\Domains\Product\Services\ProductAuditLogService;
+use App\Domains\Product\Services\ProductCompositionService;
+use App\Domains\Product\Services\ProductExpenseService;
+use App\Domains\Product\Services\ProductService;
+use App\Domains\Unit\Services\UnitService;
+use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class UpdateProductAction
 {
@@ -44,7 +43,6 @@ class UpdateProductAction
                     $product_data = app(ProductService::class)->findOne($composition['product_id']);
                     if (isset($composition['composition_id'])) {
 
-
                         app(ProductCompositionService::class)->update($composition['composition_id'], [
                             'f_product_composition_product_id' => $composition['product_id'],
                             'qty' => $composition['qty'],
@@ -59,7 +57,7 @@ class UpdateProductAction
                                 'f_product_composition_product_id' => $composition['product_id'],
                                 'qty' => $composition['qty'],
                                 'f_unit_id' => $product_data->f_unit_id,
-                            ]
+                            ],
                         ]);
                     }
                 }
@@ -69,7 +67,6 @@ class UpdateProductAction
                     app(ProductCompositionService::class)->delete($product_id, $delete_id);
                 }
             }
-
 
             $current_account = app(ProductExpenseService::class)->findAllBasedOnProductId($product_id);
 
@@ -84,7 +81,7 @@ class UpdateProductAction
                     if (isset($account['expense_id'])) {
                         app(ProductExpenseService::class)->update($account['expense_id'], [
                             'f_expense_coa_code' => $account['account'],
-                            'expense_price' => $account['cost']
+                            'expense_price' => $account['cost'],
                         ]);
 
                         $submitted_account_ids[] = $account['expense_id'];
@@ -93,8 +90,8 @@ class UpdateProductAction
                             [
                                 'f_product_id' => $product_id,
                                 'f_expense_coa_code' => $account['account'],
-                                'expense_price' => $account['cost']
-                            ]
+                                'expense_price' => $account['cost'],
+                            ],
                         ]);
                     }
                 }
@@ -109,11 +106,11 @@ class UpdateProductAction
         });
     }
 
-    function insertAuditLog($product_id, $old_data, $new_data, $new_data_master)
+    public function insertAuditLog($product_id, $old_data, $new_data, $new_data_master)
     {
         $log_data = [
             'action_type' => ActionTypes::UPDATE,
-            'description' => "Perubahan Kategori",
+            'description' => 'Perubahan Kategori',
             'metadata' => json_encode([
                 'before' => $old_data,
                 'after' => $new_data,
@@ -148,8 +145,8 @@ class UpdateProductAction
                         'before' => $old_data->description,
                         'after' => $new_data['description'] ?? null,
                     ],
-                ]
-            ])
+                ],
+            ]),
         ];
         app(ProductAuditLogService::class)->create($log_data, $product_id);
     }

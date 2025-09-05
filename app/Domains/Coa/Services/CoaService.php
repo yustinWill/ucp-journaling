@@ -3,8 +3,8 @@
 namespace App\Domains\Coa\Services;
 
 use App\Enums\GeneralStatuses;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CoaService
 {
@@ -25,7 +25,7 @@ class CoaService
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'current_balance' => 0,
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -40,8 +40,9 @@ class CoaService
             'type' => $data['type'],
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'updated_at' => now(),
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ];
+
         return DB::table($this->table_name)
             ->where('id', $id)
             ->update($updateData);
@@ -49,7 +50,7 @@ class CoaService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as t')
+        $query = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.code',
@@ -62,7 +63,7 @@ class CoaService
                 't.updated_at',
                 't.created_by',
                 't.updated_by',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
@@ -90,7 +91,6 @@ class CoaService
 
         $query->groupBy('t.id');
 
-
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
         $filteredQuery = clone $query;
@@ -113,7 +113,7 @@ class CoaService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as t')
+        $data = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.code',
@@ -136,19 +136,20 @@ class CoaService
             abort(404);
         }
         $data->f_tag_codes = json_decode($data->f_tag_codes, true);
+
         return $data;
     }
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.code',
                 't.name',
                 't.level',
                 't.type',
-                't.note'
+                't.note',
             ])
             ->where('t.company_code', session('user_company_code'))
             ->where('t.status', GeneralStatuses::ACTIVE)
@@ -158,14 +159,14 @@ class CoaService
 
     public function findAllWhereInCode($coa_codes)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.code',
                 't.name',
                 't.level',
                 't.type',
-                't.note'
+                't.note',
             ])
             ->where('t.company_code', session('user_company_code'))
             ->whereIn('t.code', $coa_codes)

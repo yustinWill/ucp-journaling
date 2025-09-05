@@ -2,11 +2,10 @@
 
 namespace App\Domains\Warehouse\Actions;
 
-use Illuminate\Support\Facades\DB;
-use App\Enums\ActionTypes;
-
-use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\Warehouse\Services\WarehouseAuditLogService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class CreateWarehouseAction
 {
@@ -17,11 +16,11 @@ class CreateWarehouseAction
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembuatan Warehouse: " . $data['name'],
+                'description' => 'Pembuatan Warehouse: '.$data['name'],
                 'metadata' => json_encode([
                     'before' => null,
                     'after' => $data,
-                ])
+                ]),
             ];
             app(WarehouseAuditLogService::class)->create($log_data, $warehouse_id);
 

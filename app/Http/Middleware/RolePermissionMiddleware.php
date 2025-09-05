@@ -18,19 +18,19 @@ class RolePermissionMiddleware
     public function handle(Request $request, Closure $next, string $moduleSlug, string $permissionType): Response
     {
         // Skip permission check if no user is authenticated
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
-        
+
         // Skip permission check if user doesn't have role_id (backward compatibility)
-        if (!isset($user->role_id)) {
+        if (! isset($user->role_id)) {
             return $next($request);
         }
 
         // Check if user has the required permission
-        if (!$this->hasPermission($user->role_id, $moduleSlug, $permissionType)) {
+        if (! $this->hasPermission($user->role_id, $moduleSlug, $permissionType)) {
             abort(403, 'Insufficient permissions to access this resource.');
         }
 

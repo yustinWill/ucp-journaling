@@ -26,12 +26,10 @@ return new class extends Migration
             $table->string('f_purchase_coa_code')->nullable();
             $table->unsignedBigInteger('f_purchase_tax_id')->nullable();
 
-
             $table->boolean('is_item_sold');
             $table->decimal('unit_sell_price', 15, 2)->nullable();
             $table->string('f_sell_coa_code')->nullable();
             $table->unsignedBigInteger('f_sell_tax_id')->nullable();
-
 
             $table->boolean('monitor_stock');
             $table->decimal('minimum_stock', 15, 2)->nullable();
@@ -42,7 +40,6 @@ return new class extends Migration
 
             $table->json('f_tag_codes')->nullable();
             $table->string('internal_memo')->nullable();
-
 
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('modified_by')->nullable();

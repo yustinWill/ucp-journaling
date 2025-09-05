@@ -18,13 +18,13 @@ class StockOpnameAuditLogService
             'description' => $description,
             'metadata' => json_encode($metadata),
             'created_by' => Auth::id(),
-            'created_at' => now()
+            'created_at' => now(),
         ]);
     }
 
     public function findByStockOpnameId(int $stock_opname_id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.action_type',
@@ -32,7 +32,7 @@ class StockOpnameAuditLogService
                 't.metadata',
                 't.created_at',
                 't.created_by',
-                'u.name as user_name'
+                'u.name as user_name',
             ])
             ->leftJoin('users as u', 't.created_by', '=', 'u.id')
             ->where('t.f_stock_opname_id', $stock_opname_id)
@@ -41,17 +41,18 @@ class StockOpnameAuditLogService
             ->get()
             ->map(function ($log) {
                 $log->metadata = $log->metadata ? json_decode($log->metadata) : null;
+
                 return $log;
             });
     }
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as sal')
+        return DB::table($this->table_name.' as sal')
             ->select([
                 'sal.*',
                 'sa.adjustment_number',
-                'u.name as user_name'
+                'u.name as user_name',
             ])
             ->leftJoin('t_stock_adjustments as sa', 'sal.stock_opname_id', '=', 'sa.id')
             ->leftJoin('users as u', 'sal.created_by', '=', 'u.id')
@@ -60,6 +61,7 @@ class StockOpnameAuditLogService
             ->get()
             ->map(function ($log) {
                 $log->metadata = $log->metadata ? json_decode($log->metadata) : null;
+
                 return $log;
             });
     }

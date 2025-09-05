@@ -2,34 +2,32 @@
 
 namespace App\Http\Controllers\MasterData;
 
-//Main
+// Main
+use App\Domains\Tag\Actions\CreateTagAction;
+use App\Domains\Tag\Actions\UpdateTagAction;
+use App\Domains\Tag\Services\TagAuditLogService;
+use App\Domains\Tag\Services\TagColorService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\Tag\Services\TagUsageLogService;
+use App\Enums\AuditLogTypes;
+// Actions
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+// Services
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
+// Enums
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-
-//Actions
-use App\Domains\Tag\Actions\CreateTagAction;
-use App\Domains\Tag\Actions\UpdateTagAction;
-//Services
-use App\Domains\Tag\Services\TagColorService;
-use App\Domains\Tag\Services\TagService;
-use App\Domains\Tag\Services\TagAuditLogService;
-use App\Domains\Tag\Services\TagUsageLogService;
-//Enums
-use App\Enums\ErrorCodes;
-use App\Enums\SuccessCodes;
-use App\Enums\AuditLogTypes;
-
 
 class TagController extends Controller
 {
     private $availableStatus = [
         ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif']
+        ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
     ];
 
     public function index()
@@ -46,6 +44,7 @@ class TagController extends Controller
     public function index_data_table()
     {
         $data = app(TagService::class)->findAllDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -53,6 +52,7 @@ class TagController extends Controller
     {
         $availableColors = app(TagColorService::class)->findAll();
         $availableStatus = $this->availableStatus;
+
         return view('pages.master_data.tag.add', compact('availableColors', 'availableStatus'));
     }
 
@@ -64,7 +64,7 @@ class TagController extends Controller
                 'code' => 'required|string|max:255|unique:m_tags,code',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->availableStatus, 'value'))
+                    Rule::in(array_column($this->availableStatus, 'value')),
                 ],
                 'f_tag_color_id' => 'required|exists:m_tag_colors,id',
                 'description' => 'nullable|string|max:255',
@@ -74,7 +74,7 @@ class TagController extends Controller
             app(CreateTagAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_TAG_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_TAG_SUCCESS->message(),
             ], SuccessCodes::CREATE_TAG_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -88,6 +88,7 @@ class TagController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -118,7 +119,7 @@ class TagController extends Controller
                 'name' => 'required|string|max:255',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->availableStatus, 'value'))
+                    Rule::in(array_column($this->availableStatus, 'value')),
                 ],
                 'f_tag_color_id' => 'required|exists:m_tag_colors,id',
                 'description' => 'nullable|string|max:255',
@@ -128,7 +129,7 @@ class TagController extends Controller
             app(UpdateTagAction::class)->execute($request->id, $validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_TAG_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_TAG_SUCCESS->message(),
             ], SuccessCodes::CREATE_TAG_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -142,6 +143,7 @@ class TagController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),

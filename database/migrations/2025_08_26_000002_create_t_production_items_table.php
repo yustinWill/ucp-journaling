@@ -23,10 +23,10 @@ return new class extends Migration
             $table->json('batch_consumption')->nullable(); // Track which batches were consumed for FIFO reversal
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             // Foreign key constraints
             $table->foreign('production_id')->references('id')->on('t_productions')->onDelete('cascade');
-            
+
             // Indexes
             $table->index(['production_id', 'raw_material_product_id']);
             $table->index('raw_material_product_id');

@@ -2,14 +2,14 @@
 
 namespace App\Domains\AccountingJournal\Actions;
 
-use Illuminate\Support\Facades\DB;
-use App\Enums\JournalFeatureCodes;
-use App\Domains\AccountingJournal\Services\AccountingJournalService;
 use App\Domains\AccountingJournal\Services\AccountingJournalAuditLogService;
-use App\Enums\GeneralStatuses;
+use App\Domains\AccountingJournal\Services\AccountingJournalService;
 use App\Enums\ActionTypes;
-use App\Exceptions\AppException;
 use App\Enums\ErrorCodes;
+use App\Enums\GeneralStatuses;
+use App\Enums\JournalFeatureCodes;
+use App\Exceptions\AppException;
+use Illuminate\Support\Facades\DB;
 
 class UpdateAccountingJournalAction
 {
@@ -24,6 +24,7 @@ class UpdateAccountingJournalAction
             throw new AppException(ErrorCodes::JOURNAL_IS_LOCKED);
         }
         $old_data['journals'] = $current_data;
+
         return DB::transaction(function () use ($data, $reference_no, $old_data) {
 
             app(AccountingJournalService::class)->updateSetInactive($reference_no);
@@ -40,18 +41,18 @@ class UpdateAccountingJournalAction
                     $debit_credit = 'C';
                 }
                 $create_arr[] = [
-                    "transaction_code" => null,
-                    "reference_no" => $reference_no,
-                    "date" => $data['date'],
-                    "feature_code" => JournalFeatureCodes::JLL,
-                    "coa_code" => $row['account_code'],
-                    "description" => $data['description'],
-                    "internal_memo" => $data['memo'],
-                    "coa_description" => $row['description'],
-                    "amount" => $amount,
-                    "debit_credit" => $debit_credit,
-                    "f_tag_codes" => isset($data['tags']) ? $data['tags'] : null,
-                    "status" => GeneralStatuses::ACTIVE,
+                    'transaction_code' => null,
+                    'reference_no' => $reference_no,
+                    'date' => $data['date'],
+                    'feature_code' => JournalFeatureCodes::JLL,
+                    'coa_code' => $row['account_code'],
+                    'description' => $data['description'],
+                    'internal_memo' => $data['memo'],
+                    'coa_description' => $row['description'],
+                    'amount' => $amount,
+                    'debit_credit' => $debit_credit,
+                    'f_tag_codes' => isset($data['tags']) ? $data['tags'] : null,
+                    'status' => GeneralStatuses::ACTIVE,
                 ];
             }
 
@@ -59,7 +60,7 @@ class UpdateAccountingJournalAction
 
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan Journal",
+                'description' => 'Perubahan Journal',
                 'metadata' => json_encode([
                     'before' => $old_data,
                     'after' => $data,
@@ -89,17 +90,17 @@ class UpdateAccountingJournalAction
                             'before' => $old_data['header']->f_tag_codes,
                             'after' => $data['tags'] ?? null,
                         ],
-                    ]
-                ])
+                    ],
+                ]),
             ];
 
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan Jurnal",
+                'description' => 'Perubahan Jurnal',
                 'metadata' => json_encode([
                     'before' => $old_data,
                     'after' => $data,
-                ])
+                ]),
             ];
             app(AccountingJournalAuditLogService::class)->create($log_data, $journal_ids[0]);
         });

@@ -5,7 +5,9 @@ namespace App\Enums;
 enum ErrorCodes: string
 {
     public const BAD_REQUEST = 400;
+
     public const INTERNAL_SERVER_ERROR = 500;
+
     public const UNAUTHORIZED = 401;
 
     case INVALID_LOGIN_CREDENTIALS = 'INVALID_LOGIN_CREDENTIALS';

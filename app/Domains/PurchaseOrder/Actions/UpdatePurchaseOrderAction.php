@@ -2,12 +2,12 @@
 
 namespace App\Domains\PurchaseOrder\Actions;
 
-use Illuminate\Support\Facades\DB;
-use App\Enums\ActionTypes;
-use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
-use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
-use App\Domains\PurchaseOrder\Services\PurchaseOrderAuditLogService;
 use App\Domains\Product\Services\ProductService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderAuditLogService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
+use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class UpdatePurchaseOrderAction
 {
@@ -31,15 +31,15 @@ class UpdatePurchaseOrderAction
                 $unit_data = app(ProductService::class)->findOne($product['product_id']);
 
                 $productData = [
-                    "product_id" => $product['product_id'],
-                    "qty" => $product['quantity'],
-                    "unit_id" => $unit_data->f_unit_id,
-                    "price_per_qty" => $product['unit_price'],
-                    "tax_id" => $product['tax_id'],
-                    "total" => $product['total'],
+                    'product_id' => $product['product_id'],
+                    'qty' => $product['quantity'],
+                    'unit_id' => $unit_data->f_unit_id,
+                    'price_per_qty' => $product['unit_price'],
+                    'tax_id' => $product['tax_id'],
+                    'total' => $product['total'],
                 ];
 
-                if (!empty($product['id'])) {
+                if (! empty($product['id'])) {
                     app(PurchaseOrderProductService::class)->update($po_id, $product['id'], $productData);
                     $existingProductIds[] = $product['id'];
                 } else {
@@ -49,22 +49,22 @@ class UpdatePurchaseOrderAction
             }
 
             // Delete products that are no longer present
-          
+
             $oldProductIds = collect($old_po_products)->pluck('id')->toArray();
             // dd($oldProductIds);
-            $toDelete = array_diff($oldProductIds, $existingProductIds );
-            
+            $toDelete = array_diff($oldProductIds, $existingProductIds);
+
             foreach ($toDelete as $deleteId) {
                 app(PurchaseOrderProductService::class)->delete($po_id, $deleteId);
             }
 
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan Purchase order",
+                'description' => 'Perubahan Purchase order',
                 'metadata' => json_encode([
                     'before' => [
                         'header' => $old_po_data,
-                        'products' => $old_po_products
+                        'products' => $old_po_products,
                     ],
                     'after' => $data,
                     'comparison' => [
@@ -113,8 +113,8 @@ class UpdatePurchaseOrderAction
                             'before' => $old_po_data->description,
                             'after' => $data['description'] ?? null,
                         ],
-                    ]
-                ])
+                    ],
+                ]),
             ];
             app(PurchaseOrderAuditLogService::class)->create($log_data, $po_id);
         });

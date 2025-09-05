@@ -2,14 +2,13 @@
 
 namespace App\Domains\Role\Actions;
 
-use Illuminate\Support\Facades\DB;
+use App\Domains\Permission\Services\PermissionService;
+use App\Domains\Role\Services\RoleAuditLogService;
+use App\Domains\Role\Services\RoleService;
+use App\Domains\RolePermission\Services\RolePermissionService;
 use App\Enums\ActionTypes;
 use App\Enums\GeneralStatuses;
-use App\Domains\RolePermission\Services\RolePermissionService;
-use App\Domains\Permission\Services\PermissionService;
-use App\Domains\Role\Services\RoleService;
-use App\Domains\Role\Services\RoleAuditLogService;
-
+use Illuminate\Support\Facades\DB;
 
 class CreateRoleAction
 {
@@ -24,17 +23,17 @@ class CreateRoleAction
                 app(RolePermissionService::class)->create([
                     'role_id' => $role_id,
                     'permission_id' => $permission->id,
-                    'status' => GeneralStatuses::ACTIVE
+                    'status' => GeneralStatuses::ACTIVE,
                 ]);
             }
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembuatan Role",
+                'description' => 'Pembuatan Role',
                 'metadata' => json_encode([
                     'before' => null,
                     'after' => $data,
-                ])
+                ]),
             ];
 
             app(RoleAuditLogService::class)->create($log_data, $role_id);

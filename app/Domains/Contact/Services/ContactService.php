@@ -3,8 +3,8 @@
 namespace App\Domains\Contact\Services;
 
 use App\Enums\GeneralStatuses;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ContactService
 {
@@ -21,7 +21,7 @@ class ContactService
                 'c.phone AS phone',
                 'c.group_contact_name AS group_name',
                 'c.type AS type',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])->leftJoin(DB::raw("JSON_TABLE(c.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
             })
@@ -72,13 +72,13 @@ class ContactService
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'data' => $data,
         ];
     }
 
     public function findOne($id)
     {
-        return DB::table($this->table_name . ' AS t')
+        return DB::table($this->table_name.' AS t')
             ->select([
                 't.id',
                 't.name',
@@ -119,7 +119,7 @@ class ContactService
 
     public function findAllByType($type)
     {
-        return DB::table($this->table_name . ' AS t')
+        return DB::table($this->table_name.' AS t')
             ->select(['t.id', 't.name', 't.type', 't.email', 'ca.address AS billing_address'])
             ->leftJoin('m_contact_addresses AS ca', function ($join) {
                 $join->on('ca.f_contact_id', '=', 't.id')

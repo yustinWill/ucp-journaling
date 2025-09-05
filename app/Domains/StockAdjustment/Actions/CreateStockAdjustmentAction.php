@@ -2,11 +2,11 @@
 
 namespace App\Domains\StockAdjustment\Actions;
 
-use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
+use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockAdjustment\Services\StockMovementLogService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CreateStockAdjustmentAction
 {
@@ -26,11 +26,11 @@ class CreateStockAdjustmentAction
                 'reference_number' => $data['reference_number'] ?? null,
                 'total_items' => count($data['products'] ?? []),
                 'total_adjustment_qty' => $this->calculateTotalQty($data['products'] ?? []),
-                'total_adjustment_value' => $this->calculateTotalValue($data['products'] ?? [])
+                'total_adjustment_value' => $this->calculateTotalValue($data['products'] ?? []),
             ]);
 
             // Create adjustment items and stock movement logs
-            if (!empty($data['products'])) {
+            if (! empty($data['products'])) {
                 $this->createAdjustmentItems($stockAdjustmentId, $data['products'], $data);
                 $this->createStockMovementLogs($stockAdjustmentId, $data['products'], $data);
             }
@@ -44,7 +44,7 @@ class CreateStockAdjustmentAction
                     'adjustment_type' => $data['adjustment_type'],
                     'warehouse_id' => $data['warehouse_id'],
                     'total_items' => count($data['products'] ?? []),
-                    'status' => $data['status'] ?? 'DRAFT'
+                    'status' => $data['status'] ?? 'DRAFT',
                 ]
             );
 
@@ -63,6 +63,7 @@ class CreateStockAdjustmentAction
         foreach ($products as $product) {
             $totalValue += ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0));
         }
+
         return $totalValue;
     }
 
@@ -84,7 +85,7 @@ class CreateStockAdjustmentAction
                 'total_value' => ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0)),
                 'reason' => $product['reason'] ?? null,
                 'created_by' => Auth::id(),
-                'created_at' => now()
+                'created_at' => now(),
             ];
         }
 
@@ -101,7 +102,7 @@ class CreateStockAdjustmentAction
         foreach ($products as $product) {
             if ($product['adjustment_qty'] != 0) {
                 $movementType = $product['adjustment_qty'] > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
-                
+
                 $movements[] = [
                     'movement_date' => $mainData['adjustment_date'],
                     'movement_type' => $movementType,
@@ -119,12 +120,12 @@ class CreateStockAdjustmentAction
                     'stock_after' => $product['stock_before'] + $product['adjustment_qty'],
                     'unit_cost' => $product['unit_cost'] ?? 0,
                     'total_value' => ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0)),
-                    'notes' => $product['reason'] ?? $mainData['description']
+                    'notes' => $product['reason'] ?? $mainData['description'],
                 ];
             }
         }
 
-        if (!empty($movements)) {
+        if (! empty($movements)) {
             app(StockMovementLogService::class)->createBulk($movements);
         }
     }

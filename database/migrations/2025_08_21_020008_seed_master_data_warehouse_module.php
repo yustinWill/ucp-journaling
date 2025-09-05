@@ -15,7 +15,7 @@ return new class extends Migration
             ->where('name', 'master_data_warehouse')
             ->first();
 
-        if (!$existingModule) {
+        if (! $existingModule) {
             $modules = [
                 [
                     'name' => 'master_data_warehouse',
@@ -23,7 +23,7 @@ return new class extends Migration
                     'description' => 'Master Data Warehouse',
                     'is_active' => true,
                     'created_at' => now(),
-                ]
+                ],
             ];
 
             DB::table('modules')->insert($modules);

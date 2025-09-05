@@ -2,9 +2,9 @@
 
 namespace App\Domains\Tag\Services;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TagService
 {
@@ -21,7 +21,7 @@ class TagService
             'description' => $data['description'] ?? null,
             'memo' => $data['memo'] ?? null,
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -37,13 +37,13 @@ class TagService
                 'description' => $data['description'] ?? null,
                 'memo' => $data['memo'] ?? null,
                 'updated_at' => now(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
     }
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as t')
+        $query = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',
@@ -110,12 +110,12 @@ class TagService
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',
                 't.code',
-                'tc.code AS tag_color_code'
+                'tc.code AS tag_color_code',
             ])
             ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
             ->where('t.company_code', session('user_company_code'))
@@ -126,7 +126,7 @@ class TagService
 
     public function findOne($id)
     {
-        return DB::table($this->table_name . ' as t')
+        return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',
@@ -139,7 +139,7 @@ class TagService
                 't.description',
                 't.status',
                 't.memo',
-                't.usage_count'
+                't.usage_count',
             ])
             ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
             ->where('t.company_code', session('user_company_code'))

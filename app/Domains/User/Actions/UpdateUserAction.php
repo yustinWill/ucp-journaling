@@ -2,11 +2,11 @@
 
 namespace App\Domains\User\Actions;
 
-use App\Domains\User\Services\UserService;
 use App\Domains\Role\Services\RoleService;
 use App\Domains\User\Services\UserAuditLogService;
-use Illuminate\Support\Facades\DB;
+use App\Domains\User\Services\UserService;
 use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class UpdateUserAction
 {
@@ -21,7 +21,7 @@ class UpdateUserAction
             app(UserService::class)->update($id, $data);
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan User",
+                'description' => 'Perubahan User',
                 'metadata' => json_encode([
                     'before' => $old_data,
                     'after' => $data,
@@ -48,8 +48,8 @@ class UpdateUserAction
                         ],
                         'role' => [
                             'label' => 'Role',
-                            'before' => $before_role->id . ' - ' . $before_role->name,
-                            'after' => $after_role->id . ' - ' . $after_role->name,
+                            'before' => $before_role->id.' - '.$before_role->name,
+                            'after' => $after_role->id.' - '.$after_role->name,
                         ],
                         'status' => [
                             'label' => 'Status User',
@@ -61,8 +61,8 @@ class UpdateUserAction
                             'before' => $old_data->f_tag_codes,
                             'after' => $data['tags'] ?? null,
                         ],
-                    ]
-                ])
+                    ],
+                ]),
             ];
             app(UserAuditLogService::class)->create($log_data, $id);
         });

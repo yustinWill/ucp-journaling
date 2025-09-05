@@ -20,10 +20,10 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamp('created_at');
             $table->unsignedBigInteger('created_by');
-            
+
             $table->foreign('f_storage_id')->references('id')->on('m_storages');
             $table->foreign('created_by')->references('id')->on('users');
-            
+
             $table->index(['f_storage_id', 'created_at']);
             $table->index('company_code');
         });

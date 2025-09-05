@@ -5,17 +5,16 @@ namespace App\Traits;
 use App\Enums\GeneralStatuses;
 use App\Enums\GlobalConfig;
 use Illuminate\Support\Facades\DB;
-use App\Traits\DateTime;
-
 
 trait AccountingReportingLogic
 {
     use DateTime;
+
     private function get_date($date, $company_code)
     {
-        $custom_closing_date = DB::table("m_global_configs" . ' as config')
+        $custom_closing_date = DB::table('m_global_configs'.' as config')
             ->select([
-                'value'
+                'value',
             ])
             ->where('code', '=', GlobalConfig::CUSTOM_CLOSING_ACCOUNTING_DATE)
             ->first();
@@ -26,9 +25,9 @@ trait AccountingReportingLogic
 
         $last_date = $this->getLastMonthEndOfMonth($date);
 
-        $closing_data = DB::table("l_accounting_closing" . ' as closing')
+        $closing_data = DB::table('l_accounting_closing'.' as closing')
             ->select([
-                "closing.date_period AS date_period",
+                'closing.date_period AS date_period',
             ])
             ->where('closing.status', '=', GeneralStatuses::ACTIVE)
             ->where('closing.date_period', '=', $last_date)
@@ -37,9 +36,9 @@ trait AccountingReportingLogic
 
         if ($closing_data == null) {
             if (isset($date)) {
-                $closing_data = DB::table("l_accounting_closing" . ' as closing')
+                $closing_data = DB::table('l_accounting_closing'.' as closing')
                     ->select([
-                        "closing.date_period AS date_period",
+                        'closing.date_period AS date_period',
                     ])
                     ->where('closing.status', '=', GeneralStatuses::ACTIVE)
                     ->where('closing.date_period', '<=', $date)
@@ -47,9 +46,9 @@ trait AccountingReportingLogic
                     ->orderBy('closing.date_period', 'DESC')
                     ->first();
             } else {
-                $closing_data = DB::table("l_accounting_closing" . ' as closing')
+                $closing_data = DB::table('l_accounting_closing'.' as closing')
                     ->select([
-                        "closing.date_period AS date_period",
+                        'closing.date_period AS date_period',
                     ])
                     ->where('closing.status', '=', GeneralStatuses::ACTIVE)
                     // ->where('closing.company_code', '=', Session::get('company_code'))
@@ -57,7 +56,7 @@ trait AccountingReportingLogic
                     ->first();
             }
 
-            if (!isset($closing_data->date_period)) {
+            if (! isset($closing_data->date_period)) {
                 return $date;
             }
             $last_date = $closing_data->date_period;
@@ -71,18 +70,18 @@ trait AccountingReportingLogic
         $company_code = session('user_company_code');
         $last_date = $this->get_date($start_date, $company_code);
 
-        $coa_query = DB::table("m_coas" . ' as coa')
+        $coa_query = DB::table('m_coas'.' as coa')
             ->select([
-                "coa.code AS coa_code",
-                "coa.name AS coa_name",
-                "coa.type AS coa_type",
-                "coa.group_type AS coa_group_type",
-                "coa.f_parent_coa_code AS parent_coa_code",
-                DB::raw("COALESCE(coa_summary.closing_balance, 0) AS amount"),
+                'coa.code AS coa_code',
+                'coa.name AS coa_name',
+                'coa.type AS coa_type',
+                'coa.group_type AS coa_group_type',
+                'coa.f_parent_coa_code AS parent_coa_code',
+                DB::raw('COALESCE(coa_summary.closing_balance, 0) AS amount'),
                 DB::raw("'0' AS adjustment_amount"),
-                DB::raw("COALESCE(coa_summary.closing_balance, 0) AS final_amount"),
+                DB::raw('COALESCE(coa_summary.closing_balance, 0) AS final_amount'),
             ])
-            ->leftJoin("l_coa_summary" . ' as coa_summary', function ($join) use ($last_date) {
+            ->leftJoin('l_coa_summary'.' as coa_summary', function ($join) use ($last_date) {
                 $join->on('coa_summary.f_coa_code', '=', 'coa.code')
                     ->on('coa_summary.company_code', '=', 'coa.company_code')
                     ->where('coa_summary.date', '=', $last_date)
@@ -120,27 +119,27 @@ trait AccountingReportingLogic
     {
         foreach ($tree as $node) {
             $separator = str_repeat('&emsp;', $indent);
-            if ($node['coa_type'] == "D") {
+            if ($node['coa_type'] == 'D') {
                 if ($node['coa_group_type'] == 1) {
                     $asset_amount += $node['amount'];
-                } else if ($node['coa_group_type'] == 2) {
+                } elseif ($node['coa_group_type'] == 2) {
                     $liability_amount += $node['amount'];
-                } else if ($node['coa_group_type'] == 3) {
+                } elseif ($node['coa_group_type'] == 3) {
                     if ($node['coa_code'] !== session(GlobalConfig::LABA_RUGI_BERJALAN_COA)) {
                         $equity_amount += $node['amount'];
                     }
-                } else if ($node['coa_group_type'] == 4) {
+                } elseif ($node['coa_group_type'] == 4) {
                     $revenue_amount += $node['amount'];
-                } else if ($node['coa_group_type'] >= 5) {
+                } elseif ($node['coa_group_type'] >= 5) {
                     $expense_amount += $node['amount'];
                 }
 
                 if ($node['coa_group_type'] == 2 || $node['coa_group_type'] == 3) {
                     $node['amount'] = $node['amount'] * -1;
                 }
-                $html .= '<tr><td><b>' . $separator . $node['coa_code'] . " - " . $node['coa_name'] . '</b></td><td dir="rtl">Rp. ' . number_format($node['amount'], 2, '.', ',') . '</td></tr>';
+                $html .= '<tr><td><b>'.$separator.$node['coa_code'].' - '.$node['coa_name'].'</b></td><td dir="rtl">Rp. '.number_format($node['amount'], 2, '.', ',').'</td></tr>';
             } else {
-                $html .= '<tr><td><b>' . $separator . $node['coa_code'] . " - " . $node['coa_name'] . '</b></td><td dir="rtl">-</td></tr>';
+                $html .= '<tr><td><b>'.$separator.$node['coa_code'].' - '.$node['coa_name'].'</b></td><td dir="rtl">-</td></tr>';
             }
 
             if (isset($node['children'])) {
@@ -157,9 +156,9 @@ trait AccountingReportingLogic
             $coa_codes[] = $coa_row->coa_code;
         }
 
-        $journal_data_query = DB::table("t_accounting_journals" . ' as journal')
+        $journal_data_query = DB::table('t_accounting_journals'.' as journal')
             ->select([
-                "journal.f_coa_code AS coa_code",
+                'journal.f_coa_code AS coa_code',
             ])
             ->selectRaw('SUM(CASE 
             WHEN SUBSTRING(f_coa_code, 1, 1) = "1" AND debit_credit = "D" THEN amount 

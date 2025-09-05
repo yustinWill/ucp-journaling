@@ -21,13 +21,13 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             // Foreign keys
             // TODO: Add contacts table foreign key when contacts table is created
             // $table->foreign('f_employee_contact_id')->references('id')->on('contacts')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
-            
+
             // Indexes
             $table->index(['f_employee_contact_id']);
             $table->index(['status']);

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\MasterData;
 
-use App\Http\Controllers\Controller;
 use App\Helpers\PermissionHelper;
+use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 class TransactionNumberController extends Controller
 {
     private $transactionNumberService;
+
     private $table_name = 'm_transaction_numbers';
 
     public function __construct(TransactionNumberService $transactionNumberService)
@@ -20,7 +21,7 @@ class TransactionNumberController extends Controller
 
     public function index()
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk melihat data ini.');
         }
 
@@ -29,7 +30,7 @@ class TransactionNumberController extends Controller
 
     public function indexDataTable()
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -44,7 +45,7 @@ class TransactionNumberController extends Controller
                 'counter_padding',
                 'reset_frequency',
                 'status',
-                'updated_at'
+                'updated_at',
             ])
             ->orderBy('module_display_name')
             ->get();
@@ -78,13 +79,13 @@ class TransactionNumberController extends Controller
 
     public function detail($id)
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk melihat data ini.');
         }
 
         $transactionNumber = DB::table($this->table_name)->where('id', $id)->first();
 
-        if (!$transactionNumber) {
+        if (! $transactionNumber) {
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
 
@@ -96,19 +97,19 @@ class TransactionNumberController extends Controller
             'transactionNumber' => $transactionNumber,
             'previews' => $previews,
             'placeholders' => $placeholders,
-            'canEdit' => PermissionHelper::hasPermission('master_data_transaction_number', 'write')
+            'canEdit' => PermissionHelper::hasPermission('master_data_transaction_number', 'write'),
         ]);
     }
 
     public function edit($id)
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengedit data ini.');
         }
 
         $transactionNumber = DB::table($this->table_name)->where('id', $id)->first();
 
-        if (!$transactionNumber) {
+        if (! $transactionNumber) {
             return redirect()->back()->with('error', 'Data tidak ditemukan.');
         }
 
@@ -117,19 +118,19 @@ class TransactionNumberController extends Controller
             ['value' => 'never', 'label' => 'Never'],
             ['value' => 'daily', 'label' => 'Daily'],
             ['value' => 'monthly', 'label' => 'Monthly'],
-            ['value' => 'yearly', 'label' => 'Yearly']
+            ['value' => 'yearly', 'label' => 'Yearly'],
         ];
 
         return view('pages.master_data.transaction_number.edit', [
             'transactionNumber' => $transactionNumber,
             'placeholders' => $placeholders,
-            'resetFrequencies' => $resetFrequencies
+            'resetFrequencies' => $resetFrequencies,
         ]);
     }
 
     public function update(Request $request)
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
             return response()->json(['message' => 'Anda tidak memiliki akses untuk mengedit data.', 'error' => 'PERMISSION_DENIED'], 403);
         }
 
@@ -138,15 +139,15 @@ class TransactionNumberController extends Controller
             'format_template' => 'required|string|max:500',
             'current_counter' => 'required|integer|min:1',
             'counter_padding' => 'required|integer|min:1|max:10',
-            'reset_frequency' => 'required|in:never,daily,monthly,yearly'
+            'reset_frequency' => 'required|in:never,daily,monthly,yearly',
         ]);
 
         // Validate template
         $validationErrors = $this->transactionNumberService->validateTemplate($request->format_template);
-        if (!empty($validationErrors)) {
+        if (! empty($validationErrors)) {
             return response()->json([
                 'message' => 'Template format tidak valid.',
-                'errors' => $validationErrors
+                'errors' => $validationErrors,
             ], 422);
         }
 
@@ -157,25 +158,28 @@ class TransactionNumberController extends Controller
                 'format_template' => $request->format_template,
                 'current_counter' => $request->current_counter,
                 'counter_padding' => $request->counter_padding,
-                'reset_frequency' => $request->reset_frequency
+                'reset_frequency' => $request->reset_frequency,
             ]);
 
             if ($result) {
                 DB::commit();
+
                 return response()->json(['message' => 'Konfigurasi berhasil diperbarui.']);
             } else {
                 DB::rollBack();
+
                 return response()->json(['message' => 'Gagal memperbarui konfigurasi.'], 500);
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+
+            return response()->json(['message' => 'Terjadi kesalahan: '.$e->getMessage()], 500);
         }
     }
 
     public function previewFormat(Request $request)
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -184,15 +188,15 @@ class TransactionNumberController extends Controller
             'module_initial' => 'required|string|max:2',
             'module_name' => 'required|string',
             'counter' => 'required|integer|min:1',
-            'padding' => 'required|integer|min:1|max:10'
+            'padding' => 'required|integer|min:1|max:10',
         ]);
 
         // Validate template
         $validationErrors = $this->transactionNumberService->validateTemplate($request->template);
-        if (!empty($validationErrors)) {
+        if (! empty($validationErrors)) {
             return response()->json([
                 'success' => false,
-                'errors' => $validationErrors
+                'errors' => $validationErrors,
             ]);
         }
 
@@ -207,73 +211,74 @@ class TransactionNumberController extends Controller
 
             return response()->json([
                 'success' => true,
-                'preview' => $preview
+                'preview' => $preview,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'errors' => ['Terjadi kesalahan: ' . $e->getMessage()]
+                'errors' => ['Terjadi kesalahan: '.$e->getMessage()],
             ]);
         }
     }
 
     public function generateNumber(Request $request, $module)
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         try {
             $number = $this->transactionNumberService->generateNumber($module);
+
             return response()->json([
                 'success' => true,
-                'number' => $number
+                'number' => $number,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
 
     public function checkDuplicate(Request $request, $module)
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $request->validate([
-            'number' => 'required|string'
+            'number' => 'required|string',
         ]);
 
         $exists = $this->transactionNumberService->checkDuplicate($module, $request->number);
 
         return response()->json([
-            'exists' => $exists
+            'exists' => $exists,
         ]);
     }
 
     public function resetCounter(Request $request, $id)
     {
-        if (!PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
+        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $request->validate([
-            'counter' => 'required|integer|min:1'
+            'counter' => 'required|integer|min:1',
         ]);
 
         try {
             $result = $this->transactionNumberService->resetCounter($id, $request->counter);
-            
+
             if ($result) {
                 return response()->json(['message' => 'Counter berhasil direset.']);
             } else {
                 return response()->json(['message' => 'Gagal mereset counter.'], 500);
             }
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Terjadi kesalahan: '.$e->getMessage()], 500);
         }
     }
 

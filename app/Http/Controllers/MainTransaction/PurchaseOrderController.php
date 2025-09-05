@@ -2,37 +2,34 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
-use App\Http\Controllers\Controller;
-use App\Helpers\PermissionHelper;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-
-
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
-use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\Product\Services\ProductService;
-use App\Domains\Tax\Services\TaxService;
-use App\Domains\Tag\Services\TagService;
-use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
 use App\Domains\PurchaseOrder\Actions\CreatePurchaseOrderAction;
 use App\Domains\PurchaseOrder\Actions\UpdatePurchaseOrderAction;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderAuditLogService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
-//Enums
+use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\Tax\Services\TaxService;
+use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
-use App\Enums\AuditLogTypes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
+use App\Helpers\ValidationHelper;
+use App\Http\Controllers\Controller;
+// Enums
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PurchaseOrderController extends Controller
 {
     public function index()
     {
         // Check read permission for purchase order module
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
         }
 
@@ -54,7 +51,7 @@ class PurchaseOrderController extends Controller
             'canImportPurchaseOrder' => $canImportPurchaseOrder,
             'canExportPurchaseOrder' => $canExportPurchaseOrder,
             'canViewPurchaseOrder' => $canViewPurchaseOrder,
-            'canEditPurchaseOrder' => $canEditPurchaseOrder
+            'canEditPurchaseOrder' => $canEditPurchaseOrder,
         ];
 
         return view('pages.main_transaction.purchase_order.index', array_merge($data, $permissionData));
@@ -63,18 +60,19 @@ class PurchaseOrderController extends Controller
     public function index_data_table()
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $data = app(PurchaseOrderService::class)->findAllDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
 
@@ -101,7 +99,7 @@ class PurchaseOrderController extends Controller
             'canAddSuppliers' => $canAddSuppliers,
             'canAddPaymentTerms' => $canAddPaymentTerms,
             'canAddTags' => $canAddTags,
-            'canAddStorages' => $canAddStorages
+            'canAddStorages' => $canAddStorages,
         ]);
     }
 
@@ -121,7 +119,7 @@ class PurchaseOrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'transaction_number' => $transactionNumber
+                'transaction_number' => $transactionNumber,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
@@ -135,7 +133,7 @@ class PurchaseOrderController extends Controller
     public function store(Request $request)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk menambah data.',
                 'error' => 'PERMISSION_DENIED',
@@ -177,7 +175,7 @@ class PurchaseOrderController extends Controller
             app(CreatePurchaseOrderAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_PURCHASE_ORDER_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_PURCHASE_ORDER_SUCCESS->message(),
             ], SuccessCodes::CREATE_PURCHASE_ORDER_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -191,6 +189,7 @@ class PurchaseOrderController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -202,7 +201,7 @@ class PurchaseOrderController extends Controller
     public function detail($id)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
         }
 
@@ -220,20 +219,20 @@ class PurchaseOrderController extends Controller
                 'user_id' => $log->user_id,
                 'user_name' => $log->user_name,
                 'action_type' => $log->action_type,
-                'description' => $log->description
+                'description' => $log->description,
             ];
         }
 
         $product_lines = [];
         foreach ($po_products as $prod) {
             $product_lines[] = [
-                'product_name' => $prod->product_code . " - " . $prod->product_name,
+                'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
                 'unit_price' => $prod->price_per_qty,
                 'tax_name' => $prod->tax_name,
-                'total' => $prod->total
+                'total' => $prod->total,
             ];
         }
         $purchaseOrder = [
@@ -245,13 +244,13 @@ class PurchaseOrderController extends Controller
             'email' => $po_data->supplier_email,
             'address' => $po_data->supplier_address,
             'supplier_reference' => $po_data->supplier_reference_no,
-            // 'status' => 'APPROVED',
+            'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
-            'payment_terms' => $po_data->payment_term_code . " - " . $po_data->payment_term_name,
+            'payment_terms' => $po_data->payment_term_code.' - '.$po_data->payment_term_name,
             'payment_terms_type' => $po_data->payment_term_type,
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
-            'warehouse' => $po_data->warehouse_code . " - " . $po_data->warehouse_name,
+            'warehouse' => $po_data->warehouse_code.' - '.$po_data->warehouse_name,
             'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
             'total' => $po_data->grand_price,
@@ -269,7 +268,7 @@ class PurchaseOrderController extends Controller
             // 'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
             'attachment' => [
                 'name' => $po_data->attachment,
-                'url' => $po_data->attachment
+                'url' => $po_data->attachment,
             ],
             'created_at' => $po_data->created_at,
             'updated_at' => $po_data->updated_at,
@@ -280,15 +279,15 @@ class PurchaseOrderController extends Controller
                     'product_name' => 'PRD-001 - Botol PET 330ml',
                     'total_qty' => 10000,
                     'qty_delivered' => 7500,
-                    'remaining_qty' => 2500
+                    'remaining_qty' => 2500,
                 ],
                 [
                     'product_id' => 2,
                     'product_name' => 'PRD-002 - Label Kemasan',
                     'total_qty' => 10000,
                     'qty_delivered' => 10000,
-                    'remaining_qty' => 0
-                ]
+                    'remaining_qty' => 0,
+                ],
             ],
             'purchase_deliveries' => [
                 [
@@ -300,8 +299,8 @@ class PurchaseOrderController extends Controller
                     'created_by' => 'Staff Gudang A',
                     'created_by_id' => 5,
                     'tags' => [
-                        ['name' => 'Partial', 'preview' => 'bg-label-warning']
-                    ]
+                        ['name' => 'Partial', 'preview' => 'bg-label-warning'],
+                    ],
                 ],
                 [
                     'id' => 2,
@@ -312,9 +311,9 @@ class PurchaseOrderController extends Controller
                     'created_by' => 'Staff Gudang B',
                     'created_by_id' => 6,
                     'tags' => [
-                        ['name' => 'Final', 'preview' => 'bg-label-success']
-                    ]
-                ]
+                        ['name' => 'Final', 'preview' => 'bg-label-success'],
+                    ],
+                ],
             ],
             'purchase_invoices' => [
                 [
@@ -327,8 +326,8 @@ class PurchaseOrderController extends Controller
                     'created_by' => 'Finance Team',
                     'created_by_id' => 3,
                     'tags' => [
-                        ['name' => 'Down Payment', 'preview' => 'bg-label-primary']
-                    ]
+                        ['name' => 'Down Payment', 'preview' => 'bg-label-primary'],
+                    ],
                 ],
                 [
                     'id' => 2,
@@ -340,10 +339,10 @@ class PurchaseOrderController extends Controller
                     'created_by' => 'Finance Team',
                     'created_by_id' => 3,
                     'tags' => [
-                        ['name' => 'Final Payment', 'preview' => 'bg-label-info']
-                    ]
-                ]
-            ]
+                        ['name' => 'Final Payment', 'preview' => 'bg-label-info'],
+                    ],
+                ],
+            ],
         ];
 
         $data = [
@@ -355,7 +354,8 @@ class PurchaseOrderController extends Controller
             'canViewProduct' => PermissionHelper::canRead('master_data_product'),
             'canViewUser' => PermissionHelper::canRead('master_data_user'),
             'canViewPurchaseDelivery' => PermissionHelper::canRead('main_transaction_purchase_delivery'),
-            'canViewPurchaseInvoice' => PermissionHelper::canRead('main_transaction_purchase_invoice')
+            'canViewPurchaseInvoice' => PermissionHelper::canRead('main_transaction_purchase_invoice'),
+            'canCreatePurchaseDelivery' => PermissionHelper::canWrite('main_transaction_purchase_delivery'),
         ];
 
         return view('pages.main_transaction.purchase_order.detail', array_merge($data, $permissionData));
@@ -364,7 +364,7 @@ class PurchaseOrderController extends Controller
     public function auditLogDataTable($id)
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -375,15 +375,15 @@ class PurchaseOrderController extends Controller
                 'user_id' => 1,
                 'user_name' => 'Admin System',
                 'action_type' => 'UPDATE',
-                'description' => 'Status PO diubah dari PENDING_APPROVAL menjadi APPROVED'
+                'description' => 'Status PO diubah dari PENDING_APPROVAL menjadi APPROVED',
             ],
             [
                 'created_at' => '2025-07-01 08:00:00',
                 'user_id' => 2,
                 'user_name' => 'Purchasing Staff',
                 'action_type' => 'CREATE',
-                'description' => 'Purchase Order dibuat dengan total Rp 25,000,000'
-            ]
+                'description' => 'Purchase Order dibuat dengan total Rp 25,000,000',
+            ],
         ];
 
         return response()->json(['data' => $auditLogs], 200);
@@ -392,7 +392,7 @@ class PurchaseOrderController extends Controller
     public function edit($id)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
         }
 
@@ -411,7 +411,7 @@ class PurchaseOrderController extends Controller
                 'user_id' => $log->user_id,
                 'user_name' => $log->user_name,
                 'action_type' => $log->action_type,
-                'description' => $log->description
+                'description' => $log->description,
             ];
         }
 
@@ -420,14 +420,14 @@ class PurchaseOrderController extends Controller
             $product_lines[] = [
                 'id' => $prod->id,
                 'product_id' => $prod->f_product_id,
-                'product_name' => $prod->product_code . " - " . $prod->product_name,
+                'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
                 'unit_price' => $prod->price_per_qty,
                 'tax_id' => $prod->f_tax_id,
                 'tax_name' => $prod->tax_name,
-                'total' => $prod->total
+                'total' => $prod->total,
             ];
         }
 
@@ -447,14 +447,14 @@ class PurchaseOrderController extends Controller
             'email' => $po_data->supplier_email,
             'address' => $po_data->supplier_address,
             'supplier_reference' => $po_data->supplier_reference_no,
-            // 'status' => 'APPROVED',
+            'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
             'payment_term_id' => $po_data->f_payment_term_id,
-            'payment_terms' => $po_data->payment_term_code . " - " . $po_data->payment_term_name,
+            'payment_terms' => $po_data->payment_term_code.' - '.$po_data->payment_term_name,
             'payment_terms_type' => $po_data->payment_term_type,
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
-            'warehouse' => $po_data->warehouse_code . " - " . $po_data->warehouse_name,
+            'warehouse' => $po_data->warehouse_code.' - '.$po_data->warehouse_name,
             'warehouse_id' => $po_data->f_warehouse_id,
             'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
@@ -474,7 +474,7 @@ class PurchaseOrderController extends Controller
             // 'notes' => 'Purchase Order untuk botol PET dan kemasan RIYO Water',
             'attachment' => [
                 'name' => $po_data->attachment,
-                'url' => $po_data->attachment
+                'url' => $po_data->attachment,
             ],
             'created_at' => $po_data->created_at,
             'updated_at' => $po_data->updated_at,
@@ -485,15 +485,15 @@ class PurchaseOrderController extends Controller
                     'product_name' => 'PRD-001 - Botol PET 330ml',
                     'total_qty' => 10000,
                     'qty_delivered' => 7500,
-                    'remaining_qty' => 2500
+                    'remaining_qty' => 2500,
                 ],
                 [
                     'product_id' => 2,
                     'product_name' => 'PRD-002 - Label Kemasan',
                     'total_qty' => 10000,
                     'qty_delivered' => 10000,
-                    'remaining_qty' => 0
-                ]
+                    'remaining_qty' => 0,
+                ],
             ],
             'purchase_deliveries' => [
                 [
@@ -505,8 +505,8 @@ class PurchaseOrderController extends Controller
                     'created_by' => 'Staff Gudang A',
                     'created_by_id' => 5,
                     'tags' => [
-                        ['name' => 'Partial', 'preview' => 'bg-label-warning']
-                    ]
+                        ['name' => 'Partial', 'preview' => 'bg-label-warning'],
+                    ],
                 ],
                 [
                     'id' => 2,
@@ -517,9 +517,9 @@ class PurchaseOrderController extends Controller
                     'created_by' => 'Staff Gudang B',
                     'created_by_id' => 6,
                     'tags' => [
-                        ['name' => 'Final', 'preview' => 'bg-label-success']
-                    ]
-                ]
+                        ['name' => 'Final', 'preview' => 'bg-label-success'],
+                    ],
+                ],
             ],
             'purchase_invoices' => [
                 [
@@ -532,8 +532,8 @@ class PurchaseOrderController extends Controller
                     'created_by' => 'Finance Team',
                     'created_by_id' => 3,
                     'tags' => [
-                        ['name' => 'Down Payment', 'preview' => 'bg-label-primary']
-                    ]
+                        ['name' => 'Down Payment', 'preview' => 'bg-label-primary'],
+                    ],
                 ],
                 [
                     'id' => 2,
@@ -545,10 +545,10 @@ class PurchaseOrderController extends Controller
                     'created_by' => 'Finance Team',
                     'created_by_id' => 3,
                     'tags' => [
-                        ['name' => 'Final Payment', 'preview' => 'bg-label-info']
-                    ]
-                ]
-            ]
+                        ['name' => 'Final Payment', 'preview' => 'bg-label-info'],
+                    ],
+                ],
+            ],
         ];
 
         // Check permissions for adding related data
@@ -575,7 +575,7 @@ class PurchaseOrderController extends Controller
             'canAddPaymentTerms' => $canAddPaymentTerms,
             'canAddTags' => $canAddTags,
             'canAddStorages' => $canAddStorages,
-            'canAddPIC' => $canAddPIC
+            'canAddPIC' => $canAddPIC,
         ];
 
         return view('pages.main_transaction.purchase_order.edit', array_merge($data, $permissionData));
@@ -584,7 +584,7 @@ class PurchaseOrderController extends Controller
     public function update(Request $request)
     {
         // Check write permission
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             return response()->json([
                 'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
                 'error' => 'PERMISSION_DENIED',
@@ -628,7 +628,7 @@ class PurchaseOrderController extends Controller
             app(UpdatePurchaseOrderAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::UPDATE_PURCHASE_ORDER_SUCCESS->message()
+                'message' => SuccessCodes::UPDATE_PURCHASE_ORDER_SUCCESS->message(),
             ], SuccessCodes::UPDATE_PURCHASE_ORDER_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -642,6 +642,7 @@ class PurchaseOrderController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -654,46 +655,46 @@ class PurchaseOrderController extends Controller
     public function import(Request $request)
     {
         // Check write permission for import
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
         }
 
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
-            ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
+            ['value' => '3', 'label' => 'CV Kemasan Sejahtera'],
         ];
 
         $warehouses = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
-            ['value' => '3', 'label' => 'Gudang Finished Goods']
+            ['value' => '3', 'label' => 'Gudang Finished Goods'],
         ];
 
         return view('pages.main_transaction.purchase_order.import', [
             'suppliers' => $suppliers,
-            'warehouses' => $warehouses
+            'warehouses' => $warehouses,
         ]);
     }
 
     public function downloadTemplate(Request $request)
     {
         // Check write permission for template download
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
         }
 
         // Mock template download - in real implementation, generate Excel file
         return response()->json([
             'message' => 'Template download untuk Purchase Order akan segera tersedia.',
-            'file_url' => '/templates/purchase_order_template.xlsx'
+            'file_url' => '/templates/purchase_order_template.xlsx',
         ]);
     }
 
     public function validateImport(Request $request)
     {
         // Check write permission for import validation
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -708,10 +709,10 @@ class PurchaseOrderController extends Controller
                     'date' => '2025-07-25',
                     'supplier' => 'CV Plastik Prima',
                     'total' => 15000000,
-                    'status' => 'DRAFT'
-                ]
+                    'status' => 'DRAFT',
+                ],
             ],
-            'validation_key' => 'po_validation_' . time()
+            'validation_key' => 'po_validation_'.time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -720,7 +721,7 @@ class PurchaseOrderController extends Controller
     public function processImport(Request $request)
     {
         // Check write permission for import processing
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -728,51 +729,51 @@ class PurchaseOrderController extends Controller
         return response()->json([
             'success' => true,
             'imported_count' => 5,
-            'message' => 'Purchase Order berhasil diimport ke sistem.'
+            'message' => 'Purchase Order berhasil diimport ke sistem.',
         ]);
     }
 
     public function export()
     {
         // Check read permission for export
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
         }
 
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
-            ['value' => '3', 'label' => 'CV Kemasan Sejahtera']
+            ['value' => '3', 'label' => 'CV Kemasan Sejahtera'],
         ];
 
         $warehouses = [
             ['value' => '1', 'label' => 'Gudang Bahan Baku'],
             ['value' => '2', 'label' => 'Gudang Produksi'],
-            ['value' => '3', 'label' => 'Gudang Finished Goods']
+            ['value' => '3', 'label' => 'Gudang Finished Goods'],
         ];
 
         return view('pages.main_transaction.purchase_order.export', [
             'suppliers' => $suppliers,
-            'warehouses' => $warehouses
+            'warehouses' => $warehouses,
         ]);
     }
 
     public function processExport(Request $request)
     {
         // Check read permission for export processing
-        if (!PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_orders_export_' . date('Y-m-d_H-i-s') . '.' . $format;
+        $filename = 'purchase_orders_export_'.date('Y-m-d_H-i-s').'.'.$format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/' . $filename
+            'download_url' => '/exports/'.$filename,
         ]);
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Domains\UserCompany\Services;
 
-use Illuminate\Support\Facades\DB;
 use App\Enums\GeneralStatuses;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class UserCompanyService
 {
@@ -12,12 +12,12 @@ class UserCompanyService
 
     public function findAllBasedOnUserId($userId)
     {
-        return DB::table($this->table_name . ' as c')
+        return DB::table($this->table_name.' as c')
             ->select([
                 'm.code AS company_code',
                 'm.name AS company_name',
                 'c.status AS status',
-                'c.default_company AS default_company'
+                'c.default_company AS default_company',
             ])
             ->join('m_companies as m', 'c.f_company_code', '=', 'm.code')
             ->where('c.f_user_id', $userId)
@@ -28,12 +28,12 @@ class UserCompanyService
 
     public function findByUserIdAndCompanyCode($userId, $companyCode)
     {
-        return DB::table($this->table_name . ' as c')
+        return DB::table($this->table_name.' as c')
             ->select([
                 'm.code AS company_code',
                 'm.name AS company_name',
                 'c.status AS status',
-                'c.default_company AS default_company'
+                'c.default_company AS default_company',
             ])
             ->join('m_companies as m', 'c.f_company_code', '=', 'm.code')
             ->where('c.f_user_id', $userId)
@@ -50,7 +50,7 @@ class UserCompanyService
             'status' => $data['status'],
             'default_company' => $data['default_company'],
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 }

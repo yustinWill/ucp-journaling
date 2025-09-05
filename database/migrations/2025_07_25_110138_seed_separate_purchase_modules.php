@@ -11,10 +11,10 @@ return new class extends Migration
     public function up(): void
     {
         // Remove the old combined purchase module
-        DB::table('permissions')->whereIn('module_id', function($query) {
+        DB::table('permissions')->whereIn('module_id', function ($query) {
             $query->select('id')->from('modules')->where('name', 'main_transaction_purchase');
         })->delete();
-        
+
         DB::table('modules')->where('name', 'main_transaction_purchase')->delete();
 
         // Add the three separate purchase modules
@@ -39,7 +39,7 @@ return new class extends Migration
                 'description' => 'Main Transaction Purchase Invoice',
                 'is_active' => true,
                 'created_at' => now(),
-            ]
+            ],
         ];
 
         DB::table('modules')->insert($modules);
@@ -49,7 +49,7 @@ return new class extends Migration
         $purchaseDelivery = DB::table('modules')->where('name', 'main_transaction_purchase_delivery')->first();
         $purchaseInvoice = DB::table('modules')->where('name', 'main_transaction_purchase_invoice')->first();
 
-        if (!$purchaseOrder || !$purchaseDelivery || !$purchaseInvoice) {
+        if (! $purchaseOrder || ! $purchaseDelivery || ! $purchaseInvoice) {
             throw new Exception('Failed to create separate purchase modules.');
         }
 
@@ -57,7 +57,7 @@ return new class extends Migration
             'read',
             'write',
             'delete',
-            'approval'
+            'approval',
         ];
 
         $permissions = [];
@@ -67,7 +67,7 @@ return new class extends Migration
             $permissions[] = [
                 'module_id' => $purchaseOrder->id,
                 'permission_type' => $action,
-                'created_at' => now()
+                'created_at' => now(),
             ];
         }
 
@@ -76,7 +76,7 @@ return new class extends Migration
             $permissions[] = [
                 'module_id' => $purchaseDelivery->id,
                 'permission_type' => $action,
-                'created_at' => now()
+                'created_at' => now(),
             ];
         }
 
@@ -85,7 +85,7 @@ return new class extends Migration
             $permissions[] = [
                 'module_id' => $purchaseInvoice->id,
                 'permission_type' => $action,
-                'created_at' => now()
+                'created_at' => now(),
             ];
         }
 
@@ -100,14 +100,14 @@ return new class extends Migration
         // Remove separate modules and restore combined one
         $moduleNames = [
             'main_transaction_purchase_order',
-            'main_transaction_purchase_delivery', 
-            'main_transaction_purchase_invoice'
+            'main_transaction_purchase_delivery',
+            'main_transaction_purchase_invoice',
         ];
 
-        DB::table('permissions')->whereIn('module_id', function($query) use ($moduleNames) {
+        DB::table('permissions')->whereIn('module_id', function ($query) use ($moduleNames) {
             $query->select('id')->from('modules')->whereIn('name', $moduleNames);
         })->delete();
-        
+
         DB::table('modules')->whereIn('name', $moduleNames)->delete();
 
         // Restore original combined module

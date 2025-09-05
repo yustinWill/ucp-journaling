@@ -224,7 +224,7 @@
                                                 disabled /></td>
                                         <td><input type="text" class="form-control currency-input"
                                                 name="products[{{ $index }}][unit_price]"
-                                                value="{{ $line['unit_price'] }}" /></td>
+                                                value="{{ $line['unit_price'] }}" readonly title="Harga tidak dapat diubah setelah PO dibuat" /></td>
                                         <td>
                                             <div class="position-relative">
                                                 <select class="form-select tax-select select2Tax"
@@ -267,7 +267,7 @@
                                 </td>
                                 <td>
                                     <input type="text" class="form-control currency-input"
-                                        name="products[0][unit_price]" disabled />
+                                        name="products[0][unit_price]" readonly title="Harga tidak dapat diubah" />
                                 </td>
                                 <td>
                                     <div class="position-relative">
@@ -489,8 +489,8 @@
                     $('#product-table tbody tr').each(function() {
                         // Enable editable fields (excluding disabled calculation fields)
                         $(this).find('select, button').prop('disabled', false);
-                        $(this).find('input[name*="[quantity]"], input[name*="[unit_price]"]').prop(
-                            'disabled', false);
+                        // Only enable quantity, keep prices readonly
+                        $(this).find('input[name*="[quantity]"]').prop('disabled', false);
                     });
                     $('#add-product-row').prop('disabled', false);
 

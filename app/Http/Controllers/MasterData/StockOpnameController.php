@@ -2,29 +2,23 @@
 
 namespace App\Http\Controllers\MasterData;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-use App\Helpers\ValidationHelper;
-use App\Helpers\DiscordNotifier;
-
-use App\Domains\StockOpname\Actions\CreateStockOpnameAction;
-use App\Domains\StockOpname\Actions\UpdateStockAdjustmentAction;
-
-use App\Domains\Warehouse\Services\WarehouseService;
-use App\Domains\User\Services\UserService;
 use App\Domains\Category\Services\CategoryService;
-use App\Domains\Tag\Services\TagService;
-use App\Domains\StockOpname\Services\StockOpnameService;
-use App\Domains\StockOpname\Services\StockOpnameProductService;
+use App\Domains\StockOpname\Actions\CreateStockOpnameAction;
 use App\Domains\StockOpname\Services\StockOpnameAuditLogService;
-
-
-//Enums
+use App\Domains\StockOpname\Services\StockOpnameProductService;
+use App\Domains\StockOpname\Services\StockOpnameService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\User\Services\UserService;
+use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
-use App\Enums\AuditLogTypes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\ValidationHelper;
+use App\Http\Controllers\Controller;
+// Enums
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class StockOpnameController extends Controller
 {
@@ -34,22 +28,22 @@ class StockOpnameController extends Controller
         $statusOptions = [
             ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
             ['value' => 'IN_PROGRESS', 'label' => 'IN_PROGRESS - Sedang Dikerjakan'],
-            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai']
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
         ];
 
         // Warehouse locations for RIYO Water
         $warehouses = app(WarehouseService::class)->findAll();
 
-
         return view('pages.master_data.stock_opname.index', [
             'stockOpnameStatuses' => $statusOptions,
-            'warehouses' => $warehouses
+            'warehouses' => $warehouses,
         ]);
     }
 
     public function index_data_table()
     {
         $data = app(StockOpnameService::class)->findAllDatatable();
+
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -70,9 +64,9 @@ class StockOpnameController extends Controller
                     'name' => 'RIYO Water 330ml',
                     'unit' => 'pcs',
                     'system_stock' => 1500,
-                    'category' => '1'
-                ]
-            ]
+                    'category' => '1',
+                ],
+            ],
         ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -91,7 +85,7 @@ class StockOpnameController extends Controller
         $statusOptions = [
             ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
             ['value' => 'IN_PROGRESS', 'label' => 'IN_PROGRESS - Sedang Dikerjakan'],
-            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai']
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
         ];
 
         $tags = app(TagService::class)->findAll();
@@ -105,7 +99,7 @@ class StockOpnameController extends Controller
             'productCategories' => $categories,
             'statusOptions' => $statusOptions,
             'tags' => $tags,
-            'canAddTags' => $canAddTags
+            'canAddTags' => $canAddTags,
         ]);
     }
 
@@ -133,7 +127,7 @@ class StockOpnameController extends Controller
             app(CreateStockOpnameAction::class)->execute($validated);
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_STOCK_OPNAME_SUCCESS->message()
+                'message' => SuccessCodes::CREATE_STOCK_OPNAME_SUCCESS->message(),
             ], SuccessCodes::CREATE_STOCK_OPNAME_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -147,6 +141,7 @@ class StockOpnameController extends Controller
             ], $e->getCode());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
+
             return response()->json([
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
@@ -165,7 +160,7 @@ class StockOpnameController extends Controller
             'warehouse_code' => 'GDG-001',
             'pic_name' => 'yustinus',
             'description' => 'Stock opname rutin bulanan untuk gudang utama pusat',
-            'status' => 'ADJUSTMENT_PENDING'
+            'status' => 'ADJUSTMENT_PENDING',
         ];
 
         // Warehouses for RIYO Water
@@ -173,7 +168,7 @@ class StockOpnameController extends Controller
             ['value' => 'GDG-001', 'label' => 'GDG-001 - Gudang Utama Pusat'],
             ['value' => 'GDG-002', 'label' => 'GDG-002 - Gudang Produksi'],
             ['value' => 'GDG-003', 'label' => 'GDG-003 - Gudang Bahan Baku'],
-            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods']
+            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods'],
         ];
 
         // PIC options
@@ -183,7 +178,7 @@ class StockOpnameController extends Controller
             ['value' => 'USR-003', 'label' => 'USR-003 - Hartono Wijaya'],
             ['value' => 'USR-004', 'label' => 'USR-004 - Sari Indah'],
             ['value' => 'USR-005', 'label' => 'USR-005 - Budi Santoso'],
-            ['value' => 'USR-006', 'label' => 'USR-006 - Ani Suhartini']
+            ['value' => 'USR-006', 'label' => 'USR-006 - Ani Suhartini'],
         ];
 
         // Product categories for filtering
@@ -192,7 +187,7 @@ class StockOpnameController extends Controller
             ['value' => 'RAW_MATERIALS', 'label' => 'RAW_MATERIALS - Bahan Baku'],
             ['value' => 'PACKAGING', 'label' => 'PACKAGING - Kemasan'],
             ['value' => 'CHEMICALS', 'label' => 'CHEMICALS - Bahan Kimia'],
-            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan']
+            ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan'],
         ];
 
         // Status options
@@ -202,7 +197,7 @@ class StockOpnameController extends Controller
             ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
             ['value' => 'ADJUSTMENT_PENDING', 'label' => 'ADJUSTMENT_PENDING - Menunggu Adjustment'],
             ['value' => 'ADJUSTMENT_CREATED', 'label' => 'ADJUSTMENT_CREATED - Adjustment Dibuat'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan']
+            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan'],
         ];
 
         // Mock existing products for this stock opname
@@ -216,7 +211,7 @@ class StockOpnameController extends Controller
                 'physical_qty' => 1502,
                 'variance' => 2,
                 'notes' => 'Ada penambahan dari produksi',
-                'category' => 'finished_goods'
+                'category' => 'finished_goods',
             ],
             [
                 'id' => 25,
@@ -227,8 +222,8 @@ class StockOpnameController extends Controller
                 'physical_qty' => 800,
                 'variance' => 0,
                 'notes' => 'Sesuai dengan sistem',
-                'category' => 'finished_goods'
-            ]
+                'category' => 'finished_goods',
+            ],
         ];
 
         $tags = [
@@ -236,7 +231,7 @@ class StockOpnameController extends Controller
             ['value' => 'AUDIT', 'label' => 'AUDIT - Audit Stok', 'color' => 'danger'],
             ['value' => 'MONTHLY', 'label' => 'MONTHLY - Bulanan', 'color' => 'info'],
             ['value' => 'ANNUAL', 'label' => 'ANNUAL - Tahunan', 'color' => 'success'],
-            ['value' => 'INVESTIGATION', 'label' => 'INVESTIGATION - Investigasi', 'color' => 'warning']
+            ['value' => 'INVESTIGATION', 'label' => 'INVESTIGATION - Investigasi', 'color' => 'warning'],
         ];
 
         // Permission check for adding new tags
@@ -250,7 +245,7 @@ class StockOpnameController extends Controller
             'statusOptions' => $statusOptions,
             'stockOpnameProducts' => $stockOpnameProducts,
             'tags' => $tags,
-            'canAddTags' => $canAddTags
+            'canAddTags' => $canAddTags,
         ]);
     }
 
@@ -277,12 +272,12 @@ class StockOpnameController extends Controller
             'status' => $header_data->status,
             'adjustment_number' => null,
             'created_at' => $header_data->created_at,
-            'updated_at' => $header_data->updated_at
+            'updated_at' => $header_data->updated_at,
         ];
 
         $product_data = app(StockOpnameProductService::class)->findAllBasedOnId($id);
 
-        foreach ($product_data as  $row) {
+        foreach ($product_data as $row) {
             $productList[] = [
                 'code' => $row->product_code,
                 'name' => $row->product_name,
@@ -290,7 +285,7 @@ class StockOpnameController extends Controller
                 'system_stock' => $row->system_stock,
                 'physical_qty' => $row->physical_qty,
                 'variance' => $row->variance,
-                'notes' => $row->note
+                'notes' => $row->note,
             ];
         }
 
@@ -303,14 +298,14 @@ class StockOpnameController extends Controller
                 'user_id' => $log->created_by,
                 'user_name' => $log->user_name,
                 'action_type' => $log->action_type,
-                'description' => $log->description
+                'description' => $log->description,
             ];
         }
 
         return view('pages.master_data.stock_opname.detail', [
             'stockOpname' => $stockOpname,
             'productList' => $productList,
-            'auditLogs' => $auditLogs
+            'auditLogs' => $auditLogs,
         ]);
     }
 
@@ -329,7 +324,7 @@ class StockOpnameController extends Controller
             ['field' => 'variance_value', 'label' => 'Selisih Nilai', 'export_name' => 'Selisih Nilai'],
             ['field' => 'status', 'label' => 'Status', 'export_name' => 'Status'],
             ['field' => 'adjustment_number', 'label' => 'Nomor Adjustment', 'export_name' => 'Nomor Adjustment'],
-            ['field' => 'description', 'label' => 'Deskripsi', 'export_name' => 'Deskripsi']
+            ['field' => 'description', 'label' => 'Deskripsi', 'export_name' => 'Deskripsi'],
         ];
 
         // Warehouses for filter
@@ -337,7 +332,7 @@ class StockOpnameController extends Controller
             ['value' => 'GDG-001', 'label' => 'GDG-001 - Gudang Utama Pusat'],
             ['value' => 'GDG-002', 'label' => 'GDG-002 - Gudang Produksi'],
             ['value' => 'GDG-003', 'label' => 'GDG-003 - Gudang Bahan Baku'],
-            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods']
+            ['value' => 'GDG-004', 'label' => 'GDG-004 - Gudang Finished Goods'],
         ];
 
         // Status options for filter (restricted to 4 valid statuses)
@@ -345,13 +340,13 @@ class StockOpnameController extends Controller
             ['value' => 'ADJUSTMENT_PENDING', 'label' => 'ADJUSTMENT_PENDING - Menunggu Adjustment'],
             ['value' => 'ADJUSTMENT_CREATED', 'label' => 'ADJUSTMENT_CREATED - Adjustment Dibuat'],
             ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dihapus']
+            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dihapus'],
         ];
 
         return view('pages.master_data.stock_opname.export', [
             'exportColumns' => $exportColumns,
             'warehouses' => $warehouses,
-            'statusOptions' => $statusOptions
+            'statusOptions' => $statusOptions,
         ]);
     }
 
@@ -375,7 +370,7 @@ class StockOpnameController extends Controller
                 'variance_value' => 125000,
                 'status' => 'Menunggu Adjustment',
                 'adjustment_number' => null,
-                'description' => 'Stock opname rutin bulanan'
+                'description' => 'Stock opname rutin bulanan',
             ],
             [
                 'opname_number' => 'SO-2025-002',
@@ -389,7 +384,7 @@ class StockOpnameController extends Controller
                 'variance_value' => 0,
                 'status' => 'Sedang Dikerjakan',
                 'adjustment_number' => null,
-                'description' => 'Stock opname produksi mingguan'
+                'description' => 'Stock opname produksi mingguan',
             ],
             [
                 'opname_number' => 'SO-2025-003',
@@ -403,37 +398,37 @@ class StockOpnameController extends Controller
                 'variance_value' => 0,
                 'status' => 'Draft',
                 'adjustment_number' => null,
-                'description' => 'Stock opname bahan baku'
-            ]
+                'description' => 'Stock opname bahan baku',
+            ],
         ]);
 
         // Apply filters
-        if (!empty($filters['date_from'])) {
+        if (! empty($filters['date_from'])) {
             $stockOpnames = $stockOpnames->filter(function ($item) use ($filters) {
                 return $item['opname_date'] >= $filters['date_from'];
             });
         }
 
-        if (!empty($filters['date_to'])) {
+        if (! empty($filters['date_to'])) {
             $stockOpnames = $stockOpnames->filter(function ($item) use ($filters) {
                 return $item['opname_date'] <= $filters['date_to'];
             });
         }
 
-        if (!empty($filters['warehouse'])) {
+        if (! empty($filters['warehouse'])) {
             $stockOpnames = $stockOpnames->filter(function ($item) use ($filters) {
                 return strpos($item['warehouse_name'], $filters['warehouse']) !== false;
             });
         }
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $statusMap = [
                 'draft' => 'Draft',
                 'in_progress' => 'Sedang Dikerjakan',
                 'completed' => 'Selesai',
                 'adjustment_pending' => 'Menunggu Adjustment',
                 'adjustment_created' => 'Adjustment Dibuat',
-                'cancelled' => 'Dibatalkan'
+                'cancelled' => 'Dibatalkan',
             ];
             $statusLabel = $statusMap[$filters['status']] ?? $filters['status'];
             $stockOpnames = $stockOpnames->filter(function ($item) use ($statusLabel) {
@@ -456,39 +451,39 @@ class StockOpnameController extends Controller
     private function exportToExcel($data, $columns)
     {
         // Mock Excel export - in real implementation, use PhpSpreadsheet
-        $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $filename = 'stock_opname_export_'.date('Y-m-d_H-i-s').'.xlsx';
         $content = $this->generateMockExcelContent($data, $columns);
 
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     private function exportToCsv($data, $columns)
     {
-        $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.csv';
+        $filename = 'stock_opname_export_'.date('Y-m-d_H-i-s').'.csv';
         $content = $this->generateCsvContent($data, $columns);
 
         return response($content)
             ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     private function exportToPdf($data, $columns)
     {
         // Mock PDF export - in real implementation, use TCPDF or similar
-        $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.pdf';
+        $filename = 'stock_opname_export_'.date('Y-m-d_H-i-s').'.pdf';
         $content = $this->generateMockPdfContent($data, $columns);
 
         return response($content)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     private function generateMockExcelContent($data, $columns)
     {
         // Mock Excel content - in real implementation, use PhpSpreadsheet
-        return "Mock Excel content for Stock Opname export with " . count($data) . " records and " . count($columns) . " columns";
+        return 'Mock Excel content for Stock Opname export with '.count($data).' records and '.count($columns).' columns';
     }
 
     private function generateCsvContent($data, $columns)
@@ -508,7 +503,7 @@ class StockOpnameController extends Controller
                 $value = $row[$column['field']] ?? '';
                 // Escape CSV values
                 if (strpos($value, ',') !== false || strpos($value, '"') !== false) {
-                    $value = '"' . str_replace('"', '""', $value) . '"';
+                    $value = '"'.str_replace('"', '""', $value).'"';
                 }
                 $csvRow[] = $value;
             }
@@ -521,7 +516,7 @@ class StockOpnameController extends Controller
     private function generateMockPdfContent($data, $columns)
     {
         // Mock PDF content - in real implementation, use TCPDF
-        return "Mock PDF content for Stock Opname export with " . count($data) . " records";
+        return 'Mock PDF content for Stock Opname export with '.count($data).' records';
     }
 
     public function import()
@@ -537,13 +532,13 @@ class StockOpnameController extends Controller
 
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     public function validateImport(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
         ]);
 
         try {
@@ -556,12 +551,12 @@ class StockOpnameController extends Controller
                 'success_count' => $mockData['success_count'],
                 'error_count' => $mockData['error_count'],
                 'success_data' => $mockData['success_data'],
-                'error_data' => $mockData['error_data']
+                'error_data' => $mockData['error_data'],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error reading file: ' . $e->getMessage()
+                'message' => 'Error reading file: '.$e->getMessage(),
             ]);
         }
     }
@@ -581,12 +576,12 @@ class StockOpnameController extends Controller
             return response()->json([
                 'success' => true,
                 'imported_count' => $importedCount,
-                'message' => 'Data stock opname berhasil diimport'
+                'message' => 'Data stock opname berhasil diimport',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error importing data: ' . $e->getMessage()
+                'message' => 'Error importing data: '.$e->getMessage(),
             ]);
         }
     }
@@ -594,7 +589,7 @@ class StockOpnameController extends Controller
     private function generateImportTemplate()
     {
         // Mock template generation - in real implementation, create actual Excel template
-        return "Mock Excel template content with headers: Nomor SO, Tanggal, Gudang, PIC, Status, Deskripsi";
+        return 'Mock Excel template content with headers: Nomor SO, Tanggal, Gudang, PIC, Status, Deskripsi';
     }
 
     private function generateMockImportValidation()
@@ -610,7 +605,7 @@ class StockOpnameController extends Controller
                     'warehouse_name' => 'Gudang Utama Pusat',
                     'pic_name' => 'Yustinus Komunal',
                     'status' => 'Draft',
-                    'description' => 'Stock opname import test 1'
+                    'description' => 'Stock opname import test 1',
                 ],
                 [
                     'opname_number' => 'SO-2025-005',
@@ -618,7 +613,7 @@ class StockOpnameController extends Controller
                     'warehouse_name' => 'Gudang Produksi',
                     'pic_name' => 'Ririn Safitri',
                     'status' => 'Draft',
-                    'description' => 'Stock opname import test 2'
+                    'description' => 'Stock opname import test 2',
                 ],
                 [
                     'opname_number' => 'SO-2025-006',
@@ -626,7 +621,7 @@ class StockOpnameController extends Controller
                     'warehouse_name' => 'Gudang Bahan Baku',
                     'pic_name' => 'Hartono Wijaya',
                     'status' => 'Draft',
-                    'description' => 'Stock opname import test 3'
+                    'description' => 'Stock opname import test 3',
                 ],
                 [
                     'opname_number' => 'SO-2025-007',
@@ -634,8 +629,8 @@ class StockOpnameController extends Controller
                     'warehouse_name' => 'Gudang Finished Goods',
                     'pic_name' => 'Sari Indah',
                     'status' => 'Draft',
-                    'description' => 'Stock opname import test 4'
-                ]
+                    'description' => 'Stock opname import test 4',
+                ],
             ],
             'error_data' => [
                 [
@@ -645,9 +640,9 @@ class StockOpnameController extends Controller
                     'pic_name' => '',
                     'status' => 'Draft',
                     'description' => 'Stock opname import test error',
-                    'errors' => ['Nomor SO sudah ada', 'Gudang tidak valid', 'PIC wajib diisi']
-                ]
-            ]
+                    'errors' => ['Nomor SO sudah ada', 'Gudang tidak valid', 'PIC wajib diisi'],
+                ],
+            ],
         ];
     }
 
@@ -658,7 +653,7 @@ class StockOpnameController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Stock Adjustment berhasil dibuat',
-            'adjustment_number' => 'SA-2025-' . str_pad($id, 3, '0', STR_PAD_LEFT)
+            'adjustment_number' => 'SA-2025-'.str_pad($id, 3, '0', STR_PAD_LEFT),
         ]);
     }
 }

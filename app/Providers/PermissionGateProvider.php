@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class PermissionGateProvider extends ServiceProvider
 {
@@ -181,7 +181,7 @@ class PermissionGateProvider extends ServiceProvider
     private function hasPermission($user, string $moduleSlug, string $permissionType): bool
     {
         // Skip permission check if user doesn't have role_id
-        if (!isset($user->role_id)) {
+        if (! isset($user->role_id)) {
             return true; // Backward compatibility
         }
 

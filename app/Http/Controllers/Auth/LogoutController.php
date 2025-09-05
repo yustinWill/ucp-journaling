@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Domains\User\Actions\AuthenticateUserAction;
-use App\Exceptions\AppException;
 use App\Enums\SuccessCodes;
+use App\Exceptions\AppException;
+use App\Http\Controllers\Controller;
 
 class LogoutController extends Controller
 {
@@ -13,6 +13,7 @@ class LogoutController extends Controller
     {
         try {
             $authenticateUserAction->logout();
+
             return redirect()->route('login')->withSuccess(SuccessCodes::LOGOUT_SUCCESS->message());
         } catch (AppException $e) {
             return redirect()->back()

@@ -14,7 +14,7 @@ return new class extends Migration
             ['code' => 'WEIGHT', 'name' => 'WEIGHT - Berat'],
             ['code' => 'VOLUME', 'name' => 'VOLUME - Volume'],
             ['code' => 'LENGTH', 'name' => 'LENGTH - Panjang'],
-            ['code' => 'PIECE', 'name' => 'PIECE - Satuan']
+            ['code' => 'PIECE', 'name' => 'PIECE - Satuan'],
         ];
         DB::table('m_unit_types')->insert($availableColors);
     }

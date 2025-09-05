@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::table('m_warehouse_audit_logs', function (Blueprint $table) {
+        Schema::table('m_warehouse_audit_logs', function (Blueprint $table) {
             $table->renameColumn('f_storage_id', 'f_warehouse_id');
         });
     }

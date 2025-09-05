@@ -2,9 +2,9 @@
 
 namespace App\Domains\SalesPerson\Services;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SalesPersonService
 {
@@ -20,7 +20,7 @@ class SalesPersonService
                 'employee_name' => 'Dewi Kartika',
                 'status' => 'ACTIVE',
                 'commission_rate' => 5.00,
-                'created_at' => '2025-01-20 10:00:00'
+                'created_at' => '2025-01-20 10:00:00',
             ],
             [
                 'id' => 2,
@@ -28,7 +28,7 @@ class SalesPersonService
                 'employee_name' => 'Andi Wijaya',
                 'status' => 'ACTIVE',
                 'commission_rate' => 7.50,
-                'created_at' => '2025-01-21 11:00:00'
+                'created_at' => '2025-01-21 11:00:00',
             ],
             [
                 'id' => 3,
@@ -36,21 +36,21 @@ class SalesPersonService
                 'employee_name' => 'Budi Santoso',
                 'status' => 'INACTIVE',
                 'commission_rate' => 6.00,
-                'created_at' => '2025-01-22 12:00:00'
-            ]
+                'created_at' => '2025-01-22 12:00:00',
+            ],
         ];
 
         // Apply filters
         $filteredData = $mockData;
-        
+
         if ($status = request()->input('status')) {
-            $filteredData = array_filter($filteredData, function($item) use ($status) {
+            $filteredData = array_filter($filteredData, function ($item) use ($status) {
                 return $item['status'] === $status;
             });
         }
 
         if ($name = request()->input('name')) {
-            $filteredData = array_filter($filteredData, function($item) use ($name) {
+            $filteredData = array_filter($filteredData, function ($item) use ($name) {
                 return stripos($item['employee_name'], $name) !== false;
             });
         }
@@ -61,12 +61,12 @@ class SalesPersonService
         $recordsFiltered = count($filteredData);
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
-        
+
         // Apply pagination
         $paginatedData = array_slice($filteredData, $start, $length);
-        
+
         // Convert to objects for consistency
-        $data = array_map(function($item) {
+        $data = array_map(function ($item) {
             return (object) $item;
         }, $paginatedData);
 
@@ -74,7 +74,7 @@ class SalesPersonService
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data' => $data
+            'data' => $data,
         ];
     }
 
@@ -91,7 +91,7 @@ class SalesPersonService
                 'commission_rate' => 5.00,
                 'description' => 'Sales person utama untuk wilayah Jakarta',
                 'created_at' => '2025-01-20 10:00:00',
-                'updated_at' => '2025-01-20 10:00:00'
+                'updated_at' => '2025-01-20 10:00:00',
             ],
             2 => [
                 'id' => 2,
@@ -102,7 +102,7 @@ class SalesPersonService
                 'commission_rate' => 7.50,
                 'description' => 'Sales person untuk wilayah Bandung',
                 'created_at' => '2025-01-21 11:00:00',
-                'updated_at' => '2025-01-21 11:00:00'
+                'updated_at' => '2025-01-21 11:00:00',
             ],
             3 => [
                 'id' => 3,
@@ -113,8 +113,8 @@ class SalesPersonService
                 'commission_rate' => 6.00,
                 'description' => 'Sales person tidak aktif',
                 'created_at' => '2025-01-22 12:00:00',
-                'updated_at' => '2025-01-22 12:00:00'
-            ]
+                'updated_at' => '2025-01-22 12:00:00',
+            ],
         ];
 
         return isset($mockData[$id]) ? (object) $mockData[$id] : null;
@@ -122,7 +122,7 @@ class SalesPersonService
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as sp')
+        return DB::table($this->table_name.' as sp')
             ->join('m_contacts as c', 'sp.f_employee_contact_id', '=', 'c.id')
             ->select(['sp.*', 'c.name as employee_name'])
             ->where('sp.status', GeneralStatuses::ACTIVE)
@@ -136,16 +136,16 @@ class SalesPersonService
             ->where('code', 'LIKE', 'SP-%')
             ->orderBy('code', 'DESC')
             ->value('code');
-        
+
         if ($lastCode) {
             $lastNumber = (int) substr($lastCode, 3);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
-        
-        $data['code'] = 'SP-' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
-        
+
+        $data['code'] = 'SP-'.str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+
         return DB::table($this->table_name)->insertGetId([
             'code' => $data['code'],
             'f_employee_contact_id' => $data['f_employee_contact_id'],
@@ -153,7 +153,7 @@ class SalesPersonService
             'commission_rate' => $data['commission_rate'] ?? 0.00,
             'description' => $data['description'] ?? '',
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -167,7 +167,7 @@ class SalesPersonService
                 'commission_rate' => $data['commission_rate'] ?? 0.00,
                 'description' => $data['description'] ?? '',
                 'updated_at' => now(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
     }
 
@@ -186,7 +186,7 @@ class SalesPersonService
             ['id' => 2, 'name' => 'ANDI002 - Andi Wijaya'],
             ['id' => 3, 'name' => 'BUDI003 - Budi Santoso'],
             ['id' => 4, 'name' => 'SARI004 - Sari Indah'],
-            ['id' => 5, 'name' => 'TOMI005 - Tomi Rahman']
+            ['id' => 5, 'name' => 'TOMI005 - Tomi Rahman'],
         ];
     }
 
@@ -194,11 +194,11 @@ class SalesPersonService
     {
         $query = DB::table($this->table_name)
             ->where('f_employee_contact_id', $employeeId);
-            
+
         if ($excludeSalesPersonId) {
             $query->where('id', '!=', $excludeSalesPersonId);
         }
-        
+
         return $query->count() === 0;
     }
 }

@@ -20,7 +20,7 @@ class ProductionExpenseService
     public function createBulk(int $productionId, array $expenses): void
     {
         $insertData = [];
-        
+
         foreach ($expenses as $expense) {
             $insertData[] = [
                 'production_id' => $productionId,
@@ -32,7 +32,7 @@ class ProductionExpenseService
                 'description' => $expense['description'] ?? null,
                 'notes' => $expense['notes'] ?? null,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ];
         }
 
@@ -43,7 +43,7 @@ class ProductionExpenseService
     {
         // Delete existing expenses
         DB::table($this->table_name)->where('production_id', $productionId)->delete();
-        
+
         // Insert updated expenses
         $this->createBulk($productionId, $expenses);
     }
@@ -75,7 +75,7 @@ class ProductionExpenseService
             $groupedExpenses[$type] = [
                 'expense_type' => $type,
                 'total_amount' => array_sum(array_column($expenseList, 'actual_amount')),
-                'items' => $expenseList
+                'items' => $expenseList,
             ];
         }
 
@@ -95,7 +95,7 @@ class ProductionExpenseService
                     'default_amount' => $expense->amount,
                     'actual_amount' => $expense->amount, // Default to same as default
                     'unit' => $expense->unit,
-                    'description' => $expense->description
+                    'description' => $expense->description,
                 ];
             })
             ->toArray();
@@ -116,7 +116,7 @@ class ProductionExpenseService
                 $errors[] = 'Expense name is required';
             }
 
-            if (!isset($expense['actual_amount']) || !is_numeric($expense['actual_amount'])) {
+            if (! isset($expense['actual_amount']) || ! is_numeric($expense['actual_amount'])) {
                 $errors[] = 'Actual amount must be a valid number';
             } elseif ($expense['actual_amount'] < 0) {
                 $errors[] = 'Actual amount cannot be negative';
@@ -125,7 +125,7 @@ class ProductionExpenseService
             $validation[$index] = [
                 'is_valid' => empty($errors),
                 'errors' => $errors,
-                'data' => $expense
+                'data' => $expense,
             ];
         }
 
@@ -146,15 +146,15 @@ class ProductionExpenseService
             $difference = $expense->actual_amount - $expense->default_amount;
             $totalDefault += $expense->default_amount;
             $totalActual += $expense->actual_amount;
-            
+
             $differences[] = [
                 'expense_name' => $expense->expense_name,
                 'default_amount' => $expense->default_amount,
                 'actual_amount' => $expense->actual_amount,
                 'difference' => $difference,
-                'percentage_change' => $expense->default_amount > 0 
-                    ? ($difference / $expense->default_amount) * 100 
-                    : 0
+                'percentage_change' => $expense->default_amount > 0
+                    ? ($difference / $expense->default_amount) * 100
+                    : 0,
             ];
         }
 
@@ -162,7 +162,7 @@ class ProductionExpenseService
             'total_default' => $totalDefault,
             'total_actual' => $totalActual,
             'total_difference' => $totalActual - $totalDefault,
-            'items' => $differences
+            'items' => $differences,
         ];
     }
 }

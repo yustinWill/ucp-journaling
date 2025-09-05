@@ -23,7 +23,6 @@ class ChangePasswordController extends Controller
     /**
      * Update the user's password.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request)
@@ -47,14 +46,14 @@ class ChangePasswordController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         try {
             // Get the authenticated user
             $user = auth()->user();
-            
+
             // Update the user's password
             $user->update([
                 'password' => Hash::make($request->new_password),
@@ -62,13 +61,13 @@ class ChangePasswordController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Password berhasil diubah.'
+                'message' => 'Password berhasil diubah.',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengubah password.'
+                'message' => 'Terjadi kesalahan saat mengubah password.',
             ], 500);
         }
     }

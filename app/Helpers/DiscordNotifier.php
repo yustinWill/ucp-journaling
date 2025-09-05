@@ -11,10 +11,10 @@ class DiscordNotifier
     {
         // Discord message limit is 2000 characters
         if (strlen($message) > 2000) {
-            $message = substr($message, 0, 1997) . '...';
+            $message = substr($message, 0, 1997).'...';
         }
         Http::post(env('DISCORD_WEBHOOK_URL'), [
-            'content' => $message
+            'content' => $message,
         ]);
     }
 
@@ -22,22 +22,22 @@ class DiscordNotifier
     {
         $ip = request()->ip();
         $url = request()->fullUrl();
-        $user = Auth::user()->name . " - " . Auth::user()->email;
+        $user = Auth::user()->name.' - '.Auth::user()->email;
         $env = app()->environment();
         $time = now()->toDateTimeString();
 
         $requestData = request()->except(['password', 'token']);
         $requestJson = json_encode($requestData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-        $msg =  "**🚨 Exception Alert**\n\n" .
-            "**🧠 Message:** `" . $e->getMessage() . "`\n" .
-            "**📄 File:** `" . $e->getFile() . "`\n" .
-            "**🔢 Line:** `" . $e->getLine() . "`\n" .
-            "**🌐 URL:** `$url`\n" .
-            "**👤 User:** `$user`\n" .
-            "**🌍 IP:** `$ip`\n" .
-            "**🕐 Time:** `$time`\n" .
-            "**📦 Environment:** `$env`\n\n" .
+        $msg = "**🚨 Exception Alert**\n\n".
+            '**🧠 Message:** `'.$e->getMessage()."`\n".
+            '**📄 File:** `'.$e->getFile()."`\n".
+            '**🔢 Line:** `'.$e->getLine()."`\n".
+            "**🌐 URL:** `$url`\n".
+            "**👤 User:** `$user`\n".
+            "**🌍 IP:** `$ip`\n".
+            "**🕐 Time:** `$time`\n".
+            "**📦 Environment:** `$env`\n\n".
             "**📥 Request Data:**\n```json\n$requestJson\n```";
 
         self::send($msg);

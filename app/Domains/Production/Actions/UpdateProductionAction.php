@@ -2,10 +2,10 @@
 
 namespace App\Domains\Production\Actions;
 
-use App\Domains\Production\Services\ProductionService;
-use App\Domains\Production\Services\ProductionItemService;
-use App\Domains\Production\Services\ProductionExpenseService;
 use App\Domains\Production\Services\ProductionAuditLogService;
+use App\Domains\Production\Services\ProductionExpenseService;
+use App\Domains\Production\Services\ProductionItemService;
+use App\Domains\Production\Services\ProductionService;
 use App\Domains\Production\Services\ProductionStockService;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +16,7 @@ class UpdateProductionAction
         return DB::transaction(function () use ($productionId, $data) {
             // 1. Get existing production data for comparison
             $existingProduction = app(ProductionService::class)->findOne($productionId);
-            if (!$existingProduction) {
+            if (! $existingProduction) {
                 throw new \Exception('Production not found');
             }
 
@@ -33,7 +33,7 @@ class UpdateProductionAction
             $productionData = array_merge($data, $totals);
             $updated = app(ProductionService::class)->update($productionId, $productionData);
 
-            if (!$updated) {
+            if (! $updated) {
                 throw new \Exception('Failed to update production');
             }
 
@@ -50,9 +50,9 @@ class UpdateProductionAction
             // 8. Handle status changes with stock implications
             if (isset($changes['status'])) {
                 $this->handleStatusChange(
-                    $productionId, 
-                    $changes['status']['from'], 
-                    $changes['status']['to'], 
+                    $productionId,
+                    $changes['status']['from'],
+                    $changes['status']['to'],
                     $data
                 );
             }
@@ -75,8 +75,8 @@ class UpdateProductionAction
         if ($existingProduction->status === 'COMPLETED') {
             $allowedFields = ['notes', 'description', 'f_tag_codes'];
             $restrictedFields = array_diff(array_keys($data), $allowedFields);
-            
-            if (!empty($restrictedFields)) {
+
+            if (! empty($restrictedFields)) {
                 throw new \Exception(
                     'Cannot modify completed production. Only notes, description, and tags can be updated.'
                 );
@@ -89,21 +89,21 @@ class UpdateProductionAction
         }
 
         // Validate stock availability if items are being updated
-        if (!empty($data['items']) && $existingProduction->status !== 'COMPLETED') {
+        if (! empty($data['items']) && $existingProduction->status !== 'COMPLETED') {
             $itemService = app(ProductionItemService::class);
             $validationResult = $itemService->validateStockAvailability(
-                $data['items'], 
+                $data['items'],
                 $data['warehouse_id'] ?? $existingProduction->warehouse_id
             );
 
             $insufficientItems = array_filter($validationResult, function ($item) {
-                return !$item['is_available'];
+                return ! $item['is_available'];
             });
 
-            if (!empty($insufficientItems)) {
+            if (! empty($insufficientItems)) {
                 $itemNames = array_column($insufficientItems, 'product_name');
                 throw new \Exception(
-                    'Insufficient stock for raw materials: ' . implode(', ', $itemNames)
+                    'Insufficient stock for raw materials: '.implode(', ', $itemNames)
                 );
             }
         }
@@ -114,14 +114,14 @@ class UpdateProductionAction
         $changes = [];
         $trackableFields = [
             'production_date', 'bundle_product_id', 'warehouse_id', 'pic_id',
-            'quantity_planned', 'quantity_produced', 'status', 'description', 'notes'
+            'quantity_planned', 'quantity_produced', 'status', 'description', 'notes',
         ];
 
         foreach ($trackableFields as $field) {
             if (isset($data[$field]) && $data[$field] != $existingProduction->$field) {
                 $changes[$field] = [
                     'from' => $existingProduction->$field,
-                    'to' => $data[$field]
+                    'to' => $data[$field],
                 ];
             }
         }
@@ -136,7 +136,7 @@ class UpdateProductionAction
         $totalItemsConsumed = 0;
 
         // Calculate raw material costs if items are provided
-        if (!empty($data['items'])) {
+        if (! empty($data['items'])) {
             foreach ($data['items'] as $item) {
                 $totalRawMaterialCost += ($item['quantity_consumed'] ?? $item['quantity_required']) * ($item['unit_cost'] ?? 0);
             }
@@ -144,7 +144,7 @@ class UpdateProductionAction
         }
 
         // Calculate production expenses if expenses are provided
-        if (!empty($data['expenses'])) {
+        if (! empty($data['expenses'])) {
             foreach ($data['expenses'] as $expense) {
                 $totalProductionExpense += $expense['actual_amount'] ?? 0;
             }
@@ -154,7 +154,7 @@ class UpdateProductionAction
             'total_raw_material_cost' => $totalRawMaterialCost,
             'total_production_expense' => $totalProductionExpense,
             'total_production_cost' => $totalRawMaterialCost + $totalProductionExpense,
-            'total_items_consumed' => $totalItemsConsumed
+            'total_items_consumed' => $totalItemsConsumed,
         ];
     }
 
@@ -186,12 +186,12 @@ class UpdateProductionAction
     {
         // Process stock movements for completion
         $stockService = app(ProductionStockService::class);
-        
+
         $productionService = app(ProductionService::class);
         $production = $productionService->findOne($productionId);
-        
+
         $items = app(ProductionItemService::class)->findByProductionId($productionId);
-        
+
         $productionData = [
             'production_id' => $productionId,
             'production_number' => $production->production_number,
@@ -199,7 +199,7 @@ class UpdateProductionAction
             'bundle_product_id' => $production->bundle_product_id,
             'warehouse_id' => $production->warehouse_id,
             'quantity_produced' => $data['quantity_produced'] ?? $production->quantity_planned,
-            'total_production_cost' => $production->total_production_cost
+            'total_production_cost' => $production->total_production_cost,
         ];
 
         $stockResult = $stockService->createProductionStockMovements(
@@ -211,7 +211,7 @@ class UpdateProductionAction
         // Log completion
         app(ProductionAuditLogService::class)->logCompletion($productionId, [
             'quantity_produced' => $productionData['quantity_produced'],
-            'stock_movements' => $stockResult
+            'stock_movements' => $stockResult,
         ]);
     }
 
@@ -219,13 +219,13 @@ class UpdateProductionAction
     {
         $stockService = app(ProductionStockService::class);
         $productionService = app(ProductionService::class);
-        
+
         $production = $productionService->findOne($productionId);
         $items = app(ProductionItemService::class)->findByProductionId($productionId);
 
         // Check if reversal is possible
         $canReverse = $productionService->canBeReversed($productionId);
-        if (!$canReverse['can_reverse']) {
+        if (! $canReverse['can_reverse']) {
             throw new \Exception($canReverse['reason']);
         }
 
@@ -233,7 +233,7 @@ class UpdateProductionAction
             'production' => (array) $production,
             'items' => $items,
             'quantity_to_reverse' => $production->quantity_produced,
-            'reason' => 'Production cancelled - reversing stock movements'
+            'reason' => 'Production cancelled - reversing stock movements',
         ];
 
         $stockResult = $stockService->reverseProductionStockMovements($productionId, $reversalData);
@@ -242,7 +242,7 @@ class UpdateProductionAction
         app(ProductionAuditLogService::class)->logReversal($productionId, [
             'quantity_reversed' => $production->quantity_produced,
             'stock_movements' => $stockResult,
-            'reason' => 'Automatic reversal due to production cancellation'
+            'reason' => 'Automatic reversal due to production cancellation',
         ]);
     }
 
@@ -252,8 +252,9 @@ class UpdateProductionAction
 
         // Get existing production for validation context
         $existingProduction = app(ProductionService::class)->findOne($productionId);
-        if (!$existingProduction) {
+        if (! $existingProduction) {
             $errors[] = 'Production not found';
+
             return ['is_valid' => false, 'errors' => $errors];
         }
 
@@ -276,7 +277,7 @@ class UpdateProductionAction
         // Status transition validation
         if (isset($data['status'])) {
             $validTransitions = $this->getValidStatusTransitions($existingProduction->status);
-            if (!in_array($data['status'], $validTransitions)) {
+            if (! in_array($data['status'], $validTransitions)) {
                 $errors[] = "Cannot change status from {$existingProduction->status} to {$data['status']}";
             }
         }
@@ -293,17 +294,17 @@ class UpdateProductionAction
         if (isset($data['expenses'])) {
             $expenseService = app(ProductionExpenseService::class);
             $expenseValidation = $expenseService->validateExpenseData($data['expenses']);
-            
+
             foreach ($expenseValidation as $index => $validation) {
-                if (!$validation['is_valid']) {
-                    $errors[] = "Expense #{$index}: " . implode(', ', $validation['errors']);
+                if (! $validation['is_valid']) {
+                    $errors[] = "Expense #{$index}: ".implode(', ', $validation['errors']);
                 }
             }
         }
 
         return [
             'is_valid' => empty($errors),
-            'errors' => $errors
+            'errors' => $errors,
         ];
     }
 
@@ -314,7 +315,7 @@ class UpdateProductionAction
             'PLANNED' => ['IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
             'IN_PROGRESS' => ['COMPLETED', 'CANCELLED'],
             'COMPLETED' => ['CANCELLED'], // Can be cancelled (will trigger reversal)
-            'CANCELLED' => [] // Cannot transition from cancelled
+            'CANCELLED' => [], // Cannot transition from cancelled
         ];
 
         return $transitions[$currentStatus] ?? [];

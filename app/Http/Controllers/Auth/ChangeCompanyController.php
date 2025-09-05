@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
-
 use App\Domains\User\Actions\ChangeCompanyAction;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ChangeCompanyController extends Controller
 {
@@ -15,7 +13,7 @@ class ChangeCompanyController extends Controller
     {
         $companyCode = $request->input('company_code');
 
-        if (!$companyCode) {
+        if (! $companyCode) {
             throw ValidationException::withMessages(['company_code' => 'Company code is required.']);
         }
 

@@ -2,10 +2,10 @@
 
 namespace App\Domains\Coa\Actions;
 
-use App\Domains\Coa\Services\CoaService;
 use App\Domains\Coa\Services\CoaAuditLogService;
-use Illuminate\Support\Facades\DB;
+use App\Domains\Coa\Services\CoaService;
 use App\Enums\ActionTypes;
+use Illuminate\Support\Facades\DB;
 
 class CreateCoaAction
 {
@@ -16,11 +16,11 @@ class CreateCoaAction
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembuatan Coa",
+                'description' => 'Pembuatan Coa',
                 'metadata' => json_encode([
                     'before' => null,
                     'after' => $data,
-                ])
+                ]),
             ];
             app(CoaAuditLogService::class)->create($log_data, $tag_id);
         });

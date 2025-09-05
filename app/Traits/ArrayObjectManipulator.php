@@ -6,13 +6,13 @@ trait ArrayObjectManipulator
 {
     public function array_group_by($key, $data)
     {
-        $result = array();
+        $result = [];
 
         foreach ($data as $val) {
             if (property_exists($val, $key)) {
                 $result[$val->$key][] = $val;
             } else {
-                $result[""][] = $val;
+                $result[''][] = $val;
             }
         }
 

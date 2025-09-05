@@ -2,7 +2,6 @@
 
 namespace App\Domains\Product\Services;
 
-use App\Enums\GeneralStatuses;
 use App\Enums\StockStatuses;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +13,7 @@ class ProductService
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as m_products')
+        return DB::table($this->table_name.' as m_products')
             ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
             ->orderBy('m_products.name', 'asc')
@@ -23,7 +22,7 @@ class ProductService
 
     public function findAllBundle()
     {
-        return DB::table($this->table_name . ' as m_products')
+        return DB::table($this->table_name.' as m_products')
             ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
             ->where('m_products.type', '=', 'BUNDLE')
@@ -33,7 +32,7 @@ class ProductService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as m_products')
+        $data = DB::table($this->table_name.' as m_products')
             ->select([
                 'm_products.*',
                 'mu.name as unit_name',
@@ -43,7 +42,7 @@ class ProductService
                 'coa_sell.name as sell_coa_name',
                 'tax_sell.name as sell_tax_name',
                 'coa_inventory.name as inventory_coa_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->join('m_categories as mc', 'm_products.f_category_id', '=', 'mc.id')
             ->join('m_units as mu', 'm_products.f_unit_id', '=', 'mu.id')
@@ -68,10 +67,11 @@ class ProductService
         if ($data->main_image) {
             $data->main_image = Storage::disk('public')->url($data->main_image);
         }
+
         return $data;
     }
 
-    function getValueWithBundlePrefix($data, $key)
+    public function getValueWithBundlePrefix($data, $key)
     {
         return $data["bundle_{$key}"] ?? $data[$key] ?? null;
     }
@@ -79,71 +79,71 @@ class ProductService
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
-            "company_code" => session('user_company_code'),
-            "code" => $data['code'],
-            "name" => $data['name'],
-            "description" => $data['description'] ?? null,
-            "f_unit_id" => $data['unit_id'],
-            "f_category_id" => $data['category_id'],
-            "main_image" => $data['image'] ?? null,
-            "type" => $data['type'],
-            "is_item_purchased" => $this->getValueWithBundlePrefix($data, 'purchase_enabled')  === "true" ? true : false,
-            "unit_purchase_price" => $this->getValueWithBundlePrefix($data, 'purchase_price'),
-            "f_purchase_coa_code" => $this->getValueWithBundlePrefix($data, 'purchase_account'),
-            "f_purchase_tax_id" => $this->getValueWithBundlePrefix($data, 'purchase_tax'),
+            'company_code' => session('user_company_code'),
+            'code' => $data['code'],
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'f_unit_id' => $data['unit_id'],
+            'f_category_id' => $data['category_id'],
+            'main_image' => $data['image'] ?? null,
+            'type' => $data['type'],
+            'is_item_purchased' => $this->getValueWithBundlePrefix($data, 'purchase_enabled') === 'true' ? true : false,
+            'unit_purchase_price' => $this->getValueWithBundlePrefix($data, 'purchase_price'),
+            'f_purchase_coa_code' => $this->getValueWithBundlePrefix($data, 'purchase_account'),
+            'f_purchase_tax_id' => $this->getValueWithBundlePrefix($data, 'purchase_tax'),
 
-            "is_item_sold" => $this->getValueWithBundlePrefix($data, 'sales_enabled')  === "true" ? true : false,
-            "unit_sell_price" => $this->getValueWithBundlePrefix($data, 'sales_price'),
-            "f_sell_coa_code" => $this->getValueWithBundlePrefix($data, 'sales_account'),
-            "f_sell_tax_id" => $this->getValueWithBundlePrefix($data, 'sales_tax'),
+            'is_item_sold' => $this->getValueWithBundlePrefix($data, 'sales_enabled') === 'true' ? true : false,
+            'unit_sell_price' => $this->getValueWithBundlePrefix($data, 'sales_price'),
+            'f_sell_coa_code' => $this->getValueWithBundlePrefix($data, 'sales_account'),
+            'f_sell_tax_id' => $this->getValueWithBundlePrefix($data, 'sales_tax'),
 
-            "monitor_stock" => $this->getValueWithBundlePrefix($data, 'inventory_enabled') === "true" ? true : false,
-            "minimum_stock" => $this->getValueWithBundlePrefix($data, 'minimum_stock'),
-            "f_inventory_coa_code" => $this->getValueWithBundlePrefix($data, 'inventory_account'),
+            'monitor_stock' => $this->getValueWithBundlePrefix($data, 'inventory_enabled') === 'true' ? true : false,
+            'minimum_stock' => $this->getValueWithBundlePrefix($data, 'minimum_stock'),
+            'f_inventory_coa_code' => $this->getValueWithBundlePrefix($data, 'inventory_account'),
 
-            "track_qty_only" => isset($data['track_quantity']) && $data['track_quantity'] === "true" ? true : false,
-            "track_batch" => isset($data['track_batch']) && $data['track_batch'] === "true" ? true : false,
-            "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
-            "internal_memo" => $data['memo'] ?? null,
-            "total_stock" => 0,
-            "qty_available" => 0,
-            "average_price" => 0,
-            "f_stock_status_code" => StockStatuses::OUT_OF_STOCK,
-            "status" => $data['status'],
-            "created_by" => Auth::id(),
-            "created_at" => now()
+            'track_qty_only' => isset($data['track_quantity']) && $data['track_quantity'] === 'true' ? true : false,
+            'track_batch' => isset($data['track_batch']) && $data['track_batch'] === 'true' ? true : false,
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
+            'internal_memo' => $data['memo'] ?? null,
+            'total_stock' => 0,
+            'qty_available' => 0,
+            'average_price' => 0,
+            'f_stock_status_code' => StockStatuses::OUT_OF_STOCK,
+            'status' => $data['status'],
+            'created_by' => Auth::id(),
+            'created_at' => now(),
         ]);
     }
 
     public function update(int $id, array $data): int
     {
         $update_data = [
-            "name" => $data['name'],
-            "description" => $data['description'] ?? null,
-            "f_unit_id" => $data['unit_id'],
-            "f_category_id" => $data['category_id'],
-            "type" => $data['type'],
-            "is_item_purchased" => $this->getValueWithBundlePrefix($data, 'purchase_enabled')  === "true" ? true : false,
-            "unit_purchase_price" => $this->getValueWithBundlePrefix($data, 'purchase_price'),
-            "f_purchase_coa_code" => $this->getValueWithBundlePrefix($data, 'purchase_account'),
-            "f_purchase_tax_id" => $this->getValueWithBundlePrefix($data, 'purchase_tax'),
+            'name' => $data['name'],
+            'description' => $data['description'] ?? null,
+            'f_unit_id' => $data['unit_id'],
+            'f_category_id' => $data['category_id'],
+            'type' => $data['type'],
+            'is_item_purchased' => $this->getValueWithBundlePrefix($data, 'purchase_enabled') === 'true' ? true : false,
+            'unit_purchase_price' => $this->getValueWithBundlePrefix($data, 'purchase_price'),
+            'f_purchase_coa_code' => $this->getValueWithBundlePrefix($data, 'purchase_account'),
+            'f_purchase_tax_id' => $this->getValueWithBundlePrefix($data, 'purchase_tax'),
 
-            "is_item_sold" => $this->getValueWithBundlePrefix($data, 'sales_enabled')  === "true" ? true : false,
-            "unit_sell_price" => $this->getValueWithBundlePrefix($data, 'sales_price'),
-            "f_sell_coa_code" => $this->getValueWithBundlePrefix($data, 'sales_account'),
-            "f_sell_tax_id" => $this->getValueWithBundlePrefix($data, 'sales_tax'),
+            'is_item_sold' => $this->getValueWithBundlePrefix($data, 'sales_enabled') === 'true' ? true : false,
+            'unit_sell_price' => $this->getValueWithBundlePrefix($data, 'sales_price'),
+            'f_sell_coa_code' => $this->getValueWithBundlePrefix($data, 'sales_account'),
+            'f_sell_tax_id' => $this->getValueWithBundlePrefix($data, 'sales_tax'),
 
-            "monitor_stock" => $this->getValueWithBundlePrefix($data, 'inventory_enabled') === "true" ? true : false,
-            "minimum_stock" => $this->getValueWithBundlePrefix($data, 'minimum_stock'),
-            "f_inventory_coa_code" => $this->getValueWithBundlePrefix($data, 'inventory_account'),
+            'monitor_stock' => $this->getValueWithBundlePrefix($data, 'inventory_enabled') === 'true' ? true : false,
+            'minimum_stock' => $this->getValueWithBundlePrefix($data, 'minimum_stock'),
+            'f_inventory_coa_code' => $this->getValueWithBundlePrefix($data, 'inventory_account'),
 
-            "track_qty_only" => isset($data['track_quantity']) && $data['track_quantity'] === "true" ? true : false,
-            "track_batch" => isset($data['track_batch']) && $data['track_batch'] === "true" ? true : false,
-            "f_tag_codes" => isset($data['tags']) ? json_encode($data['tags']) : null,
-            "internal_memo" => $data['memo'] ?? null,
-            "status" => $data['status'],
-            "updated_by" => Auth::id(),
-            "updated_at" => now()
+            'track_qty_only' => isset($data['track_quantity']) && $data['track_quantity'] === 'true' ? true : false,
+            'track_batch' => isset($data['track_batch']) && $data['track_batch'] === 'true' ? true : false,
+            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
+            'internal_memo' => $data['memo'] ?? null,
+            'status' => $data['status'],
+            'updated_by' => Auth::id(),
+            'updated_at' => now(),
         ];
 
         if (isset($data['image'])) {
@@ -157,7 +157,7 @@ class ProductService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as t')
+        $query = DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.name',
@@ -173,7 +173,7 @@ class ProductService
                 't.unit_purchase_price',
                 't.unit_sell_price',
                 't.status',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->join('m_categories as mc', 't.f_category_id', '=', 'mc.id')
             ->join('m_units as mu', 't.f_unit_id', '=', 'mu.id')
@@ -198,7 +198,6 @@ class ProductService
             $query->where('t.name', 'like', "%{$search}%");
         }
         $query->groupBy('t.id');
-
 
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
