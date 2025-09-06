@@ -44,6 +44,7 @@ class CreatePurchaseDeliveryAction
         if (empty($data['products']) || ! is_array($data['products'])) {
             $errors[] = 'Minimal satu produk harus dipilih';
         }
+
         return [
             'is_valid' => empty($errors),
             'errors' => $errors,
@@ -94,7 +95,7 @@ class CreatePurchaseDeliveryAction
      */
     private function createProductBatches(int $deliveryId, array $data)
     {
-        if (!isset($data['purchase_order_id']) || !isset($data['products'])) {
+        if (! isset($data['purchase_order_id']) || ! isset($data['products'])) {
             return;
         }
 
@@ -107,7 +108,7 @@ class CreatePurchaseDeliveryAction
 
         $batchInserts = [];
         foreach ($data['products'] as $product) {
-            if (!isset($product['delivery_qty']) || $product['delivery_qty'] <= 0) {
+            if (! isset($product['delivery_qty']) || $product['delivery_qty'] <= 0) {
                 continue;
             }
 
@@ -116,12 +117,12 @@ class CreatePurchaseDeliveryAction
 
             // Get the purchase price from PO
             $poProduct = $poProducts->get($productId);
-            if (!$poProduct) {
+            if (! $poProduct) {
                 continue;
             }
 
             $purchasePrice = (float) $poProduct->price_per_qty;
-            $batchReference = 'PD-' . $deliveryId . '-' . $productId . '-' . time();
+            $batchReference = 'PD-'.$deliveryId.'-'.$productId.'-'.time();
 
             $batchInserts[] = [
                 'company_code' => session('user_company_code'),
@@ -140,11 +141,11 @@ class CreatePurchaseDeliveryAction
                 'hpp_status' => 'UNSETTLED',
                 'status' => 'ACTIVE',
                 'created_at' => now(),
-                'created_by' => Auth::id()
+                'created_by' => Auth::id(),
             ];
         }
 
-        if (!empty($batchInserts)) {
+        if (! empty($batchInserts)) {
             DB::table('t_product_stock_batches')->insert($batchInserts);
         }
     }

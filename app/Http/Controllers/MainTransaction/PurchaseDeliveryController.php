@@ -8,8 +8,8 @@ use App\Domains\PurchaseDelivery\Actions\UpdatePurchaseDeliveryAction;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryAuditLogService;
 // Domain Services
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
-use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
+use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
@@ -158,7 +158,7 @@ class PurchaseDeliveryController extends Controller
         if (! $purchaseDelivery) {
             abort(404, 'Purchase Delivery not found');
         }
-        
+
         $purchaseDeliveryProducts = app(PurchaseDeliveryService::class)->findAllProducts($id);
 
         // Load audit logs
@@ -331,7 +331,7 @@ class PurchaseDeliveryController extends Controller
                     'status' => 'PENDING',
                 ],
             ],
-            'validation_key' => 'pd_validation_' . time(),
+            'validation_key' => 'pd_validation_'.time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -386,13 +386,13 @@ class PurchaseDeliveryController extends Controller
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_deliveries_export_' . date('Y-m-d_H-i-s') . '.' . $format;
+        $filename = 'purchase_deliveries_export_'.date('Y-m-d_H-i-s').'.'.$format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/' . $filename,
+            'download_url' => '/exports/'.$filename,
         ]);
     }
 
@@ -409,7 +409,7 @@ class PurchaseDeliveryController extends Controller
         // 2. Generate PDF using a library like TCPDF or DomPDF
         // 3. Return the PDF as a downloadable response
 
-        $filename = 'purchase_delivery_form_PO-' . $poId . '_' . date('Y-m-d_H-i-s') . '.pdf';
+        $filename = 'purchase_delivery_form_PO-'.$poId.'_'.date('Y-m-d_H-i-s').'.pdf';
 
         // For now, return a JSON response indicating success
         // In production, this would return: return response()->file($pdfPath);
@@ -417,7 +417,7 @@ class PurchaseDeliveryController extends Controller
             'success' => true,
             'message' => 'PDF berhasil digenerate.',
             'filename' => $filename,
-            'download_url' => '/temp/' . $filename,
+            'download_url' => '/temp/'.$filename,
         ]);
     }
 
@@ -434,7 +434,7 @@ class PurchaseDeliveryController extends Controller
         $timestamp = time();
 
         // Mock generation - in real implementation, use proper sequence
-        $number = "PD{$year}{$month}." . str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT) . '/DO/STG';
+        $number = "PD{$year}{$month}.".str_pad(rand(1, 99999), 5, '0', STR_PAD_LEFT).'/DO/STG';
 
         return response()->json([
             'success' => true,
@@ -454,12 +454,11 @@ class PurchaseDeliveryController extends Controller
         $month = date('m');
 
         // Mock generation - in real implementation, use proper sequence
-        $number = 'DN-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        $number = 'DN-'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
 
         return response()->json([
             'success' => true,
             'delivery_number' => $number,
         ]);
     }
-
 }

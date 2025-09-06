@@ -35,6 +35,11 @@
                                     <i class="icon-base ti tabler-truck-delivery me-2"></i>Buat Delivery
                                 </a>
                             @endif
+                            @if($canCreatePurchaseInvoice && !in_array($purchaseOrder['status'], ['DRAFT', 'CANCELLED']))
+                                <a href="{{ route('main_transaction.purchase_invoice.add', ['po_id' => $purchaseOrder['id']]) }}" class="btn btn-info btn-md waves-effect waves-light">
+                                    <i class="icon-base ti tabler-file-invoice me-2"></i>Buat Invoice
+                                </a>
+                            @endif
                             @if($canEditPurchaseOrder)
                                 <a href="{{ route('main_transaction.purchase_order.edit', $purchaseOrder['id']) }}" class="btn btn-success btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit

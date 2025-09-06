@@ -24,7 +24,7 @@ class PurchaseDeliveryAuditLogService
 
     public function findByPurchaseDeliveryId(int $purchaseDeliveryId)
     {
-        return DB::table($this->table_name . ' as pal')
+        return DB::table($this->table_name.' as pal')
             ->select([
                 'pal.*',
                 'u.name as user_name',
@@ -37,7 +37,7 @@ class PurchaseDeliveryAuditLogService
 
     public function findAllDatatableByPurchaseDeliveryId(int $purchaseDeliveryId)
     {
-        $query = DB::table($this->table_name . ' as pal')
+        $query = DB::table($this->table_name.' as pal')
             ->select([
                 'pal.created_at',
                 'pal.user_id',

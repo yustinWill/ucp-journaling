@@ -167,18 +167,12 @@
                                 disabled />
                         </div>
                     </div>
-                    {{-- <div class="row g-3 mb-4">
+                    <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label class="form-label">Total Items</label>
-                            <input type="text" class="form-control"
-                                value="{{ number_format($purchaseDelivery->total_item, 0, ',', '.') }}" disabled />
+                            <label class="form-label">Keterangan</label>
+                            <textarea class="form-control" rows="3" disabled>{{ $purchaseDelivery->description }}</textarea>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Items Diterima</label>
-                            <input type="text" class="form-control"
-                                value="{{ number_format($purchaseDelivery->delivered_items, 0, ',', '.') }}" disabled />
-                        </div>
-                    </div> --}}
+                    </div>
 
                     <!-- Warehouse Information Section -->
                     <div class="section-header mt-12">
@@ -195,12 +189,6 @@
                             <label class="form-label">Diterima Oleh</label>
                             <input type="text" class="form-control" value="{{ $purchaseDelivery->created_by_name }}"
                                 disabled />
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-12">
-                            <label class="form-label">Catatan Pengiriman</label>
-                            <textarea class="form-control" rows="3" disabled>{{ $purchaseDelivery->description }}</textarea>
                         </div>
                     </div>
 

@@ -39,7 +39,7 @@ return new class extends Migration
             $table->foreign('updated_by')->references('id')->on('users');
             $table->foreign('company_code')->references('code')->on('m_companies');
             $table->foreign('f_supplier_id')->references('id')->on('m_contacts');
-            //$table->foreign('f_payment_term_id')->references('id')->on('m_payment_terms');
+            // $table->foreign('f_payment_term_id')->references('id')->on('m_payment_terms');
             $table->foreign('f_warehouse_id')->references('id')->on('m_warehouses');
             $table->foreign('f_purchase_order_id')->references('id')->on('t_purchase_orders');
         });
@@ -68,7 +68,7 @@ return new class extends Migration
             // $table->foreign('f_tax_id')->references('id')->on('m_taxes');
         });
 
-         Schema::create('t_purchase_delivery_audit_logs', function (Blueprint $table) {
+        Schema::create('t_purchase_delivery_audit_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('f_purchase_delivery_id');
             $table->string('company_code');

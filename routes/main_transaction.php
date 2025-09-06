@@ -125,6 +125,10 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::post($base_segment.$purchase_invoice_segment.'/process_import', 'processImport')->name('main_transaction.purchase_invoice.process_import');
         Route::get($base_segment.$purchase_invoice_segment.'/export', 'export')->name('main_transaction.purchase_invoice.export');
         Route::post($base_segment.$purchase_invoice_segment.'/process_export', 'processExport')->name('main_transaction.purchase_invoice.process_export');
+
+        // API Routes for Purchase Invoice
+        Route::get($base_segment.$purchase_invoice_segment.'/get_available_purchase_orders', 'get_available_purchase_orders')->name('main_transaction.purchase_invoice.get_available_purchase_orders');
+        Route::get($base_segment.$purchase_invoice_segment.'/get_po_products_for_invoice', 'get_po_products_for_invoice')->name('main_transaction.purchase_invoice.get_po_products_for_invoice');
     });
 
     Route::controller(SalesController::class)->group(function () use ($base_segment, $sales_segment) {

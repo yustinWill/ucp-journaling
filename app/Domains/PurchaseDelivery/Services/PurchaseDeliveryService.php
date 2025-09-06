@@ -58,7 +58,7 @@ class PurchaseDeliveryService
 
     public function findAll()
     {
-        return DB::table($this->table_name . ' as pd')
+        return DB::table($this->table_name.' as pd')
             ->select([
                 'pd.*',
                 'po.transaction_code as po_reference',
@@ -76,7 +76,7 @@ class PurchaseDeliveryService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as pd')
+        $query = DB::table($this->table_name.' as pd')
             ->select([
                 'pd.id',
                 'pd.transaction_code as reference_no',
@@ -94,7 +94,7 @@ class PurchaseDeliveryService
                 'w.name as warehouse_name',
                 'w.id as warehouse_id',
                 'u.name as created_by_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin('t_purchase_orders as po', 'pd.f_purchase_order_id', '=', 'po.id')
             ->leftJoin('m_contacts as s', 'po.f_supplier_id', '=', 's.id')
@@ -113,7 +113,7 @@ class PurchaseDeliveryService
                 [$dateFrom, $dateTo] = array_map('trim', explode(' - ', $dateRange));
                 // Ensure full day for end date
                 $dateFrom .= ' 00:00:00';
-                $dateTo   .= ' 23:59:59';
+                $dateTo .= ' 23:59:59';
                 $query->whereBetween('pd.created_at', [$dateFrom, $dateTo]);
             }
         }
@@ -181,7 +181,7 @@ class PurchaseDeliveryService
 
     public function findOne($id)
     {
-        $data =  DB::table($this->table_name . ' as pd')
+        $data = DB::table($this->table_name.' as pd')
             ->select([
                 'pd.*',
                 'po.transaction_code as po_reference',
@@ -193,7 +193,7 @@ class PurchaseDeliveryService
                 'st.code as warehouse_code',
                 'u_created.name as created_by_name',
                 'u_updated.name as updated_by_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin('t_purchase_orders as po', 'pd.f_purchase_order_id', '=', 'po.id')
             ->leftJoin('m_contacts as s', 'po.f_supplier_id', '=', 's.id')
@@ -215,12 +215,13 @@ class PurchaseDeliveryService
         if ($data->attachment) {
             $data->attachment = Storage::disk('public')->url($data->attachment);
         }
+
         return $data;
     }
 
     public function findAllProducts($id)
     {
-        return DB::table('t_purchase_delivery_products' . ' as pdp')
+        return DB::table('t_purchase_delivery_products'.' as pdp')
             ->select([
                 'pdp.*',
                 'pdp.note AS product_delivery_note',
@@ -283,11 +284,11 @@ class PurchaseDeliveryService
 
     public function findAllHeaderBasedOnPoId($poId)
     {
-        return DB::table($this->table_name . ' as pd')
+        return DB::table($this->table_name.' as pd')
             ->select([
                 'pd.*',
                 'u.name as created_by_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin(DB::raw("JSON_TABLE(pd.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE

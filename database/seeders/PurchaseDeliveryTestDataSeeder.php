@@ -4,20 +4,21 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use App\Domains\Contact\Actions\CreateContactAction;
-use App\Domains\Product\Actions\CreateProductAction;
-use App\Domains\PurchaseOrder\Actions\CreatePurchaseOrderAction;
-use App\Domains\PurchaseDelivery\Actions\CreatePurchaseDeliveryAction;
 
 class PurchaseDeliveryTestDataSeeder extends Seeder
 {
     private $companyCode = '001';
+
     private $warehouseId;
+
     private $supplierId;
+
     private $categoryId;
+
     private $unitId;
+
     private $paymentTermId;
+
     private $products = [];
 
     public function run()
@@ -25,12 +26,12 @@ class PurchaseDeliveryTestDataSeeder extends Seeder
         DB::transaction(function () {
             $this->createBasicMasterData();
             $this->createProducts();
-            
+
             // Create POs and PDs for different scenarios
             $this->createUndeliveredPO();
             $this->createPartiallyDeliveredPO();
             $this->createFullyDeliveredPO();
-            
+
             echo "Sample data created successfully!\n";
         });
     }
@@ -127,85 +128,85 @@ class PurchaseDeliveryTestDataSeeder extends Seeder
     {
         // Use existing products first
         $existingProducts = DB::table('m_products')->get();
-        
+
         foreach ($existingProducts as $product) {
             $this->products[] = [
-                'id' => $product->id, 
-                'price' => $product->unit_purchase_price ?? 10000
+                'id' => $product->id,
+                'price' => $product->unit_purchase_price ?? 10000,
             ];
             echo "Using existing product: {$product->name}\n";
         }
-        
+
         // We'll use existing products only to keep things simple
         if (count($this->products) < 2) {
             throw new \Exception('Need at least 2 existing products to create test scenarios');
         }
-        
-        echo "Using " . count($this->products) . " products for test scenarios\n";
+
+        echo 'Using '.count($this->products)." products for test scenarios\n";
     }
 
     private function createUndeliveredPO()
     {
         echo "Creating undelivered PO...\n";
-        
+
         $poId = $this->createPurchaseOrder([
             'products' => [
                 ['product_id' => $this->products[0]['id'], 'quantity' => 100, 'unit_price' => $this->products[0]['price']],
                 ['product_id' => $this->products[1]['id'], 'quantity' => 50, 'unit_price' => $this->products[1]['price']],
-            ]
+            ],
         ]);
-        
+
         echo "Created undelivered PO with ID: {$poId}\n";
     }
 
     private function createPartiallyDeliveredPO()
     {
         echo "Creating partially delivered PO...\n";
-        
+
         $poId = $this->createPurchaseOrder([
             'products' => [
                 ['product_id' => $this->products[0]['id'], 'quantity' => 200, 'unit_price' => $this->products[0]['price']],
                 ['product_id' => $this->products[1]['id'], 'quantity' => 300, 'unit_price' => $this->products[1]['price']],
-            ]
+            ],
         ]);
-        
+
         // Create partial delivery - deliver only part of the order
         $this->createPurchaseDelivery($poId, [
             'products' => [
                 ['product_id' => $this->products[0]['id'], 'delivery_qty' => 100], // Half delivered
                 ['product_id' => $this->products[1]['id'], 'delivery_qty' => 150], // Half delivered
-            ]
+            ],
         ]);
-        
+
         echo "Created partially delivered PO with ID: {$poId}\n";
     }
 
     private function createFullyDeliveredPO()
     {
         echo "Creating fully delivered PO...\n";
-        
+
         $poId = $this->createPurchaseOrder([
             'products' => [
                 ['product_id' => $this->products[0]['id'], 'quantity' => 80, 'unit_price' => $this->products[0]['price']],
                 ['product_id' => $this->products[1]['id'], 'quantity' => 120, 'unit_price' => $this->products[1]['price']],
-            ]
+            ],
         ]);
-        
+
         // Create full delivery
         $this->createPurchaseDelivery($poId, [
             'products' => [
                 ['product_id' => $this->products[0]['id'], 'delivery_qty' => 80], // Fully delivered
                 ['product_id' => $this->products[1]['id'], 'delivery_qty' => 120], // Fully delivered
-            ]
+            ],
         ]);
-        
+
         echo "Created fully delivered PO with ID: {$poId}\n";
     }
 
     private function createPurchaseOrder($data)
     {
-        $referenceNo = 'PO-' . date('Ym') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
-        
+        $referenceNo = 'PO-'.date('Ym').'-'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+
         // Create PO
         $poId = DB::table('t_purchase_orders')->insertGetId([
             'company_code' => $this->companyCode,
@@ -231,7 +232,7 @@ class PurchaseDeliveryTestDataSeeder extends Seeder
         foreach ($data['products'] as $index => $product) {
             $lineTotal = $product['quantity'] * $product['unit_price'];
             $subtotal += $lineTotal;
-            
+
             DB::table('t_purchase_order_products')->insert([
                 'f_purchase_order_id' => $poId,
                 'f_product_id' => $product['product_id'],
@@ -258,9 +259,9 @@ class PurchaseDeliveryTestDataSeeder extends Seeder
 
     private function createPurchaseDelivery($poId, $data)
     {
-        $referenceNo = 'PD-' . date('Ym') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
-        $deliveryNo = 'DN-' . date('Ym') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
-        
+        $referenceNo = 'PD-'.date('Ym').'-'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        $deliveryNo = 'DN-'.date('Ym').'-'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+
         // Create PD
         $pdId = DB::table('t_purchase_deliveries')->insertGetId([
             'company_code' => $this->companyCode,
@@ -279,10 +280,10 @@ class PurchaseDeliveryTestDataSeeder extends Seeder
 
         $totalItems = 0;
         $deliveredItems = 0;
-        
+
         foreach ($data['products'] as $product) {
             $deliveredItems += $product['delivery_qty'];
-            
+
             DB::table('t_purchase_delivery_products')->insert([
                 'f_purchase_delivery_id' => $pdId,
                 'f_product_id' => $product['product_id'],

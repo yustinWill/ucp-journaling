@@ -1,307 +1,398 @@
 @extends('layouts.default')
 @section('page_title')
-    Edit Purchase Invoice - {{ $purchaseInvoice['reference_no'] }}
+    Edit Invoice - {{ $invoice_data->transaction_code }}
 @stop
 @section('content')
-    <div class="card mb-6">
-        <h4 class="card-header">Edit Purchase Invoice - {{ $purchaseInvoice['reference_no'] }}</h4>
-        <form class="card-body" id="purchaseInvoiceEditForm" autocomplete="off">
-            <!-- Basic Information Section -->
-            <div class="section-header mt-12">
-                <h6>Informasi Dasar</h6>
-                <hr class="mx-n6">
-            </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">No. Purchase Invoice</label>
-                    <input type="text" class="form-control" id="reference-no" value="{{ $purchaseInvoice['reference_no'] }}" readonly />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Tanggal <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control global-single-date-picker" id="invoice-date" value="{{ $purchaseInvoice['date'] }}" />
-                </div>
-            </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Supplier <span style="color: red;">*</span></label>
-                    <div class="row g-2">
-                        <div class="col">
-                            <select class="global-select2 form-select" id="supplier-select" data-allow-clear="false">
-                                <option value="">Pilih Supplier</option>
-                                @foreach($suppliers as $supplier)
-                                    <option value="{{ $supplier['value'] }}" @if($purchaseInvoice['supplier_id'] == $supplier['value']) selected @endif>{{ $supplier['label'] }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-auto">
-                            <a href="{{ route('master_data.contact.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" 
-                               title="Tambah Supplier Baru">
-                                <i class="icon-base ti tabler-plus"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Status <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="status-select" data-allow-clear="false">
-                        <option value="">Pilih Status</option>
-                        @foreach($statuses as $status)
-                            <option value="{{ $status['value'] }}" @if($purchaseInvoice['status'] == $status['value']) selected @endif>{{ $status['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
+<div class="card mb-6">
+    <h4 class="card-header">Edit Invoice - {{ $invoice_data->transaction_code }}</h4>
+    <form class="card-body" id="purchaseInvoiceEditForm" autocomplete="off" 
+          data-invoice-data="{{ base64_encode(json_encode($invoice_data)) }}"
+          data-invoice-products="{{ base64_encode(json_encode($invoice_products)) }}">
+        @csrf
+        @method('PUT')
+        
+        <!-- Informasi Dasar Transaksi Section -->
+        <div class="section-header mt-12">
+            <h6>Informasi Dasar Transaksi</h6>
+            <hr class="mx-n6">
+        </div>
 
-            <!-- Reference Information Section -->
-            <div class="section-header mt-12">
-                <h6>Referensi</h6>
-                <hr class="mx-n6">
+        <!-- Row 1: Tanggal Invoice, Nomor Invoice -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Tanggal Invoice <span style="color: red;">*</span></label>
+                <input type="date" class="form-control global-single-date-picker" id="invoice-date" name="invoice_date" value="{{ $invoice_data->invoice_date }}" required />
             </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">PO Reference <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="po-reference-select" data-allow-clear="false">
-                        <option value="">Pilih Purchase Order</option>
-                        @foreach($purchaseOrders as $po)
-                            <option value="{{ $po['value'] }}" @if($purchaseInvoice['po_reference'] == $po['value']) selected @endif>{{ $po['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">PD Reference</label>
-                    <select class="global-select2 form-select" id="pd-reference-select" data-allow-clear="false">
-                        <option value="">Pilih Purchase Delivery</option>
-                        @foreach($purchaseDeliveries as $pd)
-                            <option value="{{ $pd['value'] }}" @if($purchaseInvoice['pd_reference'] == $pd['value']) selected @endif>{{ $pd['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="col-md-6">
+                <label class="form-label">Nomor Invoice</label>
+                <input type="text" class="form-control" name="invoice_number" value="{{ $invoice_data->transaction_code }}" readonly />
+                <small class="form-text text-muted">Tidak dapat diubah</small>
             </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Tanggal Jatuh Tempo</label>
-                    <input type="date" class="form-control global-single-date-picker" id="due-date" value="{{ $purchaseInvoice['due_date'] }}" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Currency <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="currency-select" data-allow-clear="false">
-                        <option value="">Pilih Currency</option>
-                        @foreach($currencies as $currency)
-                            <option value="{{ $currency['value'] }}" @if($purchaseInvoice['currency'] == $currency['value']) selected @endif>{{ $currency['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
+        </div>
 
-            <!-- Financial Information Section -->
-            <div class="section-header mt-12">
-                <h6>Informasi Keuangan</h6>
-                <hr class="mx-n6">
+        <!-- Row 2: Purchase Order Reference -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Purchase Order</label>
+                <input type="text" class="form-control" value="{{ $invoice_data->po_reference ?? '-' }}" disabled />
+                <small class="form-text text-muted">Purchase Order terkait</small>
             </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Subtotal <span style="color: red;">*</span></label>
-                    <input type="number" class="form-control" id="subtotal" value="{{ $purchaseInvoice['subtotal'] }}" min="0" step="0.01" required />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Tax Amount</label>
-                    <input type="number" class="form-control" id="tax-amount" value="{{ $purchaseInvoice['tax_amount'] }}" min="0" step="0.01" />
-                </div>
-            </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Discount</label>
-                    <input type="number" class="form-control" id="discount" value="{{ $purchaseInvoice['discount'] }}" min="0" step="0.01" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Total Invoice <span style="color: red;">*</span></label>
-                    <input type="number" class="form-control fw-bold" id="invoice-amount" value="{{ $purchaseInvoice['invoice_amount'] }}" min="0" step="0.01" required readonly />
-                </div>
-            </div>
+        </div>
 
-            <!-- Payment Information Section -->
-            <div class="section-header mt-12">
-                <h6>Informasi Pembayaran</h6>
-                <hr class="mx-n6">
-            </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Dibayar</label>
-                    <input type="number" class="form-control" id="paid-amount" value="{{ $purchaseInvoice['paid_amount'] }}" min="0" step="0.01" />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Payment Terms</label>
-                    <select class="global-select2 form-select" id="payment-terms-select" data-allow-clear="false">
-                        <option value="">Pilih Payment Terms</option>
-                        @foreach($paymentTerms as $term)
-                            <option value="{{ $term['value'] }}" @if($purchaseInvoice['payment_terms'] == $term['value']) selected @endif>{{ $term['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Payment Method</label>
-                    <select class="global-select2 form-select" id="payment-method-select" data-allow-clear="false">
-                        <option value="">Pilih Payment Method</option>
-                        @foreach($paymentMethods as $method)
-                            <option value="{{ $method['value'] }}" @if($purchaseInvoice['payment_method'] == $method['value']) selected @endif>{{ $method['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Bank Account</label>
-                    <select class="global-select2 form-select" id="bank-account-select" data-allow-clear="false">
-                        <option value="">Pilih Bank Account</option>
-                        @foreach($bankAccounts as $account)
-                            <option value="{{ $account['value'] }}" @if($purchaseInvoice['bank_account'] == $account['value']) selected @endif>{{ $account['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <label class="form-label">Catatan Invoice</label>
-                    <textarea class="form-control" id="invoice-notes" rows="3" placeholder="Masukkan catatan invoice..." maxlength="500">{{ $purchaseInvoice['invoice_notes'] }}</textarea>
-                    <small class="form-text text-muted">Maksimal 500 karakter</small>
-                </div>
-            </div>
+        <!-- Informasi Purchase Order Section -->
+        <div class="section-header mt-12">
+            <h6>Informasi Purchase Order</h6>
+            <hr class="mx-n6">
+        </div>
 
-            <!-- Action Buttons -->
-            <div class="d-flex justify-content-end gap-3 mt-6">
-                <a href="{{ route('main_transaction.purchase_invoice.detail', $purchaseInvoice['id']) }}" class="btn btn-outline-secondary waves-effect">
-                    <i class="icon-base ti tabler-arrow-left me-2"></i>
-                    Kembali
-                </a>
-                @if($canWrite)
-                    <button type="submit" class="btn btn-primary waves-effect waves-light">
-                        <i class="icon-base ti tabler-device-floppy me-2"></i>
-                        Simpan Perubahan
-                    </button>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Supplier</label>
+                <input type="text" class="form-control" value="{{ $invoice_data->supplier_name ?? '-' }}" disabled />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Email Supplier</label>
+                <input type="text" class="form-control" value="{{ $invoice_data->supplier_email ?? '-' }}" disabled />
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Status PO</label>
+                <input type="text" class="form-control" value="{{ $invoice_data->po_status ?? '-' }}" disabled />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Grand Total PO</label>
+                <input type="text" class="form-control" value="{{ $invoice_data->po_grand_total ? 'Rp ' . number_format($invoice_data->po_grand_total, 0, ',', '.') : '-' }}" disabled />
+            </div>
+        </div>
+
+        <!-- Informasi Invoice Section -->
+        <div class="section-header mt-12">
+            <h6>Informasi Invoice</h6>
+            <hr class="mx-n6">
+        </div>
+        
+        <!-- Row 2: Transaction and Due Dates -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
+                <input type="date" class="form-control global-single-date-picker" id="transaction-date" name="transaction_date" value="{{ $invoice_data->transaction_date }}" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Tanggal Jatuh Tempo</label>
+                <input type="date" class="form-control" id="due-date" name="due_date" value="{{ $invoice_data->due_date }}" disabled />
+                <small class="text-muted">*Dihitung otomatis dari tanggal invoice dan payment terms</small>
+            </div>
+        </div>
+        
+        <!-- Row 3: Payment Terms -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Termin Pembayaran</label>
+                <input type="text" class="form-control" value="{{ $invoice_data->payment_term_name ?? $invoice_data->payment_terms ?? '-' }}" disabled />
+                <small class="text-muted">*Dari Purchase Order</small>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <span class="badge fs-6 py-2 px-3 
+                    @if($invoice_data->status == 'DRAFT') bg-label-secondary
+                    @elseif($invoice_data->status == 'UNPAID') bg-label-warning
+                    @elseif($invoice_data->status == 'PAID') bg-label-success
+                    @elseif($invoice_data->status == 'PARTIAL_PAID') bg-label-info
+                    @elseif($invoice_data->status == 'OVERDUE') bg-label-danger
+                    @elseif($invoice_data->status == 'CANCELLED') bg-label-dark
+                    @else bg-label-secondary
+                    @endif
+                ">{{ $invoice_data->status }}</span>
+                <input type="hidden" name="status" value="{{ $invoice_data->status }}" />
+            </div>
+        </div>
+
+        <!-- Row 4: Keterangan -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Keterangan</label>
+                <textarea class="form-control" id="description" name="description" rows="4" placeholder="Keterangan tambahan untuk invoice" maxlength="1000">{{ $invoice_data->description }}</textarea>
+            </div>
+        </div>
+        
+        <!-- Row 5: Additional Information -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Memo (Internal)</label>
+                <textarea class="form-control" id="internal_memo" name="internal_memo" rows="4" placeholder="Catatan internal..." maxlength="1000">{{ $invoice_data->internal_memo }}</textarea>
+            </div>
+        </div>
+        
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Tag</label>
+                <select class="global-select2 form-select" id="tags" name="tags[]" multiple data-allow-clear="true">
+                    @foreach($availableTags as $tag)
+                        <option value="{{ $tag->id }}" 
+                            @if($invoice_data->f_tag_codes && in_array($tag->id, $invoice_data->f_tag_codes)) selected @endif>
+                            {{ $tag->code }} - {{ $tag->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Lampiran</label>
+                <input type="file" class="form-control" id="attachment" name="attachment" accept=".xlsx,.xls,.doc,.docx,.pdf,.png,.jpg,.jpeg,.zip" />
+                @if($invoice_data->attachment)
+                    <small class="form-text text-muted">
+                        File saat ini: <a href="{{ Storage::url($invoice_data->attachment) }}" target="_blank">{{ basename($invoice_data->attachment) }}</a>
+                    </small>
                 @endif
+                <small class="form-text text-muted">File dapat berupa Excel, Word, PDF, PNG, atau Zip (Max: 10MB)</small>
             </div>
-        </form>
-    </div>
+        </div>
+
+        <!-- Items Invoice Section -->
+        <div class="section-header mt-12">
+            <h6>Items Invoice</h6>
+        </div>
+
+        <!-- Info Box -->
+        <div class="alert alert-warning">
+            <i class="icon-base ti tabler-info-circle me-2"></i>
+            Catatan: Item dan quantity tidak dapat diubah setelah invoice dibuat. Hanya catatan produk yang dapat diubah.
+        </div>
+
+        <!-- Product Table -->
+        <div class="mb-4 mx-n5">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="invoice-items-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;">Produk</th>
+                            <th style="width: 12%;">Qty PO</th>
+                            <th style="width: 12%;">Qty Invoice</th>
+                            <th style="width: 15%;">Unit Price</th>
+                            <th style="width: 15%;">Total</th>
+                            <th style="width: 16%;">Note</th>
+                        </tr>
+                    </thead>
+                <tbody id="invoice-items-tbody">
+                    @forelse($invoice_products as $index => $product)
+                        <tr>
+                            <td>{{ $product->product_code ?? '' }} - {{ $product->product_name ?? '' }}</td>
+                            <td>{{ $product->ordered_qty ?? 0 }} {{ $product->unit_name ?? '' }}</td>
+                            <td>{{ $product->qty ?? 0 }} {{ $product->unit_name ?? '' }}</td>
+                            <td>{{ number_format($product->unit_price ?? 0, 0, ',', '.') }}</td>
+                            <td>{{ number_format($product->total_price ?? 0, 0, ',', '.') }}</td>
+                            <td>
+                                <input type="text" class="form-control form-control-sm" 
+                                       name="products[{{ $index }}][note]" 
+                                       value="{{ $product->note ?? '' }}" 
+                                       placeholder="Catatan produk" />
+                                <input type="hidden" name="products[{{ $index }}][id]" value="{{ $product->id }}" />
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="icon-base ti tabler-package me-2"></i>
+                                Tidak ada data produk
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                @if(count($invoice_products) > 0)
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="4" class="text-end">Total Invoice:</th>
+                        <th class="text-end">
+                            Rp {{ number_format($invoice_products->sum('total_price') ?? 0, 0, ',', '.') }}
+                        </th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+                @endif
+            </table>
+            </div>
+        </div>
+
+        <!-- Hidden fields for reference -->
+        <input type="hidden" name="id" value="{{ $invoice_data->id }}" />
+        <input type="hidden" name="purchase_order_id" value="{{ $invoice_data->f_purchase_order_id }}" />
+
+        <!-- Action Buttons -->
+        <div class="pt-6 text-end">
+            <a href="{{ route('main_transaction.purchase_invoice.detail', $invoice_data->id) }}" class="btn btn-label-secondary me-3">Batal</a>
+            <button type="submit" class="btn btn-primary" id="update-invoice-btn">Update Invoice</button>
+        </div>
+    </form>
+</div>
 @stop
 
 @section('js_script')
 <script>
 $(function() {
-    // Note: global-select2 and global-single-date-picker initialization is handled globally by layout
+    // Initialize the form
+    initializeEditForm();
     
-    // Auto-calculate invoice amount when financial fields change
-    function calculateInvoiceAmount() {
-        const subtotal = parseFloat($('#subtotal').val()) || 0;
-        const taxAmount = parseFloat($('#tax-amount').val()) || 0;
-        const discount = parseFloat($('#discount').val()) || 0;
+    function initializeEditForm() {
+        // Load existing data from data attributes
+        const form = $('#purchaseInvoiceEditForm');
+        const invoiceDataEncoded = form.data('invoice-data');
+        const invoiceProductsEncoded = form.data('invoice-products');
         
-        const invoiceAmount = subtotal + taxAmount - discount;
-        $('#invoice-amount').val(invoiceAmount.toFixed(2));
+        let invoiceData = null;
+        let invoiceProducts = [];
+        
+        if (invoiceDataEncoded) {
+            try {
+                invoiceData = JSON.parse(atob(invoiceDataEncoded));
+            } catch (e) {
+                console.error('Error parsing invoice data:', e);
+            }
+        }
+        
+        if (invoiceProductsEncoded) {
+            try {
+                invoiceProducts = JSON.parse(atob(invoiceProductsEncoded));
+            } catch (e) {
+                console.error('Error parsing invoice products:', e);
+            }
+        }
+        
+        // Event handlers
+        $('#invoice-date').on('change', calculateDueDate);
+        $('#transaction-date').on('change', validateTransactionDate);
+        $('#purchaseInvoiceEditForm').on('submit', submitEditForm);
+        
+        // Calculate due date initially
+        calculateDueDate();
     }
     
-    // Bind calculation to relevant fields
-    $('#subtotal, #tax-amount, #discount').on('input', calculateInvoiceAmount);
+    function calculateDueDate() {
+        const invoiceDate = $('#invoice-date').val();
+        const paymentTerms = "{{ $invoice_data->payment_term_name ?? $invoice_data->payment_terms ?? '' }}";
+        
+        if (invoiceDate && paymentTerms) {
+            // Extract days from payment terms (e.g., "NET 30" -> 30 days)
+            const match = paymentTerms.match(/\d+/);
+            if (match) {
+                const days = parseInt(match[0]);
+                const date = new Date(invoiceDate);
+                date.setDate(date.getDate() + days);
+                $('#due-date').val(date.toISOString().split('T')[0]);
+            }
+        }
+    }
     
-    // Form submission handler
-    $('#purchaseInvoiceEditForm').on('submit', function(e) {
+    function validateTransactionDate() {
+        const invoiceDate = new Date($('#invoice-date').val());
+        const transactionDate = new Date($('#transaction-date').val());
+        
+        if (transactionDate < invoiceDate) {
+            Swal.fire({
+                title: 'Tanggal Invalid!',
+                text: 'Tanggal transaksi tidak boleh lebih awal dari tanggal invoice.',
+                icon: 'warning',
+                customClass: {
+                    confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+            });
+            
+            $('#transaction-date').val($('#invoice-date').val());
+        }
+    }
+    
+    function submitEditForm(e) {
         e.preventDefault();
         
-        // Show loading state
-        const submitBtn = $(this).find('button[type="submit"]');
-        const originalText = submitBtn.html();
-        submitBtn.html('<i class="icon-base ti tabler-loader-2 me-2"></i>Menyimpan...').prop('disabled', true);
-        
-        // Gather form data
-        const formData = {
-            id: {{ $purchaseInvoice['id'] }},
-            date: $('#invoice-date').val(),
-            supplier_id: $('#supplier-select').val(),
-            status: $('#status-select').val(),
-            po_reference: $('#po-reference-select').val(),
-            pd_reference: $('#pd-reference-select').val(),
-            due_date: $('#due-date').val(),
-            currency: $('#currency-select').val(),
-            subtotal: $('#subtotal').val(),
-            tax_amount: $('#tax-amount').val(),
-            discount: $('#discount').val(),
-            invoice_amount: $('#invoice-amount').val(),
-            paid_amount: $('#paid-amount').val(),
-            payment_terms: $('#payment-terms-select').val(),
-            payment_method: $('#payment-method-select').val(),
-            bank_account: $('#bank-account-select').val(),
-            invoice_notes: $('#invoice-notes').val()
-        };
-        
-        // Validate required fields
-        if (!formData.date || !formData.supplier_id || !formData.status || !formData.po_reference || !formData.subtotal || !formData.invoice_amount || !formData.currency) {
-            Swal.fire({
-                title: 'Kesalahan Validasi',
-                text: 'Harap lengkapi semua field yang wajib diisi (bertanda *).',
-                icon: 'error',
-                customClass: {
-                    confirmButton: 'btn btn-primary'
-                },
-                buttonsStyling: false
-            });
-            
-            // Reset button state
-            submitBtn.html(originalText).prop('disabled', false);
+        // Validation
+        if (!validateEditForm()) {
             return;
         }
         
-        // Validate paid amount not exceeding invoice amount
-        const invoiceAmount = parseFloat(formData.invoice_amount) || 0;
-        const paidAmount = parseFloat(formData.paid_amount) || 0;
-        
-        if (paidAmount > invoiceAmount) {
-            Swal.fire({
-                title: 'Kesalahan Validasi',
-                text: 'Jumlah yang dibayar tidak boleh lebih besar dari total invoice.',
-                icon: 'error',
-                customClass: {
-                    confirmButton: 'btn btn-primary'
-                },
-                buttonsStyling: false
-            });
-            
-            // Reset button state
-            submitBtn.html(originalText).prop('disabled', false);
-            return;
-        }
-        
-        // Submit data via AJAX
-        $.ajax({
-            url: '{{ route("main_transaction.purchase_invoice.update") }}',
-            type: 'POST',
-            data: formData,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        // Show confirmation
+        Swal.fire({
+            title: 'Update Invoice?',
+            text: 'Pastikan perubahan yang dilakukan sudah benar.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Update!',
+            cancelButtonText: 'Batal',
+            customClass: {
+                confirmButton: 'btn btn-primary',
+                cancelButton: 'btn btn-label-secondary'
             },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                processEditFormSubmission();
+            }
+        });
+    }
+    
+    function validateEditForm() {
+        const requiredFields = ['invoice-date', 'transaction-date'];
+        let isValid = true;
+        
+        requiredFields.forEach(fieldId => {
+            const field = $('#' + fieldId);
+            if (!field.val() || field.val().trim() === '') {
+                field.addClass('is-invalid');
+                isValid = false;
+            } else {
+                field.removeClass('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            Swal.fire({
+                title: 'Field Wajib!',
+                text: 'Silakan lengkapi semua field yang wajib diisi.',
+                icon: 'warning',
+                customClass: {
+                    confirmButton: 'btn btn-primary'
+                },
+                buttonsStyling: false
+            });
+        }
+        
+        return isValid;
+    }
+    
+    function processEditFormSubmission() {
+        const submitBtn = $('#update-invoice-btn');
+        const originalText = submitBtn.text();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true).html(
+            '<span class="spinner-border spinner-border-sm me-2"></span>Memperbarui...'
+        );
+        
+        // Prepare form data
+        const formData = new FormData($('#purchaseInvoiceEditForm')[0]);
+        
+        // Submit via AJAX
+        $.ajax({
+            url: "{{ route('main_transaction.purchase_invoice.update') }}",
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 Swal.fire({
                     title: 'Berhasil!',
-                    text: response.message || 'Purchase Invoice berhasil diperbarui.',
+                    text: 'Invoice berhasil diperbarui.',
                     icon: 'success',
                     customClass: {
                         confirmButton: 'btn btn-primary'
                     },
                     buttonsStyling: false
-                }).then((result) => {
-                    // Redirect to detail page
-                    window.location.href = '{{ route("main_transaction.purchase_invoice.detail", $purchaseInvoice["id"]) }}';
+                }).then(() => {
+                    window.location.href = "{{ route('main_transaction.purchase_invoice.detail', $invoice_data->id) }}";
                 });
             },
-            error: function(xhr, status, error) {
-                let errorMessage = 'Terjadi kesalahan saat menyimpan data.';
+            error: function(xhr) {
+                let errorMessage = 'Terjadi kesalahan saat memperbarui invoice.';
                 
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
@@ -316,66 +407,12 @@ $(function() {
                     },
                     buttonsStyling: false
                 });
-                
-                // Reset button state
-                submitBtn.html(originalText).prop('disabled', false);
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).text(originalText);
             }
         });
-    });
-    
-    // Auto-validate paid amount against invoice amount
-    $('#paid-amount, #invoice-amount').on('input', function() {
-        const invoiceAmount = parseFloat($('#invoice-amount').val()) || 0;
-        const paidAmount = parseFloat($('#paid-amount').val()) || 0;
-        
-        if (paidAmount > invoiceAmount) {
-            $('#paid-amount').addClass('is-invalid');
-            if (!$('#paid-amount').next('.invalid-feedback').length) {
-                $('#paid-amount').after('<div class="invalid-feedback">Jumlah yang dibayar tidak boleh lebih dari total invoice</div>');
-            }
-        } else {
-            $('#paid-amount').removeClass('is-invalid');
-            $('#paid-amount').next('.invalid-feedback').remove();
-        }
-    });
-    
-    // PO Reference change handler - could trigger loading of PO-specific data
-    $('#po-reference-select').on('change', function() {
-        const poReference = $(this).val();
-        if (poReference) {
-            // Load PO-specific data like supplier, amounts, etc.
-            console.log('Selected PO Reference: ' + poReference);
-        }
-    });
-    
-    // Status change handler for conditional logic
-    $('#status-select').on('change', function() {
-        const status = $(this).val();
-        
-        // Auto-populate paid amount when status is PAID
-        if (status === 'PAID') {
-            const invoiceAmount = $('#invoice-amount').val();
-            if (invoiceAmount && !$('#paid-amount').val()) {
-                $('#paid-amount').val(invoiceAmount);
-            }
-        }
-    });
-    
-    // Payment method change handler
-    $('#payment-method-select').on('change', function() {
-        const method = $(this).val();
-        
-        // Show/hide bank account field based on payment method
-        if (method === 'Transfer Bank') {
-            $('#bank-account-select').closest('.col-md-6').show();
-        } else if (method === 'Cash') {
-            $('#bank-account-select').closest('.col-md-6').hide();
-            $('#bank-account-select').val('').trigger('change');
-        }
-    });
-    
-    // Initialize calculation
-    calculateInvoiceAmount();
+    }
 });
 </script>
 @endsection

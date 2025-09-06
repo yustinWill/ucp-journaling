@@ -155,6 +155,16 @@
                 </div>
             </div>
 
+            <!-- Row 4: Keterangan -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Keterangan</label>
+                    <textarea class="form-control" id="delivery-description" name="description" rows="4"
+                        placeholder="Keterangan delivery (optional)"></textarea>
+                    <small class="form-text text-muted">Catatan khusus terkait delivery</small>
+                </div>
+            </div>
+
             <!-- Items Delivery Section -->
             <div class="section-header mt-12">
                 <h6>Items Delivery</h6>
@@ -273,12 +283,6 @@
                 <!-- Right Side: Delivery Summary Section -->
                 <div class="col-md-6">
                     <div class="summary-section ps-4">
-                        <div class="mb-3">
-                            <label class="form-label">Keterangan</label>
-                            <textarea class="form-control" id="delivery-description" name="description" rows="4"
-                                placeholder="Keterangan delivery (optional)"></textarea>
-                            <small class="form-text text-muted">Catatan khusus terkait delivery</small>
-                        </div>
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label">Total Qty Delivery</label>

@@ -59,7 +59,24 @@
             <div class="card-body">
                 <!-- Advanced Search Form -->
                 <div class="row mb-4">
-                    <div class="col-md-6">
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">Tanggal Transaksi:</label>
+                        <input type="text" id="date-range-picker" class="form-control" placeholder="Pilih rentang tanggal" />
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">Tanggal Invoice:</label>
+                        <input type="date" class="form-control global-single-date-picker" id="invoice-date-filter" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Supplier:</label>
+                        <select class="global-select2 form-select" id="supplier-filter" data-allow-clear="true">
+                            <option value="">Pilih Supplier</option>
+                            @foreach ($suppliers as $supplier)
+                                <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3">
                         <label class="form-label">Status:</label>
                         <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
                             <option value="">Semua Status</option>
@@ -68,9 +85,15 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Pencarian:</label>
-                        <input type="text" class="form-control" id="search-field" placeholder="Cari Purchase Invoice">
+                </div>
+                <div class="row mb-4">
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">Tanggal Jatuh Tempo:</label>
+                        <input type="date" class="form-control global-single-date-picker" id="due-date-filter" />
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-9">
+                        <label class="form-label">No Invoice / PO:</label>
+                        <input type="text" class="form-control" id="invoice-search-filter" placeholder="Cari Invoice atau PO">
                     </div>
                 </div>
                 
@@ -90,20 +113,11 @@
                         </div>
                         
                         <div class="d-flex gap-2">
-                            @if($canImportPurchaseInvoice)
-                                <a href="{{ route('main_transaction.purchase_invoice.import') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                            @endif
+                            {{-- Import and Add buttons removed per requirement - invoices should only be created from PO detail page --}}
                             @if($canExportPurchaseInvoice)
                                 <a href="{{ route('main_transaction.purchase_invoice.export') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif
-                            @if($canAddPurchaseInvoice)
-                                <a href="{{ route('main_transaction.purchase_invoice.add') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
                             @endif
                         </div>
                     </div>
@@ -117,10 +131,11 @@
                         <tr>
                             <th style="width: 100px;">Tanggal</th>
                             <th style="width: 140px;">No Invoice</th>
+                            <th style="width: 100px;">Tgl Invoice</th>
                             <th style="width: 180px;">Supplier</th>
                             <th style="width: 140px;">PO Reference</th>
-                            <th style="width: 140px;">PD Reference</th>
                             <th style="width: 100px;">Tgl Jatuh Tempo</th>
+                            <th style="width: 150px;">Grand Total</th>
                             <th style="width: 100px;">Status</th>
                             <th style="width: 120px;">Diinput Oleh</th>
                             <th style="width: 120px;">Tag</th>
@@ -154,27 +169,41 @@ $(function() {
         }
         
         purchaseInvoiceTable = new DataTable('#purchase-invoice-table', {
+            processing: true,
+            serverSide: true,
             ajax: {
                 url: '{{ route("main_transaction.purchase_invoice.index_data_table") }}',
                 data: function(d) {
-                    d.status = $('#status-filter').val();
+                    d.date_range_filter = $('#date-range-picker').val();
+                    d.invoice_date_filter = $('#invoice-date-filter').val();
+                    d.supplier_filter = $('#supplier-filter').val();
+                    d.status_filter = $('#status-filter').val();
+                    d.due_date_filter = $('#due-date-filter').val();
+                    d.invoice_search_filter = $('#invoice-search-filter').val();
                 }
             },
             columns: [
-                { data: 'date', width: '100px' },
                 { 
-                    data: 'reference_no',
+                    data: 'transaction_date',
+                    width: '100px'
+                },
+                { 
+                    data: 'invoice_number',
                     width: '140px',
                     render: function(data, type, row) {
                         return data; // Non-clickable as per standard
                     }
                 },
                 { 
-                    data: 'supplier',
+                    data: 'invoice_date',
+                    width: '100px'
+                },
+                { 
+                    data: 'supplier_name',
                     width: '180px',
                     render: function(data, type, row) {
                         if (!data) return '-';
-                        if (canRead) {
+                        if (canRead && row.supplier_id) {
                             const detailUrl = `{{ route('master_data.contact.detail', ':id') }}`
                                 .replace(':id', row.supplier_id);
                             return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
@@ -196,33 +225,51 @@ $(function() {
                     }
                 },
                 { 
-                    data: 'pd_reference',
-                    width: '140px',
+                    data: 'due_date',
+                    width: '100px'
+                },
+                { 
+                    data: 'grand_total',
+                    width: '150px',
                     render: function(data, type, row) {
-                        if (!data) return '-';
-                        if (canViewPurchaseDelivery && row.pd_id) {
-                            const detailUrl = `{{ route('main_transaction.purchase_delivery.detail', ':id') }}`
-                                .replace(':id', row.pd_id);
-                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                        }
-                        return data;
+                        return `Rp ${parseInt(data || 0).toLocaleString('id-ID')}`;
                     }
                 },
-                { data: 'due_date', width: '100px' },
                 { 
                     data: 'status',
                     width: '100px',
                     render: function(data, type, row) {
-                        return `<span class="badge ${row.status_badge_class}">${data}</span>`;
+                        let badgeClass = 'bg-label-secondary';
+                        switch(data) {
+                            case 'DRAFT':
+                                badgeClass = 'bg-label-secondary';
+                                break;
+                            case 'UNPAID':
+                                badgeClass = 'bg-label-warning';
+                                break;
+                            case 'PAID':
+                                badgeClass = 'bg-label-success';
+                                break;
+                            case 'PARTIAL_PAID':
+                                badgeClass = 'bg-label-info';
+                                break;
+                            case 'OVERDUE':
+                                badgeClass = 'bg-label-danger';
+                                break;
+                            case 'CANCELLED':
+                                badgeClass = 'bg-label-dark';
+                                break;
+                        }
+                        return `<span class="badge ${badgeClass}">${data}</span>`;
                     }
                 },
                 { 
-                    data: 'created_by',
+                    data: 'created_by_name',
                     width: '120px',
                     render: function(data, type, row) {
-                        if (canViewUser) {
+                        if (canViewUser && row.created_by) {
                             const detailUrl = `{{ route('master_data.user.detail', ':id') }}`
-                                .replace(':id', row.created_by_id);
+                                .replace(':id', row.created_by);
                             return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                         }
                         return data;
@@ -232,15 +279,14 @@ $(function() {
                     data: 'tags',
                     width: '120px',
                     render: function(data, type, row) {
-                        if (!data || data.length === 0) {
-                            return '-';
-                        }
-                        let tagsHtml = '';
-                        data.forEach(function(tag) {
-                            let badgeClass = tag.preview || 'bg-label-secondary';
-                            tagsHtml += `<span class="badge me-1 ${badgeClass}">${tag.name}</span>`;
-                        });
-                        return tagsHtml;
+                        if (!data) return '-';
+                        let tags = JSON.parse(data);
+                        return tags.map(tag => {
+                            if (tag.code == null) {
+                                return '';
+                            }
+                            return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
+                        }).join('');
                     }
                 },
                 {
@@ -260,11 +306,7 @@ $(function() {
                             </a>`;
                         }
                         
-                        if (canEdit) {
-                            actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                <i class="icon-xs icon-base ti tabler-edit"></i>
-                            </a>`;
-                        }
+                        // Edit button removed per requirement
                         
                         actions += '</div>';
                         return actions;
@@ -295,23 +337,23 @@ $(function() {
     // Initialize table
     initPurchaseInvoiceTable();
     
-    // Search functionality
-    $('#search-field').on('keyup', function() {
-        if (purchaseInvoiceTable) {
-            purchaseInvoiceTable.search(this.value).draw();
-        }
-    });
-    
-    // Filter functionality
-    $('#status-filter').on('change', function() {
-        if (purchaseInvoiceTable) {
-            purchaseInvoiceTable.draw();
-        }
-    });
-    
+    // Filter functionality with timeout
+    let searchTimeout;
+    $('#date-range-picker, #invoice-date-filter, #supplier-filter, #status-filter, #due-date-filter, #invoice-search-filter').on(
+        'keyup change',
+        function() {
+            clearTimeout(searchTimeout);
+            const input = this;
+            searchTimeout = setTimeout(function() {
+                if (purchaseInvoiceTable) {
+                    purchaseInvoiceTable.draw();
+                }
+            }, 400); // 400ms delay
+        });
+
     // Tag Column Toggle Functionality
     $('#toggleTagColumn').on('change', function() {
-        const tagColumn = purchaseInvoiceTable.column(8); // Tag column index (0-based)
+        const tagColumn = purchaseInvoiceTable.column(9); // Tag column index (0-based, adjusted for new column)
         tagColumn.visible(this.checked);
     });
 });
