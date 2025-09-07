@@ -5,6 +5,7 @@ namespace App\Domains\User\Actions;
 use App\Domains\GlobalConfig\Services\GlobalConfigService;
 use App\Domains\RolePermission\Services\RolePermissionService;
 use App\Domains\UserCompany\Services\UserCompanyService;
+use App\Domains\User\Services\UserService;
 use App\Enums\ErrorCodes;
 use App\Exceptions\AppException;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,8 @@ class AuthenticateUserAction
             if ($user_company->isEmpty()) {
                 throw new AppException(ErrorCodes::USER_NO_COMPANY);
             }
+
+            $permissions = app(UserService::class)->updateLastLogin(Auth::id());
 
             $user_company_code = null;
             foreach ($user_company as $company) {

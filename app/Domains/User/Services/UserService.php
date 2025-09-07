@@ -46,9 +46,16 @@ class UserService
             ->update($updateData);
     }
 
+    public function updateLastLogin(int $id)
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->update(['last_login' => now()]);
+    }
+
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name.' as t')
+        $query = DB::table($this->table_name . ' as t')
             ->select([
                 't.id',
                 't.name',
@@ -116,7 +123,7 @@ class UserService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name.' as t')
+        $data = DB::table($this->table_name . ' as t')
             ->select([
                 't.id',
                 't.role_id',
@@ -144,7 +151,7 @@ class UserService
 
     public function findAllBasedOnRole($roleId)
     {
-        $data = DB::table($this->table_name.' as t')
+        $data = DB::table($this->table_name . ' as t')
             ->select([
                 't.id',
                 't.role_id',
@@ -173,7 +180,7 @@ class UserService
 
     public function findAll()
     {
-        return DB::table($this->table_name.' as t')
+        return DB::table($this->table_name . ' as t')
             ->select([
                 't.id',
                 't.name',

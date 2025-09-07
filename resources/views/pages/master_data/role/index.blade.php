@@ -120,14 +120,14 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <a href="{{ route('master_data.role.import') }}"
+                            {{-- <a href="{{ route('master_data.role.import') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light">
                                 <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
                             </a>
                             <a href="{{ route('master_data.role.export') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light">
                                 <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
-                            </a>
+                            </a> --}}
                             <a href="{{ route('master_data.role.add') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light">
                                 <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
@@ -141,7 +141,7 @@
                 <table id="role-table" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Dibuat</th>
+                            <th>Dibuat Pada</th>
                             <th>Nama Role</th>
                             <th>Deskripsi</th>
                             <th>Users</th>
@@ -229,7 +229,7 @@
                             data: null,
                             orderable: false,
                             searchable: false,
-                            width: '120px',
+                            // width: '120px',
                             responsivePriority: 1,
                             render: function(data, type, row, meta) {
                                 const editUrl = '{{ route('master_data.role.edit', ':id') }}'
@@ -270,8 +270,8 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    scrollX: true,
-                    responsive: true,
+                    // scrollX: true,
+                    // responsive: true,
                     orderCellsTop: true
                 });
             }

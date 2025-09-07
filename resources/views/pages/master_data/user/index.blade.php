@@ -119,12 +119,12 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <a href="{{ route('master_data.user.import') }}"
+                        {{-- <a href="{{ route('master_data.user.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
                         <a href="{{ route('master_data.user.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
                         <a href="{{ route('master_data.user.add') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
@@ -222,7 +222,6 @@
                             targets: -1, // Action column (last column)
                             orderable: false,
                             searchable: false,
-                            width: '120px',
                             responsivePriority: 1,
                             render: function(data, type, row, meta) {
                                 const detailUrl = "{{ route('master_data.user.detail', ':id') }}"
@@ -253,11 +252,11 @@
                             responsivePriority: 3
                         },
                         {
-                            targets: [6], // Status column
+                            targets: [7], // Status column
                             render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
+                                const badgeClass = data == '1' ? 'bg-label-success' :
                                     'bg-label-secondary';
-                                const statusText = data === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
+                                const statusText = data == '1' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         }
@@ -282,8 +281,7 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    scrollX: true,
-                    responsive: true,
+                    // scrollX: true,
                     orderCellsTop: true
                 });
             }
