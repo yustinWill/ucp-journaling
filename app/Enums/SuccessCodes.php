@@ -35,6 +35,8 @@ enum SuccessCodes: string
     case UPDATE_PURCHASE_ORDER_SUCCESS = 'UPDATE_PURCHASE_ORDER_SUCCESS';
     case CREATE_PURCHASE_DELIVERY_SUCCESS = 'CREATE_PURCHASE_DELIVERY_SUCCESS';
     case UPDATE_PURCHASE_DELIVERY_SUCCESS = 'UPDATE_PURCHASE_DELIVERY_SUCCESS';
+    case CREATE_PURCHASE_INVOICE_SUCCESS = 'CREATE_PURCHASE_INVOICE_SUCCESS';
+    case UPDATE_PURCHASE_INVOICE_SUCCESS = 'UPDATE_PURCHASE_INVOICE_SUCCESS';
     case CREATE_STOCK_OPNAME_SUCCESS = 'CREATE_STOCK_OPNAME_SUCCESS';
     case UPDATE_STOCK_OPNAME_SUCCESS = 'UPDATE_STOCK_OPNAME_SUCCESS';
 
@@ -72,6 +74,8 @@ enum SuccessCodes: string
             self::UPDATE_PURCHASE_DELIVERY_SUCCESS => 'Purchase Delivery berhasil diperbarui.',
             self::CREATE_STOCK_OPNAME_SUCCESS => 'Stock Opname berhasil dibuat.',
             self::UPDATE_STOCK_OPNAME_SUCCESS => 'Stock Opname berhasil diperbarui.',
+            self::CREATE_PURCHASE_INVOICE_SUCCESS => 'Purchase Invoice berhasil dibuat.',
+            self::UPDATE_PURCHASE_INVOICE_SUCCESS => 'Purchase Invoice berhasil diperbarui.',
         };
     }
 
@@ -109,6 +113,8 @@ enum SuccessCodes: string
             self::UPDATE_PURCHASE_DELIVERY_SUCCESS => self::OK,
             self::CREATE_STOCK_OPNAME_SUCCESS => self::OK,
             self::UPDATE_STOCK_OPNAME_SUCCESS => self::OK,
+            self::CREATE_PURCHASE_INVOICE_SUCCESS => self::OK,
+            self::UPDATE_PURCHASE_INVOICE_SUCCESS => self::OK,
         };
     }
 
