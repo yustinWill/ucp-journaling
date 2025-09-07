@@ -117,7 +117,7 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            <div class="dropdown">
+                            {{-- <div class="dropdown">
                                 <button type="button"
                                     class="btn btn-md btn-primary dropdown-toggle waves-effect waves-light"
                                     data-bs-toggle="dropdown">
@@ -144,7 +144,7 @@
                                     <li><a class="dropdown-item" href="#" id="btn-export-bundle">Produk Bundle &
                                             Komposisi</a></li>
                                 </ul>
-                            </div>
+                            </div> --}}
                             <button type="button" id="btn-add-products"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
                                     class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
@@ -356,7 +356,7 @@
                         last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                     }
                 },
-                scrollX: true,
+                // scrollX: true,
                 responsive: true
             });
 

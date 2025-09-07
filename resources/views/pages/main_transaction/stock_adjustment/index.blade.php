@@ -440,7 +440,6 @@
                             orderable: false,
                             searchable: false,
                             responsivePriority: 1,
-                            width: '120px',
                             render: function(data, type, row, meta) {
                                 const editUrl =
                                     `{{ route('main_transaction.stock_adjustment.edit', ':id') }}`
@@ -451,11 +450,11 @@
 
                                 let actions = '<div class="d-flex gap-2">';
 
-                                if (canRead) {
+                                // if (canRead) {
                                     actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                <i class="icon-base ti tabler-eye"></i>
-                            </a>`;
-                                }
+                                        <i class="icon-base ti tabler-eye"></i>
+                                    </a>`;
+                                // }
 
                                 //     if (canEdit) {
                                 //         actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
@@ -488,7 +487,7 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    scrollX: true,
+                    // scrollX: true,
                     responsive: true,
                     orderCellsTop: true,
                     ordering: false

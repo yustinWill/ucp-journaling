@@ -5,7 +5,7 @@
 @section('content')
     @if (session('CLIENT_CODE') === '001')
         <!-- Summary Cards -->
-        <div class="row">
+        {{-- <div class="row">
             <div class="col-lg-3 col-sm-6">
                 <div class="card card-border-shadow-primary h-100">
                     <div class="card-body">
@@ -62,7 +62,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     @endif
 
 
@@ -118,12 +118,12 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <a href="{{ route('master_data.coa.import') }}"
+                        {{-- <a href="{{ route('master_data.coa.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
                         <a href="{{ route('master_data.coa.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
                         <a href="{{ route('master_data.coa.add') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
@@ -273,7 +273,7 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    scrollX: true,
+                    // scrollX: true,
                     responsive: true,
                     orderCellsTop: true
                 });

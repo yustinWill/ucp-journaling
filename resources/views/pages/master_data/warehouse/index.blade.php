@@ -77,7 +77,7 @@
                                 <select class="global-select2 form-select" id="warehouse-status-filter"
                                     data-allow-clear="true">
                                     <option value="">Semua Status</option>
-                                    @foreach($warehouseStatuses as $status)
+                                    @foreach ($warehouseStatuses as $status)
                                         <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                                     @endforeach
                                 </select>
@@ -87,7 +87,7 @@
                                 <select class="global-select2 form-select" id="warehouse-tag-filter"
                                     data-allow-clear="true">
                                     <option value="">Semua Tag</option>
-                                    @foreach($availableTags as $tag)
+                                    @foreach ($availableTags as $tag)
                                         <option value="{{ $tag->code }}">{{ $tag->name }}</option>
                                     @endforeach
                                 </select>
@@ -116,12 +116,12 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <a href="{{ route('master_data.warehouse.import') }}"
+                        {{-- <a href="{{ route('master_data.warehouse.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
                         <a href="{{ route('master_data.warehouse.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
                         <a href="{{ route('master_data.warehouse.add') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
@@ -184,8 +184,9 @@
                         data: 'status',
                         responsivePriority: 6,
                         render: function(data, type, row) {
-                            const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 
-                                (data === 'MAINTENANCE' ? 'bg-label-warning' : 'bg-label-secondary');
+                            const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
+                                (data === 'MAINTENANCE' ? 'bg-label-warning' :
+                                'bg-label-secondary');
                             return `<span class="badge ${badgeClass}">${data}</span>`;
                         }
                     },
@@ -245,7 +246,7 @@
                         last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                     }
                 },
-                scrollX: true,
+                // scrollX: true,
                 responsive: true
             });
 

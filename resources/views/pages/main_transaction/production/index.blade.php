@@ -170,14 +170,12 @@
                     },
                     columns: [{
                             data: 'production_date',
-                            width: '100px',
                             render: function(data, type, row) {
                                 return moment(data).format('DD/MM/YYYY');
                             }
                         },
                         {
                             data: 'production_number',
-                            width: '140px',
                             render: function(data, type, row) {
                                 @if ($canViewDetails)
                                     const detailUrl =
@@ -194,11 +192,9 @@
                         },
                         {
                             data: 'warehouse_name',
-                            width: '180px'
                         },
                         {
                             data: 'quantity_planned',
-                            width: '100px',
                             className: 'text-end',
                             render: function(data, type, row) {
                                 return new Intl.NumberFormat('id-ID', {
@@ -209,7 +205,6 @@
                         },
                         {
                             data: 'quantity_produced',
-                            width: '100px',
                             className: 'text-end',
                             render: function(data, type, row) {
                                 return new Intl.NumberFormat('id-ID', {
@@ -220,7 +215,6 @@
                         },
                         {
                             data: 'total_production_cost',
-                            width: '120px',
                             className: 'text-end',
                             render: function(data, type, row) {
                                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);
@@ -228,7 +222,6 @@
                         },
                         {
                             data: 'status',
-                            width: '100px',
                             className: 'text-center',
                             render: function(data, type, row) {
                                 let badgeClass = '';
@@ -256,7 +249,6 @@
                         },
                         {
                             data: null,
-                            width: '100px',
                             orderable: false,
                             searchable: false,
                             render: function(data, type, row, meta) {
@@ -315,7 +307,7 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    scrollX: true,
+                    // scrollX: true,
                     responsive: true,
                     orderCellsTop: true,
                     ordering: false

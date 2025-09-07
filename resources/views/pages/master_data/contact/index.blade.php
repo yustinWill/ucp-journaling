@@ -112,12 +112,12 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <a href="{{ route('master_data.contact.import') }}"
+                        {{-- <a href="{{ route('master_data.contact.import') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
                         <a href="{{ route('master_data.contact.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
                         <a href="{{ route('master_data.contact.add') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
@@ -258,7 +258,7 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    scrollX: true,
+                    // scrollX: true,
                     responsive: true,
                     orderCellsTop: true
                 });

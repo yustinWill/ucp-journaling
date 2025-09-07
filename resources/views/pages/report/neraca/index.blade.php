@@ -45,71 +45,70 @@
         </div>
     </div>
 
-    <hr class="my-6 mx-n6" />
-   <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <h5 class="card-header"><b>Neraca Per <span class="readable-date">{{ $as_of_date }}</span></b></h5>
-                <div class="card-body">
-                    <div class="table-responsive text-nowrap">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th><b>Kode Akun</b></th>
-                                    <th><b>Nilai</b></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {!! $html !!}
-                            </tbody>
-                        </table>
+    @if ($html != '')
+        <hr class="my-6 mx-n6" />
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <h5 class="card-header"><b>Neraca Per <span class="readable-date">{{ $as_of_date }}</span></b></h5>
+                    <div class="card-body">
+                        <div class="table-responsive text-nowrap">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th><b>Kode Akun</b></th>
+                                        <th><b>Nilai</b></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {!! $html !!}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <br>
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <h5 class="card-header"><b>Summary Neraca Per <span class="readable-date">{{ $as_of_date }}</span></b>
-                </h5>
-                <div class="card-body">
-                    <div class="table-responsive text-nowrap">
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th><b>Kode Akun</b></th>
-                                    <th><b>Nilai</b></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><b>Asset</b></td>
-                                    <td dir="rtl">Rp. {{ number_format($asset_amount, 2, '.', ',') }}</td>
-                                </tr>
-                                <tr>
-                                    <td><b>Kewajiban</b></td>
-                                    <td dir="rtl">Rp. {{ number_format($liability_amount, 2, '.', ',') }}</td>
-                                </tr>
-                                <tr>
-                                    <td><b>Ekuitas</b></td>
-                                    <td dir="rtl">Rp. {{ number_format($equity_amount, 2, '.', ',') }}</td>
-                                </tr>
-                                <tr>
-                                    <td><b>Selisih</b></td>
-                                    <td dir="rtl">Rp. {{ number_format($variance_amount, 2, '.', ',') }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+        <br>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <h5 class="card-header"><b>Summary Neraca Per <span class="readable-date">{{ $as_of_date }}</span></b>
+                    </h5>
+                    <div class="card-body">
+                        <div class="table-responsive text-nowrap">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th><b>Kode Akun</b></th>
+                                        <th><b>Nilai</b></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><b>Asset</b></td>
+                                        <td dir="rtl">Rp. {{ number_format($asset_amount, 2, '.', ',') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Kewajiban</b></td>
+                                        <td dir="rtl">Rp. {{ number_format($liability_amount, 2, '.', ',') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Ekuitas</b></td>
+                                        <td dir="rtl">Rp. {{ number_format($equity_amount, 2, '.', ',') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Selisih</b></td>
+                                        <td dir="rtl">Rp. {{ number_format($variance_amount, 2, '.', ',') }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    
-
+    @endif
 @stop
 @section('js_script')
     <script>

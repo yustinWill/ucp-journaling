@@ -56,76 +56,79 @@
         </div>
     </div>
 
-    <hr class="my-6 mx-n6" />
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <h5 class="card-header"><b>Jurnal Umum Tanggal {{ $from }} s/d {{ $to }}</b></h5>
-                <div class="card-body">
-                    <div class="table-responsive text-nowrap">
-                        <table class="table table-bordered" id="journal-table">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>No Ref</th>
-                                    <th>Kode Akun</th>
-                                    <th>Nama Akun</th>
-                                    <th>Keterangan</th>
-                                    <th>Debit</th>
-                                    <th>Kredit</th>
-                                    <th>Dibuat Oleh</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $debit_amount = 0;
-                                    $credit_amount = 0;
-                                @endphp
-                                @foreach ($journal_data as $key => $journal_row)
+    @if (count($journal_data) > 0)
+        <hr class="my-6 mx-n6" />
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <h5 class="card-header"><b>Jurnal Umum Tanggal {{ $from }} s/d {{ $to }}</b></h5>
+                    <div class="card-body">
+                        <div class="table-responsive text-nowrap">
+                            <table class="table table-bordered" id="journal-table">
+                                <thead>
                                     <tr>
-                                        <td>{{ $key + 1 }}.</td>
-                                        <td class="readable-date">{{ $journal_row->date }}</td>
-                                        <td>{{ $journal_row->reference_no }}</td>
-                                        <td>{{ $journal_row->coa_code }}</td>
-                                        <td>{{ $journal_row->coa_name }}</td>
-                                        <td>{{ $journal_row->description }}</td>
-                                        <td dir="rtl">
-                                            @if ($journal_row->debit_credit == 'D')
-                                                Rp. {{ number_format($journal_row->amount) }}
-                                                @php
-                                                    $debit_amount += $journal_row->amount;
-                                                @endphp
-                                            @else
-                                                0
-                                            @endif
-                                        </td>
-                                        <td dir="rtl">
-                                            @if ($journal_row->debit_credit == 'C')
-                                                Rp. {{ number_format($journal_row->amount) }}
-                                                @php
-                                                    $credit_amount += $journal_row->amount;
-                                                @endphp
-                                            @else
-                                                0
-                                            @endif
-                                        </td>
-                                        <td>{{ $journal_row->created_by_name }}</td>
+                                        <th>No</th>
+                                        <th>Tanggal</th>
+                                        <th>No Ref</th>
+                                        <th>Kode Akun</th>
+                                        <th>Nama Akun</th>
+                                        <th>Keterangan</th>
+                                        <th>Debit</th>
+                                        <th>Kredit</th>
+                                        <th>Dibuat Oleh</th>
                                     </tr>
-                                @endforeach
-                                <tr>
-                                    <td colspan="6"><b>Total</b></td>
-                                    <td dir="rtl"><b>Rp. {{ number_format($debit_amount) }}</b></td>
-                                    <td dir="rtl"><b>Rp. {{ number_format($credit_amount) }}</b></td>
-                                    <td></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $debit_amount = 0;
+                                        $credit_amount = 0;
+                                    @endphp
+                                    @foreach ($journal_data as $key => $journal_row)
+                                        <tr>
+                                            <td>{{ $key + 1 }}.</td>
+                                            <td class="readable-date">{{ $journal_row->date }}</td>
+                                            <td>{{ $journal_row->reference_no }}</td>
+                                            <td>{{ $journal_row->coa_code }}</td>
+                                            <td>{{ $journal_row->coa_name }}</td>
+                                            <td>{{ $journal_row->description }}</td>
+                                            <td dir="rtl">
+                                                @if ($journal_row->debit_credit == 'D')
+                                                    Rp. {{ number_format($journal_row->amount) }}
+                                                    @php
+                                                        $debit_amount += $journal_row->amount;
+                                                    @endphp
+                                                @else
+                                                    0
+                                                @endif
+                                            </td>
+                                            <td dir="rtl">
+                                                @if ($journal_row->debit_credit == 'C')
+                                                    Rp. {{ number_format($journal_row->amount) }}
+                                                    @php
+                                                        $credit_amount += $journal_row->amount;
+                                                    @endphp
+                                                @else
+                                                    0
+                                                @endif
+                                            </td>
+                                            <td>{{ $journal_row->created_by_name }}</td>
+                                        </tr>
+                                    @endforeach
+                                    <tr>
+                                        <td colspan="6"><b>Total</b></td>
+                                        <td dir="rtl"><b>Rp. {{ number_format($debit_amount) }}</b></td>
+                                        <td dir="rtl"><b>Rp. {{ number_format($credit_amount) }}</b></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    @endif
+
 @stop
 @section('js_script')
     <script>
