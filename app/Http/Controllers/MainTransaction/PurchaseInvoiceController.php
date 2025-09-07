@@ -17,6 +17,8 @@ use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use App\Helpers\ValidationHelper;
 
 class PurchaseInvoiceController extends Controller
 {
@@ -87,6 +89,7 @@ class PurchaseInvoiceController extends Controller
 
         // Get Purchase Order data and products for invoicing
         $purchaseOrder = app(PurchaseOrderService::class)->findOne($preselectedPOId);
+
         $purchaseOrderProducts = app(PurchaseOrderProductService::class)->findAllBasedOnPOIdForInvoicing($preselectedPOId);
 
         $availableTags = app(TagService::class)->findAll();
@@ -103,7 +106,7 @@ class PurchaseInvoiceController extends Controller
         ]);
     }
 
-    public function create(Request $request)
+    public function store(Request $request)
     {
         // Check write permission
         if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
@@ -111,35 +114,54 @@ class PurchaseInvoiceController extends Controller
         }
 
         try {
-            $action = app(CreatePurchaseInvoiceAction::class);
-            $result = $action->handle($request);
 
-            if ($result['success']) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Invoice berhasil dibuat.',
-                    'data' => $result['data'],
-                ], SuccessCodes::CREATE_SUCCESS->httpStatus());
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => $result['message'],
-                ], 422);
-            }
+            $validated = $request->validate([
+                'invoice_date' => 'required|date',
+                'invoice_number' => 'required|string|max:50',
+                'purchase_order_id' => 'required|integer|exists:t_purchase_orders,id',
+                'transaction_date' => 'required|date',
+                'description' => 'nullable|string|max:255',
+                'internal_memo' => 'nullable|string|max:255',
+                'invoice_status' => 'required|in:COMPLETED,PARTIAL',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+                'total_amount' => 'required|numeric|min:0',
+                'total_items' => 'required|integer|min:1',
+                'products' => 'required|array|min:1',
+                'products.*.product_order_product_id' => 'required|integer|exists:t_purchase_order_products,id',
+                'products.*.product_id' => 'required|integer|exists:m_products,id',
+                'products.*.po_qty' => 'required|numeric|min:0',
+                'products.*.invoiced_qty_before' => 'required|numeric|min:0',
+                'products.*.remaining_qty_before' => 'required|numeric|min:0',
+                'products.*.invoice_qty' => 'required|numeric|min:0',
+                'products.*.unit_price' => 'required|numeric|min:0',
+                'products.*.total_price' => 'required|numeric|min:0',
+            ]);
+
+            app(CreatePurchaseInvoiceAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_PURCHASE_INVOICE_SUCCESS->message(),
+            ], SuccessCodes::CREATE_PURCHASE_INVOICE_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
         } catch (AppException $e) {
-            DiscordNotifier::notify(ErrorCodes::PURCHASE_INVOICE_CREATE_FAILED, $e->getMessage(), ['request' => $request->all()]);
-
             return response()->json([
-                'success' => false,
                 'message' => $e->getMessage(),
-            ], $e->getHttpStatusCode());
-        } catch (\Exception $e) {
-            DiscordNotifier::notify(ErrorCodes::PURCHASE_INVOICE_CREATE_FAILED, $e->getMessage(), ['request' => $request->all()]);
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
 
             return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem saat membuat invoice.',
-            ], 500);
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
@@ -366,7 +388,7 @@ class PurchaseInvoiceController extends Controller
                     'status' => 'DRAFT',
                 ],
             ],
-            'validation_key' => 'pi_validation_'.time(),
+            'validation_key' => 'pi_validation_' . time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -396,13 +418,13 @@ class PurchaseInvoiceController extends Controller
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_invoices_export_'.date('Y-m-d_H-i-s').'.'.$format;
+        $filename = 'purchase_invoices_export_' . date('Y-m-d_H-i-s') . '.' . $format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/'.$filename,
+            'download_url' => '/exports/' . $filename,
         ]);
     }
 

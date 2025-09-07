@@ -18,7 +18,7 @@ class PurchaseInvoiceService
             'f_purchase_order_id' => $data['purchase_order_id'],
             'invoice_date' => $data['invoice_date'],
             'transaction_date' => $data['transaction_date'],
-            'due_date' => $data['due_date'],
+            'due_date' => '1990-09-01',
             'payment_terms' => $data['payment_terms'],
             'description' => $data['description'] ?? null,
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
@@ -28,7 +28,7 @@ class PurchaseInvoiceService
             'total_tax' => $data['tax_amount'] ?? 0,
             'total_discount' => $data['discount_amount'] ?? 0,
             'grand_total' => $data['total'] ?? 0,
-            'status' => $data['status'] ?? 'UNPAID',
+            'status' => $data['status'],
             'created_at' => now(),
             'created_by' => $data['created_by'] ?? Auth::id(),
         ]);

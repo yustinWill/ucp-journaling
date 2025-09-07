@@ -403,7 +403,6 @@
                 $('#invoice-items-tbody tr').each(function() {
                     const remaining = parseFloat($(this).find('input[name*="[remaining_qty_before]"]')
                         .val()) || 0;
-                    console.log(remaining)
                     const invoiceQty = parseFloat($(this).find('input[name*="[invoice_qty]"]').val()) || 0;
                     if ((remaining - invoiceQty) !== 0) {
                         allCompleted = false;
@@ -533,7 +532,8 @@
 
                 // Prepare form data
                 const formData = new FormData($('#purchaseInvoiceForm')[0]);
-
+                const invoiceStatus = $('#invoice-status').text().trim();
+                formData.append('invoice_status', invoiceStatus);
                 // Submit via AJAX
                 $.ajax({
                     url: "{{ route('main_transaction.purchase_invoice.store') }}",
