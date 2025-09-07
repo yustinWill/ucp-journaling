@@ -528,7 +528,7 @@
                                             <td>
                                                 @if(isset($invoice['tags']) && count($invoice['tags']) > 0)
                                                     @foreach($invoice['tags'] as $tag)
-                                                        <span class="badge {{ $tag['preview'] }} me-1">{{ $tag['name'] }}</span>
+                                                        <span class="badge {{ $tag->preview }} me-1">{{ $tag->code }}</span>
                                                     @endforeach
                                                 @else
                                                     -
@@ -599,7 +599,6 @@
     $(function() {
         // Initialize DataTables for tables inside tabs
         $('#product-table').DataTable({
-            responsive: true,
             orderCellsTop: true,
             searching: false,
             paging: false,
@@ -608,7 +607,6 @@
         });
 
         $('#delivery-summary-table').DataTable({
-            responsive: true,
             orderCellsTop: true,
             searching: false,
             paging: false,
@@ -617,7 +615,6 @@
         });
 
         $('#purchase-delivery-table').DataTable({
-            responsive: true,
             orderCellsTop: true,
             ordering: false,
             searching: false,
@@ -626,7 +623,6 @@
         });
 
         $('#purchase-invoice-table').DataTable({
-            responsive: true,
             orderCellsTop: true,
             ordering: false,
             searching: false,
@@ -635,7 +631,6 @@
         });
 
         $('#audit-log-table').DataTable({
-            responsive: true,
             orderCellsTop: true,
             order: [[0, 'desc']], // Sort by date descending
             searching: false,
