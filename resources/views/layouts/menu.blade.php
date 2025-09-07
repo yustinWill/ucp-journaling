@@ -37,19 +37,25 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Transaksi</span>
         </li>
-        <li class="menu-item">
-            <a href="app-chat.html" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-building-bank"></i>
-                <div data-i18n="Chat">Kas & Bank - wip</div>
-            </a>
-        </li>
+        @if (session('CLIENT_CODE') == '001')
+            <li class="menu-item">
+                <a href="app-chat.html" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-building-bank"></i>
+                    <div data-i18n="Chat">Kas & Bank - wip</div>
+                </a>
+            </li>
+        @endif
         <li class="menu-item @if (request()->routeIs(['main_transaction.sales.*'])) active @endif">
             <a href="{{ route('main_transaction.sales.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-shopping-cart"></i>
                 <div data-i18n="Chat">Penjualan</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.purchase_order.*', 'main_transaction.purchase_delivery.*', 'main_transaction.purchase_invoice.*'])) open @endif">
+        <li class="menu-item @if (request()->routeIs([
+                'main_transaction.purchase_order.*',
+                'main_transaction.purchase_delivery.*',
+                'main_transaction.purchase_invoice.*',
+            ])) open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-shopping-bag"></i>
                 <div data-i18n="Chat">Pembelian</div>
@@ -78,12 +84,15 @@
                 <div data-i18n="Chat">Jurnal</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.expense.*'])) active @endif">
-            <a href="{{ route('main_transaction.expense.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-credit-card"></i>
-                <div data-i18n="Chat">Pengeluaran</div>
-            </a>
-        </li>
+        @if (session('CLIENT_CODE') == '001')
+            <li class="menu-item @if (request()->routeIs(['main_transaction.expense.*'])) active @endif">
+                <a href="{{ route('main_transaction.expense.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-credit-card"></i>
+                    <div data-i18n="Chat">Pengeluaran</div>
+                </a>
+            </li>
+        @endif
+
         <li class="menu-item @if (request()->routeIs(['main_transaction.stock_adjustment.*'])) active @endif">
             <a href="{{ route('main_transaction.stock_adjustment.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-adjustments"></i>
@@ -117,12 +126,15 @@
                 <div data-i18n="Produksi">Produksi</div>
             </a>
         </li>
-        <li class="menu-item">
-            <a href="app-chat.html" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-truck"></i>
-                <div data-i18n="Chat">Pemenuhan - wip</div>
-            </a>
-        </li>
+        @if (session('CLIENT_CODE') == '001')
+            <li class="menu-item">
+                <a href="app-chat.html" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-truck"></i>
+                    <div data-i18n="Chat">Pemenuhan - wip</div>
+                </a>
+            </li>
+        @endif
+
         <li class="menu-item @if (request()->routeIs(['master_data.stock_opname.*'])) active @endif">
             <a href="{{ route('master_data.stock_opname.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-clipboard-check"></i>
@@ -141,7 +153,7 @@
                 <div data-i18n="Chat">Daftar Akun</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*','report.buku_besar.*','report.laba_rugi.*','report.neraca.*'])) active open @endif">
+        <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*', 'report.buku_besar.*', 'report.laba_rugi.*', 'report.neraca.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
                 <div data-i18n="Chat">Laporan Keuangan</div>
@@ -172,7 +184,15 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Sistem & Pengaturan</span>
         </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.tax.*', 'master_data.unit.*', 'master_data.category.*', 'master_data.tag.*', 'master_data.sales_person.*', 'master_data.payment_term.*', 'master_data.transaction_number.*'])) active open @endif">
+        <li class="menu-item @if (request()->routeIs([
+                'master_data.tax.*',
+                'master_data.unit.*',
+                'master_data.category.*',
+                'master_data.tag.*',
+                'master_data.sales_person.*',
+                'master_data.payment_term.*',
+                'master_data.transaction_number.*',
+            ])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
                 <div data-i18n="Chat">Daftar Lainnya</div>
@@ -227,11 +247,13 @@
                 <div data-i18n="Roles">Role Management</div>
             </a>
         </li>
-        <li class="menu-item">
-            <a href="app-chat.html" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-settings"></i>
-                <div data-i18n="Chat">Pengaturan - wip</div>
-            </a>
-        </li>
+        @if (session('CLIENT_CODE') == '001')
+            <li class="menu-item">
+                <a href="app-chat.html" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-settings"></i>
+                    <div data-i18n="Chat">Pengaturan - wip</div>
+                </a>
+            </li>
+        @endif
     </ul>
 </aside>
