@@ -307,7 +307,7 @@
                             return data ?? '';
                         }
                     }],
-                    scrollX: true,
+                    // scrollX: true,
                     responsive: true,
                     orderCellsTop: true
                 });

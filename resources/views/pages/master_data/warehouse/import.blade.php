@@ -217,7 +217,7 @@
                         },
                         bottomEnd: 'paging'
                     },
-                    scrollX: true,
+                    // scrollX: true,
                     language: {
                         paginate: {
                             next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
@@ -285,7 +285,7 @@
                         },
                         bottomEnd: 'paging'
                     },
-                    scrollX: true,
+                    // scrollX: true,
                     language: {
                         paginate: {
                             next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',

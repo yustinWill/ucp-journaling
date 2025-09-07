@@ -125,7 +125,7 @@ $(function() {
                 }
             }
         ],
-        scrollX: true,
+        // scrollX: true,
         responsive: true,
         orderCellsTop: true,
         ordering: true,

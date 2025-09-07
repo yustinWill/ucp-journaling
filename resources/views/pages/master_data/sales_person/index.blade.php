@@ -256,7 +256,7 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    scrollX: true,
+                    // scrollX: true,
                     responsive: true,
                     orderCellsTop: true,
                     ordering: false

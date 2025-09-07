@@ -299,7 +299,7 @@ $(function() {
                 targets: 0,
                 searchable: false
             }],
-            scrollX: true,
+            // scrollX: true,
             responsive: true
         });
         
@@ -334,7 +334,7 @@ $(function() {
                 targets: 0,
                 searchable: false
             }],
-            scrollX: true,
+            // scrollX: true,
             responsive: true
         });
     }
