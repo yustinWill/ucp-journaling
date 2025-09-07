@@ -35,12 +35,12 @@ class PurchaseInvoiceController extends Controller
         $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
 
         $statuses = [
-            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
-            ['value' => 'UNPAID', 'label' => 'UNPAID - Belum Dibayar'],
-            ['value' => 'PAID', 'label' => 'PAID - Lunas'],
-            ['value' => 'PARTIAL_PAID', 'label' => 'PARTIAL_PAID - Sebagian Dibayar'],
-            ['value' => 'OVERDUE', 'label' => 'OVERDUE - Jatuh Tempo'],
-            ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan'],
+            // ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
+            // ['value' => 'UNPAID', 'label' => 'UNPAID - Belum Dibayar'],
+            // ['value' => 'PAID', 'label' => 'PAID - Lunas'],
+            ['value' => 'PARTIAL', 'label' => 'PARTIAL - Sebagian Dibayar'],
+            // ['value' => 'OVERDUE', 'label' => 'OVERDUE - Jatuh Tempo'],
+            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Sudah Dibayar'],
         ];
 
         // Map permissions to view variables - following user requirement to remove add/import buttons
