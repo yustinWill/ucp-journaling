@@ -6,6 +6,7 @@ use App\Domains\Contact\Services\ContactService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
 use App\Domains\Product\Services\ProductService;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
+use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceService;
 use App\Domains\PurchaseOrder\Actions\CreatePurchaseOrderAction;
 use App\Domains\PurchaseOrder\Actions\UpdatePurchaseOrderAction;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderAuditLogService;
@@ -38,6 +39,30 @@ class PurchaseOrderController extends Controller
         } elseif ($delivery_status == 'COMPLETED') {
             return 'bg-label-success';
         }
+    }
+
+    public function get_invoice_status_design($invoice_status)
+    {
+        // Temporary: Use single color for all statuses
+        return 'bg-label-primary';
+        
+        // TODO: Implement proper status-based colors later
+        // switch ($invoice_status) {
+        //     case 'DRAFT':
+        //         return 'bg-label-secondary';
+        //     case 'UNPAID':
+        //         return 'bg-label-warning';
+        //     case 'PAID':
+        //         return 'bg-label-success';
+        //     case 'PARTIAL_PAID':
+        //         return 'bg-label-info';
+        //     case 'OVERDUE':
+        //         return 'bg-label-danger';
+        //     case 'CANCELLED':
+        //         return 'bg-label-dark';
+        //     default:
+        //         return 'bg-label-secondary';
+        // }
     }
 
     public function index()
@@ -227,6 +252,7 @@ class PurchaseOrderController extends Controller
         $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
 
         $purchaseDeliveries = app(PurchaseDeliveryService::class)->findAllHeaderBasedOnPoId($id);
+        $purchaseInvoices = app(PurchaseInvoiceService::class)->findAllHeaderBasedOnPoId($id);
 
         $auditLogs = [];
         foreach ($audit_logs as $log) {
@@ -277,6 +303,21 @@ class PurchaseOrderController extends Controller
             ];
         }
 
+        $purchase_invoices = [];
+        foreach ($purchaseInvoices as $row) {
+            $purchase_invoices[] = [
+                'id' => $row->id,
+                'date' => $row->created_at,
+                'reference_no' => $row->transaction_code,
+                'amount' => $row->grand_total,
+                'status' => $row->status,
+                'status_badge_class' => $this->get_invoice_status_design($row->status),
+                'created_by' => $row->created_by_name,
+                'created_by_id' => $row->created_by,
+                'tags' => json_decode($row->tags),
+            ];
+        }
+
         $purchaseOrder = [
             'id' => $id,
             'reference_no' => $po_data->transaction_code,
@@ -317,34 +358,7 @@ class PurchaseOrderController extends Controller
             'product_lines' => $product_lines,
             'delivery_summary' => $product_delivery_summary,
             'purchase_deliveries' => $purchase_deliveries,
-            'purchase_invoices' => [
-                [
-                    'id' => 1,
-                    'date' => '2025-07-16 16:00:00',
-                    'reference_no' => 'INV-2025-001',
-                    'amount' => 5000000,
-                    'status' => 'Paid',
-                    'status_badge_class' => 'bg-label-success',
-                    'created_by' => 'Finance Team',
-                    'created_by_id' => 3,
-                    'tags' => [
-                        ['name' => 'Down Payment', 'preview' => 'bg-label-primary'],
-                    ],
-                ],
-                [
-                    'id' => 2,
-                    'date' => '2025-07-25 11:30:00',
-                    'reference_no' => 'INV-2025-002',
-                    'amount' => 20000000,
-                    'status' => 'Pending',
-                    'status_badge_class' => 'bg-label-warning',
-                    'created_by' => 'Finance Team',
-                    'created_by_id' => 3,
-                    'tags' => [
-                        ['name' => 'Final Payment', 'preview' => 'bg-label-info'],
-                    ],
-                ],
-            ],
+            'purchase_invoices' => $purchase_invoices,
         ];
 
         $data = [
@@ -406,6 +420,9 @@ class PurchaseOrderController extends Controller
         $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
         $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
 
+        $purchaseDeliveries = app(PurchaseDeliveryService::class)->findAllHeaderBasedOnPoId($id);
+        $purchaseInvoices = app(PurchaseInvoiceService::class)->findAllHeaderBasedOnPoId($id);
+
         // dd($po_data);
         $auditLogs = [];
         foreach ($audit_logs as $log) {
@@ -431,6 +448,46 @@ class PurchaseOrderController extends Controller
                 'tax_id' => $prod->f_tax_id,
                 'tax_name' => $prod->tax_name,
                 'total' => $prod->total,
+            ];
+        }
+
+        $product_delivery_summary = [];
+        foreach ($po_products as $prod) {
+            $product_delivery_summary[] = [
+                'product_id' => $prod->id,
+                'product_name' => $prod->product_code.' - '.$prod->product_name,
+                'total_qty' => $prod->qty,
+                'qty_delivered' => $prod->delivered_qty,
+                'remaining_qty' => $prod->remaining_qty,
+            ];
+        }
+
+        $purchase_deliveries = [];
+        foreach ($purchaseDeliveries as $row) {
+            $purchase_deliveries[] = [
+                'id' => $row->id,
+                'date' => $row->created_at,
+                'reference_no' => $row->transaction_code,
+                'status' => $row->delivery_status,
+                'status_badge_class' => $this->get_delivery_status_design($row->delivery_status),
+                'created_by' => $row->created_by_name,
+                'created_by_id' => $row->created_by,
+                'tags' => json_decode($row->tags),
+            ];
+        }
+
+        $purchase_invoices = [];
+        foreach ($purchaseInvoices as $row) {
+            $purchase_invoices[] = [
+                'id' => $row->id,
+                'date' => $row->created_at,
+                'reference_no' => $row->transaction_code,
+                'amount' => $row->grand_total,
+                'status' => $row->status,
+                'status_badge_class' => $this->get_invoice_status_design($row->status),
+                'created_by' => $row->created_by_name,
+                'created_by_id' => $row->created_by,
+                'tags' => json_decode($row->tags),
             ];
         }
 
@@ -482,76 +539,7 @@ class PurchaseOrderController extends Controller
             'created_at' => $po_data->created_at,
             'updated_at' => $po_data->updated_at,
             'product_lines' => $product_lines,
-            'delivery_summary' => [
-                [
-                    'product_id' => 1,
-                    'product_name' => 'PRD-001 - Botol PET 330ml',
-                    'total_qty' => 10000,
-                    'qty_delivered' => 7500,
-                    'remaining_qty' => 2500,
-                ],
-                [
-                    'product_id' => 2,
-                    'product_name' => 'PRD-002 - Label Kemasan',
-                    'total_qty' => 10000,
-                    'qty_delivered' => 10000,
-                    'remaining_qty' => 0,
-                ],
-            ],
-            'purchase_deliveries' => [
-                [
-                    'id' => 1,
-                    'date' => '2025-07-15 14:30:00',
-                    'reference_no' => 'DEL-2025-001',
-                    'status' => 'Completed',
-                    'status_badge_class' => 'bg-label-success',
-                    'created_by' => 'Staff Gudang A',
-                    'created_by_id' => 5,
-                    'tags' => [
-                        ['name' => 'Partial', 'preview' => 'bg-label-warning'],
-                    ],
-                ],
-                [
-                    'id' => 2,
-                    'date' => '2025-07-20 09:15:00',
-                    'reference_no' => 'DEL-2025-002',
-                    'status' => 'In Transit',
-                    'status_badge_class' => 'bg-label-info',
-                    'created_by' => 'Staff Gudang B',
-                    'created_by_id' => 6,
-                    'tags' => [
-                        ['name' => 'Final', 'preview' => 'bg-label-success'],
-                    ],
-                ],
-            ],
-            'purchase_invoices' => [
-                [
-                    'id' => 1,
-                    'date' => '2025-07-16 16:00:00',
-                    'reference_no' => 'INV-2025-001',
-                    'amount' => 5000000,
-                    'status' => 'Paid',
-                    'status_badge_class' => 'bg-label-success',
-                    'created_by' => 'Finance Team',
-                    'created_by_id' => 3,
-                    'tags' => [
-                        ['name' => 'Down Payment', 'preview' => 'bg-label-primary'],
-                    ],
-                ],
-                [
-                    'id' => 2,
-                    'date' => '2025-07-25 11:30:00',
-                    'reference_no' => 'INV-2025-002',
-                    'amount' => 20000000,
-                    'status' => 'Pending',
-                    'status_badge_class' => 'bg-label-warning',
-                    'created_by' => 'Finance Team',
-                    'created_by_id' => 3,
-                    'tags' => [
-                        ['name' => 'Final Payment', 'preview' => 'bg-label-info'],
-                    ],
-                ],
-            ],
+            'delivery_summary' => $product_delivery_summary,
         ];
 
         // Check permissions for adding related data
