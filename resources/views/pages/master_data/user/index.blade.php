@@ -254,9 +254,9 @@
                         {
                             targets: [7], // Status column
                             render: function(data, type, row) {
-                                const badgeClass = data == '1' ? 'bg-label-success' :
+                                const badgeClass = data == 'ACTIVE' ? 'bg-label-success' :
                                     'bg-label-secondary';
-                                const statusText = data == '1' ? 'ACTIVE' : 'INACTIVE';
+                                const statusText = data == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         }
