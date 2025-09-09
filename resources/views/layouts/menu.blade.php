@@ -51,7 +51,7 @@
                 'main_transaction.sales_invoice.*',
             ])) open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-shopping-bag"></i>
+                <i class="menu-icon icon-base ti tabler-cash-register"></i>
                 <div data-i18n="Chat">Penjualan</div>
             </a>
             <ul class="menu-sub">
