@@ -74,7 +74,7 @@ class CreatePurchaseDeliveryAction
                 foreach ($data['products'] as $product) {
                     app(PurchaseOrderProductService::class)->updateDeliveredQuantities($data['purchase_order_id'], $product['product_order_product_id'], $product['delivery_qty']);
 
-                    app(ProductService::class)->updateStock($product['product_id'], $product['delivery_qty']);
+                    app(ProductService::class)->updateStock($product['product_id'], '+', $product['delivery_qty']);
                 }
             }
 
@@ -125,7 +125,7 @@ class CreatePurchaseDeliveryAction
             }
 
             $purchasePrice = (float) $poProduct->price_per_qty;
-            $batchReference = 'PD-'.$deliveryId.'-'.$productId.'-'.time();
+            $batchReference = 'PD-' . $deliveryId . '-' . $productId . '-' . time();
 
             $batchInserts[] = [
                 'company_code' => session('user_company_code'),

@@ -168,14 +168,23 @@ class ProductService
             ->update($update_data);
     }
 
-    public function updateStock(int $id, $qty): int
+    public function updateStock(int $id, $type, $qty): int
     {
-        return DB::table($this->table_name)
-            ->where('id', $id)
-            ->update([
-                'qty_available' => DB::raw("qty_available + {$qty}"),
-                'total_stock' => DB::raw("total_stock + {$qty}"),
-            ]);
+        if ($type === '+') {
+            return DB::table($this->table_name)
+                ->where('id', $id)
+                ->update([
+                    'total_stock' => DB::raw("total_stock + {$qty}"),
+                ]);
+        } else if ($type === '-') {
+            return DB::table($this->table_name)
+                ->where('id', $id)
+                ->update([
+                    'total_stock' => DB::raw("total_stock - {$qty}"),
+                ]);
+        } else {
+            throw new \InvalidArgumentException("Invalid stock update type: {$type}");
+        }
     }
 
     public function findAllDatatable()
