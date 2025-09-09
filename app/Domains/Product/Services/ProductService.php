@@ -44,7 +44,7 @@ class ProductService
                 'coa_inventory.name as inventory_coa_name',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])
-            ->join('m_categories as mc', 'm_products.f_category_id', '=', 'mc.id')
+            ->leftJoin('m_categories as mc', 'm_products.f_category_id', '=', 'mc.id')
             ->join('m_units as mu', 'm_products.f_unit_id', '=', 'mu.id')
 
             ->leftJoin('m_coas as coa_purchase', 'm_products.f_purchase_coa_code', '=', 'coa_purchase.id')
@@ -178,8 +178,8 @@ class ProductService
                 't.status',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
-            ->join('m_categories as mc', 't.f_category_id', '=', 'mc.id')
-            ->join('m_units as mu', 't.f_unit_id', '=', 'mu.id')
+            ->leftJoin('m_categories as mc', 't.f_category_id', '=', 'mc.id')
+            ->leftJoin('m_units as mu', 't.f_unit_id', '=', 'mu.id')
             ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
             })
@@ -187,7 +187,7 @@ class ProductService
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id');
 
         // Filter by status
-        $query->where('mc.company_code', session('user_company_code'));
+        $query->where('t.company_code', session('user_company_code'));
 
         if ($category_filter = request()->input('category_filter')) {
             $query->where('t.f_category_id', $category_filter);
