@@ -5,6 +5,7 @@ namespace App\Domains\PurchaseDelivery\Actions;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryAuditLogService;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
+use App\Domains\Product\Services\ProductService;
 use App\Enums\ActionTypes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -72,6 +73,8 @@ class CreatePurchaseDeliveryAction
 
                 foreach ($data['products'] as $product) {
                     app(PurchaseOrderProductService::class)->updateDeliveredQuantities($data['purchase_order_id'], $product['product_order_product_id'], $product['delivery_qty']);
+
+                    app(ProductService::class)->updateStock($product['product_id'], $product['delivery_qty']);
                 }
             }
 

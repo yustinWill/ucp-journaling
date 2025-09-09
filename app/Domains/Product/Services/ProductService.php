@@ -168,6 +168,16 @@ class ProductService
             ->update($update_data);
     }
 
+    public function updateStock(int $id, $qty): int
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->update([
+                'qty_available' => DB::raw("qty_available + {$qty}"),
+                'total_stock' => DB::raw("total_stock + {$qty}"),
+            ]);
+    }
+
     public function findAllDatatable()
     {
         $query = DB::table($this->table_name . ' as t')
