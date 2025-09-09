@@ -155,7 +155,7 @@
 
                                 <!-- Row 3: Description -->
                                 <div class="row g-3 mb-4">
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <label class="form-label">Keterangan</label>
                                         <textarea class="form-control" rows="3" disabled>{{ $salesOrder['description'] ?? '-' }}</textarea>
                                     </div>
@@ -437,23 +437,47 @@
 
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
-                            <div class="section-header mt-12">
-                                <h6>Audit Log</h6>
-                                <hr class="mx-n6">
+                            <div class="section-header mt-6">
+                                <h6>Riwayat Perubahan</h6>
                             </div>
 
-                            <div class="table-responsive">
-                                <table class="table table-hover" id="audit-log-table">
-                                    <thead class="table-light">
+                            <div class="mx-n6">
+                                <table class="table table-bordered" id="audit-log-table">
+                                    <thead>
                                         <tr>
-                                            <th>Tanggal</th>
+                                            <th>Tanggal & Waktu</th>
                                             <th>Pengguna</th>
                                             <th>Aksi</th>
-                                            <th>Keterangan</th>
+                                            <th>Deskripsi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- DataTable will populate this -->
+                                        @if(isset($audit_logs) && count($audit_logs) > 0)
+                                            @foreach($audit_logs as $log)
+                                            <tr>
+                                                <td>{{ $log->date }}</td>
+                                                <td>
+                                                    @if(isset($canViewUser) && $canViewUser)
+                                                        <a href="#" class="text-primary fw-semibold">{{ $log->user_name }}</a>
+                                                    @else
+                                                        {{ $log->user_name }}
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($log->action === 'CREATE')
+                                                        <span class="badge bg-label-success">CREATE</span>
+                                                    @elseif($log->action === 'UPDATE')
+                                                        <span class="badge bg-label-warning">UPDATE</span>
+                                                    @elseif($log->action === 'DELETE')
+                                                        <span class="badge bg-label-danger">DELETE</span>
+                                                    @else
+                                                        <span class="badge bg-label-info">{{ $log->action }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $log->description }}</td>
+                                            </tr>
+                                            @endforeach
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -468,36 +492,13 @@
 @section('js_script')
 <script>
 $(document).ready(function() {
-    // Initialize product table DataTable with standard configuration (matching PO pattern)
-    $('#product-table').DataTable({
-        orderCellsTop: true,
-        ordering: false,
-        searching: false,
-        paging: false,
-        info: false,
-        responsive: true,
-        scrollX: true
-    });
-
-    // Initialize audit log DataTable with standard configuration
+    // Initialize audit log DataTable to match PO pattern
     $('#audit-log-table').DataTable({
-        ajax: '{{ route("main_transaction.sales_order.audit_log_data_table", $salesOrder["id"]) }}',
-        columns: [
-            { data: 'date', name: 'date' },
-            { data: 'user_name', name: 'user_name' },
-            { data: 'action', name: 'action' },
-            { data: 'description', name: 'description' }
-        ],
         orderCellsTop: true,
-        order: [[0, 'desc']], // Sort by date descending (latest first)
+        order: [[0, 'desc']], // Sort by date descending
         searching: false,
         paging: false,
-        info: false,
-        responsive: true,
-        scrollX: true,
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
-        }
+        info: false
     });
 });
 </script>

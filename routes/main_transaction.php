@@ -156,7 +156,6 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         // AJAX endpoints
         Route::get($base_segment.$sales_order_segment.'/get_customer_info/{customer_id}', 'getCustomerInfo')->name('main_transaction.sales_order.get_customer_info');
         Route::get($base_segment.$sales_order_segment.'/get_warehouse_products/{warehouse_id}', 'getWarehouseProducts')->name('main_transaction.sales_order.get_warehouse_products');
-        Route::get($base_segment.$sales_order_segment.'/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.sales_order.audit_log_data_table');
     });
 
     // Sales Delivery Routes (Separated Module)

@@ -203,6 +203,7 @@ class SalesOrderController extends Controller
             'canDelete' => $permissionData['canDelete'],
             'canCreateSalesDelivery' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
             'canCreateSalesInvoice' => PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write'),
+            'canViewUser' => PermissionHelper::hasPermission('master_data_user', 'read'),
         ]);
     }
 
@@ -476,24 +477,4 @@ class SalesOrderController extends Controller
         ]);
     }
 
-    public function auditLogDataTable($id)
-    {
-        // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $auditLogs = app(SalesOrderAuditLogService::class)->findAllBasedOnSalesOrderId($id);
-
-        $formattedData = collect($auditLogs)->map(function ($log) {
-            return [
-                'date' => $log->date,
-                'user_name' => $log->user_name ?? 'System',
-                'action' => $log->action,
-                'description' => $log->metadata['description'] ?? 'No description',
-            ];
-        });
-
-        return response()->json(['data' => $formattedData]);
-    }
 }
