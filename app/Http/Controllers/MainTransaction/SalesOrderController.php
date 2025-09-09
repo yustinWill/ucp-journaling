@@ -1,0 +1,499 @@
+<?php
+
+namespace App\Http\Controllers\MainTransaction;
+
+use App\Domains\Contact\Services\ContactService;
+use App\Domains\PaymentTerm\Services\PaymentTermService;
+use App\Domains\Product\Services\ProductService;
+use App\Domains\SalesDelivery\Services\SalesDeliveryService;
+use App\Domains\SalesInvoice\Services\SalesInvoiceService;
+use App\Domains\SalesOrder\Actions\CreateSalesOrderAction;
+use App\Domains\SalesOrder\Actions\UpdateSalesOrderAction;
+use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
+use App\Domains\SalesOrder\Services\SalesOrderProductService;
+use App\Domains\SalesOrder\Services\SalesOrderService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\Tax\Services\TaxService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
+use App\Helpers\ValidationHelper;
+use App\Http\Controllers\Controller;
+use App\Services\TransactionNumberService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+
+class SalesOrderController extends Controller
+{
+    public function index()
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat data.');
+        }
+
+        // Load customers for filter dropdown
+        $customers = DB::table('m_contacts')
+            ->where('company_code', session('user_company_code'))
+            ->where('type', 'CUSTOMER')
+            ->where('status', 'ACTIVE')
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return view('pages.main_transaction.sales_order.index', [
+            'customers' => $customers,
+            'canAddSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'write'),
+            'canViewSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'read'),
+            'canEditSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'write'),
+            'canDeleteSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'delete'),
+            'canImportSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'import'),
+            'canExportSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'export'),
+        ]);
+    }
+
+    public function add()
+    {
+        // Check write permission
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
+        }
+
+        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $salesPersons = app(ContactService::class)->findAllByType('SALES_PERSON');
+        $paymentTerms = app(PaymentTermService::class)->findAll();
+        $warehouses = app(WarehouseService::class)->findAll();
+        $products = app(ProductService::class)->findAll();
+        $taxOptions = app(TaxService::class)->findAll();
+        $availableTags = app(TagService::class)->findAll();
+
+        // Check permissions for adding related data
+        $canAddCustomers = PermissionHelper::hasPermission('master_data_contact', 'write');
+        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
+        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
+        $canAddWarehouses = PermissionHelper::hasPermission('master_data_warehouse', 'write');
+
+        // Get permissions
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
+
+        return view('pages.main_transaction.sales_order.add', [
+            'customers' => $customers,
+            'salesPersons' => $salesPersons,
+            'paymentTerms' => $paymentTerms,
+            'warehouses' => $warehouses,
+            'products' => $products,
+            'taxOptions' => $taxOptions,
+            'availableTags' => $availableTags,
+            'canAddCustomers' => $canAddCustomers,
+            'canAddPaymentTerms' => $canAddPaymentTerms,
+            'canAddTags' => $canAddTags,
+            'canAddWarehouses' => $canAddWarehouses,
+        ] + $permissionData);
+    }
+
+    public function generateTransactionNumber()
+    {
+        try {
+            $transactionNumber = app(TransactionNumberService::class)->generateNumber('sales_order');
+            
+            return response()->json([
+                'success' => true,
+                'transaction_number' => $transactionNumber,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate transaction number: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'reference_no' => 'required|string|max:255',
+                'date' => 'required|date|before_or_equal:today',
+                'customer_id' => 'required|integer|exists:m_contacts,id',
+                'email' => 'nullable|email|max:255',
+                'address' => 'nullable|string|max:500',
+                'customer_reference' => 'nullable|string|max:255',
+                'payment_terms' => 'required|integer|exists:m_payment_terms,id',
+                'payment_term_day_count' => 'nullable|integer|min:0|max:365',
+                'payment_term_due_date' => 'nullable|date|after:date',
+                'warehouse_id' => 'required|integer|exists:m_warehouses,id',
+                'description' => 'nullable|string|max:1000',
+                'tags' => 'nullable|string',
+                'memo' => 'nullable|string|max:500',
+                'include_tax' => 'required|boolean',
+                'subtotal' => 'required|numeric|min:0',
+                'tax_amount' => 'required|numeric|min:0',
+                'total_before_discount' => 'required|numeric|min:0',
+                'discount_amount' => 'nullable|numeric|min:0',
+                'total' => 'required|numeric|min:0',
+                'products' => 'required|array|min:1',
+                'products.*.product_id' => 'required|integer|exists:m_products,id',
+                'products.*.quantity' => 'required|numeric|min:0.01',
+                'products.*.unit_price' => 'required|string',
+                'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
+                'products.*.total' => 'required|string',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+            ]);
+
+            $salesOrderId = app(CreateSalesOrderAction::class)->execute($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sales Order berhasil dibuat',
+                'data' => ['id' => $salesOrderId]
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (AppException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem'
+            ], 500);
+        }
+    }
+
+    public function detail($id)
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat data.');
+        }
+
+        // Load sales order with full details
+        $salesOrder = app(SalesOrderService::class)->findWithDetails($id);
+        
+        if (!$salesOrder) {
+            abort(404, 'Sales Order tidak ditemukan.');
+        }
+
+        // Get audit logs
+        $auditLogs = app(SalesOrderAuditLogService::class)->findAllBasedOnSalesOrderId($id);
+
+        // Get permissions
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
+
+        return view('pages.main_transaction.sales_order.detail', [
+            'salesOrder' => $salesOrder,
+            'audit_logs' => $auditLogs,
+            'canEdit' => $permissionData['canWrite'],
+            'canDelete' => $permissionData['canDelete'],
+            'canCreateSalesDelivery' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
+            'canCreateSalesInvoice' => PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write'),
+        ]);
+    }
+
+    public function edit($id)
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
+        }
+
+        // Load sales order with details
+        $salesOrder = app(SalesOrderService::class)->findWithDetails($id);
+        
+        if (!$salesOrder) {
+            abort(404, 'Sales Order tidak ditemukan.');
+        }
+
+        // Load form data
+        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $salesPersons = app(ContactService::class)->findAllByType('SALES_PERSON');
+        $paymentTerms = app(PaymentTermService::class)->findAll();
+        $warehouses = app(WarehouseService::class)->findAll();
+        $products = app(ProductService::class)->findAll();
+        $taxOptions = app(TaxService::class)->findAll();
+        $availableTags = app(TagService::class)->findAll();
+
+        // Check permissions for adding related data
+        $canAddCustomers = PermissionHelper::hasPermission('master_data_contact', 'write');
+        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
+        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
+        $canAddWarehouses = PermissionHelper::hasPermission('master_data_warehouse', 'write');
+
+        // Get permissions
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
+
+        return view('pages.main_transaction.sales_order.edit', [
+            'salesOrder' => $salesOrder,
+            'customers' => $customers,
+            'salesPersons' => $salesPersons,
+            'paymentTerms' => $paymentTerms,
+            'warehouses' => $warehouses,
+            'products' => $products,
+            'taxOptions' => $taxOptions,
+            'tags' => $availableTags,
+            'canAddCustomers' => $canAddCustomers,
+            'canAddPaymentTerms' => $canAddPaymentTerms,
+            'canAddTags' => $canAddTags,
+            'canAddWarehouses' => $canAddWarehouses,
+        ] + $permissionData);
+    }
+
+    public function update(Request $request)
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'id' => 'required|integer|exists:t_sales_orders,id',
+                'date' => 'required|date|before_or_equal:today',
+                'customer_id' => 'required|integer|exists:m_contacts,id',
+                'email' => 'nullable|email|max:255',
+                'address' => 'nullable|string|max:500',
+                'customer_reference' => 'nullable|string|max:255',
+                'payment_terms' => 'required|integer|exists:m_payment_terms,id',
+                'payment_term_day_count' => 'nullable|integer|min:0|max:365',
+                'payment_term_due_date' => 'nullable|date|after:date',
+                'warehouse_id' => 'required|integer|exists:m_warehouses,id',
+                'description' => 'nullable|string|max:1000',
+                'tags' => 'nullable|string',
+                'memo' => 'nullable|string|max:500',
+                'include_tax' => 'required|boolean',
+                'subtotal' => 'required|numeric|min:0',
+                'tax_amount' => 'required|numeric|min:0',
+                'total_before_discount' => 'required|numeric|min:0',
+                'discount_amount' => 'nullable|numeric|min:0',
+                'total' => 'required|numeric|min:0',
+                'products' => 'required|array|min:1',
+                'products.*.product_id' => 'required|integer|exists:m_products,id',
+                'products.*.quantity' => 'required|numeric|min:0.01',
+                'products.*.unit_price' => 'required|string',
+                'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
+                'products.*.total' => 'required|string',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+            ]);
+
+            $id = $validated['id'];
+            unset($validated['id']);
+
+            app(UpdateSalesOrderAction::class)->execute($id, $validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sales Order berhasil diperbarui'
+            ], 200);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (AppException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem'
+            ], 500);
+        }
+    }
+
+    public function index_data_table()
+    {
+        // Check read permission
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        $data = app(SalesOrderService::class)->findAllDatatable();
+        return response()->json($data, 200);
+    }
+
+    // Import/Export methods
+    public function import()
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'import')) {
+            abort(403, 'Anda tidak memiliki akses untuk import data.');
+        }
+
+        return view('pages.main_transaction.sales_order.import');
+    }
+
+    public function export()
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'export')) {
+            abort(403, 'Anda tidak memiliki akses untuk export data.');
+        }
+
+        // TODO: Implement export columns configuration
+        $exportColumns = [];
+
+        return view('pages.main_transaction.sales_order.export', [
+            'exportColumns' => $exportColumns
+        ]);
+    }
+
+    public function downloadTemplate()
+    {
+        // TODO: Implement template generation
+        $filename = 'sales_order_import_template.xlsx';
+        
+        return response()->json([
+            'message' => 'Template download functionality - TODO: Implement'
+        ]);
+    }
+
+    public function validateImport(Request $request)
+    {
+        // TODO: Implement import validation
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total_count' => 0,
+                'valid_count' => 0,
+                'error_count' => 0,
+                'valid_data' => [],
+                'error_data' => []
+            ]
+        ]);
+    }
+
+    public function processImport(Request $request)
+    {
+        // TODO: Implement import processing
+        return response()->json([
+            'success' => true,
+            'imported_count' => 0,
+            'message' => 'Sales Order berhasil diimport'
+        ]);
+    }
+
+    public function processExport(Request $request)
+    {
+        // TODO: Implement export processing
+        return response()->json([
+            'success' => true,
+            'message' => 'Export functionality - TODO: Implement'
+        ]);
+    }
+
+    // Helper methods for loading form data
+
+    // AJAX endpoints for dynamic data loading
+    public function getCustomerInfo($customerId)
+    {
+        $customer = DB::table('m_contacts as t')
+            ->select([
+                't.email', 
+                'ca.address as billing_address',
+                't.f_sales_pic_id',
+                'u.name as sales_person_name'
+            ])
+            ->leftJoin('m_contact_addresses as ca', function ($join) {
+                $join->on('ca.f_contact_id', '=', 't.id')
+                    ->where('ca.type', '=', 'BILLING');
+            })
+            ->leftJoin('users as u', 't.f_sales_pic_id', '=', 'u.id')
+            ->where('t.id', $customerId)
+            ->where('t.company_code', session('user_company_code'))
+            ->where('t.type', 'CUSTOMER')
+            ->first();
+
+        if (!$customer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'email' => $customer->email,
+                'address' => $customer->billing_address,
+                'sales_person_name' => $customer->sales_person_name,
+            ]
+        ]);
+    }
+
+    public function getWarehouseProducts($warehouseId)
+    {
+        $customerId = request()->input('customer_id');
+        
+        if (!$customerId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer ID is required'
+            ], 400);
+        }
+
+        // Get products mapped to this customer with their special pricing
+        $products = DB::table('m_contact_products as cp')
+            ->join('m_products as p', 'cp.f_product_code', '=', 'p.code')
+            ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
+            ->where('cp.f_contact_id', $customerId)
+            ->where('p.company_code', session('user_company_code'))
+            ->where('p.status', 'ACTIVE')
+            ->where('p.total_stock', '>', 0) // Only products with stock
+            ->select([
+                'p.id as value',
+                DB::raw("CONCAT(p.code, ' - ', p.name) as label"),
+                'cp.price_per_qty as price',
+                'u.name as unit',
+                'p.total_stock as stock',
+                'p.f_tax_id as tax_id'
+            ])
+            ->orderBy('p.name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $products
+        ]);
+    }
+
+    public function auditLogDataTable($id)
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $auditLogs = app(SalesOrderAuditLogService::class)->findAllBasedOnSalesOrderId($id);
+
+        $formattedData = collect($auditLogs)->map(function ($log) {
+            return [
+                'date' => $log->date,
+                'user_name' => $log->user_name ?? 'System',
+                'action' => $log->action,
+                'description' => $log->metadata['description'] ?? 'No description',
+            ];
+        });
+
+        return response()->json(['data' => $formattedData]);
+    }
+}

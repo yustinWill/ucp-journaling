@@ -45,11 +45,32 @@
                 </a>
             </li>
         @endif
-        <li class="menu-item @if (request()->routeIs(['main_transaction.sales.*'])) active @endif">
-            <a href="{{ route('main_transaction.sales.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-shopping-cart"></i>
+        <li class="menu-item @if (request()->routeIs([
+                'main_transaction.sales_order.*',
+                'main_transaction.sales_delivery.*',
+                'main_transaction.sales_invoice.*',
+            ])) open @endif">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-shopping-bag"></i>
                 <div data-i18n="Chat">Penjualan</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item @if (request()->routeIs(['main_transaction.sales_order.*'])) active @endif">
+                    <a href="{{ route('main_transaction.sales_order.index') }}" class="menu-link">
+                        <div data-i18n="Chat">Sales Order</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['main_transaction.sales_delivery.*'])) active @endif">
+                    <a href="{{ route('main_transaction.sales_delivery.index') }}" class="menu-link">
+                        <div data-i18n="Chat">Sales Delivery</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['main_transaction.sales_invoice.*'])) active @endif">
+                    <a href="{{ route('main_transaction.sales_invoice.index') }}" class="menu-link">
+                        <div data-i18n="Chat">Sales Invoice</div>
+                    </a>
+                </li>
+            </ul>
         </li>
         <li class="menu-item @if (request()->routeIs([
                 'main_transaction.purchase_order.*',

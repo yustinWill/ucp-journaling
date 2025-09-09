@@ -24,9 +24,9 @@
                         name="date" value="{{ $purchaseOrder['date'] }}" placeholder="YYYY-MM-DD" required />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Nomor Transaksi</label>
+                    <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" id="purchase-order-reference" name="reference_no"
-                        value="{{ $purchaseOrder['reference_no'] }}" readonly />
+                        value="{{ $purchaseOrder['reference_no'] }}" required />
                 </div>
             </div>
 

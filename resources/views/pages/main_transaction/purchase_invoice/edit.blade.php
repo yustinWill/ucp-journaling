@@ -24,9 +24,8 @@
                 <input type="date" class="form-control global-single-date-picker" id="invoice-date" name="invoice_date" value="{{ $invoice_data->invoice_date }}" required />
             </div>
             <div class="col-md-6">
-                <label class="form-label">Nomor Invoice</label>
-                <input type="text" class="form-control" name="invoice_number" value="{{ $invoice_data->transaction_code }}" readonly />
-                <small class="form-text text-muted">Tidak dapat diubah</small>
+                <label class="form-label">Nomor Invoice <span style="color: red;">*</span></label>
+                <input type="text" class="form-control" name="invoice_number" value="{{ $invoice_data->transaction_code }}" required />
             </div>
         </div>
 

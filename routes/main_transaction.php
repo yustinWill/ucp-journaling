@@ -9,7 +9,9 @@ use App\Http\Controllers\MainTransaction\PurchaseController;
 use App\Http\Controllers\MainTransaction\PurchaseDeliveryController;
 use App\Http\Controllers\MainTransaction\PurchaseInvoiceController;
 use App\Http\Controllers\MainTransaction\PurchaseOrderController;
-use App\Http\Controllers\MainTransaction\SalesController;
+use App\Http\Controllers\MainTransaction\SalesOrderController;
+use App\Http\Controllers\MainTransaction\SalesDeliveryController;
+use App\Http\Controllers\MainTransaction\SalesInvoiceController;
 use App\Http\Controllers\MainTransaction\StockAdjustmentController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,13 +21,15 @@ $purchase_segment = '/purchase';
 $purchase_order_segment = '/purchase_order';
 $purchase_delivery_segment = '/purchase_delivery';
 $purchase_invoice_segment = '/purchase_invoice';
-$sales_segment = '/sales';
+$sales_order_segment = '/sales_order';
+$sales_delivery_segment = '/sales_delivery';
+$sales_invoice_segment = '/sales_invoice';
 $credit_memo_segment = '/credit_memo';
 $expense_segment = '/expense';
 $stock_adjustment_segment = '/stock_adjustment';
 $production_segment = '/production';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment.$journal_segment.'/index', 'index')->name('main_transaction.journal.index');
         Route::get($base_segment.$journal_segment.'/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table');
@@ -131,30 +135,64 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$purchase_invoice_segment.'/get_po_products_for_invoice', 'get_po_products_for_invoice')->name('main_transaction.purchase_invoice.get_po_products_for_invoice');
     });
 
-    Route::controller(SalesController::class)->group(function () use ($base_segment, $sales_segment) {
-        Route::get($base_segment.$sales_segment.'/index', 'index')->name('main_transaction.sales.index');
-        Route::get($base_segment.$sales_segment.'/index_data_table', 'index_data_table')->name('main_transaction.sales.index_data_table');
 
-        // Sales Order routes
-        Route::get($base_segment.$sales_segment.'/add_so', 'salesOrderAdd')->name('main_transaction.sales.add.so');
+    // Sales Order Routes (Separated Module)
+    Route::controller(SalesOrderController::class)->group(function () use ($base_segment, $sales_order_segment) {
+        Route::get($base_segment.$sales_order_segment.'/index', 'index')->name('main_transaction.sales_order.index');
+        Route::get($base_segment.$sales_order_segment.'/index_data_table', 'index_data_table')->name('main_transaction.sales_order.index_data_table');
+        Route::get($base_segment.$sales_order_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.sales_order.generate_transaction_number');
+        Route::get($base_segment.$sales_order_segment.'/add', 'add')->name('main_transaction.sales_order.add');
+        Route::post($base_segment.$sales_order_segment.'/store', 'store')->name('main_transaction.sales_order.store');
+        Route::get($base_segment.$sales_order_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_order.detail');
+        Route::get($base_segment.$sales_order_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_order.edit');
+        Route::post($base_segment.$sales_order_segment.'/update', 'update')->name('main_transaction.sales_order.update');
+        Route::get($base_segment.$sales_order_segment.'/import', 'import')->name('main_transaction.sales_order.import');
+        Route::get($base_segment.$sales_order_segment.'/download_template', 'downloadTemplate')->name('main_transaction.sales_order.download_template');
+        Route::post($base_segment.$sales_order_segment.'/validate_import', 'validateImport')->name('main_transaction.sales_order.validate_import');
+        Route::post($base_segment.$sales_order_segment.'/process_import', 'processImport')->name('main_transaction.sales_order.process_import');
+        Route::get($base_segment.$sales_order_segment.'/export', 'export')->name('main_transaction.sales_order.export');
+        Route::post($base_segment.$sales_order_segment.'/process_export', 'processExport')->name('main_transaction.sales_order.process_export');
+        
+        // AJAX endpoints
+        Route::get($base_segment.$sales_order_segment.'/get_customer_info/{customer_id}', 'getCustomerInfo')->name('main_transaction.sales_order.get_customer_info');
+        Route::get($base_segment.$sales_order_segment.'/get_warehouse_products/{warehouse_id}', 'getWarehouseProducts')->name('main_transaction.sales_order.get_warehouse_products');
+        Route::get($base_segment.$sales_order_segment.'/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.sales_order.audit_log_data_table');
+    });
 
-        // Sales Delivery routes
-        Route::get($base_segment.$sales_segment.'/add_sd', 'salesDeliveryAdd')->name('main_transaction.sales.add.sd');
+    // Sales Delivery Routes (Separated Module)
+    Route::controller(SalesDeliveryController::class)->group(function () use ($base_segment, $sales_delivery_segment) {
+        Route::get($base_segment.$sales_delivery_segment.'/index', 'index')->name('main_transaction.sales_delivery.index');
+        Route::get($base_segment.$sales_delivery_segment.'/index_data_table', 'index_data_table')->name('main_transaction.sales_delivery.index_data_table');
+        Route::get($base_segment.$sales_delivery_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.sales_delivery.generate_transaction_number');
+        Route::get($base_segment.$sales_delivery_segment.'/add', 'add')->name('main_transaction.sales_delivery.add');
+        Route::post($base_segment.$sales_delivery_segment.'/create', 'create')->name('main_transaction.sales_delivery.create');
+        Route::get($base_segment.$sales_delivery_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_delivery.detail');
+        Route::get($base_segment.$sales_delivery_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_delivery.edit');
+        Route::post($base_segment.$sales_delivery_segment.'/update', 'update')->name('main_transaction.sales_delivery.update');
+        Route::get($base_segment.$sales_delivery_segment.'/import', 'import')->name('main_transaction.sales_delivery.import');
+        Route::get($base_segment.$sales_delivery_segment.'/download_template', 'downloadTemplate')->name('main_transaction.sales_delivery.download_template');
+        Route::post($base_segment.$sales_delivery_segment.'/validate_import', 'validateImport')->name('main_transaction.sales_delivery.validate_import');
+        Route::post($base_segment.$sales_delivery_segment.'/process_import', 'processImport')->name('main_transaction.sales_delivery.process_import');
+        Route::get($base_segment.$sales_delivery_segment.'/export', 'export')->name('main_transaction.sales_delivery.export');
+        Route::post($base_segment.$sales_delivery_segment.'/process_export', 'processExport')->name('main_transaction.sales_delivery.process_export');
+    });
 
-        // Sales Invoice routes
-        Route::get($base_segment.$sales_segment.'/add_si', 'salesInvoiceAdd')->name('main_transaction.sales.add.si');
-
-        // Detail and Edit routes
-        Route::get($base_segment.$sales_segment.'/detail/{id}', 'detail')->name('main_transaction.sales.detail');
-        Route::get($base_segment.$sales_segment.'/edit/{id}', 'edit')->name('main_transaction.sales.edit');
-
-        // Import/Export routes
-        Route::get($base_segment.$sales_segment.'/import', 'import')->name('main_transaction.sales.import');
-        Route::get($base_segment.$sales_segment.'/download_template', 'downloadTemplate')->name('main_transaction.sales.download_template');
-        Route::post($base_segment.$sales_segment.'/validate_import', 'validateImport')->name('main_transaction.sales.validate_import');
-        Route::post($base_segment.$sales_segment.'/process_import', 'processImport')->name('main_transaction.sales.process_import');
-        Route::get($base_segment.$sales_segment.'/export', 'export')->name('main_transaction.sales.export');
-        Route::post($base_segment.$sales_segment.'/process_export', 'processExport')->name('main_transaction.sales.process_export');
+    // Sales Invoice Routes (Separated Module)
+    Route::controller(SalesInvoiceController::class)->group(function () use ($base_segment, $sales_invoice_segment) {
+        Route::get($base_segment.$sales_invoice_segment.'/index', 'index')->name('main_transaction.sales_invoice.index');
+        Route::get($base_segment.$sales_invoice_segment.'/index_data_table', 'index_data_table')->name('main_transaction.sales_invoice.index_data_table');
+        Route::get($base_segment.$sales_invoice_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.sales_invoice.generate_transaction_number');
+        Route::get($base_segment.$sales_invoice_segment.'/add', 'add')->name('main_transaction.sales_invoice.add');
+        Route::post($base_segment.$sales_invoice_segment.'/create', 'create')->name('main_transaction.sales_invoice.create');
+        Route::get($base_segment.$sales_invoice_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_invoice.detail');
+        Route::get($base_segment.$sales_invoice_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_invoice.edit');
+        Route::post($base_segment.$sales_invoice_segment.'/update', 'update')->name('main_transaction.sales_invoice.update');
+        Route::get($base_segment.$sales_invoice_segment.'/import', 'import')->name('main_transaction.sales_invoice.import');
+        Route::get($base_segment.$sales_invoice_segment.'/download_template', 'downloadTemplate')->name('main_transaction.sales_invoice.download_template');
+        Route::post($base_segment.$sales_invoice_segment.'/validate_import', 'validateImport')->name('main_transaction.sales_invoice.validate_import');
+        Route::post($base_segment.$sales_invoice_segment.'/process_import', 'processImport')->name('main_transaction.sales_invoice.process_import');
+        Route::get($base_segment.$sales_invoice_segment.'/export', 'export')->name('main_transaction.sales_invoice.export');
+        Route::post($base_segment.$sales_invoice_segment.'/process_export', 'processExport')->name('main_transaction.sales_invoice.process_export');
     });
 
     Route::controller(CreditMemoController::class)->group(function () use ($base_segment, $credit_memo_segment) {

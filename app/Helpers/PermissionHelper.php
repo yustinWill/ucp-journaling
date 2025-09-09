@@ -12,6 +12,11 @@ class PermissionHelper
         $permissions = Session::get('permissions');
         $formattedPermissions = [];
 
+        // Safety check: ensure $permissions is iterable
+        if (!is_array($permissions) && !is_object($permissions)) {
+            return $formattedPermissions; // Return empty array if permissions is not iterable
+        }
+
         foreach ($permissions as $permission) {
             $moduleName = $permission->module_name;
             $permissionType = $permission->permission_type;
@@ -29,7 +34,34 @@ class PermissionHelper
      */
     private static function getMockPermissions(): array
     {
-        return self::generatePermissions();
+        $sessionPermissions = self::generatePermissions();
+        
+        // If session permissions are empty, provide fallback mock permissions for development
+        if (empty($sessionPermissions)) {
+            return [
+                // Master Data permissions
+                'master_data_sales_person' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_tax' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_unit' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_category' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_contact' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_product' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_user' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_warehouse' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                
+                // Transaction permissions
+                'main_transaction_sales_order' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true, 'import' => true, 'export' => true],
+                'main_transaction_sales_delivery' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'main_transaction_sales_invoice' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'main_transaction_purchase_order' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'main_transaction_purchase_delivery' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'main_transaction_purchase_invoice' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'main_transaction_expense' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'main_transaction_journal' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+            ];
+        }
+        
+        return $sessionPermissions;
     }
 
     /**

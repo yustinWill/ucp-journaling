@@ -26,7 +26,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" id="purchase-delivery-reference"
-                        name="reference_no" value="{{ $purchaseDelivery->reference_no }}" readonly />
+                        name="reference_no" value="{{ $purchaseDelivery->reference_no }}" required />
                 </div>
             </div>
 
