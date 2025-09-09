@@ -64,6 +64,9 @@ class ProductService
         if ($data->tags) {
             $data->tags = json_decode($data->tags);
         }
+        if ($data->f_tag_codes) {
+            $data->f_tag_codes = json_decode($data->f_tag_codes, true);
+        }
         if ($data->main_image) {
             $data->main_image = Storage::disk('public')->url($data->main_image);
         }
@@ -173,7 +176,7 @@ class ProductService
                 't.unit_purchase_price',
                 't.unit_sell_price',
                 't.status',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->join('m_categories as mc', 't.f_category_id', '=', 'mc.id')
             ->join('m_units as mu', 't.f_unit_id', '=', 'mu.id')

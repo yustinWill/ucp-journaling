@@ -577,10 +577,10 @@
                                                     <div class="position-relative">
                                                         <select class="select2Product form-select component-product">
                                                             <option value="">Pilih Produk</option>
-                                                            @foreach ($products as $product)
-                                                                <option value="{{ $product->id }}"
-                                                                    data-unit="{{ $product->unit_name ?? 'pcs' }}">
-                                                                    {{ $product->name }}</option>
+                                                            @foreach ($products as $product_master)
+                                                                <option value="{{ $product_master->id }}"
+                                                                    data-unit="{{ $product_master->unit_name ?? 'pcs' }}">
+                                                                    {{ $product_master->name }}</option>
                                                             @endforeach
                                                         </select>
                                                     </div>
@@ -609,11 +609,11 @@
                                                     <div class="position-relative">
                                                         <select class="select2Product form-select component-product">
                                                             <option value="">Pilih Produk</option>
-                                                            @foreach ($products as $product)
-                                                                <option value="{{ $product->id }}"
-                                                                    data-unit="{{ $product->unit_name ?? 'pcs' }}"
-                                                                    {{ $row->f_product_composition_product_id == $product->id ? 'selected' : '' }}>
-                                                                    {{ $product->name }}</option>
+                                                            @foreach ($products as $product_master)
+                                                                <option value="{{ $product_master->id }}"
+                                                                    data-unit="{{ $product_master->unit_name ?? 'pcs' }}"
+                                                                    {{ $row->f_product_composition_product_id == $product_master->id ? 'selected' : '' }}>
+                                                                    {{ $product_master->name }}</option>
                                                             @endforeach
                                                         </select>
                                                     </div>
@@ -753,8 +753,8 @@
                                 data-allow-clear="false">
                                 @foreach ($tags as $tag)
                                     <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}"
-                                        {{ collect(old('product-tags', $product->f_tag_codes ?? []))->contains($tag->id) ? 'selected' : '' }}>
-                                        {{ $tag->code }} - {{ $tag->name }}</option>
+                                        @if (in_array($tag->id, $product->f_tag_codes)) selected @endif>{{ $tag->code }} -
+                                        {{ $tag->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -789,6 +789,10 @@
 @section('js_script')
     <script>
         $(function() {
+            $('.currency-input').each(function() {
+                const val = $(this).val();
+                $(this).val(convertToIndonesianFormat(val));
+            });
             initCleaveCurrency(document);
 
             let currentProductType = null;
@@ -1174,17 +1178,17 @@
                         data.inventory_enabled = $('#enable-inventory').is(':checked');
 
                         if (data.purchase_enabled) {
-                            data.purchase_price = $('#purchase-price').val().replace(/[^0-9.]/g, '');
+                            data.purchase_price = parseCurrency($('#purchase-price').val());
                             data.purchase_account = $('#purchase-account').val();
                             data.purchase_tax = $('#purchase-tax').val();
                         }
                         if (data.sales_enabled) {
-                            data.sales_price = $('#sales-price').val().replace(/[^0-9.]/g, '');
+                            data.sales_price = parseCurrency($('#sales-price').val());
                             data.sales_account = $('#sales-account').val();
                             data.sales_tax = $('#sales-tax').val();
                         }
                         if (data.inventory_enabled) {
-                            data.minimum_stock = $('#minimum-stock').val().replace(/[^0-9.]/g, '');
+                            data.minimum_stock = parseCurrency($('#minimum-stock').val());
                             data.inventory_account = $('#inventory-account').val();
                             data.track_quantity = $('#track-quantity').is(':checked');
                             data.track_batch = $('#track-batch').is(':checked');
@@ -1198,19 +1202,17 @@
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');
 
                         if (data.bundle_purchase_enabled) {
-                            data.bundle_purchase_price = $('#bundle-purchase-price').val().replace(
-                                /[^0-9.]/g, '');
+                            data.bundle_purchase_price = parseCurrency($('#bundle-purchase-price').val());
                             data.bundle_purchase_account = $('#bundle-purchase-account').val();
                             data.bundle_purchase_tax = $('#bundle-purchase-tax').val();
                         }
                         if (data.bundle_sales_enabled) {
-                            data.bundle_sales_price = $('#bundle-sales-price').val().replace(/[^0-9.]/g, '');
+                            data.bundle_sales_price = parseCurrency($('#bundle-sales-price').val());
                             data.bundle_sales_account = $('#bundle-sales-account').val();
                             data.bundle_sales_tax = $('#bundle-sales-tax').val();
                         }
                         if (data.bundle_inventory_enabled) {
-                            data.bundle_minimum_stock = $('#bundle-minimum-stock').val().replace(/[^0-9.]/g,
-                                '');
+                            data.bundle_minimum_stock = parseCurrency($('#bundle-minimum-stock').val());
                             data.bundle_inventory_account = $('#bundle-inventory-account').val();
                             data.bundle_track_quantity = $('#bundle-track-quantity').is(':checked');
                             data.bundle_track_batch = $('#bundle-track-batch').is(':checked');

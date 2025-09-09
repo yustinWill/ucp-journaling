@@ -45,7 +45,7 @@ class PurchaseOrderController extends Controller
     {
         // Temporary: Use single color for all statuses
         return 'bg-label-primary';
-        
+
         // TODO: Implement proper status-based colors later
         // switch ($invoice_status) {
         //     case 'DRAFT':
@@ -209,6 +209,35 @@ class PurchaseOrderController extends Controller
                 'products.*.tax_id' => 'required|string|max:50',
                 'products.*.total' => 'required|string|max:50',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+            ], [], [
+                'date' => 'Tanggal PO',
+                'reference_no' => 'Nomor Referensi',
+                'supplier_id' => 'Supplier',
+                'email' => 'Email Supplier',
+                'address' => 'Alamat Supplier',
+                'supplier_reference' => 'Referensi Supplier',
+                'payment_terms' => 'Syarat Pembayaran',
+                'payment_term_day_count' => 'Jumlah Hari Pembayaran',
+                'payment_term_due_date' => 'Jatuh Tempo Pembayaran',
+                'warehouse_id' => 'Gudang',
+                'description' => 'Deskripsi',
+                'tags' => 'Tag',
+                'tags.*' => 'Tag',
+                'memo' => 'Memo',
+                'discount_amount' => 'Diskon',
+                'subtotal' => 'Subtotal',
+                'total_before_discount' => 'Total Sebelum Diskon',
+                'tax_amount' => 'Jumlah Pajak',
+                'total' => 'Total',
+                'include_tax' => 'Harga Termasuk Pajak',
+                'products' => 'Produk',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.quantity' => 'Qty Produk',
+                'products.*.unit' => 'Satuan Produk',
+                'products.*.unit_price' => 'Harga Satuan Produk',
+                'products.*.tax_id' => 'ID Pajak Produk',
+                'products.*.total' => 'Total Produk',
+                'attachment' => 'Lampiran',
             ]);
 
             app(CreatePurchaseOrderAction::class)->execute($validated);
@@ -268,7 +297,7 @@ class PurchaseOrderController extends Controller
         $product_lines = [];
         foreach ($po_products as $prod) {
             $product_lines[] = [
-                'product_name' => $prod->product_code.' - '.$prod->product_name,
+                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
@@ -282,7 +311,7 @@ class PurchaseOrderController extends Controller
         foreach ($po_products as $prod) {
             $product_delivery_summary[] = [
                 'product_id' => $prod->id,
-                'product_name' => $prod->product_code.' - '.$prod->product_name,
+                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
                 'total_qty' => $prod->qty,
                 'qty_delivered' => $prod->delivered_qty,
                 'remaining_qty' => $prod->remaining_qty,
@@ -329,11 +358,11 @@ class PurchaseOrderController extends Controller
             'supplier_reference' => $po_data->supplier_reference_no,
             'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
-            'payment_terms' => $po_data->payment_term_code.' - '.$po_data->payment_term_name,
+            'payment_terms' => $po_data->payment_term_code . ' - ' . $po_data->payment_term_name,
             'payment_terms_type' => $po_data->payment_term_type,
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
-            'warehouse' => $po_data->warehouse_code.' - '.$po_data->warehouse_name,
+            'warehouse' => $po_data->warehouse_code . ' - ' . $po_data->warehouse_name,
             'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
             'total' => $po_data->grand_price,
@@ -440,7 +469,7 @@ class PurchaseOrderController extends Controller
             $product_lines[] = [
                 'id' => $prod->id,
                 'product_id' => $prod->f_product_id,
-                'product_name' => $prod->product_code.' - '.$prod->product_name,
+                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
@@ -455,7 +484,7 @@ class PurchaseOrderController extends Controller
         foreach ($po_products as $prod) {
             $product_delivery_summary[] = [
                 'product_id' => $prod->id,
-                'product_name' => $prod->product_code.' - '.$prod->product_name,
+                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
                 'total_qty' => $prod->qty,
                 'qty_delivered' => $prod->delivered_qty,
                 'remaining_qty' => $prod->remaining_qty,
@@ -510,11 +539,11 @@ class PurchaseOrderController extends Controller
             'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
             'payment_term_id' => $po_data->f_payment_term_id,
-            'payment_terms' => $po_data->payment_term_code.' - '.$po_data->payment_term_name,
+            'payment_terms' => $po_data->payment_term_code . ' - ' . $po_data->payment_term_name,
             'payment_terms_type' => $po_data->payment_term_type,
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
-            'warehouse' => $po_data->warehouse_code.' - '.$po_data->warehouse_name,
+            'warehouse' => $po_data->warehouse_code . ' - ' . $po_data->warehouse_name,
             'warehouse_id' => $po_data->f_warehouse_id,
             'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
@@ -614,8 +643,39 @@ class PurchaseOrderController extends Controller
                 'products.*.tax_id' => 'required|string|max:50',
                 'products.*.total' => 'required|string|max:50',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+            ], [], [
+                'id' => 'ID PO',
+                'date' => 'Tanggal PO',
+                'reference_no' => 'Nomor Referensi',
+                'supplier_id' => 'Supplier',
+                'email' => 'Email Supplier',
+                'address' => 'Alamat Supplier',
+                'supplier_reference' => 'Referensi Supplier',
+                'payment_terms' => 'Syarat Pembayaran',
+                'payment_term_day_count' => 'Jumlah Hari Pembayaran',
+                'payment_term_due_date' => 'Jatuh Tempo Pembayaran',
+                'warehouse_id' => 'Gudang',
+                'description' => 'Deskripsi',
+                'tags' => 'Tag',
+                'tags.*' => 'Tag',
+                'memo' => 'Memo',
+                'discount_amount' => 'Diskon',
+                'subtotal' => 'Subtotal',
+                'total_before_discount' => 'Total Sebelum Diskon',
+                'tax_amount' => 'Jumlah Pajak',
+                'total' => 'Total',
+                'include_tax' => 'Harga Termasuk Pajak',
+                'products' => 'Produk',
+                'products.*.id' => 'ID Produk',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.quantity' => 'Qty Produk',
+                'products.*.unit' => 'Satuan Produk',
+                'products.*.unit_price' => 'Harga Satuan Produk',
+                'products.*.tax_id' => 'ID Pajak Produk',
+                'products.*.total' => 'Total Produk',
+                'attachment' => 'Lampiran',
             ]);
-
+            
             app(UpdatePurchaseOrderAction::class)->execute($validated);
 
             return response()->json([
@@ -703,7 +763,7 @@ class PurchaseOrderController extends Controller
                     'status' => 'DRAFT',
                 ],
             ],
-            'validation_key' => 'po_validation_'.time(),
+            'validation_key' => 'po_validation_' . time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -758,13 +818,13 @@ class PurchaseOrderController extends Controller
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_orders_export_'.date('Y-m-d_H-i-s').'.'.$format;
+        $filename = 'purchase_orders_export_' . date('Y-m-d_H-i-s') . '.' . $format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/'.$filename,
+            'download_url' => '/exports/' . $filename,
         ]);
     }
 }

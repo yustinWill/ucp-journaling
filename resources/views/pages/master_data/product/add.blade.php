@@ -1012,17 +1012,17 @@
                         data.inventory_enabled = $('#enable-inventory').is(':checked');
 
                         if (data.purchase_enabled) {
-                            data.purchase_price = $('#purchase-price').val().replace(/[^0-9]/g, '');
+                            data.purchase_price = parseCurrency($('#purchase-price').val());
                             data.purchase_account = $('#purchase-account').val();
                             data.purchase_tax = $('#purchase-tax').val();
                         }
                         if (data.sales_enabled) {
-                            data.sales_price = $('#sales-price').val().replace(/[^0-9]/g, '');
+                            data.sales_price = parseCurrency($('#sales-price').val());
                             data.sales_account = $('#sales-account').val();
                             data.sales_tax = $('#sales-tax').val();
                         }
                         if (data.inventory_enabled) {
-                            data.minimum_stock = $('#minimum-stock').val().replace(/[^0-9]/g, '');;
+                            data.minimum_stock = parseCurrency($('#minimum-stock').val());
                             data.inventory_account = $('#inventory-account').val();
                             data.track_quantity = $('#track-quantity').is(':checked');
                             data.track_batch = $('#track-batch').is(':checked');

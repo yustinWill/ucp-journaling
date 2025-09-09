@@ -75,6 +75,17 @@ class JournalController extends Controller
                 'journals.*.description' => 'nullable|string|max:255',
                 'journals.*.debit_amount' => 'nullable|numeric|min:0',
                 'journals.*.credit_amount' => 'nullable|numeric|min:0',
+            ], [], [
+                'reference_no' => 'No Referensi',
+                'date' => 'Tanggal Jurnal',
+                'description' => 'Deskripsi',
+                'memo' => 'Memo',
+                'tags' => 'Tag',
+                'journals' => 'Detail Jurnal',
+                'journals.*.account_code' => 'Kode Akun',
+                'journals.*.description' => 'Deskripsi Akun',
+                'journals.*.debit_amount' => 'Jumlah Debit',
+                'journals.*.credit_amount' => 'Jumlah Kredit',
             ]);
 
             app(CreateAccountingJournalAction::class)->execute($validated);
@@ -146,8 +157,8 @@ class JournalController extends Controller
                 'account_code' => $row->f_coa_code,
                 'account_name' => $row->coa_name,
                 'description' => $row->coa_description,
-                'debit_amount' => $row->debit_credit == 'D' ? 'Rp '.number_format($row->amount, 0, ',', '.') : null,
-                'credit_amount' => $row->debit_credit == 'C' ? 'Rp '.number_format($row->amount, 0, ',', '.') : null,
+                'debit_amount' => $row->debit_credit == 'D' ? 'Rp ' . number_format($row->amount, 0, ',', '.') : null,
+                'credit_amount' => $row->debit_credit == 'C' ? 'Rp ' . number_format($row->amount, 0, ',', '.') : null,
             ];
         }
 
@@ -162,9 +173,9 @@ class JournalController extends Controller
             'description' => $header->description,
             'memo' => $header->internal_memo,
             'tags' => json_decode($header->tags, true),
-            'total_debit' => 'Rp '.number_format($total_debit, 0, ',', '.'),
-            'total_credit' => 'Rp '.number_format($total_credit, 0, ',', '.'),
-            'difference' => 'Rp '.number_format($total_debit - $total_credit, 0, ',', '.'),
+            'total_debit' => 'Rp ' . number_format($total_debit, 0, ',', '.'),
+            'total_credit' => 'Rp ' . number_format($total_credit, 0, ',', '.'),
+            'difference' => 'Rp ' . number_format($total_debit - $total_credit, 0, ',', '.'),
             'entries' => $entries,
             'audit_logs' => $auditLogs,
             'auditLogType' => AuditLogTypes::MAIN_TRANSACTION_JOURNAL->code(),
@@ -214,9 +225,9 @@ class JournalController extends Controller
             'memo' => $header->internal_memo,
             'tags' => json_decode($header->tags, true),
             'f_tag_codes' => json_decode($header->f_tag_codes, true),
-            'total_debit' => 'Rp '.number_format($total_debit, 0, ',', '.'),
-            'total_credit' => 'Rp '.number_format($total_credit, 0, ',', '.'),
-            'difference' => 'Rp '.number_format($total_debit - $total_credit, 0, ',', '.'),
+            'total_debit' => 'Rp ' . number_format($total_debit, 0, ',', '.'),
+            'total_credit' => 'Rp ' . number_format($total_credit, 0, ',', '.'),
+            'difference' => 'Rp ' . number_format($total_debit - $total_credit, 0, ',', '.'),
             'entries' => $entries,
         ];
 
@@ -244,6 +255,19 @@ class JournalController extends Controller
                 'journals.*.description' => 'nullable|string|max:255',
                 'journals.*.debit_amount' => 'nullable|numeric|min:0',
                 'journals.*.credit_amount' => 'nullable|numeric|min:0',
+            ], [], [
+                'reference_no' => 'No Referensi',
+                'date' => 'Tanggal Jurnal',
+                'status' => 'Status',
+                'description' => 'Deskripsi',
+                'memo' => 'Memo',
+                'tags' => 'Tag',
+                'journals' => 'Detail Jurnal',
+                'journals.*.journal_id' => 'ID Jurnal',
+                'journals.*.account_code' => 'Kode Akun',
+                'journals.*.description' => 'Deskripsi Akun',
+                'journals.*.debit_amount' => 'Jumlah Debit',
+                'journals.*.credit_amount' => 'Jumlah Kredit',
             ]);
 
             app(UpdateAccountingJournalAction::class)->execute($validated['reference_no'], $validated);

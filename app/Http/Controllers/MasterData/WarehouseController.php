@@ -91,21 +91,36 @@ class WarehouseController extends Controller
     public function store(Request $request)
     {
         try {
-            $data = [
-                'code' => $request->code,
-                'name' => $request->name,
-                'pic_users' => $request->pic_users ?? [],
-                'status' => $request->status,
-                'province' => $request->province,
-                'city' => $request->city,
-                'district' => $request->district,
-                'sub_district' => $request->sub_district,
-                'address' => $request->address,
-                'postal_code' => $request->postal_code,
-                'tags' => $request->tags ?? [],
-            ];
-
-            app(CreateWarehouseAction::class)->execute($data);
+            $validated = $request->validate([
+                'code' => 'required|string|max:255|unique:m_warehouses,code',
+                'name' => 'required|string|max:255',
+                'pic_users' => 'nullable|array',
+                'pic_users.*' => 'integer|exists:users,id',
+                'status' => 'required|in:ACTIVE,INACTIVE,MAINTENANCE',
+                'province' => 'nullable|string|max:255',
+                'city' => 'nullable|string|max:255',
+                'district' => 'nullable|string|max:255',
+                'sub_district' => 'nullable|string|max:255',
+                'address' => 'nullable|string|max:255',
+                'postal_code' => 'nullable|string|max:10',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+            ], [], [
+                'code' => 'Kode Gudang',
+                'name' => 'Nama Gudang',
+                'pic_users' => 'Penanggung Jawab',
+                'pic_users.*' => 'Penanggung Jawab',
+                'status' => 'Status Gudang',
+                'province' => 'Provinsi',
+                'city' => 'Kota',
+                'district' => 'Kecamatan',
+                'sub_district' => 'Kelurahan',
+                'address' => 'Alamat Gudang',
+                'postal_code' => 'Kode Pos',
+                'tags' => 'Tag Gudang',
+                'tags.*' => 'Tag Gudang',
+            ]);
+            app(CreateWarehouseAction::class)->execute($validated);
 
             return response()->json([
                 'message' => SuccessCodes::CREATE_WEARHOUSE_SUCCESS->message(),
@@ -134,21 +149,37 @@ class WarehouseController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $data = [
-                'code' => $request->code,
-                'name' => $request->name,
-                'pic_users' => $request->pic_users ?? [],
-                'status' => $request->status,
-                'province' => $request->province,
-                'city' => $request->city,
-                'district' => $request->district,
-                'sub_district' => $request->sub_district,
-                'address' => $request->address,
-                'postal_code' => $request->postal_code,
-                'tags' => $request->tags ?? [],
-            ];
+            $validated = $request->validate([
+                'code' => 'required|string|max:255|exists:m_warehouses,code',
+                'name' => 'required|string|max:255',
+                'pic_users' => 'nullable|array',
+                'pic_users.*' => 'integer|exists:users,id',
+                'status' => 'required|in:ACTIVE,INACTIVE,MAINTENANCE',
+                'province' => 'nullable|string|max:255',
+                'city' => 'nullable|string|max:255',
+                'district' => 'nullable|string|max:255',
+                'sub_district' => 'nullable|string|max:255',
+                'address' => 'nullable|string|max:255',
+                'postal_code' => 'nullable|string|max:10',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+            ], [], [
+                'code' => 'Kode Gudang',
+                'name' => 'Nama Gudang',
+                'pic_users' => 'Penanggung Jawab',
+                'pic_users.*' => 'Penanggung Jawab',
+                'status' => 'Status Gudang',
+                'province' => 'Provinsi',
+                'city' => 'Kota',
+                'district' => 'Kecamatan',
+                'sub_district' => 'Kelurahan',
+                'address' => 'Alamat Gudang',
+                'postal_code' => 'Kode Pos',
+                'tags' => 'Tag Gudang',
+                'tags.*' => 'Tag Gudang',
+            ]);
 
-            app(UpdateWarehouseAction::class)->execute($id, $data);
+            app(UpdateWarehouseAction::class)->execute($id, $validated);
 
             return response()->json([
                 'message' => SuccessCodes::UPDATE_WEARHOUSE_SUCCESS->message(),

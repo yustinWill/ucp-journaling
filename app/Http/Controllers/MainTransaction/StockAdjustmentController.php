@@ -125,7 +125,7 @@ class StockAdjustmentController extends Controller
         foreach ($warehousesData as $warehouse) {
             $warehouses[] = [
                 'value' => $warehouse->id,
-                'label' => $warehouse->code.' - '.$warehouse->name,
+                'label' => $warehouse->code . ' - ' . $warehouse->name,
             ];
         }
 
@@ -135,7 +135,7 @@ class StockAdjustmentController extends Controller
         foreach ($contactsData as $contact) {
             $picOptions[] = [
                 'value' => $contact->id,
-                'label' => 'EMP-'.str_pad($contact->id, 3, '0', STR_PAD_LEFT).' - '.$contact->name,
+                'label' => 'EMP-' . str_pad($contact->id, 3, '0', STR_PAD_LEFT) . ' - ' . $contact->name,
             ];
         }
 
@@ -151,7 +151,7 @@ class StockAdjustmentController extends Controller
         foreach ($categoriesData as $category) {
             $productCategories[] = [
                 'value' => $category->id,
-                'label' => $category->code.' - '.$category->name,
+                'label' => $category->code . ' - ' . $category->name,
             ];
         }
 
@@ -161,7 +161,7 @@ class StockAdjustmentController extends Controller
         foreach ($tagsData as $tag) {
             $availableTags[] = [
                 'code' => $tag->code,
-                'label' => $tag->code.' - '.$tag->name,
+                'label' => $tag->code . ' - ' . $tag->name,
                 'color' => $tag->tag_color_code ?? 'primary',
             ];
         }
@@ -213,7 +213,7 @@ class StockAdjustmentController extends Controller
         foreach ($warehousesData as $warehouse) {
             $warehouses[] = [
                 'value' => $warehouse->id,
-                'label' => $warehouse->code.' - '.$warehouse->name,
+                'label' => $warehouse->code . ' - ' . $warehouse->name,
             ];
         }
 
@@ -223,7 +223,7 @@ class StockAdjustmentController extends Controller
         foreach ($contactsData as $contact) {
             $picOptions[] = [
                 'value' => $contact->id,
-                'label' => 'EMP-'.str_pad($contact->id, 3, '0', STR_PAD_LEFT).' - '.$contact->name,
+                'label' => 'EMP-' . str_pad($contact->id, 3, '0', STR_PAD_LEFT) . ' - ' . $contact->name,
             ];
         }
 
@@ -245,7 +245,7 @@ class StockAdjustmentController extends Controller
         foreach ($categoriesData as $category) {
             $productCategories[] = [
                 'value' => $category->id,
-                'label' => $category->code.' - '.$category->name,
+                'label' => $category->code . ' - ' . $category->name,
             ];
         }
 
@@ -436,32 +436,32 @@ class StockAdjustmentController extends Controller
 
     private function exportToExcel($data, $columns)
     {
-        $filename = 'stock_adjustment_export_'.date('Y-m-d_H-i-s').'.xlsx';
-        $content = 'Mock Excel content for Stock Adjustment export with '.count($data).' records';
+        $filename = 'stock_adjustment_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $content = 'Mock Excel content for Stock Adjustment export with ' . count($data) . ' records';
 
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     private function exportToCsv($data, $columns)
     {
-        $filename = 'stock_adjustment_export_'.date('Y-m-d_H-i-s').'.csv';
+        $filename = 'stock_adjustment_export_' . date('Y-m-d_H-i-s') . '.csv';
         $content = 'Mock CSV content for Stock Adjustment export';
 
         return response($content)
             ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     private function exportToPdf($data, $columns)
     {
-        $filename = 'stock_adjustment_export_'.date('Y-m-d_H-i-s').'.pdf';
+        $filename = 'stock_adjustment_export_' . date('Y-m-d_H-i-s') . '.pdf';
         $content = 'Mock PDF content for Stock Adjustment export';
 
         return response($content)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     public function import()
@@ -485,7 +485,7 @@ class StockAdjustmentController extends Controller
 
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     public function validateImport(Request $request)
@@ -551,7 +551,7 @@ class StockAdjustmentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error reading file: '.$e->getMessage(),
+                'message' => 'Error reading file: ' . $e->getMessage(),
             ]);
         }
     }
@@ -574,7 +574,7 @@ class StockAdjustmentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error importing data: '.$e->getMessage(),
+                'message' => 'Error importing data: ' . $e->getMessage(),
             ]);
         }
     }
@@ -600,6 +600,23 @@ class StockAdjustmentController extends Controller
                 'products.*.adjustment_qty' => 'required|numeric|not_in:0',
                 'products.*.unit_cost' => 'nullable|numeric|min:0',
                 'products.*.reason' => 'nullable|string|max:200',
+            ], [], [
+                'adjustment_date' => 'Tanggal Adjustment',
+                'adjustment_type' => 'Tipe Adjustment',
+                'warehouse_id' => 'Gudang',
+                'pic_id' => 'PIC',
+                'description' => 'Deskripsi',
+                'memo' => 'Memo',
+                'tags' => 'Tag',
+                'products' => 'Produk',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.product_code' => 'Kode Produk',
+                'products.*.product_name' => 'Nama Produk',
+                'products.*.unit' => 'Satuan',
+                'products.*.stock_before' => 'Stok Sebelum',
+                'products.*.adjustment_qty' => 'Qty Adjustment',
+                'products.*.unit_cost' => 'Harga Satuan',
+                'products.*.reason' => 'Alasan Adjustment',
             ]);
 
             app(CreateStockAdjustmentAction::class)->execute($validated);
@@ -650,6 +667,25 @@ class StockAdjustmentController extends Controller
                 'products.*.adjustment_qty' => 'required|numeric|not_in:0',
                 'products.*.unit_cost' => 'nullable|numeric|min:0',
                 'products.*.reason' => 'nullable|string|max:200',
+            ], [], [
+                'adjustment_id' => 'ID Adjustment',
+                'adjustment_date' => 'Tanggal Adjustment',
+                'adjustment_type' => 'Tipe Adjustment',
+                'warehouse_id' => 'Gudang',
+                'pic_id' => 'PIC',
+                'status' => 'Status',
+                'description' => 'Deskripsi',
+                'memo' => 'Memo',
+                'tags' => 'Tag',
+                'products' => 'Produk',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.product_code' => 'Kode Produk',
+                'products.*.product_name' => 'Nama Produk',
+                'products.*.unit' => 'Satuan',
+                'products.*.stock_before' => 'Stok Sebelum',
+                'products.*.adjustment_qty' => 'Qty Adjustment',
+                'products.*.unit_cost' => 'Harga Satuan',
+                'products.*.reason' => 'Alasan Adjustment',
             ]);
 
             app(UpdateStockAdjustmentAction::class)->execute($validated['adjustment_id'], $validated);
@@ -711,7 +747,7 @@ class StockAdjustmentController extends Controller
             ], 422);
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Error: '.$e->getMessage(),
+                'message' => 'Error: ' . $e->getMessage(),
                 'error' => 'INTERNAL_SERVER_ERROR',
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),

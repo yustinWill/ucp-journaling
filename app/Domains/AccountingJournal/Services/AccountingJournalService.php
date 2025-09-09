@@ -20,7 +20,7 @@ class AccountingJournalService
                 DB::raw('SUM(t.amount)/2 as amount'),
                 't.created_at',
                 'users.name as created_by',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
@@ -68,7 +68,7 @@ class AccountingJournalService
                 $tags = json_decode($row->tags, true);
                 $uniqueTags = [];
                 foreach ($tags as $tag) {
-                    $key = $tag['code'].'_'.$tag['preview'];
+                    $key = $tag['name'].'_'.$tag['preview'];
                     $uniqueTags[$key] = $tag;
                 }
                 $row->tags = json_encode(array_values($uniqueTags));

@@ -114,7 +114,6 @@ class PurchaseInvoiceController extends Controller
         }
 
         try {
-
             $validated = $request->validate([
                 'invoice_date' => 'required|date',
                 'invoice_number' => 'required|string|max:50',
@@ -137,6 +136,28 @@ class PurchaseInvoiceController extends Controller
                 'products.*.invoice_qty' => 'required|numeric|min:0',
                 'products.*.unit_price' => 'required|numeric|min:0',
                 'products.*.total_price' => 'required|numeric|min:0',
+            ], [], [
+                'invoice_date' => 'Tanggal Invoice',
+                'invoice_number' => 'Nomor Invoice',
+                'purchase_order_id' => 'Purchase Order',
+                'transaction_date' => 'Tanggal Transaksi',
+                'description' => 'Deskripsi',
+                'internal_memo' => 'Memo Internal',
+                'invoice_status' => 'Status Invoice',
+                'tags' => 'Tag',
+                'tags.*' => 'Tag',
+                'attachment' => 'Lampiran',
+                'total_amount' => 'Total Amount',
+                'total_items' => 'Total Item',
+                'products' => 'Produk',
+                'products.*.product_order_product_id' => 'ID Produk PO',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.po_qty' => 'Qty PO',
+                'products.*.invoiced_qty_before' => 'Qty Sudah Diinvoice',
+                'products.*.remaining_qty_before' => 'Qty Sisa',
+                'products.*.invoice_qty' => 'Qty Invoice',
+                'products.*.unit_price' => 'Harga Satuan',
+                'products.*.total_price' => 'Total Harga',
             ]);
 
             app(CreatePurchaseInvoiceAction::class)->execute($validated);
@@ -258,47 +279,47 @@ class PurchaseInvoiceController extends Controller
 
     public function update(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        // // Check write permission
+        // if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
 
-        try {
-            $id = $request->input('id');
-            if (! $id) {
-                return response()->json(['error' => 'Invoice ID is required'], 400);
-            }
+        // try {
+        //     $id = $request->input('id');
+        //     if (! $id) {
+        //         return response()->json(['error' => 'Invoice ID is required'], 400);
+        //     }
 
-            $action = app(UpdatePurchaseInvoiceAction::class);
-            $result = $action->handle($request, $id);
+        //     $action = app(UpdatePurchaseInvoiceAction::class);
+        //     $result = $action->handle($request, $id);
 
-            if ($result['success']) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Invoice berhasil diperbarui.',
-                    'data' => $result['data'],
-                ], SuccessCodes::UPDATE_SUCCESS->httpStatus());
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => $result['message'],
-                ], 422);
-            }
-        } catch (AppException $e) {
-            DiscordNotifier::notify(ErrorCodes::PURCHASE_INVOICE_UPDATE_FAILED, $e->getMessage(), ['request' => $request->all()]);
+        //     if ($result['success']) {
+        //         return response()->json([
+        //             'success' => true,
+        //             'message' => 'Invoice berhasil diperbarui.',
+        //             'data' => $result['data'],
+        //         ], SuccessCodes::UPDATE_SUCCESS->httpStatus());
+        //     } else {
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => $result['message'],
+        //         ], 422);
+        //     }
+        // } catch (AppException $e) {
+        //     DiscordNotifier::notify(ErrorCodes::PURCHASE_INVOICE_UPDATE_FAILED, $e->getMessage(), ['request' => $request->all()]);
 
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], $e->getHttpStatusCode());
-        } catch (\Exception $e) {
-            DiscordNotifier::notify(ErrorCodes::PURCHASE_INVOICE_UPDATE_FAILED, $e->getMessage(), ['request' => $request->all()]);
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => $e->getMessage(),
+        //     ], $e->getHttpStatusCode());
+        // } catch (\Exception $e) {
+        //     DiscordNotifier::notify(ErrorCodes::PURCHASE_INVOICE_UPDATE_FAILED, $e->getMessage(), ['request' => $request->all()]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem saat memperbarui invoice.',
-            ], 500);
-        }
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Terjadi kesalahan sistem saat memperbarui invoice.',
+        //     ], 500);
+        // }
     }
 
     // Import/Export Methods

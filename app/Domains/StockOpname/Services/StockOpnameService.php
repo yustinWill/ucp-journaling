@@ -87,7 +87,7 @@ class StockOpnameService
                 'so.transaction_date',
                 'w.name as warehouse_name',
                 'u.name as pic_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
                 'so.count_product',
                 'so.total_system_stock',
                 'so.total_physical_stock',
@@ -138,7 +138,7 @@ class StockOpnameService
         foreach ($data as $row) {
             if ($row->tags) {
                 $tags = json_decode($row->tags, true);
-                $row->tags = collect($tags)->unique('code')->values()->all();
+                $row->tags = collect($tags)->unique('name')->values()->all();
             }
         }
 

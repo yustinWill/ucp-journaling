@@ -104,7 +104,7 @@ class WarehouseService
                 't.name',
                 't.address',
                 't.status',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
                 DB::raw("GROUP_CONCAT(users.name SEPARATOR ', ') as pic_names"),
             ])
             ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
@@ -150,7 +150,7 @@ class WarehouseService
         foreach ($data as $row) {
             if ($row->tags) {
                 $tags = json_decode($row->tags, true);
-                $row->tags = collect($tags)->unique('code')->values()->all();
+                $row->tags = collect($tags)->unique('name')->values()->all();
             }
         }
 

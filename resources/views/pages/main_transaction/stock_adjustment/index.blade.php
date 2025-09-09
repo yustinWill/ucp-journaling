@@ -406,7 +406,7 @@
                                 if (!data || data.length === 0) return '-';
                                 return data.map(tag => {
                                     const colorClass = `bg-label-${tag.color}`;
-                                    return tag.code ?
+                                    return tag.name ?
                                         `<span class="badge ${colorClass} me-1">${tag.name}</span>` :
                                         '';
                                 }).join('');

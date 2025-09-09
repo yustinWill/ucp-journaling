@@ -102,7 +102,7 @@ class StockAdjustmentService
                 'sa.created_at as created_date',
                 'w.name as warehouse_name',
                 'u.name as pic_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', t.code, 'name', t.name, 'color', tc.code)) as tags"),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', t.name, 'name', t.name, 'color', tc.code)) as tags"),
             ])
             ->leftJoin('m_warehouses as w', 'sa.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'sa.pic_id', '=', 'u.id')
@@ -169,7 +169,7 @@ class StockAdjustmentService
         foreach ($data as $row) {
             if ($row->tags) {
                 $tags = json_decode($row->tags, true);
-                $row->tags = collect($tags)->unique('code')->values()->all();
+                $row->tags = collect($tags)->unique('name')->values()->all();
             }
         }
 
