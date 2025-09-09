@@ -549,7 +549,7 @@
                     productSelect.empty().append('<option value="">Pilih Produk</option>');
                     products.forEach(product => {
                         productSelect.append(
-                            `<option value="${product.id}" data-unit="${product.unit_name}">${product.name}</option>`
+                            `<option value="${product.id}" data-unit="${product.unit_name}">${product.code} - ${product.name}</option>`
                         );
                     });
                 });

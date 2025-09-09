@@ -118,7 +118,7 @@ class PurchaseOrderController extends Controller
         $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
-        $products = app(ProductService::class)->findAll();
+        $products = app(ProductService::class)->findAllAllowPurchase();
         $taxOptions = app(TaxService::class)->findAll();
         $availableTags = app(TagService::class)->findAll();
 

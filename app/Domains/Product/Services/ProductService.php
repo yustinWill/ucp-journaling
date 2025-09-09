@@ -13,16 +13,26 @@ class ProductService
 
     public function findAll()
     {
-        return DB::table($this->table_name.' as m_products')
+        return DB::table($this->table_name . ' as m_products')
             ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
             ->orderBy('m_products.name', 'asc')
             ->get();
     }
 
+    public function findAllAllowPurchase()
+    {
+        return DB::table($this->table_name . ' as m_products')
+            ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name')
+            ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
+            ->where('m_products.is_item_purchased', '=', 1)
+            ->orderBy('m_products.name', 'asc')
+            ->get();
+    }
+
     public function findAllBundle()
     {
-        return DB::table($this->table_name.' as m_products')
+        return DB::table($this->table_name . ' as m_products')
             ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
             ->where('m_products.type', '=', 'BUNDLE')
@@ -32,7 +42,7 @@ class ProductService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name.' as m_products')
+        $data = DB::table($this->table_name . ' as m_products')
             ->select([
                 'm_products.*',
                 'mu.name as unit_name',
@@ -160,7 +170,7 @@ class ProductService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name.' as t')
+        $query = DB::table($this->table_name . ' as t')
             ->select([
                 't.id',
                 't.name',
