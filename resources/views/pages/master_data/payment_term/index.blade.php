@@ -107,7 +107,7 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            @if ($canImportPaymentTerm)
+                            {{-- @if ($canImportPaymentTerm)
                                 <a href="{{ route('master_data.payment_term.import') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
@@ -116,7 +116,7 @@
                                 <a href="{{ route('master_data.payment_term.export') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif
+                            @endif --}}
                             @if ($canAddPaymentTerm)
                                 <a href="{{ route('master_data.payment_term.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -225,10 +225,7 @@
                                 const badgeClass = data === 'active' ? 'bg-label-success' :
                                     'bg-label-secondary';
                                 const statusText = data === 'active' ? 'AKTIF' : 'TIDAK AKTIF';
-                                const defaultBadge = row.is_default ?
-                                    ' <span class="badge bg-label-warning ms-1">DEFAULT</span>' :
-                                    '';
-                                return `<span class="badge ${badgeClass}">${statusText}</span>${defaultBadge}`;
+                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         },
                         {

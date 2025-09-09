@@ -93,6 +93,11 @@ class SalesPersonController extends Controller
                 ],
                 'commission_rate' => 'required|numeric|min:0|max:100',
                 'description' => 'nullable|string|max:500',
+            ], [], [
+                'f_employee_contact_id' => 'Karyawan',
+                'status' => 'Status Sales Person',
+                'commission_rate' => 'Komisi (%)',
+                'description' => 'Keterangan',
             ]);
 
             app(CreateSalesPersonAction::class)->execute($validated);
@@ -175,6 +180,13 @@ class SalesPersonController extends Controller
                 ],
                 'commission_rate' => 'required|numeric|min:0|max:100',
                 'description' => 'nullable|string|max:500',
+            ], [], [
+                'id' => 'ID Sales Person',
+                'f_sales_person_code' => 'Kode Sales Person',
+                'f_employee_contact_id' => 'Karyawan',
+                'status' => 'Status Sales Person',
+                'commission_rate' => 'Komisi (%)',
+                'description' => 'Keterangan',
             ]);
 
             app(UpdateSalesPersonAction::class)->execute($request->id, $validated);

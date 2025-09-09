@@ -88,6 +88,12 @@ class UnitController extends Controller
                 ],
                 'type' => 'required|exists:m_unit_types,id',
                 'description' => 'nullable|string|max:255',
+            ], [], [
+                'code' => 'Kode Unit',
+                'name' => 'Nama Unit',
+                'status' => 'Status Unit',
+                'type' => 'Tipe Unit',
+                'description' => 'Deskripsi Unit',
             ]);
 
             app(CreateUnitAction::class)->execute($validated);
@@ -159,6 +165,13 @@ class UnitController extends Controller
                 ],
                 'type' => 'required|exists:m_unit_types,id',
                 'description' => 'nullable|string|max:255',
+            ], [], [
+                'id' => 'ID Unit',
+                'code' => 'Kode Unit',
+                'name' => 'Nama Unit',
+                'status' => 'Status Unit',
+                'type' => 'Tipe Unit',
+                'description' => 'Deskripsi Unit',
             ]);
 
             app(UpdateUnitAction::class)->execute($request->id, $validated);

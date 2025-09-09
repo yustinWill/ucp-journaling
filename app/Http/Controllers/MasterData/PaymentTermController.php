@@ -65,7 +65,15 @@ class PaymentTermController extends Controller
         }
 
         $query = DB::table($this->table_name)->select([
-            'id', 'code', 'name', 'description', 'days', 'type', 'status', 'is_default', 'created_at',
+            'id',
+            'code',
+            'name',
+            'description',
+            'days',
+            'type',
+            'status',
+            'is_default',
+            'created_at',
         ]);
 
         // Apply filters
@@ -133,6 +141,14 @@ class PaymentTermController extends Controller
                 'type' => 'required|in:net,immediate,cod,custom',
                 'status' => 'required|in:active,inactive',
                 'is_default' => 'boolean',
+            ], [], [
+                'code' => 'Kode Syarat Pembayaran',
+                'name' => 'Nama Syarat Pembayaran',
+                'description' => 'Deskripsi Syarat Pembayaran',
+                'days' => 'Jumlah Hari',
+                'type' => 'Tipe Syarat Pembayaran',
+                'status' => 'Status Syarat Pembayaran',
+                'is_default' => 'Default Syarat Pembayaran',
             ]);
 
             DB::transaction(function () use ($validated) {
@@ -155,12 +171,11 @@ class PaymentTermController extends Controller
             });
 
             return response()->json([
-                'message' => 'Payment Term berhasil disimpan',
+                'message' => 'Syarat Pembayaran berhasil disimpan',
             ], 200);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: '.implode(', ', array_map(function ($errors) {
+                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function ($errors) {
                     return implode(', ', $errors);
                 }, $e->errors())),
                 'error' => 'VALIDATION_ERROR',
@@ -183,7 +198,7 @@ class PaymentTermController extends Controller
         $paymentTerm = DB::table($this->table_name)->where('id', $id)->first();
 
         if (! $paymentTerm) {
-            abort(404, 'Payment Term tidak ditemukan.');
+            abort(404, 'Syarat Pembayaran tidak ditemukan.');
         }
 
         // Get permission data for view
@@ -208,7 +223,7 @@ class PaymentTermController extends Controller
         $paymentTerm = DB::table($this->table_name)->where('id', $id)->first();
 
         if (! $paymentTerm) {
-            abort(404, 'Payment Term tidak ditemukan.');
+            abort(404, 'Syarat Pembayaran tidak ditemukan.');
         }
 
         $statuses = [
@@ -249,13 +264,22 @@ class PaymentTermController extends Controller
         try {
             $validated = $request->validate([
                 'id' => 'required|integer|exists:m_payment_terms,id',
-                'code' => 'required|string|max:20|unique:m_payment_terms,code,'.$request->id,
+                'code' => 'required|string|max:20|unique:m_payment_terms,code,' . $request->id,
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
                 'days' => 'required|integer|min:0',
                 'type' => 'required|in:net,immediate,cod,custom',
                 'status' => 'required|in:active,inactive',
                 'is_default' => 'boolean',
+            ], [], [
+                'id' => 'ID Syarat Pembayaran',
+                'code' => 'Kode Syarat Pembayaran',
+                'name' => 'Nama Syarat Pembayaran',
+                'description' => 'Deskripsi Syarat Pembayaran',
+                'days' => 'Jumlah Hari',
+                'type' => 'Tipe Syarat Pembayaran',
+                'status' => 'Status Syarat Pembayaran',
+                'is_default' => 'Default Syarat Pembayaran',
             ]);
 
             DB::transaction(function () use ($validated) {
@@ -277,12 +301,11 @@ class PaymentTermController extends Controller
             });
 
             return response()->json([
-                'message' => 'Payment Term berhasil diperbarui',
+                'message' => 'Syarat Pembayaran berhasil diperbarui',
             ], 200);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: '.implode(', ', array_map(function ($errors) {
+                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function ($errors) {
                     return implode(', ', $errors);
                 }, $e->errors())),
                 'error' => 'VALIDATION_ERROR',
@@ -314,7 +337,7 @@ class PaymentTermController extends Controller
 
             if ($paymentTerm->is_default) {
                 return response()->json([
-                    'message' => 'Tidak dapat menghapus payment term default.',
+                    'message' => 'Tidak dapat menghapus Syarat Pembayaran default.',
                     'error' => 'CANNOT_DELETE_DEFAULT',
                 ], 422);
             }
@@ -322,9 +345,8 @@ class PaymentTermController extends Controller
             DB::table($this->table_name)->where('id', $validated['id'])->delete();
 
             return response()->json([
-                'message' => 'Payment Term berhasil dihapus',
+                'message' => 'Syarat Pembayaran berhasil dihapus',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Terjadi kesalahan saat menghapus data.',

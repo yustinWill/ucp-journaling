@@ -97,6 +97,12 @@ class CategoryController extends Controller
                     Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'description' => 'nullable|string|max:255',
+            ], [], [
+                'code' => 'Kode Kategori',
+                'name' => 'Nama Kategori',
+                'type' => 'Tipe Kategori',
+                'status' => 'Status Kategori',
+                'description' => 'Deskripsi Kategori',
             ]);
 
             app(CreateCategoryAction::class)->execute($validated);
@@ -170,6 +176,13 @@ class CategoryController extends Controller
                     Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'description' => 'nullable|string|max:255',
+            ], [], [
+                'id' => 'ID Kategori',
+                'code' => 'Kode Kategori',
+                'name' => 'Nama Kategori',
+                'type' => 'Tipe Kategori',
+                'status' => 'Status Kategori',
+                'description' => 'Deskripsi Kategori',
             ]);
 
             app(UpdateCategoryAction::class)->execute($request->id, $validated);

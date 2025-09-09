@@ -69,6 +69,13 @@ class TagController extends Controller
                 'f_tag_color_id' => 'required|exists:m_tag_colors,id',
                 'description' => 'nullable|string|max:255',
                 'memo' => 'nullable|string|max:255',
+            ], [], [
+                'name' => 'Nama Tag',
+                'code' => 'Kode Tag',
+                'status' => 'Status Tag',
+                'f_tag_color_id' => 'Warna Tag',
+                'description' => 'Deskripsi Tag',
+                'memo' => 'Memo Tag',
             ]);
 
             app(CreateTagAction::class)->execute($validated);
@@ -124,6 +131,14 @@ class TagController extends Controller
                 'f_tag_color_id' => 'required|exists:m_tag_colors,id',
                 'description' => 'nullable|string|max:255',
                 'memo' => 'nullable|string|max:255',
+            ], [], [
+                'id' => 'ID Tag',
+                'name' => 'Nama Tag',
+                'code' => 'Kode Tag',
+                'status' => 'Status Tag',
+                'f_tag_color_id' => 'Warna Tag',
+                'description' => 'Deskripsi Tag',
+                'memo' => 'Memo Tag',
             ]);
 
             app(UpdateTagAction::class)->execute($request->id, $validated);

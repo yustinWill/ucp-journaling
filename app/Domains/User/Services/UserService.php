@@ -70,7 +70,7 @@ class UserService
                 't.updated_by',
                 'r.id AS role_id',
                 'r.name AS role_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
             ->leftJoin('roles as r', 't.role_id', '=', 'r.id')

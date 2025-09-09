@@ -77,6 +77,14 @@ class CoaController extends Controller
                     Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'tags' => 'nullable|array',
+            ], [], [
+                'code' => 'Kode COA',
+                'parent_coa_code' => 'Parent COA',
+                'name' => 'Nama COA',
+                'type' => 'Jenis COA',
+                'note' => 'Catatan',
+                'status' => 'Status COA',
+                'tags' => 'Tag COA',
             ]);
 
             app(CreateCoaAction::class)->execute($validated);
@@ -164,6 +172,14 @@ class CoaController extends Controller
                     Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'tags' => 'nullable|array',
+            ], [], [
+                'id' => 'ID COA',
+                'parent_coa_code' => 'Parent COA',
+                'name' => 'Nama COA',
+                'type' => 'Jenis COA',
+                'note' => 'Catatan',
+                'status' => 'Status COA',
+                'tags' => 'Tag COA',
             ]);
 
             app(UpdateCoaAction::class)->execute($validated['id'], $validated);

@@ -69,7 +69,7 @@ class UserController extends Controller
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email',
-                'phone' => 'required|string|max:255|unique:users,phone',
+                'phone' => 'nullable|string|max:255|unique:users,phone',
                 'role' => 'required|exists:m_tags,id',
                 'status' => [
                     'required',
@@ -78,6 +78,15 @@ class UserController extends Controller
                 'password' => 'required|string|min:8|max:50|same:password_confirmation',
                 'password_confirmation' => 'required|string|min:8|max:50',
                 'tags' => 'nullable|array',
+            ], [], [
+                'name' => 'Nama User',
+                'email' => 'Email User',
+                'phone' => 'Nomor Telepon',
+                'role' => 'Role',
+                'status' => 'Status User',
+                'password' => 'Password',
+                'password_confirmation' => 'Konfirmasi Password',
+                'tags' => 'Tag',
             ]);
 
             app(CreateUserAction::class)->execute($validated);
@@ -136,8 +145,8 @@ class UserController extends Controller
             $validated = $request->validate([
                 'id' => 'required|exists:users,id',
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,'.$request->id,
-                'phone' => 'required|string|max:255|unique:users,phone,'.$request->id,
+                'email' => 'required|string|email|max:255|unique:users,email,' . $request->id,
+                'phone' => 'nullable|string|max:255|unique:users,phone,' . $request->id,
                 'role' => 'required|exists:m_tags,id',
                 'status' => [
                     'required',
@@ -146,6 +155,16 @@ class UserController extends Controller
                 'password' => 'nullable|string|min:8|max:50|same:password_confirmation',
                 'password_confirmation' => 'nullable|string|min:8|max:50',
                 'tags' => 'nullable|array',
+            ], [], [
+                'id' => 'ID User',
+                'name' => 'Nama User',
+                'email' => 'Email User',
+                'phone' => 'Nomor Telepon',
+                'role' => 'Role',
+                'status' => 'Status User',
+                'password' => 'Password',
+                'password_confirmation' => 'Konfirmasi Password',
+                'tags' => 'Tag',
             ]);
 
             app(UpdateUserAction::class)->execute($request->id, $validated);

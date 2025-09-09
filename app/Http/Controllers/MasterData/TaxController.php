@@ -95,6 +95,13 @@ class TaxController extends Controller
                     Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'description' => 'nullable|string|max:255',
+            ], [], [
+                'code' => 'Kode Pajak',
+                'name' => 'Nama Pajak',
+                'rate' => 'Tarif Pajak',
+                'type' => 'Tipe Pajak',
+                'status' => 'Status Pajak',
+                'description' => 'Deskripsi Pajak',
             ]);
 
             app(CreateTaxAction::class)->execute($validated);
@@ -168,6 +175,13 @@ class TaxController extends Controller
                     Rule::in(array_column($this->statuses, 'value')),
                 ],
                 'description' => 'nullable|string|max:255',
+            ], [], [
+                'id' => 'ID Pajak',
+                'name' => 'Nama Pajak',
+                'rate' => 'Tarif Pajak',
+                'type' => 'Tipe Pajak',
+                'status' => 'Status Pajak',
+                'description' => 'Deskripsi Pajak',
             ]);
 
             app(UpdateTaxAction::class)->execute($request->id, $validated);

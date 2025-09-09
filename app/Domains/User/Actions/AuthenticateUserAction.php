@@ -16,7 +16,6 @@ class AuthenticateUserAction
     {
         if (Auth::attempt($req)) {
             $permissions = app(RolePermissionService::class)->findAllBasedOnRoleId(Auth::user()->role_id);
-
             if (empty($permissions)) {
                 throw new AppException(ErrorCodes::USER_NO_PERMISSIONS);
             }
@@ -26,7 +25,7 @@ class AuthenticateUserAction
                 throw new AppException(ErrorCodes::USER_NO_COMPANY);
             }
 
-            $permissions = app(UserService::class)->updateLastLogin(Auth::id());
+            app(UserService::class)->updateLastLogin(Auth::id());
 
             $user_company_code = null;
             foreach ($user_company as $company) {

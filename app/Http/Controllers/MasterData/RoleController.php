@@ -90,6 +90,14 @@ class RoleController extends Controller
                     'required',
                     Rule::in(['read', 'write', 'delete', 'approval']),
                 ],
+            ], [], [
+                'name' => 'Nama Role',
+                'status' => 'Status Role',
+                'description' => 'Deskripsi Role',
+                'tags' => 'Tag',
+                'permissions' => 'Permission',
+                'permissions.*.module_id' => 'ID Module',
+                'permissions.*.permission_type' => 'Tipe Permission',
             ]);
 
             app(CreateRoleAction::class)->execute($validated);
@@ -185,6 +193,15 @@ class RoleController extends Controller
                     'required',
                     Rule::in(['read', 'write', 'delete', 'approval']),
                 ],
+            ], [], [
+                'id' => 'ID Role',
+                'name' => 'Nama Role',
+                'status' => 'Status Role',
+                'description' => 'Deskripsi Role',
+                'tags' => 'Tag',
+                'permissions' => 'Permission',
+                'permissions.*.module_id' => 'ID Module',
+                'permissions.*.permission_type' => 'Tipe Permission',
             ]);
 
             app(UpdateRoleAction::class)->execute($request->id, $validated);
@@ -244,7 +261,7 @@ class RoleController extends Controller
         foreach ($permissions as $perm) {
             $groupedData[$perm->module_name][] = [
                 'id' => $perm->id,
-                'name' => $perm->module_name.' - '.$perm->type,
+                'name' => $perm->module_name . ' - ' . $perm->type,
                 'type' => $perm->type,
                 'granted' => (bool) $perm->granted,
             ];

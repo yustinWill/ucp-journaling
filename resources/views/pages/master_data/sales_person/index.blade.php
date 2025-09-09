@@ -98,7 +98,7 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            @if ($canShowImportButton)
+                            {{-- @if ($canShowImportButton)
                                 <a href="{{ route('master_data.sales_person.import') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
@@ -107,7 +107,7 @@
                                 <a href="{{ route('master_data.sales_person.export') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif
+                            @endif --}}
                             @if ($canShowAddButton)
                                 <a href="{{ route('master_data.sales_person.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span

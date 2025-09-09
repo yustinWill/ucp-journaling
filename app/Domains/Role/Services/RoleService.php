@@ -81,7 +81,7 @@ class RoleService
                 't.description',
                 DB::raw('COUNT(DISTINCT u.id) as user_count'),
                 DB::raw('COUNT(DISTINCT rp.id) as permission_count'),
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
                 't.is_active',
             ])
             ->leftJoin('users as u', function ($join) {
@@ -152,7 +152,7 @@ class RoleService
                 $tags = json_decode($role->tags, true);
                 $uniqueTags = [];
                 foreach ($tags as $tag) {
-                    $key = $tag['code'].'_'.$tag['preview'];
+                    $key = $tag['name'].'_'.$tag['preview'];
                     $uniqueTags[$key] = $tag;
                 }
                 $role->tags = json_encode(array_values($uniqueTags));
