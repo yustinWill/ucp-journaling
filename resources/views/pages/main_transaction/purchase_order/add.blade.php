@@ -154,7 +154,7 @@
                                 data-allow-clear="false" required>
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}</option>
                                 @endforeach
                             </select>
                         </div>

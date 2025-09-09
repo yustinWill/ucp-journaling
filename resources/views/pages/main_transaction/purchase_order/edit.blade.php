@@ -147,7 +147,7 @@
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
                                     <option value="{{ $warehouse->id }}"
-                                        @if ($purchaseOrder['warehouse_id'] == $warehouse->id) selected @endif>{{ $warehouse->name }}</option>
+                                        @if ($purchaseOrder['warehouse_id'] == $warehouse->id) selected @endif>{{ $warehouse->code }} - {{ $warehouse->name }}</option>
                                 @endforeach
                             </select>
                         </div>

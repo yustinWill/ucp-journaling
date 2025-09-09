@@ -81,7 +81,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Gudang Tujuan (dari PO)</label>
                     <input type="text" class="form-control" id="po-warehouse-info"
-                        value="{{ $purchaseOrder->warehouse_name ?? '' }}" disabled />
+                        value="{{ $purchaseOrder->warehouse_code}} - {{ $purchaseOrder->warehouse_name}}" disabled />
                 </div>
             </div>
 
@@ -139,7 +139,7 @@
                                 name="warehouse_id" data-allow-clear="false" required>
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}</option>
                                 @endforeach
                             </select>
                         </div>

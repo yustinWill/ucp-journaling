@@ -94,7 +94,7 @@ class PurchaseDeliveryService
                 'w.name as warehouse_name',
                 'w.id as warehouse_id',
                 'u.name as created_by_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin('t_purchase_orders as po', 'pd.f_purchase_order_id', '=', 'po.id')
             ->leftJoin('m_contacts as s', 'po.f_supplier_id', '=', 's.id')

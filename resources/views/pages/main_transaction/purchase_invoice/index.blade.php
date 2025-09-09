@@ -275,10 +275,10 @@
                                 if (!data) return '-';
                                 let tags = JSON.parse(data);
                                 return tags.map(tag => {
-                                    if (tag.code == null) {
+                                    if (tag.name == null) {
                                         return '';
                                     }
-                                    return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
+                                    return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
                                 }).join('');
                             }
                         },
