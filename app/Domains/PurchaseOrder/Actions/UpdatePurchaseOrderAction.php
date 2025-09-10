@@ -35,7 +35,7 @@ class UpdatePurchaseOrderAction
                     'qty' => $product['quantity'],
                     'unit_id' => $unit_data->f_unit_id,
                     'price_per_qty' => $product['unit_price'],
-                    'tax_id' => $product['tax_id'],
+                    // 'tax_id' => $product['tax_id'],
                     'total' => $product['total'],
                 ];
 

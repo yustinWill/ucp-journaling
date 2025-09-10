@@ -115,6 +115,7 @@ class PurchaseOrderController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
 
+        $customers = app(ContactService::class)->findAllByType('EMPLOYEE');
         $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
@@ -130,6 +131,7 @@ class PurchaseOrderController extends Controller
 
         return view('pages.main_transaction.purchase_order.add', [
             'suppliers' => $suppliers,
+            'customers' => $customers,
             'paymentTerms' => $paymentTerms,
             'warehouses' => $warehouses,
             'products' => $products,
@@ -195,18 +197,19 @@ class PurchaseOrderController extends Controller
                 'tags' => 'nullable|array',
                 'tags.*' => 'string|max:50',
                 'memo' => 'nullable|string|max:500',
-                'discount_amount' => 'nullable|string|max:50',
-                'subtotal' => 'required|numeric|min:0',
-                'total_before_discount' => 'required|numeric|min:0',
-                'tax_amount' => 'required|numeric|min:0',
+                'customer_id' => 'required|exists:m_contacts,id',
+                // 'discount_amount' => 'nullable|string|max:50',
+                // 'subtotal' => 'required|numeric|min:0',
+                // 'total_before_discount' => 'required|numeric|min:0',
+                // 'tax_amount' => 'required|numeric|min:0',
                 'total' => 'required|numeric|min:0',
-                'include_tax' => 'required|boolean',
+                // 'include_tax' => 'required|boolean',
                 'products' => 'required|array|min:1',
                 'products.*.product_id' => 'required|integer',
                 'products.*.quantity' => 'required|numeric|min:1',
                 'products.*.unit' => 'required|string|max:20',
                 'products.*.unit_price' => 'required|string|max:50',
-                'products.*.tax_id' => 'required|string|max:50',
+                // 'products.*.tax_id' => 'required|string|max:50',
                 'products.*.total' => 'required|string|max:50',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
             ], [], [
@@ -224,18 +227,19 @@ class PurchaseOrderController extends Controller
                 'tags' => 'Tag',
                 'tags.*' => 'Tag',
                 'memo' => 'Memo',
-                'discount_amount' => 'Diskon',
-                'subtotal' => 'Subtotal',
-                'total_before_discount' => 'Total Sebelum Diskon',
-                'tax_amount' => 'Jumlah Pajak',
+                'customer_id' => 'Customer',
+                // 'discount_amount' => 'Diskon',
+                // 'subtotal' => 'Subtotal',
+                // 'total_before_discount' => 'Total Sebelum Diskon',
+                // 'tax_amount' => 'Jumlah Pajak',
                 'total' => 'Total',
-                'include_tax' => 'Harga Termasuk Pajak',
+                // 'include_tax' => 'Harga Termasuk Pajak',
                 'products' => 'Produk',
                 'products.*.product_id' => 'ID Produk',
                 'products.*.quantity' => 'Qty Produk',
                 'products.*.unit' => 'Satuan Produk',
                 'products.*.unit_price' => 'Harga Satuan Produk',
-                'products.*.tax_id' => 'ID Pajak Produk',
+                // 'products.*.tax_id' => 'ID Pajak Produk',
                 'products.*.total' => 'Total Produk',
                 'attachment' => 'Lampiran',
             ]);
@@ -302,7 +306,7 @@ class PurchaseOrderController extends Controller
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
                 'unit_price' => $prod->price_per_qty,
-                'tax_name' => $prod->tax_name,
+                // 'tax_name' => $prod->tax_name,
                 'total' => $prod->total,
             ];
         }
@@ -363,13 +367,14 @@ class PurchaseOrderController extends Controller
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
             'warehouse' => $po_data->warehouse_code . ' - ' . $po_data->warehouse_name,
-            'include_tax' => $po_data->is_price_include_tax,
+            'customer_name' => $po_data->customer_name,
+            // 'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
             'total' => $po_data->grand_price,
-            'subtotal' => $po_data->subtotal,
-            'tax_amount' => $po_data->total_tax,
-            'total_before_discount' => $po_data->total_price_before_discount,
-            'discount_amount' => $po_data->discount,
+            // 'subtotal' => $po_data->subtotal,
+            // 'tax_amount' => $po_data->total_tax,
+            // 'total_before_discount' => $po_data->total_price_before_discount,
+            // 'discount_amount' => $po_data->discount,
             'total_paid' => $po_data->total_paid,
             'remaining_bill' => $po_data->remaining_bill,
             'currency' => 'IDR',
@@ -445,6 +450,7 @@ class PurchaseOrderController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
 
+        $customers = app(ContactService::class)->findAllByType('EMPLOYEE');
         $po_data = app(PurchaseOrderService::class)->findOne($id);
         $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
         $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
@@ -452,7 +458,6 @@ class PurchaseOrderController extends Controller
         $purchaseDeliveries = app(PurchaseDeliveryService::class)->findAllHeaderBasedOnPoId($id);
         $purchaseInvoices = app(PurchaseInvoiceService::class)->findAllHeaderBasedOnPoId($id);
 
-        // dd($po_data);
         $auditLogs = [];
         foreach ($audit_logs as $log) {
             $auditLogs[] = [
@@ -474,8 +479,8 @@ class PurchaseOrderController extends Controller
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
                 'unit_price' => $prod->price_per_qty,
-                'tax_id' => $prod->f_tax_id,
-                'tax_name' => $prod->tax_name,
+                // 'tax_id' => $prod->f_tax_id,
+                // 'tax_name' => $prod->tax_name,
                 'total' => $prod->total,
             ];
         }
@@ -536,6 +541,8 @@ class PurchaseOrderController extends Controller
             'email' => $po_data->supplier_email,
             'address' => $po_data->supplier_address,
             'supplier_reference' => $po_data->supplier_reference_no,
+            'customer_name' => $po_data->customer_name,
+            'customer_id' => $po_data->f_customer_id,
             'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
             'payment_term_id' => $po_data->f_payment_term_id,
@@ -545,13 +552,13 @@ class PurchaseOrderController extends Controller
             'description' => $po_data->description,
             'warehouse' => $po_data->warehouse_code . ' - ' . $po_data->warehouse_name,
             'warehouse_id' => $po_data->f_warehouse_id,
-            'include_tax' => $po_data->is_price_include_tax,
+            // 'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
             'total' => $po_data->grand_price,
-            'subtotal' => $po_data->subtotal,
-            'tax_amount' => $po_data->total_tax,
-            'total_before_discount' => $po_data->total_price_before_discount,
-            'discount_amount' => $po_data->discount,
+            // 'subtotal' => $po_data->subtotal,
+            // 'tax_amount' => $po_data->total_tax,
+            // 'total_before_discount' => $po_data->total_price_before_discount,
+            // 'discount_amount' => $po_data->discount,
             'total_paid' => $po_data->total_paid,
             'remaining_bill' => $po_data->remaining_bill,
             'currency' => 'IDR',
@@ -583,6 +590,7 @@ class PurchaseOrderController extends Controller
         $purchaseOrder['memo'] = $purchaseOrder['memo'] ?? '';
 
         $data = [
+            'customers' => $customers,
             'purchaseOrder' => $purchaseOrder,
             'suppliers' => $suppliers,
             'warehouses' => $warehouses,
@@ -620,6 +628,7 @@ class PurchaseOrderController extends Controller
                 'email' => 'nullable|email',
                 'address' => 'nullable|string|max:255',
                 'supplier_reference' => 'nullable|string|max:255',
+                'customer_id' => 'required|exists:m_contacts,id',
                 'payment_terms' => 'required|string|max:50',
                 'payment_term_day_count' => 'nullable|integer',
                 'payment_term_due_date' => 'nullable|date',
@@ -628,19 +637,19 @@ class PurchaseOrderController extends Controller
                 'tags' => 'nullable|array',
                 'tags.*' => 'string|max:50',
                 'memo' => 'nullable|string|max:500',
-                'discount_amount' => 'nullable|string|max:50',
-                'subtotal' => 'required|numeric|min:0',
-                'total_before_discount' => 'required|numeric|min:0',
-                'tax_amount' => 'required|numeric|min:0',
+                // 'discount_amount' => 'nullable|string|max:50',
+                // 'subtotal' => 'required|numeric|min:0',
+                // 'total_before_discount' => 'required|numeric|min:0',
+                // 'tax_amount' => 'required|numeric|min:0',
                 'total' => 'required|numeric|min:0',
-                'include_tax' => 'required|boolean',
+                // 'include_tax' => 'required|boolean',
                 'products' => 'required|array|min:1',
                 'products.*.id' => 'nullable|integer',
                 'products.*.product_id' => 'required|integer',
                 'products.*.quantity' => 'required|numeric|min:1',
                 'products.*.unit' => 'required|string|max:20',
                 'products.*.unit_price' => 'required|string|max:50',
-                'products.*.tax_id' => 'required|string|max:50',
+                // 'products.*.tax_id' => 'required|string|max:50',
                 'products.*.total' => 'required|string|max:50',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
             ], [], [
@@ -651,6 +660,7 @@ class PurchaseOrderController extends Controller
                 'email' => 'Email Supplier',
                 'address' => 'Alamat Supplier',
                 'supplier_reference' => 'Referensi Supplier',
+                'customer_id' => 'Customer',
                 'payment_terms' => 'Syarat Pembayaran',
                 'payment_term_day_count' => 'Jumlah Hari Pembayaran',
                 'payment_term_due_date' => 'Jatuh Tempo Pembayaran',
@@ -659,23 +669,23 @@ class PurchaseOrderController extends Controller
                 'tags' => 'Tag',
                 'tags.*' => 'Tag',
                 'memo' => 'Memo',
-                'discount_amount' => 'Diskon',
-                'subtotal' => 'Subtotal',
-                'total_before_discount' => 'Total Sebelum Diskon',
-                'tax_amount' => 'Jumlah Pajak',
+                // 'discount_amount' => 'Diskon',
+                // 'subtotal' => 'Subtotal',
+                // 'total_before_discount' => 'Total Sebelum Diskon',
+                // 'tax_amount' => 'Jumlah Pajak',
                 'total' => 'Total',
-                'include_tax' => 'Harga Termasuk Pajak',
+                // 'include_tax' => 'Harga Termasuk Pajak',
                 'products' => 'Produk',
                 'products.*.id' => 'ID Produk',
                 'products.*.product_id' => 'ID Produk',
                 'products.*.quantity' => 'Qty Produk',
                 'products.*.unit' => 'Satuan Produk',
                 'products.*.unit_price' => 'Harga Satuan Produk',
-                'products.*.tax_id' => 'ID Pajak Produk',
+                // 'products.*.tax_id' => 'ID Pajak Produk',
                 'products.*.total' => 'Total Produk',
                 'attachment' => 'Lampiran',
             ]);
-            
+
             app(UpdatePurchaseOrderAction::class)->execute($validated);
 
             return response()->json([

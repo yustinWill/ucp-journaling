@@ -175,6 +175,10 @@
                                         <label class="form-label">Syarat Pembayaran</label>
                                         <input type="text" class="form-control" value="{{ $purchaseOrder['payment_terms'] ?? '-' }}" disabled />
                                     </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Customer</label>
+                                        <input type="text" class="form-control" value="{{ $purchaseOrder['customer_name'] }}" disabled />
+                                    </div>
                                 </div>
 
                                 <!-- Row 2: Jumlah Hari, Tanggal Jatuh Tempo (conditional) -->
@@ -209,10 +213,10 @@
                                 <!-- Informasi Pembelian Section -->
                                 <div class="section-header mt-12 d-flex justify-content-between align-items-center">
                                     <h6>Informasi Pembelian</h6>
-                                    <div class="form-check form-switch">
+                                    {{-- <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="include-tax" name="include_tax" {{ $purchaseOrder['include_tax'] ? 'checked' : '' }} disabled>
                                         <label class="form-check-label" for="include-tax">Harga Termasuk Pajak</label>
-                                    </div>
+                                    </div> --}}
                                 </div>
 
                                 <!-- Product Table -->
@@ -224,7 +228,7 @@
                                                     <th style="width: 12%;">Kuantitas</th>
                                                     <th style="width: 10%;">Satuan</th>
                                                     <th style="width: 18%;">Harga Satuan</th>
-                                                    <th style="width: 15%;">Pajak</th>
+                                                    {{-- <th style="width: 15%;">Pajak</th> --}}
                                                     <th style="width: 20%;">Jumlah</th>
                                                 </tr>
                                             </thead>
@@ -243,9 +247,9 @@
                                                     <td>
                                                         <input type="text" class="form-control" value="Rp {{ number_format($line['unit_price'], 0, ',', '.') }}" disabled />
                                                     </td>
-                                                    <td>
+                                                    {{-- <td>
                                                         <input type="text" class="form-control" value="{{ $line['tax_name'] ?: 'Tanpa Pajak' }}" disabled />
-                                                    </td>
+                                                    </td> --}}
                                                     <td>
                                                         <input type="text" class="form-control" value="Rp {{ number_format($line['total'], 0, ',', '.') }}" disabled />
                                                     </td>
@@ -299,7 +303,7 @@
                                     <!-- Right Side: Financial Summary Section -->
                                     <div class="col-md-6">
                                         <div class="summary-section ps-4">
-                                            <div class="row mb-3">
+                                            {{-- <div class="row mb-3">
                                                 <div class="col-6">
                                                     <label class="form-label">Subtotal</label>
                                                 </div>
@@ -330,7 +334,7 @@
                                                 <div class="col-6">
                                                     <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($purchaseOrder['discount_amount'] ?? 0, 0, ',', '.') }}" disabled>
                                                 </div>
-                                            </div>
+                                            </div> --}}
                                             <div class="row mb-3">
                                                 <div class="col-6">
                                                     <label class="form-label"><strong>Total Akhir</strong></label>

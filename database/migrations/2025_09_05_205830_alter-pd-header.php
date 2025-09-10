@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('t_purchase_deliveries', function (Blueprint $table) {
-            $table->string('attachment')->after('total_item')->nullable();
-        });
+        // Schema::table('t_purchase_deliveries', function (Blueprint $table) {
+        //     $table->string('attachment')->after('total_item')->nullable();
+        // });
     }
 
     /**
