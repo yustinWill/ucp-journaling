@@ -30,6 +30,7 @@ class PurchaseOrderService
             'supplier_email' => $data['email'],
             'supplier_address' => $data['address'],
             'supplier_reference_no' => $data['supplier_reference'],
+            'f_customer_id' => $data['customer_id'],
             'f_payment_term_id' => $data['payment_terms'],
             'payment_term_day_count' => $data['payment_term_day_count'] ?? null,
             'payment_term_due_date' => $data['payment_term_due_date'] ?? null,
@@ -37,11 +38,11 @@ class PurchaseOrderService
             'description' => $data['description'],
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'internal_memo' => $data['memo'] ?? null,
-            'is_price_include_tax' => $data['include_tax'] ?? false,
-            'subtotal' => $data['subtotal'] ?? 0,
-            'total_tax' => $data['tax_amount'] ?? 0,
-            'total_price_before_discount' => $data['total_before_discount'] ?? 0,
-            'discount' => $data['discount_amount'] ?? 0,
+            // 'is_price_include_tax' => $data['include_tax'] ?? false,
+            // 'subtotal' => $data['subtotal'] ?? 0,
+            // 'total_tax' => $data['tax_amount'] ?? 0,
+            // 'total_price_before_discount' => $data['total_before_discount'] ?? 0,
+            // 'discount' => $data['discount_amount'] ?? 0,
             'grand_price' => $data['total'] ?? 0,
             'attachment' => $data['attachment'] ?? null,
             'created_at' => now(),
@@ -57,6 +58,7 @@ class PurchaseOrderService
             'supplier_email' => $data['email'],
             'supplier_address' => $data['address'],
             'supplier_reference_no' => $data['supplier_reference'],
+            'f_customer_id' => $data['customer_id'],
             'f_payment_term_id' => $data['payment_terms'],
             'payment_term_day_count' => $data['payment_term_day_count'] ?? null,
             'payment_term_due_date' => $data['payment_term_due_date'] ?? null,
@@ -64,11 +66,11 @@ class PurchaseOrderService
             'description' => $data['description'],
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'internal_memo' => $data['memo'] ?? null,
-            'is_price_include_tax' => $data['include_tax'] ?? false,
-            'subtotal' => $data['subtotal'] ?? 0,
-            'total_tax' => $data['tax_amount'] ?? 0,
-            'total_price_before_discount' => $data['total_before_discount'] ?? 0,
-            'discount' => $data['discount_amount'] ?? 0,
+            // 'is_price_include_tax' => $data['include_tax'] ?? false,
+            // 'subtotal' => $data['subtotal'] ?? 0,
+            // 'total_tax' => $data['tax_amount'] ?? 0,
+            // 'total_price_before_discount' => $data['total_before_discount'] ?? 0,
+            // 'discount' => $data['discount_amount'] ?? 0,
             'grand_price' => $data['total'] ?? 0,
             'updated_at' => now(),
             'updated_by' => Auth::id(),
@@ -85,7 +87,7 @@ class PurchaseOrderService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name.' as po')
+        $query = DB::table($this->table_name . ' as po')
             ->select(
                 'po.*',
                 'mc.name AS supplier_name',
@@ -145,7 +147,7 @@ class PurchaseOrderService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name.' as po')
+        $data = DB::table($this->table_name . ' as po')
             ->select(
                 'po.*',
                 'mc.name AS supplier_name',
@@ -154,10 +156,13 @@ class PurchaseOrderService
                 'pt.type AS payment_term_type',
                 'mw.code AS warehouse_code',
                 'mw.name AS warehouse_name',
+                'c.name AS customer_name',
+                // 'c.address AS customer_address',
                 'u.name AS created_by_name',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
             )
             ->leftJoin('m_contacts as mc', 'mc.id', '=', 'po.f_supplier_id')
+            ->leftJoin('m_contacts as c', 'c.id', '=', 'po.f_customer_id')
             ->leftJoin('users as u', 'po.created_by', '=', 'u.id')
             ->leftJoin('m_payment_terms as pt', 'pt.id', '=', 'po.f_payment_term_id')
             ->leftJoin('m_warehouses as mw', 'mw.id', '=', 'po.f_warehouse_id')
@@ -183,7 +188,7 @@ class PurchaseOrderService
 
     public function findAvailableForDelivery()
     {
-        return DB::table($this->table_name.' as po')
+        return DB::table($this->table_name . ' as po')
             ->select([
                 'po.id as value',
                 DB::raw("CONCAT(po.transaction_code, ' - ', mc.name) as label"),

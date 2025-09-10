@@ -115,6 +115,21 @@
                         @endif
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">Customer <span style="color: red;">*</span></label>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="purchase-order-customer" name="customer_id"
+                                data-allow-clear="false">
+                                <option value="">Pilih Customer</option>
+                                @foreach ($customers as $customer)
+                                    <option value="{{ $customer->id }}" @if ($purchaseOrder['customer_id'] == $customer->id) selected @endif>
+                                        {{ $customer->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Row 2: Jumlah Hari, Tanggal Jatuh Tempo (conditional) ---->
@@ -123,8 +138,7 @@
                     <label class="form-label">Jumlah Hari <span style="color: red;">*</span></label>
                     <div class="input-group">
                         <input type="number" class="form-control" id="purchase-order-days" name="days"
-                            value="{{ $purchaseOrder['days'] ?? '' }}" min="0" max="365"
-                            disabled>
+                            value="{{ $purchaseOrder['days'] ?? '' }}" min="0" max="365" disabled>
                         <span class="input-group-text">Hari</span>
                     </div>
                     <small class="form-text text-muted">Jumlah hari untuk pembayaran (0 untuk immediate/COD)</small>
@@ -147,7 +161,8 @@
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
                                     <option value="{{ $warehouse->id }}"
-                                        @if ($purchaseOrder['warehouse_id'] == $warehouse->id) selected @endif>{{ $warehouse->code }} - {{ $warehouse->name }}</option>
+                                        @if ($purchaseOrder['warehouse_id'] == $warehouse->id) selected @endif>{{ $warehouse->code }} -
+                                        {{ $warehouse->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -168,7 +183,7 @@
                 </div>
             </div>
 
-            <!-- Product Section ---->
+            {{-- <!-- Product Section ---->
             <div class="section-header mt-12 d-flex justify-content-between align-items-center">
                 <h6>Informasi Pembelian</h6>
                 <div class="form-check form-switch">
@@ -176,7 +191,7 @@
                         {{ $purchaseOrder['include_tax'] ?? false ? 'checked' : '' }}>
                     <label class="form-check-label" for="include-tax">Harga Termasuk Pajak</label>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Disabled State Message ---->
             <div id="product-disabled-message" class="alert alert-info" style="display: none;">
@@ -195,7 +210,6 @@
                                 <th style="width: 12%;">Kuantitas</th>
                                 <th style="width: 10%;">Satuan</th>
                                 <th style="width: 18%;">Harga Satuan</th>
-                                <th style="width: 15%;">Pajak</th>
                                 <th style="width: 15%;">Jumlah</th>
                                 <th style="width: 5%;">Aksi</th>
                             </tr>
@@ -224,8 +238,9 @@
                                                 disabled /></td>
                                         <td><input type="text" class="form-control currency-input"
                                                 name="products[{{ $index }}][unit_price]"
-                                                value="{{ $line['unit_price'] }}" readonly title="Harga tidak dapat diubah setelah PO dibuat" /></td>
-                                        <td>
+                                                value="{{ $line['unit_price'] }}"
+                                                title="Harga tidak dapat diubah setelah PO dibuat" /></td>
+                                        {{-- <td>
                                             <div class="position-relative">
                                                 <select class="form-select tax-select select2Tax"
                                                     name="products[{{ $index }}][tax_id]"
@@ -238,7 +253,7 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                        </td>
+                                        </td> --}}
                                         <td><input type="text" class="form-control"
                                                 name="products[{{ $index }}][total]" disabled />
                                         </td>
@@ -267,9 +282,9 @@
                                 </td>
                                 <td>
                                     <input type="text" class="form-control currency-input"
-                                        name="products[0][unit_price]" readonly title="Harga tidak dapat diubah" />
+                                        name="products[0][unit_price]" title="Harga tidak dapat diubah" />
                                 </td>
-                                <td>
+                                {{-- <td>
                                     <div class="position-relative">
                                         <select class="select2Tax form-select" name="products[0][tax_id]"
                                             data-allow-clear="false" disabled>
@@ -279,7 +294,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                </td>
+                                </td> --}}
                                 <td><input type="text" class="form-control currency-input" name="products[0][total]"
                                         disabled /></td>
                                 <td>
@@ -370,7 +385,7 @@
                 <!-- Right Side: Financial Summary Section ---->
                 <div class="col-md-6">
                     <div class="summary-section ps-4">
-                        <div class="row mb-3">
+                        {{-- <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label">Subtotal</label>
                             </div>
@@ -406,7 +421,7 @@
                                     name="discount_amount" dir="rtl"
                                     value="{{ $purchaseOrder['discount_amount'] }}">
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label"><strong>Total Akhir</strong></label>
@@ -421,10 +436,10 @@
             </div>
 
             <!-- Hidden fields for calculations ---->
-            <input type="hidden" id="purchase-order-subtotal" name="subtotal"
+            {{-- <input type="hidden" id="purchase-order-subtotal" name="subtotal"
                 value="{{ $purchaseOrder['subtotal'] ?? 0 }}" />
             <input type="hidden" id="purchase-order-tax-amount" name="tax_amount"
-                value="{{ $purchaseOrder['tax_amount'] ?? 0 }}" />
+                value="{{ $purchaseOrder['tax_amount'] ?? 0 }}" /> --}}
             <input type="hidden" id="purchase-order-total" name="total" value="{{ $purchaseOrder['total'] }}" />
 
             <!-- Action Buttons ---->
@@ -515,7 +530,7 @@
                     row.find('input[name*="[quantity]"]').val('');
                     row.find('input[name*="[unit]"]').val('');
                     row.find('input[name*="[unit_price]"]').val('');
-                    row.find('.tax-select').val('').trigger('change');
+                    // row.find('.tax-select').val('').trigger('change');
                     row.find('input[name*="[total]"]').val('');
                 });
                 calculateTotals();
@@ -537,7 +552,7 @@
                     productSelect.empty().append('<option value="">Pilih Produk</option>');
                     products.forEach(product => {
                         productSelect.append(
-                            `<option value="${product.id}" data-unit="${product.unit_name}">${product.name}</option>`
+                            `<option value="${product.id}" data-unit="${product.unit_name}">${product.code} - ${product.name}</option>`
                         );
                     });
 
@@ -634,54 +649,56 @@
             // Product calculation function
             function calculateTotals() {
                 let subtotal = 0;
-                let taxAmount = 0;
+                // let taxAmount = 0;
 
                 // Calculate from product table rows
                 $('#product-table tbody tr').each(function() {
                     const quantity = parseFloat($(this).find('input[name*="[quantity]"]').val()) || 0;
                     const unitPriceInput = $(this).find('input[name*="[unit_price]"]');
                     const unitPrice = parseCurrency(unitPriceInput.val()) || 0;
-                    const taxSelect = $(this).find('select[name*="[tax_id]"]').val();
-                    const includesTax = $('#include-tax').is(':checked');
+                    // const taxSelect = $(this).find('select[name*="[tax_id]"]').val();
+                    // const includesTax = $('#include-tax').is(':checked');
 
                     if (quantity > 0 && unitPrice > 0) {
                         let rowTotal = quantity * unitPrice;
-                        let rowTax = 0;
+                        // let rowTax = 0;
 
-                        if (taxSelect && taxSelect !== '') {
-                            if (includesTax) {
-                                // Price includes tax - extract tax amount
-                                rowTax = rowTotal * 0.11 / 1.11;
-                                rowTotal = rowTotal - rowTax;
-                            } else {
-                                // Price excludes tax - add tax amount
-                                rowTax = rowTotal * 0.11;
-                            }
-                        }
+                        // if (taxSelect && taxSelect !== '') {
+                        //     if (includesTax) {
+                        //         // Price includes tax - extract tax amount
+                        //         rowTax = rowTotal * 0.11 / 1.11;
+                        //         rowTotal = rowTotal - rowTax;
+                        //     } else {
+                        //         // Price excludes tax - add tax amount
+                        //         rowTax = rowTotal * 0.11;
+                        //     }
+                        // }
 
                         subtotal += rowTotal;
-                        taxAmount += rowTax;
+                        // taxAmount += rowTax;
 
                         // Update row total display
-                        $(this).find('input[name*="[total]"]').val(formatCurrency(rowTotal + rowTax));
+                        // $(this).find('input[name*="[total]"]').val(formatCurrency(rowTotal + rowTax));
+                        $(this).find('input[name*="[total]"]').val(formatCurrency(rowTotal));
                     } else {
                         $(this).find('input[name*="[total]"]').val('');
                     }
                 });
 
-                const totalBeforeDiscount = subtotal + taxAmount;
-                const discount = parseCurrency($('#discount-amount').val());
-                const finalTotal = totalBeforeDiscount - discount;
+                // const totalBeforeDiscount = subtotal + taxAmount;
+                // const discount = parseCurrency($('#discount-amount').val());
+                // const finalTotal = totalBeforeDiscount - discount;
+                const finalTotal = subtotal;
 
                 // Update display fields
-                $('#subtotal-amount').val(formatCurrency(subtotal));
-                $('#tax-amount').val(formatCurrency(taxAmount));
-                $('#total-before-discount').val(formatCurrency(totalBeforeDiscount));
+                // $('#subtotal-amount').val(formatCurrency(subtotal));
+                // $('#tax-amount').val(formatCurrency(taxAmount));
+                // $('#total-before-discount').val(formatCurrency(totalBeforeDiscount));
                 $('#final-total').val(formatCurrency(finalTotal));
 
                 // Update hidden fields
-                $('#purchase-order-subtotal').val(subtotal);
-                $('#purchase-order-tax-amount').val(taxAmount);
+                // $('#purchase-order-subtotal').val(subtotal);
+                // $('#purchase-order-tax-amount').val(taxAmount);
                 $('#purchase-order-total').val(finalTotal);
             }
 
@@ -690,7 +707,8 @@
 
             // Bind calculation events
             $(document).on('input change',
-                'input[name*="[quantity]"], input[name*="[unit_price]"], select[name*="[tax_id]"]',
+                // 'input[name*="[quantity]"], input[name*="[unit_price]"], select[name*="[tax_id]"]',
+                'input[name*="[quantity]"], input[name*="[unit_price]"]',
                 function() {
                     if ($(this).attr('name').includes('[unit_price]')) {
                         formatCurrencyInput(this);
@@ -699,15 +717,15 @@
                 });
 
             // Include tax checkbox handler
-            $('#include-tax').on('change', function() {
-                calculateTotals();
-            });
+            // $('#include-tax').on('change', function() {
+            //     calculateTotals();
+            // });
 
             // Discount input change handler
-            $('#discount-amount').on('input', function() {
-                formatCurrencyInput(this);
-                calculateTotals();
-            });
+            // $('#discount-amount').on('input', function() {
+            //     formatCurrencyInput(this);
+            //     calculateTotals();
+            // });
 
 
             //Repeater Section
@@ -720,14 +738,14 @@
                 });
             });
 
-            $('select.select2Tax').each(function() {
-                $(this).select2({
-                    placeholder: "Pilih Pajak",
-                    allowClear: true,
-                    dropdownParent: $(this).parent(),
-                    width: '100%'
-                });
-            });
+            // $('select.select2Tax').each(function() {
+            //     $(this).select2({
+            //         placeholder: "Pilih Pajak",
+            //         allowClear: true,
+            //         dropdownParent: $(this).parent(),
+            //         width: '100%'
+            //     });
+            // });
 
             $('.form-repeater-product').repeater({
                 show: function() {
@@ -739,7 +757,6 @@
                             'data-select2-id tabindex aria-hidden');
                         $(this).find('select.select2Product').each(function() {
                             if ($.fn.select2 && $(this).data('select2')) {
-                                alert('Destroying existing Select2 instance');
                                 $(this).select2('destroy');
                             }
                             $(this).select2({
@@ -750,21 +767,21 @@
                             });
                         });
 
-                        $(this).find('select.select2Tax').removeClass(
-                            'select2-hidden-accessible').removeAttr(
-                            'data-select2-id tabindex aria-hidden');
-                        $(this).find('select.select2Tax').each(function() {
-                            if ($.fn.select2 && $(this).data('select2')) {
-                                alert('Destroying existing Select2 instance');
-                                $(this).select2('destroy');
-                            }
-                            $(this).select2({
-                                placeholder: "Pilih Pajak",
-                                allowClear: true,
-                                dropdownParent: $(this).parent(),
-                                width: '100%'
-                            });
-                        });
+                        // $(this).find('select.select2Tax').removeClass(
+                        //     'select2-hidden-accessible').removeAttr(
+                        //     'data-select2-id tabindex aria-hidden');
+                        // $(this).find('select.select2Tax').each(function() {
+                        //     if ($.fn.select2 && $(this).data('select2')) {
+                        //         alert('Destroying existing Select2 instance');
+                        //         $(this).select2('destroy');
+                        //     }
+                        //     $(this).select2({
+                        //         placeholder: "Pilih Pajak",
+                        //         allowClear: true,
+                        //         dropdownParent: $(this).parent(),
+                        //         width: '100%'
+                        //     });
+                        // });
                         initCleaveCurrency(document);
                     });
                 },
@@ -841,13 +858,13 @@
                 // Collect form data
                 const formData = new FormData($('#purchase-order-form')[0]);
                 formData.append('id', $('#purchase-order-id').val());
-                const includeTax = $('#include-tax').is(':checked') ? 1 : 0;
-                formData.append('include_tax', includeTax);
-                const totalBeforeDiscount = parseCurrency($('#total-before-discount').val());
-                formData.append('total_before_discount', totalBeforeDiscount);
+                // const includeTax = $('#include-tax').is(':checked') ? 1 : 0;
+                // formData.append('include_tax', includeTax);
+                // const totalBeforeDiscount = parseCurrency($('#total-before-discount').val());
+                // formData.append('total_before_discount', totalBeforeDiscount);
 
-                const discountAmount = parseCurrency($('#discount-amount').val());
-                formData.append('discount_amount', discountAmount);
+                // const discountAmount = parseCurrency($('#discount-amount').val());
+                // formData.append('discount_amount', discountAmount);
 
                 const paymentTermDays = $('#purchase-order-days').val();
                 formData.append('payment_term_day_count', paymentTermDays);
@@ -864,7 +881,7 @@
                     const quantity = $(this).find('input[name*="[quantity]"]').val();
                     const unit = $(this).find('input[name*="[unit]"]').val();
                     const unitPrice = parseCurrency($(this).find('input[name*="[unit_price]"]').val());
-                    const taxId = $(this).find('select[name*="[tax_id]"]').val();
+                    // const taxId = $(this).find('select[name*="[tax_id]"]').val();
                     const total = parseCurrency($(this).find('input[name*="[total]"]').val());
 
                     if (id && id !== '' &&
@@ -872,7 +889,7 @@
                         quantity > 0 &&
                         unit !== undefined && unit !== null && unit !== '' &&
                         unitPrice > 0 &&
-                        taxId !== undefined && taxId !== null && taxId !== '' &&
+                        // taxId !== undefined && taxId !== null && taxId !== '' &&
                         total > 0) {
                         // Append each product field to FormData
                         formData.append(`products[${counter}][id]`, id);
@@ -880,7 +897,7 @@
                         formData.append(`products[${counter}][quantity]`, quantity);
                         formData.append(`products[${counter}][unit]`, unit);
                         formData.append(`products[${counter}][unit_price]`, unitPrice);
-                        formData.append(`products[${counter}][tax_id]`, taxId);
+                        // formData.append(`products[${counter}][tax_id]`, taxId);
                         formData.append(`products[${counter}][total]`, total);
                         counter++;
                     }
@@ -891,21 +908,21 @@
                     const quantity = $(this).find('input[name*="[quantity]"]').val();
                     const unit = $(this).find('input[name*="[unit]"]').val();
                     const unitPrice = parseCurrency($(this).find('input[name*="[unit_price]"]').val());
-                    const taxId = $(this).find('select[name*="[tax_id]"]').val();
+                    // const taxId = $(this).find('select[name*="[tax_id]"]').val();
                     const total = parseCurrency($(this).find('input[name*="[total]"]').val());
 
                     if (productId && productId !== '' &&
                         quantity > 0 &&
                         unit !== undefined && unit !== null && unit !== '' &&
                         unitPrice > 0 &&
-                        taxId !== undefined && taxId !== null && taxId !== '' &&
+                        // taxId !== undefined && taxId !== null && taxId !== '' &&
                         total > 0) {
 
                         formData.append(`products[${counter}][product_id]`, productId);
                         formData.append(`products[${counter}][quantity]`, quantity);
                         formData.append(`products[${counter}][unit]`, unit);
                         formData.append(`products[${counter}][unit_price]`, unitPrice);
-                        formData.append(`products[${counter}][tax_id]`, taxId);
+                        // formData.append(`products[${counter}][tax_id]`, taxId);
                         formData.append(`products[${counter}][total]`, total);
                         counter++;
                     }
@@ -946,7 +963,8 @@
 
                         Swal.fire({
                             title: 'Gagal!',
-                            text: errorMessage,
+                            // text: errorMessage,
+                            html: errorMessage,
                             icon: 'error',
                             customClass: {
                                 confirmButton: 'btn btn-primary'

@@ -124,6 +124,21 @@
                         @endif
                     </div>
                 </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Customer <span style="color: red;">*</span></label>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select class="global-select2 form-select" id="purchase-order-customer" name="customer_id"
+                                data-allow-clear="false">
+                                <option value="">Pilih Customer</option>
+                                @foreach ($customers as $customer)
+                                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Row 2: Jumlah Hari, Tanggal Jatuh Tempo (conditional) -->
@@ -154,7 +169,8 @@
                                 data-allow-clear="false" required>
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}</option>
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -178,10 +194,10 @@
             <!-- Product Section -->
             <div class="section-header mt-12 d-flex justify-content-between align-items-center">
                 <h6>Informasi Pembelian</h6>
-                <div class="form-check form-switch">
+                {{-- <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="include-tax" name="include_tax">
                     <label class="form-check-label" for="include-tax">Harga Termasuk Pajak</label>
-                </div>
+                </div> --}}
             </div>
 
             <!-- Disabled State Message -->
@@ -201,7 +217,7 @@
                                 <th style="width: 12%;">Kuantitas</th>
                                 <th style="width: 10%;">Satuan</th>
                                 <th style="width: 18%;">Harga Satuan</th>
-                                <th style="width: 15%;">Pajak</th>
+                                {{-- <th style="width: 15%;">Pajak</th> --}}
                                 <th style="width: 15%;">Jumlah</th>
                                 <th style="width: 5%;">Aksi</th>
                             </tr>
@@ -223,7 +239,7 @@
                                     <input type="text" class="form-control currency-input"
                                         name="products[0][unit_price]" disabled />
                                 </td>
-                                <td>
+                                {{-- <td>
                                     <div class="position-relative">
                                         <select class="select2Tax form-select" name="products[0][tax_id]"
                                             data-allow-clear="false" disabled>
@@ -233,7 +249,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                </td>
+                                </td> --}}
                                 <td><input type="text" class="form-control currency-input" name="products[0][total]"
                                         disabled /></td>
                                 <td>
@@ -312,7 +328,7 @@
                 <!-- Right Side: Financial Summary Section -->
                 <div class="col-md-6">
                     <div class="summary-section ps-4">
-                        <div class="row mb-3">
+                        {{-- <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label">Subtotal</label>
                             </div>
@@ -347,7 +363,7 @@
                                 <input type="text" class="form-control currency-input" id="discount-amount"
                                     name="discount_amount" dir="rtl" value="Rp 0">
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label"><strong>Total Akhir</strong></label>
@@ -666,19 +682,20 @@
                     }
                 });
 
-                const totalBeforeDiscount = subtotal + taxAmount;
-                const discount = parseCurrency($('#discount-amount').val());
-                const finalTotal = totalBeforeDiscount - discount;
+                // const totalBeforeDiscount = subtotal + taxAmount;
+                // const discount = parseCurrency($('#discount-amount').val());
+                // const finalTotal = totalBeforeDiscount - discount;
 
+                const finalTotal = subtotal;
                 // Update display fields
-                $('#subtotal-amount').val(formatCurrency(subtotal));
-                $('#tax-amount').val(formatCurrency(taxAmount));
-                $('#total-before-discount').val(formatCurrency(totalBeforeDiscount));
+                // $('#subtotal-amount').val(formatCurrency(subtotal));
+                // $('#tax-amount').val(formatCurrency(taxAmount));
+                // $('#total-before-discount').val(formatCurrency(totalBeforeDiscount));
                 $('#final-total').val(formatCurrency(finalTotal));
 
                 // Update hidden fields
-                $('#purchase-order-subtotal').val(subtotal);
-                $('#purchase-order-tax-amount').val(taxAmount);
+                // $('#purchase-order-subtotal').val(subtotal);
+                // $('#purchase-order-tax-amount').val(taxAmount);
                 $('#purchase-order-total').val(finalTotal);
             }
 
@@ -733,6 +750,7 @@
                     'purchase-order-date',
                     'purchase-order-warehouse',
                     'purchase-order-payment-terms',
+                    'purchase-order-customer'
                     // 'purchase-order-due-date'
                 ];
 
