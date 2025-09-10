@@ -279,13 +279,13 @@
 
                                 if (canRead) {
                                     actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                <i class="icon-xs icon-base ti tabler-eye"></i>
+                                <i class="icon-base ti tabler-eye"></i>
                             </a>`;
                                 }
 
                                 // if (canEdit) {
                                 //     actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                            //         <i class="icon-xs icon-base ti tabler-edit"></i>
+                            //         <i class="icon-base ti tabler-edit"></i>
                             //     </a>`;
                                 // }
 

@@ -21,12 +21,27 @@ class SalesDeliveryController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk melihat data.');
         }
 
+        // Load filter data if has permissions
+        $customers = [];
+        $warehouses = [];
+        
+        if (PermissionHelper::hasPermission('master_data_contact', 'read')) {
+            $customers = app(\App\Domains\Contact\Services\ContactService::class)->findAllByType('CUSTOMER');
+        }
+        
+        if (PermissionHelper::hasPermission('master_data_warehouse', 'read')) {
+            $warehouses = app(\App\Domains\Warehouse\Services\WarehouseService::class)->findAll();
+        }
+
         return view('pages.main_transaction.sales_delivery.index', [
-            'canAdd' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
+            'customers' => $customers,
+            'warehouses' => $warehouses,
             'canEdit' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
-            'canDelete' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'delete'),
             'canImport' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'import'),
             'canExport' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'export'),
+            'canViewContact' => PermissionHelper::hasPermission('master_data_contact', 'read'),
+            'canViewUser' => PermissionHelper::hasPermission('master_data_user', 'read'),
+            'canViewSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'read'),
         ]);
     }
 
@@ -214,20 +229,18 @@ class SalesDeliveryController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // TODO: Replace with actual data
-        $mockData = [
-            [
-                'id' => 1,
-                'delivery_date' => '2025-01-15',
-                'delivery_number' => 'SD-2025-001',
-                'customer' => 'PT. Customer A',
-                'warehouse' => 'Gudang Utama',
-                'status' => 'PENDING',
-                'created_by' => 'Admin User',
-            ]
-        ];
+        try {
+            // Get data from service (filters are applied within the service via request())
+            $result = app(\App\Domains\SalesDelivery\Services\SalesDeliveryService::class)->findAllDatatable();
 
-        return response()->json(['data' => $mockData], 200);
+            return response()->json($result, 200);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Terjadi kesalahan saat memuat data',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // Import/Export methods
@@ -299,4 +312,5 @@ class SalesDeliveryController extends Controller
             'message' => 'Export functionality - TODO: Implement'
         ]);
     }
+
 }

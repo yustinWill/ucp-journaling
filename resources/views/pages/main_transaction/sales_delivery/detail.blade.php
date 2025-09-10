@@ -1,14 +1,408 @@
-{{-- TODO: Implement Sales Delivery Detail Page --}}
 @extends('layouts.default')
-@section('page_title') Detail Sales Delivery @stop
-@section('content')
-<div class="card mb-6">
-    <h4 class="card-header">Detail Sales Delivery</h4>
-    <div class="card-body">
-        <p class="text-muted">TODO: Implement Sales Delivery detail page with tabs</p>
-    </div>
-</div>
+@section('page_title')
+    Detail Sales Delivery - {{ $salesDelivery->delivery_number }}
 @stop
+@section('content')
+    <div class="card mb-6">
+        <div class="card-body">
+            <!-- Header Section -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h4 class="mb-3">Detail Sales Delivery</h4>
+                </div>
+                <div class="col-md-4">
+                    @php
+                        $totalActions = 0;
+                        if($canEdit) $totalActions++; // Edit always present
+                        // Add more actions based on status if needed
+                    @endphp
+
+                    @if ($totalActions < 3)
+                        <div class="d-flex gap-2 justify-content-end">
+                            @if ($canEdit)
+                                <a href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id']) }}"
+                                    class="btn btn-primary btn-md waves-effect waves-light">
+                                    <i class="icon-base ti tabler-edit me-2"></i>
+                                    Edit
+                                </a>
+                            @endif
+                        </div>
+                    @else
+                        <!-- Show dropdown for 3 or more actions -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            @if ($canEdit)
+                                <a href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
+                                    <i class="icon-base ti tabler-edit me-2"></i>
+                                    Edit
+                                </a>
+                            @endif
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    Aksi
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <!-- Add status-based actions here if needed -->
+                                </ul>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Entity Title -->
+            <h2>{{ $salesDelivery->delivery_number'] }}</h2>
+            <span>
+                <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
+            </span>
+            <hr class="my-6 mx-n6" />
+
+            <!-- Tab Navigation -->
+            <ul class="nav nav-tabs nav-fill mb-6" role="tablist">
+                <li class="nav-item">
+                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
+                        data-bs-target="#informasi-detail" aria-controls="informasi-detail" aria-selected="true">
+                        <i class="icon-base ti tabler-info-circle me-2"></i>
+                        <span class="align-middle">Informasi Detail</span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#audit-log"
+                        aria-controls="audit-log" aria-selected="false">
+                        <i class="icon-base ti tabler-history me-2"></i>
+                        <span class="align-middle">Audit Log</span>
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content p-0">
+                <!-- Informasi Detail Tab -->
+                <div class="tab-pane fade show active" id="informasi-detail" role="tabpanel">
+                    <!-- Basic Information Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Umum</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">No. Sales Delivery</label>
+                            <input type="text" class="form-control" value="{{ $salesDelivery->delivery_number'] }}"
+                                disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Pengiriman</label>
+                            <input type="text" class="form-control" value="{{ $salesDelivery->delivery_date'] }}"
+                                disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            @php
+                                $statusBadges = [
+                                    'PENDING' => 'bg-label-warning',
+                                    'IN_TRANSIT' => 'bg-label-info',
+                                    'DELIVERED' => 'bg-label-success',
+                                    'CANCELLED' => 'bg-label-danger',
+                                    'RETURNED' => 'bg-label-secondary'
+                                ];
+                                $statusLabels = [
+                                    'PENDING' => 'Menunggu',
+                                    'IN_TRANSIT' => 'Dalam Perjalanan',
+                                    'DELIVERED' => 'Terkirim',
+                                    'CANCELLED' => 'Dibatalkan',
+                                    'RETURNED' => 'Dikembalikan'
+                                ];
+                                $badgeClass = $statusBadges[$salesDelivery->status']] ?? 'bg-label-secondary';
+                                $statusLabel = $statusLabels[$salesDelivery->status']] ?? $salesDelivery->status'];
+                            @endphp
+                            <div>
+                                <span class="badge {{ $badgeClass }} fs-6 px-3 py-2">{{ $statusLabel }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Information Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Customer</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Customer</label>
+                            <input type="text" class="form-control" 
+                                value="{{ $customer->name'] ?? 'N/A' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Customer</label>
+                            <input type="text" class="form-control" 
+                                value="{{ $customer->email'] ?? 'N/A' }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label">Alamat Customer</label>
+                            <textarea class="form-control" rows="2" disabled>{{ $customer->address'] ?? 'N/A' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Warehouse Information Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Gudang</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Gudang</label>
+                            <input type="text" class="form-control" 
+                                value="{{ $warehouse->name'] ?? 'N/A' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Dikirim Oleh</label>
+                            <input type="text" class="form-control" 
+                                value="{{ $salesDelivery->created_by'] ?? 'N/A' }}" disabled />
+                        </div>
+                    </div>
+
+                    <!-- Sales Order Information Section -->
+                    @if($salesOrder)
+                    <div class="section-header mt-12">
+                        <h6>Informasi Sales Order</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">No. Sales Order</label>
+                            <input type="text" class="form-control"
+                                value="{{ $salesOrder->transaction_code'] ?? 'N/A' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status SO</label>
+                            <input type="text" class="form-control"
+                                value="{{ $salesOrder->status'] ?? 'N/A' }}" disabled />
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Delivery Information Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Pengiriman</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Alamat Pengiriman</label>
+                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_address'] ?? '-' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Customer Reference</label>
+                            <input type="text" class="form-control" 
+                                value="{{ $salesDelivery->customer_reference'] ?? '-' }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label">Catatan Pengiriman</label>
+                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_notes'] ?? '-' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Items Delivery Section -->
+                    <div class="section-header mt-12">
+                        <h6>Items Delivery</h6>
+                    </div>
+
+                    <div class="mb-4 mx-n5">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="product-detail-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30%;">Produk</th>
+                                        <th style="width: 12%;">Qty Ordered</th>
+                                        <th style="width: 12%;">Qty Delivered</th>
+                                        <th style="width: 12%;">Unit</th>
+                                        <th style="width: 14%;">Status</th>
+                                        <th style="width: 20%;">Keterangan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($productLines ?? [] as $product)
+                                        <tr>
+                                            <td>{{ $product->product_name ?? $product->product_code }}</td>
+                                            <td class="text-center">{{ number_format($product->quantity_ordered ?? 0) }}</td>
+                                            <td class="text-center">{{ number_format($product->quantity_delivered ?? 0) }}</td>
+                                            <td class="text-center">{{ $product->unit_name ?? '-' }}</td>
+                                            <td class="text-center">
+                                                @php
+                                                    $deliveryStatus = $product->delivery_status ?? 'PENDING';
+                                                    $deliveryBadges = [
+                                                        'PENDING' => 'bg-label-warning',
+                                                        'DELIVERED' => 'bg-label-success',
+                                                        'PARTIAL' => 'bg-label-info',
+                                                        'CANCELLED' => 'bg-label-danger'
+                                                    ];
+                                                    $deliveryBadge = $deliveryBadges[$deliveryStatus] ?? 'bg-label-secondary';
+                                                @endphp
+                                                <span class="badge {{ $deliveryBadge }}">{{ $deliveryStatus }}</span>
+                                            </td>
+                                            <td>{{ $product->description ?? '-' }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">Tidak ada produk delivery</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="section-header mt-12">
+                        <h6>Informasi Tambahan & Ringkasan</h6>
+                        <hr class="mx-n6">
+                    </div>
+
+                    <!-- Split Layout: Tag, Memo, Attachment -->
+                    <div class="row">
+                        <!-- Left Side: Tag and Attachment -->
+                        <div class="col-md-6 mb-4">
+                            <div class="mb-3">
+                                <label class="form-label">Tag</label>
+                                @if (isset($salesDelivery->tags']) && $salesDelivery->tags'])
+                                    @php $tags = is_string($salesDelivery->tags']) ? json_decode($salesDelivery->tags'], true) : $salesDelivery->tags']; @endphp
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach ($tags as $tag)
+                                            @if(isset($tag['name']) && $tag['name'])
+                                                <span class="badge {{ $tag['preview'] ?? 'bg-primary' }}">{{ $tag['name'] }}</span>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="text-muted">Tidak ada tag</div>
+                                @endif
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Lampiran</label>
+                                @if (isset($salesDelivery->attachment']) && $salesDelivery->attachment'])
+                                    <div class="input-group">
+                                        <input type="text" class="form-control"
+                                            value="{{ $salesDelivery->attachment'] }}" disabled />
+                                        <a href="{{ $salesDelivery->attachment'] }}" target="_blank"
+                                            class="btn btn-outline-primary">
+                                            <i class="icon-base ti tabler-download"></i>
+                                        </a>
+                                    </div>
+                                @else
+                                    <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="mb-3">
+                                <label class="form-label">Memo (Internal)</label>
+                                <textarea class="form-control" rows="4" disabled>{{ $salesDelivery->memo'] ?? '-' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timestamps Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Sistem</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Dibuat Pada</label>
+                            <input type="text" class="form-control" value="{{ $salesDelivery->created_at'] }}"
+                                disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Diupdate Pada</label>
+                            <input type="text" class="form-control" value="{{ $salesDelivery->updated_at'] ?? 'Belum pernah diupdate' }}"
+                                disabled />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit Log Tab -->
+                <div class="tab-pane fade" id="audit-log" role="tabpanel">
+                    <div class="section-header mt-12">
+                        <h6>Riwayat Perubahan</h6>
+                        <hr class="mx-n6">
+                    </div>
+
+                    <div class="card-datatable">
+                        <table id="audit-log-table" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>User</th>
+                                    <th>Aksi</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($audit_logs ?? [] as $log)
+                                    <tr>
+                                        <td>{{ $log->created_at ?? $log['created_at'] }}</td>
+                                        <td>{{ $log->user_name ?? $log['user_name'] ?? 'System' }}</td>
+                                        <td>
+                                            @php
+                                                $actionType = $log->action_type ?? $log['action_type'] ?? 'UNKNOWN';
+                                                $badgeClass = '';
+                                                switch ($actionType) {
+                                                    case 'CREATE':
+                                                        $badgeClass = 'bg-label-success';
+                                                        break;
+                                                    case 'UPDATE':
+                                                        $badgeClass = 'bg-label-primary';
+                                                        break;
+                                                    case 'DELETE':
+                                                        $badgeClass = 'bg-label-danger';
+                                                        break;
+                                                    default:
+                                                        $badgeClass = 'bg-label-secondary';
+                                                }
+                                            @endphp
+                                            <span class="badge {{ $badgeClass }}">{{ $actionType }}</span>
+                                        </td>
+                                        <td>{{ $log->description ?? $log['description'] ?? 'No description' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">Tidak ada riwayat perubahan</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@stop
+
 @section('js_script')
-<script>console.log('Sales Delivery Detail Page - TODO: Implement');</script>
+    <script>
+        $(function() {
+            // Initialize audit log table
+            if ($('#audit-log-table').length) {
+                new DataTable('#audit-log-table', {
+                    order: [
+                        [0, 'desc                    ], // Sort by date descending (latest first)
+                    pageLength: 10,
+                    language: {
+                        paginate: {
+                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 @endsection
