@@ -4,7 +4,7 @@ namespace App\Domains\StockAdjustment\Actions;
 
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
-use App\Domains\StockAdjustment\Services\StockMovementLogService;
+use App\Services\StockMovementLogService;
 use App\Enums\ErrorCodes;
 use App\Exceptions\AppException;
 use Illuminate\Support\Facades\Auth;

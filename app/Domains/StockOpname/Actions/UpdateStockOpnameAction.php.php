@@ -2,7 +2,7 @@
 
 namespace App\Domains\StockOpname\Actions;
 
-use App\Domains\StockOpname\Services\StockMovementLogService;
+use App\Services\StockMovementLogService;
 use App\Enums\ErrorCodes;
 use App\Exceptions\AppException;
 use Illuminate\Support\Facades\Auth;

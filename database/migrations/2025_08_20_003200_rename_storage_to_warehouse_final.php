@@ -43,33 +43,7 @@ return new class extends Migration
             });
         }
 
-        // Step 3: Rename stock movements table and update foreign keys
-        if (Schema::hasTable('t_storage_stock_movements')) {
-            Schema::rename('t_storage_stock_movements', 't_warehouse_stock_movements');
-
-            // Get the actual foreign key constraint name
-            $foreignKeys = DB::select("
-                SELECT CONSTRAINT_NAME 
-                FROM information_schema.KEY_COLUMN_USAGE 
-                WHERE TABLE_SCHEMA = DATABASE() 
-                AND TABLE_NAME = 't_warehouse_stock_movements' 
-                AND COLUMN_NAME = 'f_storage_id'
-                AND CONSTRAINT_NAME != 'PRIMARY'
-            ");
-
-            Schema::table('t_warehouse_stock_movements', function (Blueprint $table) use ($foreignKeys) {
-                if (! empty($foreignKeys)) {
-                    $table->dropForeign($foreignKeys[0]->CONSTRAINT_NAME);
-                }
-                $table->dropIndex('idx_storage_product_movement');
-                $table->renameColumn('f_storage_id', 'f_warehouse_id');
-            });
-
-            Schema::table('t_warehouse_stock_movements', function (Blueprint $table) {
-                $table->foreign('f_warehouse_id')->references('id')->on('m_warehouses');
-                $table->index(['f_warehouse_id', 'f_product_id', 'movement_date'], 'idx_warehouse_product_movement');
-            });
-        }
+        // Step 3: Stock movements table was removed - using t_stock_movement_logs instead
 
         // Step 4: Rename stock snapshots table and update foreign keys
         if (Schema::hasTable('t_storage_stock_snapshots')) {
@@ -125,20 +99,7 @@ return new class extends Migration
             Schema::rename('t_warehouse_stock_snapshots', 't_storage_stock_snapshots');
         }
 
-        if (Schema::hasTable('t_warehouse_stock_movements')) {
-            Schema::table('t_warehouse_stock_movements', function (Blueprint $table) {
-                $table->dropForeign(['f_warehouse_id']);
-                $table->dropIndex('idx_warehouse_product_movement');
-                $table->renameColumn('f_warehouse_id', 'f_storage_id');
-            });
-
-            Schema::table('t_warehouse_stock_movements', function (Blueprint $table) {
-                $table->foreign('f_storage_id')->references('id')->on('m_storages');
-                $table->index(['f_storage_id', 'f_product_id', 'movement_date'], 'idx_storage_product_movement');
-            });
-
-            Schema::rename('t_warehouse_stock_movements', 't_storage_stock_movements');
-        }
+        // Stock movements table was removed - using t_stock_movement_logs instead
 
         if (Schema::hasTable('m_warehouse_audit_logs')) {
             Schema::table('m_warehouse_audit_logs', function (Blueprint $table) {

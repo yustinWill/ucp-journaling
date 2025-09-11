@@ -20,7 +20,7 @@
                     @if ($totalActions < 3)
                         <div class="d-flex gap-2 justify-content-end">
                             @if ($canEdit)
-                                <a href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id']) }}"
+                                <a href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id) }}"
                                     class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>
                                     Edit
@@ -30,18 +30,20 @@
                     @else
                         <!-- Show dropdown for 3 or more actions -->
                         <div class="d-flex gap-2 justify-content-end">
-                            @if ($canEdit)
-                                <a href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id']) }}" class="btn btn-primary btn-md waves-effect waves-light">
-                                    <i class="icon-base ti tabler-edit me-2"></i>
-                                    Edit
-                                </a>
-                            @endif
                             <div class="dropdown">
                                 <button type="button" class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle"
                                     data-bs-toggle="dropdown" aria-expanded="false">
                                     Aksi
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
+                                    @if ($canEdit)
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id) }}">
+                                                <i class="icon-base ti tabler-edit me-2"></i>
+                                                Edit
+                                            </a>
+                                        </li>
+                                    @endif
                                     <!-- Add status-based actions here if needed -->
                                 </ul>
                             </div>
@@ -50,81 +52,50 @@
                 </div>
             </div>
 
-            <!-- Entity Title -->
-            <h2>{{ $salesDelivery->delivery_number'] }}</h2>
+            <!-- Sales Delivery Title -->
+            <h2>{{ $salesDelivery->delivery_number }}</h2>
             <span>
-                <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
+                <h6>Data sales delivery berdasarkan tanggal {{ $salesDelivery->created_at }}</h6>
             </span>
             <hr class="my-6 mx-n6" />
 
-            <!-- Tab Navigation -->
-            <ul class="nav nav-tabs nav-fill mb-6" role="tablist">
-                <li class="nav-item">
-                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#informasi-detail" aria-controls="informasi-detail" aria-selected="true">
-                        <i class="icon-base ti tabler-info-circle me-2"></i>
-                        <span class="align-middle">Informasi Detail</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#audit-log"
-                        aria-controls="audit-log" aria-selected="false">
-                        <i class="icon-base ti tabler-history me-2"></i>
-                        <span class="align-middle">Audit Log</span>
-                    </button>
-                </li>
-            </ul>
+            <!-- Informasi Dasar Transaksi Section - Outside tabs, on top -->
+            
+            <!-- Row 1: Tanggal Transaksi, Nomor Transaksi -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tanggal Transaksi</label>
+                    <input type="text" class="form-control" value="{{ $salesDelivery->delivery_date }}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nomor Transaksi</label>
+                    <input type="text" class="form-control" value="{{ $salesDelivery->delivery_number }}" disabled />
+                </div>
+            </div>
 
-            <!-- Tab Content -->
-            <div class="tab-content p-0">
-                <!-- Informasi Detail Tab -->
-                <div class="tab-pane fade show active" id="informasi-detail" role="tabpanel">
-                    <!-- Basic Information Section -->
-                    <div class="section-header mt-12">
-                        <h6>Informasi Umum</h6>
-                        <hr class="mx-n6">
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">No. Sales Delivery</label>
-                            <input type="text" class="form-control" value="{{ $salesDelivery->delivery_number'] }}"
-                                disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tanggal Pengiriman</label>
-                            <input type="text" class="form-control" value="{{ $salesDelivery->delivery_date'] }}"
-                                disabled />
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            @php
-                                $statusBadges = [
-                                    'PENDING' => 'bg-label-warning',
-                                    'IN_TRANSIT' => 'bg-label-info',
-                                    'DELIVERED' => 'bg-label-success',
-                                    'CANCELLED' => 'bg-label-danger',
-                                    'RETURNED' => 'bg-label-secondary'
-                                ];
-                                $statusLabels = [
-                                    'PENDING' => 'Menunggu',
-                                    'IN_TRANSIT' => 'Dalam Perjalanan',
-                                    'DELIVERED' => 'Terkirim',
-                                    'CANCELLED' => 'Dibatalkan',
-                                    'RETURNED' => 'Dikembalikan'
-                                ];
-                                $badgeClass = $statusBadges[$salesDelivery->status']] ?? 'bg-label-secondary';
-                                $statusLabel = $statusLabels[$salesDelivery->status']] ?? $salesDelivery->status'];
-                            @endphp
-                            <div>
-                                <span class="badge {{ $badgeClass }} fs-6 px-3 py-2">{{ $statusLabel }}</span>
-                            </div>
-                        </div>
-                    </div>
+            <hr class="my-6 mx-n6" />
 
-                    <!-- Customer Information Section -->
-                    <div class="section-header mt-12">
+            <!-- Tabs Section -->
+            <div class="col-lg-12">
+                <div class="demo-inline-spacing mt-4">
+                    <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
+                        <a class="list-group-item list-group-item-action waves-effect active" id="sales-delivery-info-list-item"
+                            data-bs-toggle="list" href="#horizontal-sales-delivery-info" aria-selected="true" role="tab">
+                            <i class="icon-base ti tabler-info-circle me-2"></i>
+                            <b>Informasi Detail</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
+                            data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Audit Log</b>
+                        </a>
+                    </div>
+                    <div class="tab-content px-0 mt-0">
+                        <!-- Information Tab -->
+                        <div class="tab-pane fade show active" id="horizontal-sales-delivery-info" role="tabpanel">
+                            <div id="sales-delivery-info-content">
+                                <!-- Customer Information Section -->
+                                <div class="section-header mt-12">
                         <h6>Informasi Customer</h6>
                         <hr class="mx-n6">
                     </div>
@@ -132,18 +103,18 @@
                         <div class="col-md-6">
                             <label class="form-label">Customer</label>
                             <input type="text" class="form-control" 
-                                value="{{ $customer->name'] ?? 'N/A' }}" disabled />
+                                value="{{ $customer->name ?? 'N/A' }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Email Customer</label>
                             <input type="text" class="form-control" 
-                                value="{{ $customer->email'] ?? 'N/A' }}" disabled />
+                                value="{{ $customer->email ?? 'N/A' }}" disabled />
                         </div>
                     </div>
                     <div class="row g-3 mb-4">
                         <div class="col-md-12">
                             <label class="form-label">Alamat Customer</label>
-                            <textarea class="form-control" rows="2" disabled>{{ $customer->address'] ?? 'N/A' }}</textarea>
+                            <textarea class="form-control" rows="2" disabled>{{ $customer->address ?? 'N/A' }}</textarea>
                         </div>
                     </div>
 
@@ -156,12 +127,12 @@
                         <div class="col-md-6">
                             <label class="form-label">Gudang</label>
                             <input type="text" class="form-control" 
-                                value="{{ $warehouse->name'] ?? 'N/A' }}" disabled />
+                                value="{{ $warehouse->name ?? 'N/A' }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Dikirim Oleh</label>
                             <input type="text" class="form-control" 
-                                value="{{ $salesDelivery->created_by'] ?? 'N/A' }}" disabled />
+                                value="{{ $salesDelivery->created_by ?? 'N/A' }}" disabled />
                         </div>
                     </div>
 
@@ -175,12 +146,12 @@
                         <div class="col-md-6">
                             <label class="form-label">No. Sales Order</label>
                             <input type="text" class="form-control"
-                                value="{{ $salesOrder->transaction_code'] ?? 'N/A' }}" disabled />
+                                value="{{ $salesOrder->transaction_code ?? 'N/A' }}" disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Status SO</label>
                             <input type="text" class="form-control"
-                                value="{{ $salesOrder->status'] ?? 'N/A' }}" disabled />
+                                value="{{ $salesOrder->status ?? 'N/A' }}" disabled />
                         </div>
                     </div>
                     @endif
@@ -193,18 +164,18 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Alamat Pengiriman</label>
-                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_address'] ?? '-' }}</textarea>
+                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_address ?? '-' }}</textarea>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Customer Reference</label>
                             <input type="text" class="form-control" 
-                                value="{{ $salesDelivery->customer_reference'] ?? '-' }}" disabled />
+                                value="{{ $salesDelivery->customer_reference ?? '-' }}" disabled />
                         </div>
                     </div>
                     <div class="row g-3 mb-4">
                         <div class="col-md-12">
                             <label class="form-label">Catatan Pengiriman</label>
-                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_notes'] ?? '-' }}</textarea>
+                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_notes ?? '-' }}</textarea>
                         </div>
                     </div>
 
@@ -269,8 +240,8 @@
                         <div class="col-md-6 mb-4">
                             <div class="mb-3">
                                 <label class="form-label">Tag</label>
-                                @if (isset($salesDelivery->tags']) && $salesDelivery->tags'])
-                                    @php $tags = is_string($salesDelivery->tags']) ? json_decode($salesDelivery->tags'], true) : $salesDelivery->tags']; @endphp
+                                @if (isset($salesDelivery->tags) && $salesDelivery->tags)
+                                    @php $tags = is_string($salesDelivery->tags) ? json_decode($salesDelivery->tags, true) : $salesDelivery->tags; @endphp
                                     <div class="d-flex flex-wrap gap-1">
                                         @foreach ($tags as $tag)
                                             @if(isset($tag['name']) && $tag['name'])
@@ -285,11 +256,11 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Lampiran</label>
-                                @if (isset($salesDelivery->attachment']) && $salesDelivery->attachment'])
+                                @if (isset($salesDelivery->attachment) && $salesDelivery->attachment)
                                     <div class="input-group">
                                         <input type="text" class="form-control"
-                                            value="{{ $salesDelivery->attachment'] }}" disabled />
-                                        <a href="{{ $salesDelivery->attachment'] }}" target="_blank"
+                                            value="{{ $salesDelivery->attachment }}" disabled />
+                                        <a href="{{ $salesDelivery->attachment }}" target="_blank"
                                             class="btn btn-outline-primary">
                                             <i class="icon-base ti tabler-download"></i>
                                         </a>
@@ -302,7 +273,7 @@
                         <div class="col-md-6 mb-4">
                             <div class="mb-3">
                                 <label class="form-label">Memo (Internal)</label>
-                                <textarea class="form-control" rows="4" disabled>{{ $salesDelivery->memo'] ?? '-' }}</textarea>
+                                <textarea class="form-control" rows="4" disabled>{{ $salesDelivery->memo ?? '-' }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -315,68 +286,63 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Dibuat Pada</label>
-                            <input type="text" class="form-control" value="{{ $salesDelivery->created_at'] }}"
+                            <input type="text" class="form-control" value="{{ $salesDelivery->created_at }}"
                                 disabled />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Diupdate Pada</label>
-                            <input type="text" class="form-control" value="{{ $salesDelivery->updated_at'] ?? 'Belum pernah diupdate' }}"
+                            <input type="text" class="form-control" value="{{ $salesDelivery->updated_at ?? 'Belum pernah diupdate' }}"
                                 disabled />
                         </div>
                     </div>
-                </div>
+                            </div>
+                        </div>
 
-                <!-- Audit Log Tab -->
-                <div class="tab-pane fade" id="audit-log" role="tabpanel">
-                    <div class="section-header mt-12">
-                        <h6>Riwayat Perubahan</h6>
-                        <hr class="mx-n6">
-                    </div>
-
-                    <div class="card-datatable">
-                        <table id="audit-log-table" class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Tanggal</th>
-                                    <th>User</th>
-                                    <th>Aksi</th>
-                                    <th>Deskripsi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($audit_logs ?? [] as $log)
-                                    <tr>
-                                        <td>{{ $log->created_at ?? $log['created_at'] }}</td>
-                                        <td>{{ $log->user_name ?? $log['user_name'] ?? 'System' }}</td>
-                                        <td>
-                                            @php
-                                                $actionType = $log->action_type ?? $log['action_type'] ?? 'UNKNOWN';
-                                                $badgeClass = '';
-                                                switch ($actionType) {
-                                                    case 'CREATE':
-                                                        $badgeClass = 'bg-label-success';
-                                                        break;
-                                                    case 'UPDATE':
-                                                        $badgeClass = 'bg-label-primary';
-                                                        break;
-                                                    case 'DELETE':
-                                                        $badgeClass = 'bg-label-danger';
-                                                        break;
-                                                    default:
-                                                        $badgeClass = 'bg-label-secondary';
-                                                }
-                                            @endphp
-                                            <span class="badge {{ $badgeClass }}">{{ $actionType }}</span>
-                                        </td>
-                                        <td>{{ $log->description ?? $log['description'] ?? 'No description' }}</td>
-                                    </tr>
+                        <!-- Audit Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Riwayat Perubahan</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table class="table table-bordered" id="audit-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal & Waktu</th>
+                                            <th>Pengguna</th>
+                                            <th>Aksi</th>
+                                            <th>Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($audit_logs ?? [] as $log)
+                                            <tr>
+                                                <td>{{ $log->created_at ?? $log['created_at'] }}</td>
+                                                <td>{{ $log->user_name ?? $log['user_name'] ?? 'System' }}</td>
+                                                <td>
+                                                    @php
+                                                        $actionType = $log->action_type ?? $log['action_type'] ?? 'UNKNOWN';
+                                                    @endphp
+                                                    @if($actionType === 'CREATE')
+                                                        <span class="badge bg-label-success">CREATE</span>
+                                                    @elseif($actionType === 'UPDATE')
+                                                        <span class="badge bg-label-warning">UPDATE</span>
+                                                    @elseif($actionType === 'DELETE')
+                                                        <span class="badge bg-label-danger">DELETE</span>
+                                                    @else
+                                                        <span class="badge bg-label-info">{{ $actionType }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $log->description ?? $log['description'] ?? 'No description' }}</td>
+                                            </tr>
                                 @empty
                                     <tr>
                                         <td colspan="4" class="text-center text-muted">Tidak ada riwayat perubahan</td>
                                     </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -387,22 +353,13 @@
 @section('js_script')
     <script>
         $(function() {
-            // Initialize audit log table
-            if ($('#audit-log-table').length) {
-                new DataTable('#audit-log-table', {
-                    order: [
-                        [0, 'desc                    ], // Sort by date descending (latest first)
-                    pageLength: 10,
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                        }
-                    }
-                });
-            }
+            $('#audit-log-table').DataTable({
+                orderCellsTop: true,
+                order: [[0, 'desc']], // Sort by date descending
+                searching: false,
+                paging: false,
+                info: false
+            });
         });
     </script>
 @endsection

@@ -22,54 +22,56 @@
                 </div>
             </div>
 
-            <!-- Entity Title -->
+            <!-- Purchase Invoice Title -->
             <h2>{{ $invoice_data->transaction_code }}</h2>
             <span>
-                <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
+                <h6>Data purchase invoice berdasarkan tanggal {{ $invoice_data->created_at }}</h6>
             </span>
             <hr class="my-6 mx-n6" />
 
-            <!-- Tab Navigation -->
-            <ul class="nav nav-tabs nav-fill mb-6" role="tablist">
-                <li class="nav-item">
-                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#informasi-detail" aria-controls="informasi-detail" aria-selected="true">
-                        <i class="icon-base ti tabler-info-circle me-2"></i>
-                        <span class="align-middle">Informasi Detail</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#data-items" aria-controls="data-items" aria-selected="false">
-                        <i class="icon-base ti tabler-package me-2"></i>
-                        <span class="align-middle">Items Invoice</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#audit-log" aria-controls="audit-log" aria-selected="false">
-                        <i class="icon-base ti tabler-history me-2"></i>
-                        <span class="align-middle">Audit Log</span>
-                    </button>
-                </li>
-            </ul>
+            <!-- Informasi Dasar Transaksi Section - Outside tabs, on top -->
+            
+            <!-- Row 1: Tanggal Transaksi, Nomor Transaksi -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tanggal Transaksi</label>
+                    <input type="text" class="form-control" value="{{ $invoice_data->invoice_date ? date('d/m/Y', strtotime($invoice_data->invoice_date)) : '-' }}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nomor Transaksi</label>
+                    <input type="text" class="form-control" value="{{ $invoice_data->transaction_code }}" disabled />
+                </div>
+            </div>
 
-            <!-- Tab Content -->
-            <div class="tab-content p-0">
-                <!-- Informasi Detail Tab -->
-                <div class="tab-pane fade show active" id="informasi-detail" role="tabpanel">
-                    
-                    <!-- Informasi Dasar Transaksi Section -->
-                    <div class="section-header mt-12">
-                        <h6>Informasi Dasar Transaksi</h6>
-                        <hr class="mx-n6">
+            <hr class="my-6 mx-n6" />
+
+            <!-- Tabs Section -->
+            <div class="col-lg-12">
+                <div class="demo-inline-spacing mt-4">
+                        <a class="list-group-item list-group-item-action waves-effect active" id="purchase-invoice-info-list-item"
+                            data-bs-toggle="list" href="#horizontal-purchase-invoice-info" aria-selected="true" role="tab">
+                            <i class="icon-base ti tabler-info-circle me-2"></i>
+                            <b>Informasi Detail</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="invoice-items-list-item"
+                            data-bs-toggle="list" href="#horizontal-invoice-items" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-package me-2"></i>
+                            <b>Items Invoice</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
+                            data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Audit Log</b>
+                        </a>
                     </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Tanggal Invoice</label>
-                            <input type="text" class="form-control" value="{{ $invoice_data->invoice_date ? date('d/m/Y', strtotime($invoice_data->invoice_date)) : '-' }}" disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">No. Invoice</label>
-                            <input type="text" class="form-control" value="{{ $invoice_data->transaction_code }}" disabled />
-                        </div>
+                    <div class="tab-content px-0 mt-0">
+                        <!-- Information Tab -->
+                        <div class="tab-pane fade show active" id="horizontal-purchase-invoice-info" role="tabpanel">
+                            <div id="purchase-invoice-info-content">
+                                <!-- Informasi Purchase Order Section -->
+                                <div class="section-header mt-12">
+                        <h6>Informasi Purchase Order</h6>
+                        <hr class="mx-n6">
                     </div>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
@@ -85,14 +87,6 @@
                                 <input type="text" class="form-control" value="{{ $invoice_data->po_reference ?? '-' }}" disabled />
                             @endif
                         </div>
-                    </div>
-
-                    <!-- Informasi Purchase Order Section -->
-                    <div class="section-header mt-12">
-                        <h6>Informasi Purchase Order</h6>
-                        <hr class="mx-n6">
-                    </div>
-                    <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Supplier</label>
                             <input type="text" class="form-control" value="{{ $invoice_data->supplier_name ?? '-' }}" disabled />
@@ -257,10 +251,11 @@
                         </div>
                     </div>
                     @endif
-                </div>
+                            </div>
+                        </div>
 
-                <!-- Items Invoice Tab -->
-                <div class="tab-pane fade" id="data-items" role="tabpanel">
+                        <!-- Items Invoice Tab -->
+                        <div class="tab-pane fade" id="horizontal-invoice-items" role="tabpanel">
                     <!-- Items Invoice Section -->
                     <div class="section-header mt-12">
                         <h6>Items Invoice</h6>
@@ -313,69 +308,61 @@
                         </table>
                         </div>
                     </div>
-                </div>
+                        </div>
 
-                <!-- Audit Log Tab -->
-                <div class="tab-pane fade" id="audit-log" role="tabpanel">
-                    <div class="section-header mt-12">
-                        <h6>Riwayat Perubahan</h6>
-                        <hr class="mx-n6">
-                    </div>
-                    
-                    <div class="card-datatable">
-                        <table id="audit-log-table" class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th style="width: 150px;">Tanggal</th>
-                                    <th style="width: 150px;">User</th>
-                                    <th style="width: 100px;">Aksi</th>
-                                    <th>Deskripsi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($auditLogs as $log)
-                                    <tr>
-                                        <td>{{ $log->created_at ? date('d/m/Y H:i:s', strtotime($log->created_at)) : '-' }}</td>
-                                        <td>
-                                            @if($canViewUser && $log->user_id)
-                                                <a href="{{ route('master_data.user.detail', $log->user_id) }}" class="text-primary">
-                                                    {{ $log->user_name ?? 'System' }}
-                                                </a>
-                                            @else
-                                                {{ $log->user_name ?? 'System' }}
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @php
-                                                $badgeClass = '';
-                                                switch($log->action_type) {
-                                                    case 'CREATE':
-                                                        $badgeClass = 'bg-label-success';
-                                                        break;
-                                                    case 'UPDATE':
-                                                        $badgeClass = 'bg-label-primary';
-                                                        break;
-                                                    case 'DELETE':
-                                                        $badgeClass = 'bg-label-danger';
-                                                        break;
-                                                    default:
-                                                        $badgeClass = 'bg-label-secondary';
-                                                }
-                                            @endphp
-                                            <span class="badge {{ $badgeClass }}">{{ $log->action_type }}</span>
-                                        </td>
-                                        <td>{{ $log->description ?? '-' }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">
-                                            <i class="icon-base ti tabler-history me-2"></i>
-                                            Belum ada riwayat perubahan
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                        <!-- Audit Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Riwayat Perubahan</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table class="table table-bordered" id="audit-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal & Waktu</th>
+                                            <th>Pengguna</th>
+                                            <th>Aksi</th>
+                                            <th>Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($auditLogs as $log)
+                                            <tr>
+                                                <td>{{ $log->created_at ? date('d/m/Y H:i:s', strtotime($log->created_at)) : '-' }}</td>
+                                                <td>
+                                                    @if($canViewUser && $log->user_id)
+                                                        <a href="{{ route('master_data.user.detail', $log->user_id) }}" class="text-primary fw-semibold">
+                                                            {{ $log->user_name ?? 'System' }}
+                                                        </a>
+                                                    @else
+                                                        {{ $log->user_name ?? 'System' }}
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($log->action_type === 'CREATE')
+                                                        <span class="badge bg-label-success">CREATE</span>
+                                                    @elseif($log->action_type === 'UPDATE')
+                                                        <span class="badge bg-label-warning">UPDATE</span>
+                                                    @elseif($log->action_type === 'DELETE')
+                                                        <span class="badge bg-label-danger">DELETE</span>
+                                                    @else
+                                                        <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $log->description ?? '-' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-4">
+                                                    <i class="icon-base ti tabler-history me-2"></i>
+                                                    Belum ada riwayat perubahan
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -386,23 +373,13 @@
 @section('js_script')
 <script>
 $(function() {
-    // Initialize audit log table if there are logs
-    @if(count($auditLogs) > 0)
-    if ($('#audit-log-table').length) {
-        new DataTable('#audit-log-table', {
-            order: [[0, 'desc']], // Sort by date descending (latest first)
-            pageLength: 10,
-            language: {
-                paginate: {
-                    next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                    previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                    first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                    last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                }
-            }
-        });
-    }
-    @endif
+    $('#audit-log-table').DataTable({
+        orderCellsTop: true,
+        order: [[0, 'desc']], // Sort by date descending
+        searching: false,
+        paging: false,
+        info: false
+    });
 });
 </script>
 @endsection

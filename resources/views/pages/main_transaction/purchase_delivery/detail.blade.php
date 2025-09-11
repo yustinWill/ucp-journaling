@@ -79,79 +79,50 @@
                 </div>
             </div>
 
-            <!-- Entity Title -->
+            <!-- Purchase Delivery Title -->
             <h2>{{ $purchaseDelivery->transaction_code }}</h2>
             <span>
-                <h6>Data di bawah berdasarkan tanggal {{ date('Y-m-d H:i:s') }}</h6>
+                <h6>Data purchase delivery berdasarkan tanggal {{ $purchaseDelivery->created_at }}</h6>
             </span>
             <hr class="my-6 mx-n6" />
 
-            <!-- Tab Navigation -->
-            <ul class="nav nav-tabs nav-fill mb-6" role="tablist">
-                <li class="nav-item">
-                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
-                        data-bs-target="#informasi-detail" aria-controls="informasi-detail" aria-selected="true">
-                        <i class="icon-base ti tabler-info-circle me-2"></i>
-                        <span class="align-middle">Informasi Detail</span>
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#audit-log"
-                        aria-controls="audit-log" aria-selected="false">
-                        <i class="icon-base ti tabler-history me-2"></i>
-                        <span class="align-middle">Audit Log</span>
-                    </button>
-                </li>
-            </ul>
+            <!-- Informasi Dasar Transaksi Section - Outside tabs, on top -->
+            
+            <!-- Row 1: Tanggal Transaksi, Nomor Transaksi -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Tanggal Transaksi</label>
+                    <input type="text" class="form-control" value="{{ $purchaseDelivery->delivery_date }}" disabled />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nomor Transaksi</label>
+                    <input type="text" class="form-control" value="{{ $purchaseDelivery->transaction_code }}" disabled />
+                </div>
+            </div>
 
-            <!-- Tab Content -->
-            <div class="tab-content p-0">
-                <!-- Informasi Detail Tab -->
-                <div class="tab-pane fade show active" id="informasi-detail" role="tabpanel">
-                    <!-- Basic Information Section -->
-                    <div class="section-header mt-12">
-                        <h6>Informasi Umum</h6>
-                        <hr class="mx-n6">
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">No. Purchase Delivery</label>
-                            <input type="text" class="form-control" value="{{ $purchaseDelivery->transaction_code }}"
-                                disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tanggal</label>
-                            <input type="text" class="form-control" value="{{ $purchaseDelivery->delivery_date }}"
-                                disabled />
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        {{-- <div class="col-md-6">
-                            <label class="form-label">Supplier</label>
-                            <input type="text" class="form-control" value="{{ $purchaseDelivery->supplier }}"
-                                disabled />
-                        </div> --}}
-                        <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <input type="text" class="form-control" value="{{ $purchaseDelivery->delivery_status }}"
-                                disabled />
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">PO Reference</label>
-                            <input type="text" class="form-control" value="{{ $purchaseDelivery->po_reference }}"
-                                disabled />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Tanggal Pengiriman</label>
-                            <input type="text" class="form-control" value="{{ $purchaseDelivery->delivery_date }}"
-                                disabled />
-                        </div>
-                    </div>
+            <hr class="my-6 mx-n6" />
 
-                    <!-- Delivery Information Section -->
-                    <div class="section-header mt-12">
+            <!-- Tabs Section -->
+            <div class="col-lg-12">
+                <div class="demo-inline-spacing mt-4">
+                    <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
+                        <a class="list-group-item list-group-item-action waves-effect active" id="purchase-delivery-info-list-item"
+                            data-bs-toggle="list" href="#horizontal-purchase-delivery-info" aria-selected="true" role="tab">
+                            <i class="icon-base ti tabler-info-circle me-2"></i>
+                            <b>Informasi Detail</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
+                            data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Audit Log</b>
+                        </a>
+                    </div>
+                    <div class="tab-content px-0 mt-0">
+                        <!-- Information Tab -->
+                        <div class="tab-pane fade show active" id="horizontal-purchase-delivery-info" role="tabpanel">
+                            <div id="purchase-delivery-info-content">
+                                <!-- Delivery Information Section -->
+                                <div class="section-header mt-12">
                         <h6>Informasi Pengiriman</h6>
                         <hr class="mx-n6">
                     </div>
@@ -350,54 +321,47 @@
                                 disabled />
                         </div> --}}
                     </div>
-                </div>
+                            </div>
+                        </div>
 
-                <!-- Audit Log Tab -->
-                <div class="tab-pane fade" id="audit-log" role="tabpanel">
-                    <div class="section-header mt-12">
-                        <h6>Riwayat Perubahan</h6>
-                        <hr class="mx-n6">
-                    </div>
-
-                    <div class="card-datatable">
-                        <table id="audit-log-table" class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Tanggal</th>
-                                    <th>User</th>
-                                    <th>Aksi</th>
-                                    <th>Deskripsi</th>
-                                </tr>
-                            </thead>
+                        <!-- Audit Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Riwayat Perubahan</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table class="table table-bordered" id="audit-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal & Waktu</th>
+                                            <th>Pengguna</th>
+                                            <th>Aksi</th>
+                                            <th>Deskripsi</th>
+                                        </tr>
+                                    </thead>
                             <tbody>
                                 @foreach ($auditLogs as $log)
                                     <tr>
                                         <td>{{ $log->created_at }}</td>
                                         <td>{{ $log->user_name }}</td>
                                         <td>
-                                            @php
-                                                $badgeClass = '';
-                                                switch ($log->action_type) {
-                                                    case 'CREATE':
-                                                        $badgeClass = 'bg-label-success';
-                                                        break;
-                                                    case 'UPDATE':
-                                                        $badgeClass = 'bg-label-primary';
-                                                        break;
-                                                    case 'DELETE':
-                                                        $badgeClass = 'bg-label-danger';
-                                                        break;
-                                                    default:
-                                                        $badgeClass = 'bg-label-secondary';
-                                                }
-                                            @endphp
-                                            <span class="badge {{ $badgeClass }}">{{ $log->action_type }}</span>
+                                            @if($log->action_type === 'CREATE')
+                                                <span class="badge bg-label-success">CREATE</span>
+                                            @elseif($log->action_type === 'UPDATE')
+                                                <span class="badge bg-label-warning">UPDATE</span>
+                                            @elseif($log->action_type === 'DELETE')
+                                                <span class="badge bg-label-danger">DELETE</span>
+                                            @else
+                                                <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                            @endif
                                         </td>
                                         <td>{{ $log->description }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
-                        </table>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -408,23 +372,13 @@
 @section('js_script')
     <script>
         $(function() {
-            // Initialize audit log table
-            if ($('#audit-log-table').length) {
-                new DataTable('#audit-log-table', {
-                    order: [
-                        [0, 'desc']
-                    ], // Sort by date descending (latest first)
-                    pageLength: 10,
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
-                        }
-                    }
-                });
-            }
+            $('#audit-log-table').DataTable({
+                orderCellsTop: true,
+                order: [[0, 'desc']], // Sort by date descending
+                searching: false,
+                paging: false,
+                info: false
+            });
 
             // Action button handlers
             $('#confirm-delivery-btn').on('click', function() {

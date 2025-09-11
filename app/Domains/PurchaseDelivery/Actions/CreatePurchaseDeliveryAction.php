@@ -6,6 +6,7 @@ use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryAuditLogService;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
 use App\Domains\Product\Services\ProductService;
+use App\Services\StockMovementLogService;
 use App\Enums\ActionTypes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -75,6 +76,18 @@ class CreatePurchaseDeliveryAction
                     app(PurchaseOrderProductService::class)->updateDeliveredQuantities($data['purchase_order_id'], $product['product_order_product_id'], $product['delivery_qty']);
 
                     app(ProductService::class)->updateStock($product['product_id'], '+', $product['delivery_qty']);
+                    
+                    // Record stock movement
+                    app(StockMovementLogService::class)->recordMovement(
+                        $data['warehouse_id'],
+                        $product['product_id'],
+                        'PURCHASE_IN',
+                        'PURCHASE_DELIVERY',
+                        $data['reference_no'] ?? 'Unknown',
+                        $product['delivery_qty'],
+                        'Purchase Delivery: ' . ($data['reference_no'] ?? 'Unknown'),
+                        $data['delivery_date'] ?? now()
+                    );
                 }
             }
 

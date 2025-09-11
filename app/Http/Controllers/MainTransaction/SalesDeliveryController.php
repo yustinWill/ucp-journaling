@@ -140,12 +140,53 @@ class SalesDeliveryController extends Controller
             'delivery_date' => '2025-01-15',
             'warehouse_name' => 'Gudang Utama',
             'status' => 'PENDING',
+            'created_by' => 'Admin User',
+            'delivery_address' => 'Jl. Test Address No. 123',
+            'customer_reference' => 'REF-001',
+            'delivery_notes' => 'Test delivery notes',
+            'tags' => '[]',
+            'attachment' => null,
+            'memo' => 'Internal memo test',
+            'created_at' => '2025-01-15 10:00:00',
+            'updated_at' => '2025-01-15 10:00:00',
+        ];
+
+        // Mock related data
+        $customer = (object) [
+            'name' => 'PT. Customer A',
+            'email' => 'customer@example.com', 
+            'address' => 'Jl. Customer Address No. 456'
+        ];
+
+        $warehouse = (object) [
+            'name' => 'Gudang Utama'
+        ];
+
+        $salesOrder = (object) [
+            'transaction_code' => 'SO-2025-001',
+            'status' => 'COMPLETED'
+        ];
+
+        $productLines = [
+            (object) [
+                'product_name' => 'Product A',
+                'product_code' => 'PROD-A',
+                'quantity_ordered' => 100,
+                'quantity_delivered' => 100,
+                'unit_name' => 'Pcs',
+                'delivery_status' => 'DELIVERED',
+                'description' => 'Sample product A'
+            ]
         ];
 
         $audit_logs = app(SalesDeliveryAuditLogService::class)->findAllBasedOnSalesDeliveryId($id);
 
         return view('pages.main_transaction.sales_delivery.detail', [
-            'sales_delivery' => $sales_delivery,
+            'salesDelivery' => $sales_delivery,
+            'customer' => $customer,
+            'warehouse' => $warehouse,
+            'salesOrder' => $salesOrder,
+            'productLines' => $productLines,
             'audit_logs' => $audit_logs,
             'canEdit' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
         ]);

@@ -3,6 +3,8 @@ namespace App\Domains\SalesDelivery\Actions;
 
 use App\Domains\SalesDelivery\Services\SalesDeliveryService;
 use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
+use App\Domains\Product\Services\ProductService;
+use App\Services\StockMovementLogService;
 use Illuminate\Support\Facades\DB;
 use App\Enums\ActionTypes;
 
@@ -12,6 +14,37 @@ class CreateSalesDeliveryAction
     {
         return DB::transaction(function () use ($data) {
             $sales_delivery_id = app(SalesDeliveryService::class)->create($data);
+
+            // Process products for stock movement
+            if (isset($data['products']) && is_array($data['products'])) {
+                foreach ($data['products'] as $product) {
+                    if (!isset($product['product_id']) || !isset($product['delivery_qty']) || $product['delivery_qty'] <= 0) {
+                        continue;
+                    }
+
+                    $productId = $product['product_id'];
+                    $deliveryQty = $product['delivery_qty'];
+                    $warehouseId = $data['warehouse_id'] ?? 1; // Default warehouse if not specified
+
+                    // Update product stock (decrease)
+                    app(ProductService::class)->updateStock($productId, '-', $deliveryQty);
+                    
+                    // Record stock movement (OUT)
+                    app(StockMovementLogService::class)->recordMovement(
+                        $warehouseId,
+                        $productId,
+                        'SALES_OUT',
+                        'SALES_DELIVERY',
+                        $data['delivery_number'] ?? 'Unknown',
+                        $deliveryQty,
+                        'Sales Delivery: ' . ($data['delivery_number'] ?? 'Unknown'),
+                        $data['delivery_date'] ?? now()
+                    );
+
+                    // Consume stock batches (FIFO)
+                    $this->consumeStockBatches($productId, $deliveryQty, $sales_delivery_id);
+                }
+            }
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
@@ -25,5 +58,63 @@ class CreateSalesDeliveryAction
 
             return $sales_delivery_id;
         });
+    }
+
+    /**
+     * Consume stock batches using FIFO method
+     */
+    private function consumeStockBatches(int $productId, float $quantityToConsume, int $salesDeliveryId)
+    {
+        // Get available batches ordered by date (FIFO)
+        $batches = DB::table('t_product_stock_batches')
+            ->where('f_product_id', $productId)
+            ->where('remaining_qty', '>', 0)
+            ->where('status', 'ACTIVE')
+            ->orderBy('batch_date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $remainingToConsume = $quantityToConsume;
+
+        foreach ($batches as $batch) {
+            if ($remainingToConsume <= 0) {
+                break;
+            }
+
+            $availableQty = $batch->remaining_qty;
+            $consumeFromThisBatch = min($remainingToConsume, $availableQty);
+
+            // Update batch remaining quantity
+            DB::table('t_product_stock_batches')
+                ->where('id', $batch->id)
+                ->update([
+                    'remaining_qty' => $availableQty - $consumeFromThisBatch,
+                    'updated_at' => now(),
+                    'updated_by' => auth()->id(),
+                ]);
+
+            // Record batch consumption transaction
+            DB::table('t_product_batch_transactions')->insert([
+                'company_code' => session('user_company_code'),
+                'f_product_batch_id' => $batch->id,
+                'f_product_id' => $productId,
+                'transaction_type' => 'OUT',
+                'source_type' => 'SALES_DELIVERY',
+                'f_source_transaction_id' => $salesDeliveryId,
+                'transaction_date' => now(),
+                'qty_moved' => $consumeFromThisBatch,
+                'reference_code' => 'SD-' . $salesDeliveryId,
+                'notes' => 'Stock consumed by Sales Delivery',
+                'created_at' => now(),
+                'created_by' => auth()->id(),
+            ]);
+
+            $remainingToConsume -= $consumeFromThisBatch;
+        }
+
+        // Log warning if we couldn't consume all required quantity
+        if ($remainingToConsume > 0) {
+            \Log::warning("Insufficient stock batches for product {$productId}. Could not consume {$remainingToConsume} units.");
+        }
     }
 }

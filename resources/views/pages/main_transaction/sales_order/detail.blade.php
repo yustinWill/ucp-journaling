@@ -4,45 +4,31 @@
 @stop
 @section('content')
     <div class="card mb-6">
-        <div class="card-body">
-            <!-- Header Section -->
-            <div class="row mb-4">
-                <div class="col-md-8">
-                    <h4 class="mb-3">Detail Sales Order</h4>
-                </div>
-                <div class="col-md-4">
-                    <!-- Action Buttons -->
-                    <div class="d-flex gap-2 justify-content-end">
-                        <button type="button" class="btn btn-primary btn-md waves-effect waves-light" onclick="window.print()">
-                            <i class="icon-base ti tabler-printer me-2"></i>Print
-                        </button>
-                        @if($canCreateSalesDelivery && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
-                            <a href="{{ route('main_transaction.sales_delivery.add', ['so_id' => $salesOrder['id']]) }}" class="btn btn-warning btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-truck-delivery me-2"></i>Buat Delivery
-                            </a>
-                        @endif
-                        @if($canCreateSalesInvoice && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
-                            <a href="{{ route('main_transaction.sales_invoice.add', ['so_id' => $salesOrder['id']]) }}" class="btn btn-info btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-file-invoice me-2"></i>Buat Invoice
-                            </a>
-                        @endif
-                        @if($canEdit)
-                            <a href="{{ route('main_transaction.sales_order.edit', $salesOrder['id']) }}" class="btn btn-success btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-edit me-2"></i>Edit
-                            </a>
-                        @endif
-                    </div>
-                </div>
+        <h4 class="card-header d-flex justify-content-between align-items-center">
+            <span>Detail Sales Order - {{ $salesOrder['transaction_code'] }}</span>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary btn-sm waves-effect" onclick="window.print()">
+                    <i class="icon-base ti tabler-printer me-1"></i>Print
+                </button>
+                @if($canCreateSalesDelivery && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
+                    <a href="{{ route('main_transaction.sales_delivery.add', ['so_id' => $salesOrder['id']]) }}" class="btn btn-warning btn-sm waves-effect">
+                        <i class="icon-base ti tabler-truck-delivery me-1"></i>Buat Delivery
+                    </a>
+                @endif
+                @if($canCreateSalesInvoice && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
+                    <a href="{{ route('main_transaction.sales_invoice.add', ['so_id' => $salesOrder['id']]) }}" class="btn btn-info btn-sm waves-effect">
+                        <i class="icon-base ti tabler-file-invoice me-1"></i>Buat Invoice
+                    </a>
+                @endif
+                @if($canEdit)
+                    <a href="{{ route('main_transaction.sales_order.edit', $salesOrder['id']) }}" class="btn btn-success btn-sm waves-effect">
+                        <i class="icon-base ti tabler-edit me-1"></i>Edit
+                    </a>
+                @endif
             </div>
-
-            <!-- Sales Order Title -->
-            <h2>{{ $salesOrder['transaction_code'] }}</h2>
-            <span>
-                <h6>Data sales order berdasarkan tanggal {{ $salesOrder['created_at'] }}</h6>
-            </span>
-            <hr class="my-6 mx-n6" />
-
-            <!-- Basic Transaction Information - Outside tabs -->
+        </h4>
+        <div class="card-body">
+            <!-- Basic Information -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Transaksi</label>
@@ -54,34 +40,30 @@
                 </div>
             </div>
 
-            <hr class="my-6 mx-n6" />
-
             <!-- Tabs Section -->
-            <div class="col-lg-12">
-                <div class="demo-inline-spacing mt-4">
-                    <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
-                        <a class="list-group-item list-group-item-action waves-effect active" id="sales-order-info-list-item"
-                            data-bs-toggle="list" href="#horizontal-sales-order-info" aria-selected="true" role="tab">
-                            <i class="icon-base ti tabler-info-circle me-2"></i>
-                            <b>Informasi Detail</b>
-                        </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="delivery-invoice-list-item"
-                            data-bs-toggle="list" href="#horizontal-delivery-invoice" aria-selected="false" role="tab">
-                            <i class="icon-base ti tabler-truck-delivery me-2"></i>
-                            <b>Sales Delivery & Invoice</b>
-                        </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
-                            data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
-                            <i class="icon-base ti tabler-history me-2"></i>
-                            <b>Audit Log</b>
-                        </a>
-                    </div>
-                    <div class="tab-content px-0 mt-0">
-                        <!-- Information Tab -->
-                        <div class="tab-pane fade show active" id="horizontal-sales-order-info" role="tabpanel">
-                            <div id="sales-order-info-content">
+            <div class="nav-align-top">
+                <ul class="nav nav-pills nav-fill" role="tablist">
+                    <li class="nav-item">
+                        <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#informasi-tab" aria-controls="informasi-tab" aria-selected="true">
+                            <i class="icon-base ti tabler-info-circle me-2"></i>Informasi
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#transaksi-tab" aria-controls="transaksi-tab" aria-selected="false">
+                            <i class="icon-base ti tabler-truck-delivery me-2"></i>Sales Delivery & Invoice
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#audit-log-tab" aria-controls="audit-log-tab" aria-selected="false">
+                            <i class="icon-base ti tabler-history me-2"></i>Audit Log
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content p-0">
+                    <!-- Information Tab -->
+                    <div class="tab-pane fade show active" id="informasi-tab" role="tabpanel">
                                 <!-- Customer Information Section -->
-                                <div class="section-header mt-12">
+                                <div class="section-header mt-6">
                                     <h6>Informasi Customer</h6>
                                     <hr class="mx-n6">
                                 </div>
@@ -320,17 +302,16 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                         </div>
 
-                        <!-- Delivery & Invoice Tab -->
-                        <div class="tab-pane fade" id="horizontal-delivery-invoice" role="tabpanel">
-                            <!-- Delivery Summary Section -->
-                            <div class="section-header mt-12">
-                                <h6>Ringkasan Pengiriman</h6>
-                            </div>
+                    <!-- Delivery & Invoice Tab -->
+                    <div class="tab-pane fade" id="transaksi-tab" role="tabpanel">
+                        <!-- Delivery Summary Section -->
+                        <div class="section-header mt-6">
+                            <h6>Ringkasan Pengiriman</h6>
+                        </div>
 
-                            <div class="mx-n5 my-4">
+                        <div class="mx-n5 my-4">
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -365,12 +346,12 @@
                                 </table>
                             </div>
 
-                            <!-- Sales Delivery Section -->
-                            <div class="section-header mt-12">
-                                <h6>Sales Delivery</h6>
-                            </div>
+                        <!-- Sales Delivery Section -->
+                        <div class="section-header mt-6">
+                            <h6>Sales Delivery</h6>
+                        </div>
 
-                            <div class="mx-n5 my-4">
+                        <div class="mx-n5 my-4">
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -399,12 +380,12 @@
                                 </table>
                             </div>
 
-                            <!-- Sales Invoice Section -->
-                            <div class="section-header mt-12">
-                                <h6>Sales Invoice</h6>
-                            </div>
+                        <!-- Sales Invoice Section -->
+                        <div class="section-header mt-6">
+                            <h6>Sales Invoice</h6>
+                        </div>
 
-                            <div class="mx-n5 my-4">
+                        <div class="mx-n5 my-4">
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -435,15 +416,15 @@
                             </div>
                         </div>
 
-                        <!-- Audit Log Tab -->
-                        <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
-                            <div class="section-header mt-6">
-                                <h6>Riwayat Perubahan</h6>
-                            </div>
+                    <!-- Audit Log Tab -->
+                    <div class="tab-pane fade" id="audit-log-tab" role="tabpanel">
+                        <div class="section-header mt-6">
+                            <h6>Riwayat Perubahan</h6>
+                        </div>
 
-                            <div class="mx-n6">
-                                <table class="table table-bordered" id="audit-log-table">
-                                    <thead>
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="audit-log-table">
+                                <thead>
                                         <tr>
                                             <th>Tanggal & Waktu</th>
                                             <th>Pengguna</th>

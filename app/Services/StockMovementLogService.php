@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domains\StockAdjustment\Services;
+namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -109,5 +109,46 @@ class StockMovementLogService
             ->orderBy('sml.created_at', 'desc')
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * Helper method to record a movement with automatic before/after stock calculation
+     */
+    public function recordMovement($warehouseId, $productId, $movementType, $referenceType, $referenceNumber, $movementQty, $notes = null, $movementDate = null, $unitCost = 0)
+    {
+        // Get current stock from product table
+        $product = DB::table('m_products')->where('id', $productId)->first();
+        $currentStock = $product ? $product->total_stock : 0;
+
+        // Get warehouse and product details
+        $warehouse = DB::table('m_warehouses')->where('id', $warehouseId)->first();
+        $unit = DB::table('m_units as u')
+            ->join('m_products as p', 'p.f_unit_id', '=', 'u.id')
+            ->where('p.id', $productId)
+            ->first();
+
+        // Calculate new stock
+        $isInMovement = in_array($movementType, ['PURCHASE_IN', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_IN']);
+        $newStock = $isInMovement ? $currentStock + $movementQty : $currentStock - $movementQty;
+
+        return $this->create([
+            'movement_date' => $movementDate ?? now(),
+            'movement_type' => $movementType,
+            'reference_type' => $referenceType,
+            'reference_number' => $referenceNumber,
+            'warehouse_id' => $warehouseId,
+            'warehouse_code' => $warehouse->code ?? '',
+            'warehouse_name' => $warehouse->name ?? '',
+            'product_id' => $productId,
+            'product_code' => $product->code ?? '',
+            'product_name' => $product->name ?? '',
+            'unit' => $unit->code ?? '',
+            'stock_before' => $currentStock,
+            'movement_qty' => $movementQty,
+            'stock_after' => $newStock,
+            'unit_cost' => $unitCost,
+            'total_value' => $movementQty * $unitCost,
+            'notes' => $notes,
+        ]);
     }
 }
