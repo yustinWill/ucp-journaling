@@ -7,7 +7,7 @@
         <h4 class="card-header">Buat Sales Order</h4>
         <form class="card-body" id="sales-order-form" autocomplete="off">
             @csrf
-            
+
             <!-- Section 1: Basic Transaction Information -->
             <div class="section-header mt-12">
                 <h6>Informasi Dasar Transaksi</h6>
@@ -41,7 +41,7 @@
                 <h6>Informasi Customer</h6>
                 <hr class="mx-n6">
             </div>
-            
+
             <!-- Row 1: Customer -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
@@ -74,8 +74,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="sales-order-email" name="email"
-                        placeholder="Email akan otomatis terisi" disabled />
+                    <input type="email" class="form-control" id="sales-order-email" name="email" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Alamat</label>
@@ -98,19 +97,20 @@
                 <h6>Detail Penjualan</h6>
                 <hr class="mx-n6">
             </div>
-            
+
             <!-- Row 1: Syarat Pembayaran -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="sales-order-payment-terms"
-                                name="payment_terms" data-allow-clear="false">
+                            <select class="global-select2 form-select" id="sales-order-payment-terms" name="payment_terms"
+                                data-allow-clear="false">
                                 <option value="">Pilih Payment Terms</option>
                                 @foreach ($paymentTerms as $term)
                                     <option value="{{ $term->id }}" data-days="{{ $term->days }}"
-                                        data-type="{{ strtoupper($term->type) }}">{{ $term->code }} - {{ $term->name }}</option>
+                                        data-type="{{ strtoupper($term->type) }}">{{ $term->code }} - {{ $term->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -132,8 +132,8 @@
                 <div class="col-md-6">
                     <label class="form-label">Jumlah Hari <span style="color: red;">*</span></label>
                     <div class="input-group">
-                        <input type="number" class="form-control" id="sales-order-days"
-                            name="payment_term_day_count" placeholder="0" min="0" max="365" disabled />
+                        <input type="number" class="form-control" id="sales-order-days" name="payment_term_day_count"
+                            placeholder="0" min="0" max="365" disabled />
                         <span class="input-group-text">Hari</span>
                     </div>
                 </div>
@@ -149,18 +149,20 @@
                     <label class="form-label">Sales Person</label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="sales-order-sales-person" name="sales_person_id"
-                                    data-allow-clear="false">
+                            <select class="global-select2 form-select" id="sales-order-sales-person"
+                                name="sales_person_id" data-allow-clear="false">
                                 <option value="">Pilih Sales Person</option>
                                 @foreach ($salesPersons as $person)
-                                    <option value="{{ $person->id }}">{{ $person->name }}</option>
+                                    <option value="{{ $person->id }}">{{ $person->code }} -
+                                        {{ $person->employee_name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         @if ($canWrite)
                             <div class="col-auto">
                                 <a href="{{ route('master_data.contact.add') }}" target="_blank"
-                                    class="btn btn-outline-primary d-flex align-items-center" title="Tambah Sales Person Baru">
+                                    class="btn btn-outline-primary d-flex align-items-center"
+                                    title="Tambah Sales Person Baru">
                                     <i class="icon-base ti tabler-plus"></i>
                                 </a>
                             </div>
@@ -171,11 +173,12 @@
                     <label class="form-label">Gudang <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="sales-order-warehouse" name="warehouse_id" 
-                                    data-allow-clear="false" required>
+                            <select class="global-select2 form-select" id="sales-order-warehouse" name="warehouse_id"
+                                data-allow-clear="false" required>
                                 <option value="">Pilih Gudang</option>
-                                @foreach($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                @foreach ($warehouses as $warehouse)
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -196,7 +199,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Keterangan</label>
                     <textarea class="form-control" id="sales-order-description" name="description" rows="2"
-                              placeholder="Nomor order transaksi..." maxlength="1000"></textarea>
+                        placeholder="Nomor order transaksi..." maxlength="1000"></textarea>
                 </div>
             </div>
 
@@ -204,7 +207,7 @@
             <div class="section-header mt-12">
                 <h6>Informasi Produk</h6>
             </div>
-            
+
             <!-- Disabled State Message -->
             <div id="product-disabled-message" class="alert alert-info">
                 <i class="icon-base ti tabler-info-circle me-2"></i>
@@ -222,7 +225,7 @@
                                 <th style="width: 12%;">Kuantitas</th>
                                 <th style="width: 10%;">Satuan</th>
                                 <th style="width: 18%;">Harga Satuan</th>
-                                <th style="width: 15%;">Pajak</th>
+                                {{-- <th style="width: 15%;">Pajak</th> --}}
                                 <th style="width: 15%;">Jumlah</th>
                                 <th style="width: 5%;">Aksi</th>
                             </tr>
@@ -237,14 +240,16 @@
                                         </select>
                                     </div>
                                 </td>
-                                <td><input type="number" class="form-control" name="products[0][quantity]"
-                                        min="1" step="1" value="1" readonly disabled /></td>
-                                <td><input type="text" class="form-control" name="products[0][unit]" disabled /></td>
+                                <td><input type="number" class="form-control quantity-input"
+                                        name="products[0][quantity]" min="1" step="1" value="1"
+                                        disabled /></td>
+                                <td><input type="text" class="form-control unit-display" name="products[0][unit]"
+                                        disabled /></td>
                                 <td>
-                                    <input type="text" class="form-control currency-input"
+                                    <input type="text" class="form-control currency-input unit-price unit-price-input"
                                         name="products[0][unit_price]" disabled />
                                 </td>
-                                <td>
+                                {{-- <td>
                                     <div class="position-relative">
                                         <select class="select2Tax form-select" name="products[0][tax_id]"
                                             data-allow-clear="false" disabled>
@@ -254,7 +259,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                </td>
+                                </td> --}}
                                 <td><input type="text" class="form-control currency-input" name="products[0][total]"
                                         disabled /></td>
                                 <td>
@@ -268,7 +273,8 @@
                         </tbody>
                     </table>
                     <div class="mb-0">
-                        <button class="btn btn-primary" data-repeater-create type="button" id="add-product-row" disabled>
+                        <button class="btn btn-primary" data-repeater-create type="button" id="add-product-row"
+                            disabled>
                             <i class="icon-base ti tabler-plus me-1"></i>
                             <span class="align-middle">Tambah Baris</span>
                         </button>
@@ -281,7 +287,7 @@
                 <h6>Informasi Tambahan & Ringkasan</h6>
                 <hr class="mx-n6">
             </div>
-            
+
             <!-- Split Layout: Tag, Memo, Attachment & Financial Summary -->
             <div class="row">
                 <!-- Left Side: Tag, Memo and Attachment -->
@@ -290,8 +296,8 @@
                         <label class="form-label">Tag</label>
                         <div class="row g-2">
                             <div class="col">
-                                <select class="global-select2 form-select" id="sales-order-tags" name="tags[]"
-                                    multiple data-allow-clear="false">
+                                <select class="global-select2 form-select" id="sales-order-tags" name="tags[]" multiple
+                                    data-allow-clear="false">
                                     @foreach ($availableTags as $tag)
                                         <option value="{{ $tag->id }}">{{ $tag->name }}</option>
                                     @endforeach
@@ -325,7 +331,7 @@
                 <!-- Right Side: Financial Summary Section -->
                 <div class="col-md-6">
                     <div class="summary-section ps-4">
-                        <div class="row mb-3">
+                        {{-- <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label">Subtotal</label>
                             </div>
@@ -360,14 +366,14 @@
                                 <input type="text" class="form-control currency-input" id="discount-amount"
                                     name="discount_amount" dir="rtl" value="Rp 0">
                             </div>
-                        </div>
+                        </div> --}}
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label"><strong>Total Akhir</strong></label>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field fw-bold" id="final-total"
-                                    dir="rtl" value="Rp 0" disabled>
+                                <input type="text" class="form-control readonly-field fw-bold"
+                                    id="display-grand-total" dir="rtl" value="Rp 0" disabled>
                             </div>
                         </div>
                     </div>
@@ -375,8 +381,8 @@
             </div>
 
             <!-- Hidden fields for calculations -->
-            <input type="hidden" id="sales-order-subtotal" name="subtotal" value="0" />
-            <input type="hidden" id="sales-order-tax-amount" name="tax_amount" value="0" />
+            {{-- <input type="hidden" id="sales-order-subtotal" name="subtotal" value="0" />
+            <input type="hidden" id="sales-order-tax-amount" name="tax_amount" value="0" /> --}}
             <input type="hidden" id="sales-order-total" name="total" value="0" />
             <input type="hidden" id="sales-order-currency" name="currency" value="IDR" />
 
@@ -398,7 +404,7 @@
 
             // Generate initial transaction number on page load
             generateTransactionNumber();
-            
+
             // Initialize payment terms behavior using global handler
             PaymentTermsHandler.init({
                 paymentTermsSelector: '#sales-order-payment-terms',
@@ -412,13 +418,14 @@
             $('#generate-so-number-btn').on('click', function() {
                 generateTransactionNumber();
             });
-    
+
             // Customer selection change
             $('#sales-order-customer').on('change', function() {
                 const customerId = $(this).val();
                 if (customerId) {
                     loadCustomerInfo(customerId);
                     checkProductTableEnabled();
+                    loadProductsForRow();
                 } else {
                     clearCustomerInfo();
                     clearProductTable();
@@ -430,47 +437,103 @@
             $('#sales-order-warehouse').on('change', function() {
                 checkProductTableEnabled();
                 clearProductTable();
+
             });
 
-            // Add product row button
-            $('#add-product-row').on('click', function() {
-                if (productTableEnabled) {
-                    addProductRow();
+
+            $('select.select2Product').each(function() {
+                $(this).select2({
+                    placeholder: "Pilih Produk",
+                    allowClear: true,
+                    dropdownParent: $(this).parent(),
+                    width: '100%'
+                });
+            });
+
+            // $('select.select2Tax').each(function() {
+            //     $(this).select2({
+            //         placeholder: "Pilih Pajak",
+            //         allowClear: true,
+            //         dropdownParent: $(this).parent(),
+            //         width: '100%'
+            //     });
+            // });
+
+            $('.form-repeater-product').repeater({
+                show: function() {
+                    $(this).slideDown(() => {
+                        checkProductTableEnabled()
+                        loadProductsForRow()
+                        $(this).find('.select2-container').remove();
+                        $(this).find('select.select2Product').removeClass(
+                            'select2-hidden-accessible').removeAttr(
+                            'data-select2-id tabindex aria-hidden');
+                        $(this).find('select.select2Product').each(function() {
+                            if ($.fn.select2 && $(this).data('select2')) {
+                                // alert('Destroying existing Select2 instance');
+                                $(this).select2('destroy');
+                            }
+                            $(this).select2({
+                                placeholder: "Pilih Produk",
+                                allowClear: true,
+                                dropdownParent: $(this).parent(),
+                                width: '100%'
+                            });
+                        });
+
+                        // $(this).find('select.select2Tax').removeClass(
+                        //     'select2-hidden-accessible').removeAttr(
+                        //     'data-select2-id tabindex aria-hidden');
+                        // $(this).find('select.select2Tax').each(function() {
+                        //     if ($.fn.select2 && $(this).data('select2')) {
+                        //         alert('Destroying existing Select2 instance');
+                        //         $(this).select2('destroy');
+                        //     }
+                        //     $(this).select2({
+                        //         placeholder: "Pilih Pajak",
+                        //         allowClear: true,
+                        //         dropdownParent: $(this).parent(),
+                        //         width: '100%'
+                        //     });
+                        // });
+                        initCleaveCurrency(document);
+                    });
+                },
+                hide: function(remove) {
+                    $(this).slideUp(remove);
                 }
             });
 
-            // Discount change
-            $('#discount-amount').on('input', function() {
-                calculateTotals();
-            });
-    
+
             // Form submission
             $('#sales-order-form').on('submit', function(e) {
-        e.preventDefault();
-        
-        if (!validateForm()) {
-            return false;
-        }
-        
+                e.preventDefault();
+
+                if (!validateForm()) {
+                    return false;
+                }
+
                 const formData = new FormData(this);
                 const productLines = collectProductLines();
-                
+
                 if (productLines.length === 0) {
                     alert('Minimal harus ada satu produk yang ditambahkan.');
                     return false;
                 }
-                
+
                 formData.append('product_lines', JSON.stringify(productLines));
-        
+
                 $.ajax({
-                    url: '{{ route("main_transaction.sales_order.store") }}',
+                    url: '{{ route('main_transaction.sales_order.store') }}',
                     method: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
                     success: function(response) {
                         if (response.success) {
-                            window.location.href = '{{ route("main_transaction.sales_order.detail", ":id") }}'.replace(':id', response.data.id);
+                            window.location.href =
+                                '{{ route('main_transaction.sales_order.detail', ':id') }}'
+                                .replace(':id', response.data.id);
                         } else {
                             alert('Terjadi kesalahan: ' + response.message);
                         }
@@ -490,7 +553,7 @@
             // Generate transaction number function
             function generateTransactionNumber() {
                 $.ajax({
-                    url: '{{ route("main_transaction.sales_order.generate_transaction_number") }}',
+                    url: '{{ route('main_transaction.sales_order.generate_transaction_number') }}',
                     method: 'GET',
                     success: function(response) {
                         if (response.success) {
@@ -506,7 +569,8 @@
             // Load customer information
             function loadCustomerInfo(customerId) {
                 $.ajax({
-                    url: '{{ route("main_transaction.sales_order.get_customer_info", ":customer_id") }}'.replace(':customer_id', customerId),
+                    url: '{{ route('main_transaction.sales_order.get_customer_info', ':customer_id') }}'
+                        .replace(':customer_id', customerId),
                     method: 'GET',
                     success: function(response) {
                         if (response.success) {
@@ -532,7 +596,7 @@
             function checkProductTableEnabled() {
                 const customerId = $('#sales-order-customer').val();
                 const warehouseId = $('#sales-order-warehouse').val();
-                
+
                 if (customerId && warehouseId) {
                     enableProductTable();
                 } else {
@@ -545,7 +609,8 @@
                 productTableEnabled = true;
                 $('#product-disabled-message').hide();
                 $('#add-product-row').prop('disabled', false);
-                $('.product-row input, .product-row select, .product-row button').prop('disabled', false);
+                $('.product-row input:not(.unit-display):not([name$="[total]"]), .product-row select, .product-row button')
+                    .prop('disabled', false);
             }
 
             // Disable product table
@@ -553,216 +618,164 @@
                 productTableEnabled = false;
                 $('#product-disabled-message').show();
                 $('#add-product-row').prop('disabled', true);
-                $('.product-row input, .product-row select, .product-row button').prop('disabled', true);
+                $('.product-row input:not(.unit-display):not([name$="[total]"]), .product-row select, .product-row button')
+                    .prop('disabled', true);
             }
-            // Add product row (simplified for PO pattern)
-            function addProductRow() {
-                // This function would be implemented based on PO patterns
-                // For now, we'll keep the existing product table structure functional
-                alert('Add product functionality will be implemented with PO patterns');
-            }
-    
-    // Load products for a specific row
-    function loadProductsForRow(rowIndex, customerId, warehouseId) {
-        $.ajax({
-            url: '{{ route("main_transaction.sales_order.get_warehouse_products", ":warehouse_id") }}'.replace(':warehouse_id', warehouseId),
-            method: 'GET',
-            data: { 
-                customer_id: customerId
-            },
-            success: function(response) {
-                if (response.success) {
-                    const productSelect = $(`tr[data-row-index="${rowIndex}"] .product-select`);
-                    productSelect.empty();
-                    productSelect.append('<option value="">Pilih Produk</option>');
-                    
-                    response.data.forEach(function(product) {
-                        productSelect.append(`<option value="${product.value}" 
-                            data-unit="${product.unit}" 
-                            data-price="${product.price}"
-                            data-tax-id="${product.tax_id}">${product.label}</option>`);
-                    });
-                    
-                    if (response.data.length === 0) {
-                        alert('Tidak ada produk yang tersedia untuk customer dan gudang yang dipilih.');
+
+            // Load products for a specific row
+            function loadProductsForRow() {
+                const customerId = $('#sales-order-customer').val();
+
+                if (!customerId) return;
+                // const warehouseId = $('#sales-order-warehouse').val();
+                $.ajax({
+                    url: '{{ route('main_transaction.sales_order.get_warehouse_products', ':customerId') }}'
+                        .replace(':customerId', customerId),
+                    method: 'GET',
+                    data: {
+                        customer_id: customerId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            const products = response.data;
+                            $('#product-table tbody tr').each(function() {
+                                const productSelect = $(this).find('.product-select');
+                                if (productSelect.val()) return;
+                                productSelect.empty().append(
+                                    '<option value="">Pilih Produk</option>');
+                                products.forEach(product => {
+                                    productSelect.append(
+                                        `<option value="${product.product_id}" data-unit="${product.unit_name}" data-price="${product.price}">${product.product_code} - ${product.product_name}</option>`
+                                    );
+                                });
+                            });
+                        } else {
+                            alert('Gagal memuat produk: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Terjadi kesalahan saat memuat produk.');
                     }
-                } else {
-                    alert('Gagal memuat produk: ' + response.message);
-                }
-            },
-            error: function() {
-                alert('Terjadi kesalahan saat memuat produk.');
-            }
-        });
-    }
-    
-    // Bind events for product row
-    function bindProductRowEvents(rowIndex) {
-        const row = $(`tr[data-row-index="${rowIndex}"]`);
-        
-        // Product selection change
-        row.find('.product-select').on('change', function() {
-            const selectedOption = $(this).find(':selected');
-            const unit = selectedOption.data('unit') || '';
-            const price = selectedOption.data('price') || 0;
-            const taxId = selectedOption.data('tax-id') || '';
-            
-            row.find('.unit-display').val(unit);
-            row.find('.unit-price-input').val(price);
-            row.find('.tax-select').val(taxId);
-            
-            calculateLineTotal(rowIndex);
-        });
-        
-        // Quantity change (disabled for mapped products)
-        // row.find('.quantity-input').on('input', function() {
-        //     calculateLineTotal(rowIndex);
-        // });
-        
-        // Unit price change
-        row.find('.unit-price-input').on('input', function() {
-            calculateLineTotal(rowIndex);
-        });
-        
-        // Tax change
-        row.find('.tax-select').on('change', function() {
-            calculateLineTotal(rowIndex);
-        });
-        
-        // Remove button
-        row.find('.remove-product-line').on('click', function() {
-            row.remove();
-            calculateTotals();
-        });
-    }
-    
-    // Calculate line total for specific row
-    function calculateLineTotal(rowIndex) {
-        const row = $(`tr[data-row-index="${rowIndex}"]`);
-        const quantity = parseFloat(row.find('.quantity-input').val()) || 0;
-        const unitPrice = parseFloat(row.find('.unit-price-input').val()) || 0;
-        const taxId = row.find('.tax-select').val();
-        
-        let lineTotal = quantity * unitPrice;
-        
-        // Add tax if selected
-        if (taxId) {
-            const taxOption = row.find('.tax-select option:selected');
-            const taxRate = parseFloat(taxOption.data('rate')) || 0;
-            lineTotal = lineTotal * (1 + taxRate / 100);
-        }
-        
-        row.find('.line-total-display').val(formatCurrency(lineTotal));
-        row.find('.line-total-value').val(lineTotal);
-        
-        calculateTotals();
-    }
-    
-    // Calculate all totals
-    function calculateTotals() {
-        let subtotal = 0;
-        let totalTax = 0;
-        
-        $('#product-tbody tr').each(function() {
-            const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
-            const unitPrice = parseFloat($(this).find('.unit-price-input').val()) || 0;
-            const taxId = $(this).find('.tax-select').val();
-            
-            const lineSubtotal = quantity * unitPrice;
-            subtotal += lineSubtotal;
-            
-            if (taxId) {
-                const taxOption = $(this).find('.tax-select option:selected');
-                const taxRate = parseFloat(taxOption.data('rate')) || 0;
-                totalTax += lineSubtotal * (taxRate / 100);
-            }
-        });
-        
-        const totalBeforeDiscount = subtotal + totalTax;
-        const discount = parseFloat($('#discount').val()) || 0;
-        const grandTotal = totalBeforeDiscount - discount;
-        
-        $('#subtotal').val(subtotal);
-        $('#total_tax').val(totalTax);
-        $('#total_price_before_discount').val(totalBeforeDiscount);
-        $('#grand_price').val(grandTotal);
-        
-        $('#display-subtotal').text(formatCurrency(subtotal));
-        $('#display-total-tax').text(formatCurrency(totalTax));
-        $('#display-total-before-discount').text(formatCurrency(totalBeforeDiscount));
-        $('#display-discount').text(formatCurrency(discount));
-        $('#display-grand-total').text(formatCurrency(grandTotal));
-    }
-    
-    
-    // Clear product table
-    function clearProductTable() {
-        $('#product-tbody').empty();
-        productRowIndex = 0;
-        calculateTotals();
-    }
-    
-    // Collect product lines for form submission
-    function collectProductLines() {
-        const productLines = [];
-        
-        $('#product-tbody tr').each(function() {
-            const productId = $(this).find('.product-select').val();
-            const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
-            const unitPrice = parseFloat($(this).find('.unit-price-input').val()) || 0;
-            const taxId = $(this).find('.tax-select').val() || null;
-            const lineTotal = parseFloat($(this).find('.line-total-value').val()) || 0;
-            
-            if (productId && quantity > 0 && unitPrice > 0) {
-                productLines.push({
-                    product_id: productId,
-                    quantity: quantity,
-                    unit_price: unitPrice,
-                    tax_id: taxId,
-                    line_total: lineTotal
                 });
             }
-        });
-        
-        return productLines;
-    }
-    
-    // Validate form
-    function validateForm() {
-        const customerId = $('#customer_id').val();
-        const warehouseId = $('#warehouse_id').val();
-        const paymentTermId = $('#payment_term_id').val();
-        const transactionDate = $('#transaction_date').val();
-        const productLines = collectProductLines();
-        
-        if (!customerId) {
-            alert('Customer harus dipilih.');
-            return false;
-        }
-        
-        if (!warehouseId) {
-            alert('Gudang harus dipilih.');
-            return false;
-        }
-        
-        if (!paymentTermId) {
-            alert('Syarat Pembayaran harus dipilih.');
-            return false;
-        }
-        
-        if (!transactionDate) {
-            alert('Tanggal Transaksi harus diisi.');
-            return false;
-        }
-        
-        if (productLines.length === 0) {
-            alert('Minimal harus ada satu produk yang ditambahkan.');
-            return false;
-        }
-        
-        return true;
-    }
-    
+
+            $(document).on('change', '.product-select', function() {
+                const selectedOption = $(this).find(':selected');
+
+                const unit = selectedOption.data('unit') || '';
+                const perPrice = selectedOption.data('price');
+                const row = $(this).closest('tr');
+
+                if (unit) {
+                    row.find('.unit-display').val(unit).prop('disabled', true);
+                } else {
+                    row.find('.unit-display').val('').prop('disabled', true);
+                }
+
+                if (perPrice) {
+                    const unitPriceInput = row.find('.unit-price')[0];
+                    $(unitPriceInput).val(perPrice);
+
+                    // If Cleave is already initialized, use setRawValue
+                    if (unitPriceInput && unitPriceInput.cleave) {
+                        unitPriceInput.cleave.setRawValue(perPrice);
+                    }
+                }
+
+                calculateTotals();
+            });
+
+            // Calculate all totals
+            function calculateTotals() {
+                let subtotal = 0;
+                // let totalTax = 0;
+
+                $('#products-tbody tr').each(function() {
+                    const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
+                    const unitPrice = parseCurrency($(this).find('.unit-price-input').val()) || 0;
+                    // const taxId = $(this).find('.tax-select').val();
+
+                    const lineSubtotal = quantity * unitPrice;
+                    subtotal += lineSubtotal;
+
+                    $(this).find('input[name*="[total]"]').val(formatCurrency(lineSubtotal));
+                });
+
+                const grandTotal = subtotal; // No discount for now
+
+                $('#sales-order-total').val(grandTotal);
+                $('#display-grand-total').val(formatCurrency(grandTotal));
+            }
+
+
+            // Clear product table
+            function clearProductTable() {
+                $('#product-tbody').empty();
+                productRowIndex = 0;
+                calculateTotals();
+            }
+
+            // Collect product lines for form submission
+            function collectProductLines() {
+                const productLines = [];
+
+                $('#product-tbody tr').each(function() {
+                    const productId = $(this).find('.product-select').val();
+                    const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
+                    const unitPrice = parseFloat($(this).find('.unit-price-input').val()) || 0;
+                    // const taxId = $(this).find('.tax-select').val() || null;
+                    const lineTotal = parseFloat($(this).find('.line-total-value').val()) || 0;
+
+                    if (productId && quantity > 0 && unitPrice > 0) {
+                        productLines.push({
+                            product_id: productId,
+                            quantity: quantity,
+                            unit_price: unitPrice,
+                            // tax_id: taxId,
+                            line_total: lineTotal
+                        });
+                    }
+                });
+
+                return productLines;
+            }
+
+            // Validate form
+            function validateForm() {
+                const customerId = $('#customer_id').val();
+                const warehouseId = $('#warehouse_id').val();
+                const paymentTermId = $('#payment_term_id').val();
+                const transactionDate = $('#transaction_date').val();
+                const productLines = collectProductLines();
+
+                if (!customerId) {
+                    alert('Customer harus dipilih.');
+                    return false;
+                }
+
+                if (!warehouseId) {
+                    alert('Gudang harus dipilih.');
+                    return false;
+                }
+
+                if (!paymentTermId) {
+                    alert('Syarat Pembayaran harus dipilih.');
+                    return false;
+                }
+
+                if (!transactionDate) {
+                    alert('Tanggal Transaksi harus diisi.');
+                    return false;
+                }
+
+                if (productLines.length === 0) {
+                    alert('Minimal harus ada satu produk yang ditambahkan.');
+                    return false;
+                }
+
+                return true;
+            }
+
             // Format currency
             function formatCurrency(amount) {
                 return 'Rp ' + parseFloat(amount).toLocaleString('id-ID', {
@@ -770,6 +783,13 @@
                     maximumFractionDigits: 2
                 });
             }
+
+            $(document).on('input change',
+                'input[name*="[quantity]"], input[name*="[unit_price]"]',
+                function() {
+                    calculateTotals();
+                });
+
         });
     </script>
 @endsection

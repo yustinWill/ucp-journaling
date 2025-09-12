@@ -12,6 +12,7 @@ use App\Domains\SalesOrder\Actions\UpdateSalesOrderAction;
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
 use App\Domains\SalesOrder\Services\SalesOrderProductService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
+use App\Domains\SalesPerson\Services\SalesPersonService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Tax\Services\TaxService;
 use App\Domains\Warehouse\Services\WarehouseService;
@@ -64,7 +65,7 @@ class SalesOrderController extends Controller
         }
 
         $customers = app(ContactService::class)->findAllByType('CUSTOMER');
-        $salesPersons = app(ContactService::class)->findAllByType('SALES_PERSON');
+        $salesPersons = app(SalesPersonService::class)->findAll();
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
         $products = app(ProductService::class)->findAll();
@@ -99,7 +100,7 @@ class SalesOrderController extends Controller
     {
         try {
             $transactionNumber = app(TransactionNumberService::class)->generateNumber('sales_order');
-            
+
             return response()->json([
                 'success' => true,
                 'transaction_number' => $transactionNumber,
@@ -156,7 +157,6 @@ class SalesOrderController extends Controller
                 'message' => 'Sales Order berhasil dibuat',
                 'data' => ['id' => $salesOrderId]
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -185,7 +185,7 @@ class SalesOrderController extends Controller
 
         // Load sales order with full details
         $salesOrder = app(SalesOrderService::class)->findWithDetails($id);
-        
+
         if (!$salesOrder) {
             abort(404, 'Sales Order tidak ditemukan.');
         }
@@ -216,14 +216,14 @@ class SalesOrderController extends Controller
 
         // Load sales order with details
         $salesOrder = app(SalesOrderService::class)->findWithDetails($id);
-        
+
         if (!$salesOrder) {
             abort(404, 'Sales Order tidak ditemukan.');
         }
 
         // Load form data
         $customers = app(ContactService::class)->findAllByType('CUSTOMER');
-        $salesPersons = app(ContactService::class)->findAllByType('SALES_PERSON');
+        $salesPersons = app(SalesPersonService::class)->findAll();
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
         $products = app(ProductService::class)->findAll();
@@ -301,7 +301,6 @@ class SalesOrderController extends Controller
                 'success' => true,
                 'message' => 'Sales Order berhasil diperbarui'
             ], 200);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -327,7 +326,7 @@ class SalesOrderController extends Controller
         if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
-        
+
         $data = app(SalesOrderService::class)->findAllDatatable();
         return response()->json($data, 200);
     }
@@ -362,7 +361,7 @@ class SalesOrderController extends Controller
     {
         // TODO: Implement template generation
         $filename = 'sales_order_import_template.xlsx';
-        
+
         return response()->json([
             'message' => 'Template download functionality - TODO: Implement'
         ]);
@@ -409,7 +408,7 @@ class SalesOrderController extends Controller
     {
         $customer = DB::table('m_contacts as t')
             ->select([
-                't.email', 
+                't.email',
                 'ca.address as billing_address',
                 't.f_sales_pic_id',
                 'u.name as sales_person_name'
@@ -441,10 +440,10 @@ class SalesOrderController extends Controller
         ]);
     }
 
-    public function getWarehouseProducts($warehouseId)
+    public function getWarehouseProducts()
     {
         $customerId = request()->input('customer_id');
-        
+
         if (!$customerId) {
             return response()->json([
                 'success' => false,
@@ -454,19 +453,20 @@ class SalesOrderController extends Controller
 
         // Get products mapped to this customer with their special pricing
         $products = DB::table('m_contact_products as cp')
-            ->join('m_products as p', 'cp.f_product_code', '=', 'p.code')
+            ->join('m_products as p', 'cp.f_product_code', '=', 'p.id')
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
             ->where('cp.f_contact_id', $customerId)
             ->where('p.company_code', session('user_company_code'))
             ->where('p.status', 'ACTIVE')
             ->where('p.total_stock', '>', 0) // Only products with stock
             ->select([
-                'p.id as value',
-                DB::raw("CONCAT(p.code, ' - ', p.name) as label"),
+                'p.id as product_id',
+                'p.code as product_code',
+                'p.name as product_name',
                 'cp.price_per_qty as price',
-                'u.name as unit',
+                'u.name as unit_name',
                 'p.total_stock as stock',
-                'p.f_tax_id as tax_id'
+                // 'p.f_tax_id as tax_id'
             ])
             ->orderBy('p.name')
             ->get();
@@ -476,5 +476,4 @@ class SalesOrderController extends Controller
             'data' => $products
         ]);
     }
-
 }
