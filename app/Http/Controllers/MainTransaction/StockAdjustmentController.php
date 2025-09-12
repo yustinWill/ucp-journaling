@@ -8,6 +8,10 @@ use App\Domains\StockAdjustment\Actions\CreateStockAdjustmentAction;
 use App\Domains\StockAdjustment\Actions\UpdateStockAdjustmentAction;
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
+use App\Domains\StockOpname\Services\StockOpnameService;
+use App\Domains\StockOpname\Services\StockOpnameProductService;
+use App\Domains\StockMovement\Services\StockMovementLogsService;
+
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
@@ -105,19 +109,26 @@ class StockAdjustmentController extends Controller
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
-    public function add()
+    public function add(Request $request)
     {
         // Check write permission
         if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
         // Adjustment types
-        $adjustmentTypes = [
-            ['value' => 'MANUAL_ADJUSTMENT', 'label' => 'MANUAL_ADJUSTMENT - Penyesuaian Manual'],
-            ['value' => 'PRODUCT_RETURN', 'label' => 'PRODUCT_RETURN - Retur Produk'],
-            ['value' => 'DAMAGE_LOSS', 'label' => 'DAMAGE_LOSS - Kerusakan/Kehilangan'],
-            ['value' => 'EXPIRY_DISPOSAL', 'label' => 'EXPIRY_DISPOSAL - Produk Kadaluarsa'],
-        ];
+        if (isset($request->id) && isset($request->type)) {
+            $adjustmentTypes = [
+                ['value' => 'STOCK_OPNAME', 'label' => 'STOCK_OPNAME - Hasil Stock Opname'],
+                ['value' => 'PRODUCT_RETURN', 'label' => 'PRODUCT_RETURN - Retur Produk'],
+                ['value' => 'DAMAGE_LOSS', 'label' => 'DAMAGE_LOSS - Kerusakan/Kehilangan'],
+                ['value' => 'EXPIRY_DISPOSAL', 'label' => 'EXPIRY_DISPOSAL - Produk Kadaluarsa'],
+            ];
+        } else {
+            $adjustmentTypes = [
+                ['value' => 'MANUAL_ADJUSTMENT', 'label' => 'MANUAL_ADJUSTMENT - Penyesuaian Manual'],
+            ];
+        }
+
 
         // Get warehouses from service
         $warehousesData = app(WarehouseService::class)->findAll();
@@ -135,7 +146,7 @@ class StockAdjustmentController extends Controller
         foreach ($contactsData as $contact) {
             $picOptions[] = [
                 'value' => $contact->id,
-                'label' => 'EMP-' . str_pad($contact->id, 3, '0', STR_PAD_LEFT) . ' - ' . $contact->name,
+                'label' => $contact->name,
             ];
         }
 
@@ -172,6 +183,37 @@ class StockAdjustmentController extends Controller
         $canAddContacts = PermissionHelper::canWrite('master_data_contact');
         $canAddCategories = PermissionHelper::canWrite('master_data_category');
 
+        $header_data = [];
+        $items = [];
+        if (isset($request->id) && isset($request->type)) {
+            switch ($request->type) {
+                case 'STOCK_OPNAME':
+                    $header = app(StockOpnameService::class)->findOne($request->id);
+                    $opnameProducts = app(StockOpnameProductService::class)->findAllBasedOnId($request->id);
+                    $header_data['transaction_date'] = $header->transaction_date;
+                    $header_data['form_type'] = $request->type;
+                    $header_data['form_reference_id'] = $header->id;
+                    $header_data['warehouse_id'] = $header->warehouse_id;
+                    $header_data['pic'] = $header->f_pic_id;
+                    $header_data['description'] = $header->description;
+                    $header_data['memo'] = $header->memo;
+
+                    foreach ($opnameProducts as $item) {
+                        $items[] = [
+                            'product_id' => $item->product_id,
+                            'product_code' => $item->product_code,
+                            'product_name' => $item->product_name,
+                            'unit' => $item->unit_name,
+                            'current_stock' => $item->system_stock,
+                            'adjustment_qty' => $item->physical_qty,
+                            'unit_cost' => 0,
+                            'reason' => $item->note,
+                        ];
+                    }
+                    break;
+            }
+        }
+
         return view('pages.main_transaction.stock_adjustment.add', [
             'adjustmentTypes' => $adjustmentTypes,
             'warehouses' => $warehouses,
@@ -183,6 +225,8 @@ class StockAdjustmentController extends Controller
             'canAddWarehouses' => $canAddWarehouses,
             'canAddContacts' => $canAddContacts,
             'canAddCategories' => $canAddCategories,
+            'header_data' => $header_data,
+            'items' => $items,
         ]);
     }
 
@@ -584,12 +628,14 @@ class StockAdjustmentController extends Controller
         try {
             $validated = $request->validate([
                 'adjustment_date' => 'required|date',
-                'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,PRODUCT_RETURN,DAMAGE_LOSS,EXPIRY_DISPOSAL,WAREHOUSE_TRANSFER',
+                'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,STOCK_OPNAME',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
                 'pic_id' => 'required|integer|exists:users,id',
                 // 'status' => 'required|string|in:DRAFT,WAITING_APPROVAL',
                 'description' => 'required|string|max:1000',
                 'memo' => 'nullable|string|max:500',
+                'form_type' => 'nullable|string|max:500',
+                'form_reference_id' => 'nullable|string|max:500',
                 'tags' => 'nullable|array',
                 'products' => 'required|array|min:1',
                 'products.*.product_id' => 'required|integer',
@@ -607,6 +653,8 @@ class StockAdjustmentController extends Controller
                 'pic_id' => 'PIC',
                 'description' => 'Deskripsi',
                 'memo' => 'Memo',
+                'form_type' => 'Tipe Form',
+                'form_reference_id' => 'ID Referensi Form',
                 'tags' => 'Tag',
                 'products' => 'Produk',
                 'products.*.product_id' => 'ID Produk',
@@ -722,22 +770,27 @@ class StockAdjustmentController extends Controller
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
 
-            // Simplified validation - remove exists check for now
-            $request->validate([
-                'warehouse_id' => 'required|integer',
-                'category_filter' => 'nullable|string',
-                'search_filter' => 'nullable|string',
-            ]);
+            $warehouse = $request->query('warehouse_id');
+            $category = $request->query('category_filter');
+            $search_filter = $request->query('search_filter');
 
-            $products = app(StockAdjustmentService::class)->getProductsInWarehouse(
-                $request->warehouse_id,
-                $request->category_filter,
-                $request->search_filter
-            );
+            $products = app(StockMovementLogsService::class)->findAllLatestStockPerWarehouse($warehouse, $category, $search_filter);
 
+            $product_array = [];
+            foreach ($products as $key => $value) {
+                $product_array[] = [
+                    'id' => $value->id,
+                    'code' => $value->code,
+                    'name' => $value->name,
+                    'unit' => $value->unit,
+                    'current_stock' => $value->system_stock,
+                    'unit_cost' => 0,
+                    'category' => $value->category,
+                ];
+            }
             return response()->json([
                 'success' => true,
-                'data' => $products,
+                'data' => $product_array,
             ]);
         } catch (ValidationException $e) {
             return response()->json([

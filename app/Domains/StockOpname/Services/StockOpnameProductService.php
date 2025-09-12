@@ -11,8 +11,8 @@ class StockOpnameProductService
 
     public function findAllBasedOnId($id)
     {
-        return DB::table($this->table_name.' AS t')
-            ->select('t.*', 'p.name as product_name', 'p.code as product_code', 'u.name as unit_name')
+        return DB::table($this->table_name . ' AS t')
+            ->select('t.*', 'p.id as product_id', 'p.name as product_name', 'p.code as product_code', 'u.name as unit_name')
             ->join('m_products as p', 'p.id', '=', 't.f_product_id')
             ->join('m_units as u', 'u.id', '=', 'p.f_unit_id')
             ->where('f_stock_opname_id', $id)
@@ -41,7 +41,7 @@ class StockOpnameProductService
     {
         $insert_data = [];
         foreach ($data as $row) {
-            $insert_data = [
+            $insert_data[] = [
                 'f_stock_opname_id' => $row['f_stock_opname_id'],
                 'f_product_id' => $row['f_product_id'],
                 'system_stock' => $row['system_stock'],

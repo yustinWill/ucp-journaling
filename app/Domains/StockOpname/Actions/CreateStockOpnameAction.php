@@ -18,10 +18,15 @@ class CreateStockOpnameAction
                 'transaction_date' => $data['opname_date'],
                 'f_warehouse_id' => $data['warehouse'],
                 'f_pic_id' => $data['pic'],
-                'status' => $data['status'],
+                'status' => 'SUBMITTED',
                 'description' => $data['description'] ?? null,
                 'memo' => $data['memo'] ?? null,
                 'f_tag_codes' => $data['tags'] ?? [],
+                'count_product' => count($data['products']),
+                'count_variance' => 0,
+                'total_system_stock' => array_sum(array_column($data['products'], 'system_stock')),
+                'total_physical_stock' => array_sum(array_column($data['products'], 'physical_qty')),
+                'total_variance' => array_sum(array_column($data['products'], 'variance')),
             ]);
 
             // Create adjustment items and stock movement logs

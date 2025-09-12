@@ -6,6 +6,8 @@
     <div class="card mb-6">
         <h4 class="card-header">Tambah Stock Adjustment Baru</h4>
         <form class="card-body" id="stockAdjustmentForm" autocomplete="off">
+            <input type="hidden" id="form-type" value="{{ $header_data['form_type'] ?? null }}">
+            <input type="hidden" id="form-reference_id" value="{{ $header_data['form_reference_id'] ?? null }}">
             <!-- Informasi Dasar Transaksi Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Dasar Transaksi</h6>
@@ -15,8 +17,11 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control global-single-date-picker" id="adjustment-date"
-                        value="{{ date('Y-m-d') }}" />
+                    <input type="date" class="form-control global-single-date-picker"
+                        @if (isset($header_data['form_type'])) disabled @endif id="adjustment-date"
+                        @if (isset($header_data['form_type'])) value="{{ $header_data['transaction_date'] }}"
+                    @else
+                    value="{{ date('Y-m-d') }}" @endif />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
@@ -45,10 +50,12 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tipe Adjustment <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="adjustment-type" data-allow-clear="false">
+                    <select class="global-select2 form-select" @if (isset($header_data['form_type'])) disabled @endif
+                        id="adjustment-type" data-allow-clear="false">
                         <option value="">Pilih Tipe Adjustment</option>
                         @foreach ($adjustmentTypes as $type)
-                            <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>
+                            <option value="{{ $type['value'] }}" @if (isset($header_data['form_type']) && $header_data['form_type'] === $type['value']) selected @endif>
+                                {{ $type['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -56,10 +63,12 @@
                     <label class="form-label">Gudang <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="warehouse-select" data-allow-clear="false">
+                            <select class="global-select2 form-select" id="warehouse-select"
+                                @if (isset($header_data['form_type'])) disabled @endif data-allow-clear="false">
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse['value'] }}">{{ $warehouse['label'] }}</option>
+                                    <option value="{{ $warehouse['value'] }}"
+                                        @if (isset($header_data['warehouse_id']) && $header_data['warehouse_id'] === $warehouse['value']) selected @endif>{{ $warehouse['label'] }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -80,10 +89,12 @@
                     <label class="form-label">Penanggung Jawab <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="pic-select" data-allow-clear="false">
+                            <select class="global-select2 form-select" id="pic-select"
+                                @if (isset($header_data['form_type'])) disabled @endif data-allow-clear="false">
                                 <option value="">Pilih PIC</option>
                                 @foreach ($picOptions as $pic)
-                                    <option value="{{ $pic['value'] }}">{{ $pic['label'] }}</option>
+                                    <option value="{{ $pic['value'] }}" @if (isset($header_data['pic']) && $header_data['pic'] === $pic['value']) selected @endif>
+                                        {{ $pic['label'] }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -100,7 +111,11 @@
                 <div class="col-md-6">
                     <label class="form-label">Deskripsi <span style="color: red;">*</span></label>
                     <textarea class="form-control" id="description" rows="3"
-                        placeholder="Jelaskan alasan dan detail stock adjustment..." maxlength="1000"></textarea>
+                        placeholder="Jelaskan alasan dan detail stock adjustment..." maxlength="1000">
+@if (isset($header_data['description']))
+{{ $header_data['description'] }}
+@endif
+</textarea>
                     <small class="form-text text-muted">Maksimal 1000 karakter</small>
                 </div>
                 {{-- <div class="col-md-6">
@@ -121,85 +136,87 @@
                 </div>
             </div>
 
-            <!-- Product Selection Section -->
-            <div class="section-header mt-12">
-                <h6>Pemilihan Produk</h6>
-                <hr class="mx-n6">
-            </div>
-
-            <!-- Filter Section -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Filter Kategori Produk</label>
-                    <div class="row g-2">
-                        <div class="col">
-                            <select class="global-select2 form-select" id="product-category-filter"
-                                data-allow-clear="false">
-                                <option value="">Semua Kategori</option>
-                                @foreach ($productCategories as $category)
-                                    <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @if ($canAddCategories)
-                            <div class="col-auto">
-                                <a href="{{ route('master_data.category.add') }}" target="_blank"
-                                    class="btn btn-outline-primary d-flex align-items-center"
-                                    title="Tambah Kategori Baru">
-                                    <i class="icon-base ti tabler-plus"></i>
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Cari Produk</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="product-search"
-                            placeholder="Nama atau kode produk..." />
-                        <button type="button" class="btn btn-outline-primary" id="search-products-btn">
-                            <i class="icon-base ti tabler-search"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Available Products Section -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0">Produk yang Tersedia di Gudang</h6>
-                        <button type="button" class="btn btn-md btn-primary waves-effect waves-light"
-                            id="load-products-btn">
-                            <i class="icon-base ti tabler-box me-2"></i>
-                            Load Produk dari Gudang
-                        </button>
-                    </div>
+            @if (!isset($header_data['form_type']))
+                <!-- Product Selection Section -->
+                <div class="section-header mt-12">
+                    <h6>Pemilihan Produk</h6>
+                    <hr class="mx-n6">
+                </div>
 
-                    <div class="mx-n5">
-                        <table class="table table-bordered" id="available-products-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 20%;">Kode Produk</th>
-                                    <th style="width: 30%;">Nama Produk</th>
-                                    <th style="width: 10%;">Unit</th>
-                                    <th style="width: 15%;">Stok Tersedia</th>
-                                    <th style="width: 15%;">Harga Satuan</th>
-                                    <th style="width: 10%;">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="available-products-tbody">
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted py-5">
-                                        <i class="icon-base ti tabler-box-off me-2"></i>
-                                        Pilih gudang dan klik "Load Produk dari Gudang" untuk memuat data
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- Filter Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Filter Kategori Produk</label>
+                        <div class="row g-2">
+                            <div class="col">
+                                <select class="global-select2 form-select" id="product-category-filter"
+                                    data-allow-clear="true">
+                                    <option value="">Semua Kategori</option>
+                                    @foreach ($productCategories as $category)
+                                        <option value="{{ $category['value'] }}">{{ $category['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @if ($canAddCategories)
+                                <div class="col-auto">
+                                    <a href="{{ route('master_data.category.add') }}" target="_blank"
+                                        class="btn btn-outline-primary d-flex align-items-center"
+                                        title="Tambah Kategori Baru">
+                                        <i class="icon-base ti tabler-plus"></i>
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Cari Produk</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="product-search"
+                                placeholder="Nama atau kode produk..." />
+                            <button type="button" class="btn btn-outline-primary" id="search-products-btn">
+                                <i class="icon-base ti tabler-search"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">Produk yang Tersedia di Gudang</h6>
+                            <button type="button" class="btn btn-md btn-primary waves-effect waves-light"
+                                id="load-products-btn">
+                                <i class="icon-base ti tabler-box me-2"></i>
+                                Load Produk dari Gudang
+                            </button>
+                        </div>
+
+                        <div class="mx-n5">
+                            <table class="table table-bordered" id="available-products-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 20%;">Kode Produk</th>
+                                        <th style="width: 30%;">Nama Produk</th>
+                                        <th style="width: 10%;">Unit</th>
+                                        <th style="width: 15%;">Stok Tersedia</th>
+                                        <th style="width: 15%;">Harga Satuan</th>
+                                        <th style="width: 10%;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="available-products-tbody">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-5">
+                                            <i class="icon-base ti tabler-box-off me-2"></i>
+                                            Pilih gudang dan klik "Load Produk dari Gudang" untuk memuat data
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
 
             <!-- Summary Section -->
             <div class="section-header mt-12">
@@ -228,11 +245,6 @@
                 </div>
             </div>
 
-            <!-- Selected Products for Adjustment Section -->
-            <div class="section-header mt-12">
-                <h6>Produk untuk Adjustment</h6>
-            </div>
-
             <div class="row g-3 mb-4">
                 <div class="col-md-12">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -245,14 +257,16 @@
                         <table class="table table-bordered" id="selected-products-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 15%;">Kode Produk</th>
-                                    <th style="width: 25%;">Nama Produk</th>
-                                    <th style="width: 8%;">Unit</th>
-                                    <th style="width: 10%;">Stok Sistem</th>
-                                    <th style="width: 12%;">Qty Adjustment</th>
-                                    <th style="width: 10%;">Selisih</th>
-                                    <th style="width: 15%;">Alasan</th>
-                                    <th style="width: 5%;">Hapus</th>
+                                    <th>Kode Produk</th>
+                                    <th>Nama Produk</th>
+                                    <th>Unit</th>
+                                    <th>Stok Sistem</th>
+                                    <th>Qty Adjustment</th>
+                                    <th>Selisih</th>
+                                    <th>Alasan</th>
+                                    @if (!isset($header_data['form_type']))
+                                        <th>Hapus</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody id="selected-products-tbody">
@@ -278,7 +292,11 @@
                 <div class="col-md-6">
                     <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
                     <textarea class="form-control" id="adjustment-memo" rows="3"
-                        placeholder="Catatan internal untuk stock adjustment..." maxlength="500"></textarea>
+                        placeholder="Catatan internal untuk stock adjustment..." maxlength="500">
+@if (isset($header_data['memo']))
+{{ $header_data['memo'] }}
+@endif
+</textarea>
                     <small class="form-text text-muted">Maksimal 500 karakter - Hanya untuk keperluan internal</small>
                 </div>
                 <div class="col-md-6">
@@ -324,6 +342,7 @@
             let selectedProducts = [];
             let currentWarehouse = null;
 
+            renderSelectedProductsTable();
             // Generate initial transaction number on page load
             generateTransactionNumber();
 
@@ -348,7 +367,9 @@
             // Form validation
             function validateForm() {
                 let isValid = true;
-                const requiredFields = ['adjustment-date', 'adjustment-type', 'warehouse-select', 'pic-select', 'description'];
+                const requiredFields = ['adjustment-date', 'adjustment-type', 'warehouse-select', 'pic-select',
+                    'description'
+                ];
 
                 requiredFields.forEach(function(fieldId) {
                     const field = $('#' + fieldId);
@@ -447,32 +468,37 @@
             $('#load-products-btn').on('click', loadProducts);
             $('#search-products-btn').on('click', loadProducts);
 
-            // Auto search when Enter key is pressed
-            $('#product-search').on('keypress', function(e) {
-                if (e.which === 13) {
-                    loadProducts();
-                }
-            });
+            // // Auto search when Enter key is pressed
+            // $('#product-search').on('keypress', function(e) {
+            //     if (e.which === 13) {
+            //         loadProducts();
+            //     }
+            // });
 
-            // Auto filter when category changes
-            $('#product-category-filter').on('change', function() {
-                if (currentWarehouse) {
-                    loadProducts();
-                }
-            });
+            let searchTimeout;
+            $('#product-category-filter, #product-search').on('keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (currentWarehouse) {
+                            loadProducts();
+                        }
+                    }, 400); // 400ms delay
+                });
 
             function renderAvailableProductsTable() {
                 const tbody = $('#available-products-tbody');
 
                 if (availableProducts.length === 0) {
                     tbody.html(`
-                <tr>
-                    <td colspan="6" class="text-center text-muted py-4">
-                        <i class="icon-base ti tabler-search-off me-2"></i>
-                        Tidak ada produk ditemukan dengan filter yang dipilih
-                    </td>
-                </tr>
-            `);
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="icon-base ti tabler-search-off me-2"></i>
+                                Tidak ada produk ditemukan dengan filter yang dipilih
+                            </td>
+                        </tr>
+                    `);
                     return;
                 }
 
@@ -484,20 +510,20 @@
                     const buttonDisabled = isAlreadySelected ? 'disabled' : '';
 
                     rows += `
-                <tr data-product-code="${product.code}">
-                    <td><strong>${product.code}</strong></td>
-                    <td>${product.name}</td>
-                    <td>${product.unit}</td>
-                    <td><span class="text-info">${product.current_stock.toLocaleString('id-ID')}</span></td>
-                    <td>Rp ${product.unit_cost.toLocaleString('id-ID')}</td>
-                    <td>
-                        <button type="button" class="btn btn-sm ${buttonClass} add-product-btn" 
-                                data-product='${JSON.stringify(product)}' ${buttonDisabled}>
-                            <i class="icon-base ti tabler-plus me-1"></i>${buttonText}
-                        </button>
-                    </td>
-                </tr>
-            `;
+                        <tr data-product-code="${product.code}">
+                            <td><strong>${product.code}</strong></td>
+                            <td>${product.name}</td>
+                            <td>${product.unit}</td>
+                            <td><span class="text-info">${product.current_stock.toLocaleString('id-ID')}</span></td>
+                            <td>Rp ${product.unit_cost.toLocaleString('id-ID')}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm ${buttonClass} add-product-btn" 
+                                        data-product='${JSON.stringify(product)}' ${buttonDisabled}>
+                                    <i class="icon-base ti tabler-plus me-1"></i>${buttonText}
+                                </button>
+                            </td>
+                        </tr>
+                    `;
                 });
 
                 tbody.html(rows);
@@ -506,15 +532,24 @@
             function renderSelectedProductsTable() {
                 const tbody = $('#selected-products-tbody');
 
+                let is_blank_input = true;
+                @if (!empty($items))
+                    is_blank_input = false;
+                @endif
+
+                if (is_blank_input === false) {
+                    selectedProducts = @json($items);
+                }
+
                 if (selectedProducts.length === 0) {
                     tbody.html(`
-                <tr>
-                    <td colspan="8" class="text-center text-muted py-4">
-                        <i class="icon-base ti tabler-plus me-2"></i>
-                        Tambahkan produk dari daftar di atas untuk mulai melakukan adjustment
-                    </td>
-                </tr>
-            `);
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="icon-base ti tabler-plus me-2"></i>
+                                Tambahkan produk dari daftar di atas untuk mulai melakukan adjustment
+                            </td>
+                        </tr>
+                    `);
                     $('#selected-products-count').text('0');
                     return;
                 }
@@ -522,34 +557,43 @@
                 let rows = '';
                 selectedProducts.forEach(function(product, index) {
                     rows += `
-                <tr data-product-code="${product.product_code}">
-                    <td><strong>${product.product_code}</strong></td>
-                    <td>${product.product_name}</td>
-                    <td>${product.unit}</td>
-                    <td><span class="text-info">${product.current_stock.toLocaleString('id-ID')}</span></td>
-                    <td>
-                        <input type="number" class="form-control form-control-sm adjustment-qty" 
-                               placeholder="0" value="${product.adjustment_qty || 0}" 
-                               data-current-stock="${product.current_stock}" 
-                               data-unit-cost="${product.unit_cost}" 
-                               min="-${product.current_stock}">
-                    </td>
-                    <td class="variance-display">
-                        ${getVarianceDisplay(product.adjustment_qty || 0)}
-                    </td>
-                    <td>
-                        <input type="text" class="form-control form-control-sm reason-input" 
-                               placeholder="Alasan adjustment..." maxlength="200" 
-                               value="${product.reason || ''}">
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-danger remove-product-btn" 
-                                data-product-code="${product.product_code}">
-                            <i class="icon-base ti tabler-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
+                        <tr data-product-code="${product.product_code}">
+                            <td><strong>${product.product_code}</strong></td>
+                            <td>${product.product_name}</td>
+                            <td>${product.unit}</td>
+                            <td><span class="text-info">${product.current_stock.toLocaleString('id-ID')}</span></td>
+                            <td>
+                                <input type="number" class="form-control form-control-sm adjustment-qty" `
+
+                    if (is_blank_input === false) {
+                        rows += `disabled `;
+                    }
+                    rows += `placeholder="0" value="${product.adjustment_qty || 0}" 
+                            data-current-stock="${product.current_stock}" 
+                            data-unit-cost="${product.unit_cost}" 
+                            min="-${product.current_stock}">
+                            </td>
+                            <td class="variance-display">
+                                ${getVarianceDisplay(product.adjustment_qty - product.current_stock|| 0)}
+                            </td>
+                            <td>
+                                <input type="text" class="form-control form-control-sm reason-input" 
+                                    placeholder="Alasan adjustment..." maxlength="200" 
+                                    value="${product.reason || ''}">
+                            </td>`;
+
+                    if (is_blank_input === true) {
+                        rows += `
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger remove-product-btn" 
+                                        data-product-code="${product.product_code}">
+                                    <i class="icon-base ti tabler-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    }
+
                 });
 
                 tbody.html(rows);
@@ -600,12 +644,13 @@
             // Auto-calculation for variance and summary
             $(document).on('input', '.adjustment-qty', function() {
                 const adjustmentQty = parseInt($(this).val()) || 0;
+                const current_stock = parseInt($(this).data('current-stock')) || 0;
                 const row = $(this).closest('tr');
                 const productCode = row.data('product-code');
                 const varianceCell = row.find('.variance-display');
 
                 // Update variance display
-                varianceCell.html(getVarianceDisplay(adjustmentQty));
+                varianceCell.html(getVarianceDisplay(adjustmentQty - current_stock));
 
                 // Update selectedProducts array
                 const productIndex = selectedProducts.findIndex(p => p.product_code === productCode);
@@ -773,6 +818,8 @@
                     description: $('#description').val(),
                     memo: $('#adjustment-memo').val(),
                     tags: $('#adjustment-tags').val(),
+                    form_type: $('#form-type').val(),
+                    form_reference_id: $('#form-reference_id').val(),
                     products: []
                 };
 

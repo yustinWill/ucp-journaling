@@ -50,15 +50,6 @@
             <!-- Row 3: Status and Description -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Status <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="status-select" data-allow-clear="false">
-                        <option value="">Pilih Status</option>
-                        @foreach ($statusOptions as $status)
-                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-6">
                     <label class="form-label">Kategori Produk Filter</label>
                     <select class="global-select2 form-select" id="product-category-filter" data-allow-clear="false">
                         <option value="">Semua Kategori</option>
@@ -67,10 +58,6 @@
                         @endforeach
                     </select>
                 </div>
-            </div>
-
-            <!-- Row 4: Description -->
-            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Deskripsi</label>
                     <textarea class="form-control" id="description" rows="3" placeholder="Deskripsi stock opname (opsional)"
@@ -314,9 +301,7 @@
             // Form validation
             function validateForm() {
                 let isValid = true;
-                const requiredFields = ['opname-number', 'opname-date', 'warehouse-select', 'pic-select',
-                    'status-select'
-                ];
+                const requiredFields = ['opname-number', 'opname-date', 'warehouse-select', 'pic-select'];
 
                 requiredFields.forEach(function(fieldId) {
                     const field = $('#' + fieldId);
@@ -354,7 +339,6 @@
                     opname_date: $('#opname-date').val(),
                     warehouse: $('#warehouse-select').val(),
                     pic: $('#pic-select').val(),
-                    status: $('#status-select').val(),
                     description: $('#description').val(),
                     tags: $('#opname-tags').val() || [],
                     memo: $('#opname-memo').val(),

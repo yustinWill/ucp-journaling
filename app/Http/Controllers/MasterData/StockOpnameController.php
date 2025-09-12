@@ -7,8 +7,9 @@ use App\Domains\StockOpname\Actions\CreateStockOpnameAction;
 use App\Domains\StockOpname\Services\StockOpnameAuditLogService;
 use App\Domains\StockOpname\Services\StockOpnameProductService;
 use App\Domains\StockOpname\Services\StockOpnameService;
+use App\Domains\StockMovement\Services\StockMovementLogsService;
 use App\Domains\Tag\Services\TagService;
-use App\Domains\User\Services\UserService;
+use App\Domains\Contact\Services\ContactService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -26,9 +27,9 @@ class StockOpnameController extends Controller
     {
         // Status options
         $statusOptions = [
-            ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
-            ['value' => 'IN_PROGRESS', 'label' => 'IN_PROGRESS - Sedang Dikerjakan'],
-            ['value' => 'COMPLETED', 'label' => 'COMPLETED - Selesai'],
+            ['value' => 'SUBMITTED', 'label' => 'SUBMITTED - Tersimpan'],
+            ['value' => 'EXECUTED', 'label' => 'EXECUTED - Stock Sudah Diadjust'],
+            // ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan'],
         ];
 
         // Warehouse locations for RIYO Water
@@ -52,21 +53,22 @@ class StockOpnameController extends Controller
         $warehouse = $req->query('warehouse');
         $category = $req->query('category');
 
-        // // Fetch products based on warehouse and category filters
-        // $products = app(ProductService::class)->getProductsByWarehouseAndCategory($warehouse, $category);
+        $products = app(StockMovementLogsService::class)->findAllLatestStockPerWarehouse($warehouse, $category);
 
+        $product_array = [];
+        foreach ($products as $key => $value) {
+            $product_array[] = [
+                'id' => $value->id,
+                'code' => $value->code,
+                'name' => $value->name,
+                'unit' => $value->unit,
+                'system_stock' => $value->system_stock,
+                'category' => $value->category,
+            ];
+        }
         return response()->json([
             'message' => SuccessCodes::GENERAL_SUCCESS->message(),
-            'data' => [
-                [
-                    'id' => 24,
-                    'code' => 'AIR-330',
-                    'name' => 'RIYO Water 330ml',
-                    'unit' => 'pcs',
-                    'system_stock' => 1500,
-                    'category' => '1',
-                ],
-            ],
+            'data' => $product_array,
         ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
@@ -76,7 +78,7 @@ class StockOpnameController extends Controller
         $warehouses = app(WarehouseService::class)->findAll();
 
         // PIC options
-        $picUsers = app(UserService::class)->findAll();
+        $picUsers = app(ContactService::class)->findAllByType('EMPLOYEE');
 
         // Product categories for filtering
         $categories = app(CategoryService::class)->findAll();
@@ -111,7 +113,6 @@ class StockOpnameController extends Controller
                 'opname_date' => 'required|date',
                 'warehouse' => 'required|integer',
                 'pic' => 'required|integer',
-                'status' => 'required|string|in:DRAFT,IN_PROGRESS,COMPLETED',
                 'description' => 'nullable|string|max:500',
                 'memo' => 'nullable|string|max:500',
                 'tags' => 'nullable|array',
@@ -127,7 +128,6 @@ class StockOpnameController extends Controller
                 'opname_date' => 'Tanggal Stock Opname',
                 'warehouse' => 'Gudang',
                 'pic' => 'Penanggung Jawab',
-                'status' => 'Status',
                 'description' => 'Deskripsi',
                 'memo' => 'Memo',
                 'tags' => 'Tag',

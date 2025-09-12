@@ -19,8 +19,8 @@ class StockOpnameService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name.' as t')
-            ->select('t.*', 'w.code as warehouse_code', 'w.name as warehouse_name', 'u.name as pic_name')
+        $data = DB::table($this->table_name . ' as t')
+            ->select('t.*', 'w.id as warehouse_id', 'w.code as warehouse_code', 'w.name as warehouse_name', 'u.name as pic_name')
             ->leftJoin('m_warehouses as w', 't.f_warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 't.f_pic_id', '=', 'u.id')
             ->where('t.id', $id)
@@ -48,9 +48,28 @@ class StockOpnameService
             'f_tag_codes' => json_encode($data['f_tag_codes'] ?? []),
             'created_at' => now(),
             'created_by' => Auth::id(),
+            'count_product' => $data['count_product'],
+            'count_variance' => $data['count_variance'],
+            'total_system_stock' => $data['total_system_stock'],
+            'total_physical_stock' => $data['total_physical_stock'],
+            'total_variance' => $data['total_variance'],
         ];
 
         return DB::table($this->table_name)->insertGetId($data);
+    }
+
+    public function updateStatus(int $id, string $status): int
+    {
+        $updateData = [
+            'status' => $status,
+            // 'updated_by' => Auth::id(),
+            // 'updated_at' => now()
+        ];
+
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->update($updateData);
     }
 
     // public function update(int $id, array $data): int
@@ -80,7 +99,7 @@ class StockOpnameService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name.' as so')
+        $query = DB::table($this->table_name . ' as so')
             ->select([
                 'so.id',
                 'so.stock_opname_no',

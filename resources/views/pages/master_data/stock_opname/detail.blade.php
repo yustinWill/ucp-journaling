@@ -24,18 +24,25 @@
                         @if ($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ route('master_data.stock_opname.edit', $stockOpname['id']) }}"
+                                @if ($stockOpname['status'] === 'SUBMITTED')
+                                    <a class="btn btn-primary btn-md waves-effect waves-light"
+                                        href="{{ route('main_transaction.stock_adjustment.add', ['id' => $stockOpname['id'], 'type' => 'STOCK_OPNAME']) }}">
+                                        <i class="icon-base ti tabler-adjustments me-2"></i> Buat Stok Adjustment
+                                    </a>
+                                @endif
+                                {{-- <a href="{{ route('master_data.stock_opname.edit', $stockOpname['id']) }}"
                                     class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>
                                     Edit
-                                </a>
-                                @if ($stockOpname['status'] === 'ADJUSTMENT_PENDING')
+                                </a> --}}
+                                {{-- @if ($stockOpname['status'] === 'ADJUSTMENT_PENDING')
                                     <button type="button" class="btn btn-success btn-md waves-effect waves-light"
                                         id="create-adjustment-btn">
                                         <i class="icon-base ti tabler-adjustments me-2"></i>
                                         Buat Stok Adjustment
                                     </button>
-                                @endif
+
+                                @endif --}}
                             </div>
                         @else
                             <!-- Show dropdown for 3 or more actions -->

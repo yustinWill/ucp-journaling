@@ -210,7 +210,7 @@
                         },
                         {
                             data: 'tags',
-                           render: function(data, type, row) {
+                            render: function(data, type, row) {
                                 return data.map(tag => {
                                     if (tag.name == null) {
                                         return ``;
@@ -318,14 +318,17 @@
                                     .replace(':id', row.id);
 
                                 // Only show Detail and Edit buttons (removed Buat Adjustment from table)
-                                let buttons = `<div class="d-flex gap-2">
+                                let buttons = `
+                                <div class="d-flex gap-2">
                                     <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
                                     </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>
+                                    
                                 </div>`;
+                                // <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                //         <i class="icon-base ti tabler-edit"></i>
+                                //     </a>
+                                    
                                 return buttons;
                             }
                         }

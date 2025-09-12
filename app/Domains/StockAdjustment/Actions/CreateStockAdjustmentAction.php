@@ -4,6 +4,7 @@ namespace App\Domains\StockAdjustment\Actions;
 
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
+use App\Domains\StockOpname\Services\StockOpnameService;
 use App\Domains\Product\Services\ProductService;
 use App\Services\StockMovementLogService;
 use App\Services\BatchManagementService;
@@ -30,6 +31,7 @@ class CreateStockAdjustmentAction
                 'total_items' => count($data['products'] ?? []),
                 'total_adjustment_qty' => $this->calculateTotalQty($data['products'] ?? []),
                 'total_adjustment_value' => $this->calculateTotalValue($data['products'] ?? []),
+                'source_reference_id' => $data['form_reference_id'] ?? null,
             ]);
 
             // Create adjustment items, update stock, and handle batches
@@ -37,6 +39,12 @@ class CreateStockAdjustmentAction
                 $this->processStockAdjustments($stockAdjustmentId, $data['products'], $data);
                 $this->createAdjustmentItems($stockAdjustmentId, $data['products'], $data);
                 $this->createStockMovementLogs($stockAdjustmentId, $data['products'], $data);
+            }
+
+            switch ($data['adjustment_type']) {
+                case 'STOCK_OPNAME':
+                    app(StockOpnameService::class)->updateStatus($data['form_reference_id'], 'EXECUTED');
+                    break;
             }
 
             // Create audit log
@@ -77,11 +85,11 @@ class CreateStockAdjustmentAction
             if ($product['adjustment_qty'] != 0) {
                 $productId = $product['product_id'];
                 $adjustmentQty = $product['adjustment_qty'];
-                
+
                 if ($adjustmentQty > 0) {
                     // Positive adjustment - increase stock and create new batch
                     app(ProductService::class)->updateStock($productId, '+', $adjustmentQty);
-                    
+
                     // Create batch using global service
                     app(BatchManagementService::class)->createBatch([
                         'f_product_id' => $productId,
@@ -95,7 +103,7 @@ class CreateStockAdjustmentAction
                 } else {
                     // Negative adjustment - decrease stock and consume batches (FIFO)
                     app(ProductService::class)->updateStock($productId, '-', abs($adjustmentQty));
-                    
+
                     // Consume batches using global service
                     app(BatchManagementService::class)->consumeBatches($productId, abs($adjustmentQty), [
                         'source_type' => 'STOCK_ADJUSTMENT',
