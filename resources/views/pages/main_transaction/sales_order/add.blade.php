@@ -502,31 +502,66 @@
                     formData.append(`products[${idx}][unit_price]`, line.unit_price);
                     formData.append(`products[${idx}][total]`, line.line_total);
                 });
-                $.ajax({
-                    url: '{{ route('main_transaction.sales_order.store') }}',
-                    method: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.success) {
-                            window.location.href =
-                                '{{ route('main_transaction.sales_order.detail', ':id') }}'
-                                .replace(':id', response.data.id);
-                        } else {
-                            alert('Terjadi kesalahan: ' + response.message);
-                        }
+
+                Swal.fire({
+                    title: 'Buat Sales Order?',
+                    text: 'Pastikan data yang diisi sudah benar.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Buat!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-success',
+                        cancelButton: 'btn btn-label-secondary'
                     },
-                    error: function(xhr) {
-                        let errorMsg = 'Terjadi kesalahan saat menyimpan data.';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMsg = xhr.responseJSON.message;
-                        } else if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            errorMsg = Object.values(xhr.responseJSON.errors).flat().join('\n');
-                        }
-                        alert(errorMsg);
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#submit-btn').prop('disabled', true).html(
+                            '<span class="spinner-border spinner-border-sm me-2"></span>Loading...'
+                        );
+
+                        $.ajax({
+                            url: '{{ route('main_transaction.sales_order.store') }}',
+                            method: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function(response) {
+                                if (response.success) {
+                                    window.location.href =
+                                        '{{ route('main_transaction.sales_order.detail', ':id') }}'
+                                        .replace(':id', response.data.id);
+                                } else {
+                                    alert('Terjadi kesalahan: ' + response.message);
+                                }
+                            },
+                            error: function(xhr) {
+                                let errorMessage =
+                                    'Terjadi kesalahan saat menyimpan data.';
+
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+
+                                Swal.fire({
+                                    title: 'Gagal!',
+                                    text: errorMessage,
+                                    icon: 'error',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary'
+                                    },
+                                    buttonsStyling: false
+                                });
+                            },
+                            complete: function() {
+                                $('#submit-btn').prop('disabled', false).html('Simpan');
+                            }
+                        });
                     }
                 });
+
+
             });
 
             // Generate transaction number function
