@@ -4,11 +4,13 @@ namespace App\Domains\StockAdjustment\Actions;
 
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
+use App\Domains\Product\Services\ProductService;
 use App\Services\StockMovementLogService;
 use App\Enums\ErrorCodes;
 use App\Exceptions\AppException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UpdateStockAdjustmentAction
 {
@@ -40,6 +42,11 @@ class UpdateStockAdjustmentAction
 
             // Update adjustment items if products are provided
             if (isset($data['products'])) {
+                // Reverse previous adjustments first
+                $this->reversePreviousAdjustments($id, $originalData);
+                
+                // Apply new adjustments
+                $this->processStockAdjustments($id, $data['products'], $data);
                 $this->updateAdjustmentItems($id, $data['products']);
                 $this->updateStockMovementLogs($id, $data['products'], $data, $originalData);
             }
@@ -178,5 +185,163 @@ class UpdateStockAdjustmentAction
         }
 
         return $changes;
+    }
+
+    private function reversePreviousAdjustments(int $stockAdjustmentId, $originalData): void
+    {
+        // Get previous adjustment items
+        $previousItems = DB::table('t_stock_adjustment_items')
+            ->where('stock_adjustment_id', $stockAdjustmentId)
+            ->where('company_code', session('user_company_code'))
+            ->get();
+
+        foreach ($previousItems as $item) {
+            if ($item->adjustment_qty != 0) {
+                $productId = $item->product_id;
+                $previousQty = $item->adjustment_qty;
+                
+                if ($previousQty > 0) {
+                    // Previous was positive - now reverse by decreasing stock and consuming batches
+                    app(ProductService::class)->updateStock($productId, '-', $previousQty);
+                    $this->consumeStockBatches($productId, $previousQty, $stockAdjustmentId);
+                } else {
+                    // Previous was negative - now reverse by increasing stock and creating batch
+                    app(ProductService::class)->updateStock($productId, '+', abs($previousQty));
+                    $this->createReversalBatch($stockAdjustmentId, $item);
+                }
+            }
+        }
+    }
+
+    private function processStockAdjustments(int $stockAdjustmentId, array $products, array $mainData): void
+    {
+        foreach ($products as $product) {
+            if ($product['adjustment_qty'] != 0) {
+                $productId = $product['product_id'];
+                $adjustmentQty = $product['adjustment_qty'];
+                
+                if ($adjustmentQty > 0) {
+                    // Positive adjustment - increase stock and create new batch
+                    app(ProductService::class)->updateStock($productId, '+', $adjustmentQty);
+                    $this->createAdjustmentBatch($stockAdjustmentId, $product, $mainData);
+                } else {
+                    // Negative adjustment - decrease stock and consume batches (FIFO)
+                    app(ProductService::class)->updateStock($productId, '-', abs($adjustmentQty));
+                    $this->consumeStockBatches($productId, abs($adjustmentQty), $stockAdjustmentId);
+                }
+            }
+        }
+    }
+
+    private function createAdjustmentBatch(int $stockAdjustmentId, array $product, array $mainData): int
+    {
+        $batchReference = 'ADJ-UPD-' . $stockAdjustmentId . '-' . $product['product_id'] . '-' . time();
+        $unitCost = $product['unit_cost'] ?? 0;
+        
+        return DB::table('t_product_stock_batches')->insertGetId([
+            'company_code' => session('user_company_code'),
+            'f_product_id' => $product['product_id'],
+            'batch_reference_code' => $batchReference,
+            'source_type' => 'ADJUSTMENT',
+            'f_source_transaction_id' => $stockAdjustmentId,
+            'batch_date' => $mainData['adjustment_date'],
+            'initial_qty' => $product['adjustment_qty'],
+            'remaining_qty' => $product['adjustment_qty'],
+            'raw_material_cost' => 0.00,
+            'production_cost' => 0.00,
+            'purchase_price' => $unitCost,
+            'estimated_hpp' => $unitCost,
+            'final_hpp' => null,
+            'hpp_status' => 'SETTLED',
+            'status' => 'ACTIVE',
+            'created_at' => now(),
+            'created_by' => Auth::id(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function createReversalBatch(int $stockAdjustmentId, $item): int
+    {
+        $batchReference = 'ADJ-REV-' . $stockAdjustmentId . '-' . $item->product_id . '-' . time();
+        $unitCost = $item->unit_cost ?? 0;
+        
+        return DB::table('t_product_stock_batches')->insertGetId([
+            'company_code' => session('user_company_code'),
+            'f_product_id' => $item->product_id,
+            'batch_reference_code' => $batchReference,
+            'source_type' => 'ADJUSTMENT_REVERSAL',
+            'f_source_transaction_id' => $stockAdjustmentId,
+            'batch_date' => now()->format('Y-m-d'),
+            'initial_qty' => abs($item->adjustment_qty),
+            'remaining_qty' => abs($item->adjustment_qty),
+            'raw_material_cost' => 0.00,
+            'production_cost' => 0.00,
+            'purchase_price' => $unitCost,
+            'estimated_hpp' => $unitCost,
+            'final_hpp' => null,
+            'hpp_status' => 'SETTLED',
+            'status' => 'ACTIVE',
+            'created_at' => now(),
+            'created_by' => Auth::id(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function consumeStockBatches(int $productId, float $quantityToConsume, int $adjustmentId): void
+    {
+        // Get available batches ordered by date (FIFO)
+        $batches = DB::table('t_product_stock_batches')
+            ->where('f_product_id', $productId)
+            ->where('remaining_qty', '>', 0)
+            ->where('status', 'ACTIVE')
+            ->orderBy('batch_date', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        $remainingToConsume = $quantityToConsume;
+
+        foreach ($batches as $batch) {
+            if ($remainingToConsume <= 0) {
+                break;
+            }
+
+            if (!isset($batch->id) || !isset($batch->remaining_qty)) {
+                continue;
+            }
+
+            $availableQty = $batch->remaining_qty;
+            $consumeFromThisBatch = min($remainingToConsume, $availableQty);
+
+            // Update batch remaining quantity
+            DB::table('t_product_stock_batches')
+                ->where('id', $batch->id)
+                ->update([
+                    'remaining_qty' => $availableQty - $consumeFromThisBatch,
+                    'updated_at' => now(),
+                    'updated_by' => Auth::id(),
+                ]);
+
+            // Record batch consumption transaction
+            DB::table('t_product_batch_transactions')->insert([
+                'company_code' => session('user_company_code'),
+                'f_product_batch_id' => $batch->id,
+                'f_product_id' => $productId,
+                'transaction_type' => 'OUT',
+                'source_type' => 'STOCK_ADJUSTMENT',
+                'f_source_transaction_id' => $adjustmentId,
+                'transaction_date' => now(),
+                'qty_moved' => $consumeFromThisBatch,
+                'reference_code' => 'ADJ-' . $adjustmentId,
+                'notes' => 'Stock consumed by Stock Adjustment Update',
+                'created_at' => now(),
+                'created_by' => Auth::id(),
+            ]);
+
+            $remainingToConsume -= $consumeFromThisBatch;
+        }
+
+        if ($remainingToConsume > 0) {
+            Log::warning("Insufficient stock batches for product {$productId}. Could not consume {$remainingToConsume} units in adjustment {$adjustmentId}.");
+        }
     }
 }

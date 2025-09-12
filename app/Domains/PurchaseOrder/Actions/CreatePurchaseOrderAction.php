@@ -43,6 +43,8 @@ class CreatePurchaseOrderAction
                 ]),
             ];
             app(PurchaseOrderAuditLogService::class)->create($log_data, $purchase_order_id);
+
+            return $purchase_order_id;
         });
     }
 }

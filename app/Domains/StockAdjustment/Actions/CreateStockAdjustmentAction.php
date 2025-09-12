@@ -4,9 +4,12 @@ namespace App\Domains\StockAdjustment\Actions;
 
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
+use App\Domains\Product\Services\ProductService;
 use App\Services\StockMovementLogService;
+use App\Services\BatchManagementService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CreateStockAdjustmentAction
 {
@@ -29,8 +32,9 @@ class CreateStockAdjustmentAction
                 'total_adjustment_value' => $this->calculateTotalValue($data['products'] ?? []),
             ]);
 
-            // Create adjustment items and stock movement logs
+            // Create adjustment items, update stock, and handle batches
             if (! empty($data['products'])) {
+                $this->processStockAdjustments($stockAdjustmentId, $data['products'], $data);
                 $this->createAdjustmentItems($stockAdjustmentId, $data['products'], $data);
                 $this->createStockMovementLogs($stockAdjustmentId, $data['products'], $data);
             }
@@ -66,6 +70,45 @@ class CreateStockAdjustmentAction
 
         return $totalValue;
     }
+
+    private function processStockAdjustments(int $stockAdjustmentId, array $products, array $mainData): void
+    {
+        foreach ($products as $product) {
+            if ($product['adjustment_qty'] != 0) {
+                $productId = $product['product_id'];
+                $adjustmentQty = $product['adjustment_qty'];
+                
+                if ($adjustmentQty > 0) {
+                    // Positive adjustment - increase stock and create new batch
+                    app(ProductService::class)->updateStock($productId, '+', $adjustmentQty);
+                    
+                    // Create batch using global service
+                    app(BatchManagementService::class)->createBatch([
+                        'f_product_id' => $productId,
+                        'source_type' => 'STOCK_ADJUSTMENT',
+                        'f_source_transaction_id' => $stockAdjustmentId,
+                        'batch_date' => $mainData['adjustment_date'],
+                        'quantity' => $adjustmentQty,
+                        'purchase_price' => $product['unit_cost'] ?? 0,
+                        'hpp_status' => 'SETTLED',
+                    ]);
+                } else {
+                    // Negative adjustment - decrease stock and consume batches (FIFO)
+                    app(ProductService::class)->updateStock($productId, '-', abs($adjustmentQty));
+                    
+                    // Consume batches using global service
+                    app(BatchManagementService::class)->consumeBatches($productId, abs($adjustmentQty), [
+                        'source_type' => 'STOCK_ADJUSTMENT',
+                        'f_source_transaction_id' => $stockAdjustmentId,
+                        'reference_code' => 'ADJ-' . $stockAdjustmentId,
+                        'notes' => 'Stock consumed by Stock Adjustment',
+                    ]);
+                }
+            }
+        }
+    }
+
+    // Batch management methods removed - now using global BatchManagementService
 
     private function createAdjustmentItems(int $stockAdjustmentId, array $products, array $mainData): void
     {

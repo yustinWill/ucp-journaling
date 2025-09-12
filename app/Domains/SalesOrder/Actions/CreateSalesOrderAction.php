@@ -48,16 +48,19 @@ class CreateSalesOrderAction
 
     private function createProductLines(int $salesOrderId, array $products): void
     {
-        foreach ($products as $index => $product) {
-            DB::table('t_sales_order_lines')->insert([
+        foreach ($products as $product) {
+            DB::table('t_sales_order_products')->insert([
+                'company_code' => session('company_code'),
                 'f_sales_order_id' => $salesOrderId,
-                'line_sequence' => $index + 1,
                 'f_product_id' => $product['product_id'],
                 'quantity' => $product['quantity'],
                 'unit_price' => $this->parsePrice($product['unit_price']),
                 'f_tax_id' => $product['tax_id'] ?? null,
+                'tax_amount' => $product['tax_amount'] ?? 0,
                 'line_total' => $this->parsePrice($product['total']),
+                'description' => $product['description'] ?? null,
                 'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }

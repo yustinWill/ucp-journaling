@@ -4,7 +4,9 @@ namespace App\Domains\Production\Services;
 
 use App\Domains\Product\Services\ProductService;
 use App\Domains\Warehouse\Services\WarehouseService;
+use App\Services\StockMovementLogService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ProductionStockService
 {
@@ -14,107 +16,90 @@ class ProductionStockService
 
     public function createProductionStockMovements(int $productionId, array $items, array $productionData): array
     {
-        $movements = [];
-        $warehouse = app(WarehouseService::class)->findOne($productionData['warehouse_id']);
-        // 1. Consume raw materials (negative movements)
+        $processedItems = [];
+        
+        // 1. Consume raw materials (decrease stock)
         foreach ($items as $item) {
+            // Update product stock first (decrease)
+            app(ProductService::class)->updateStock($item['raw_material_product_id'], '-', $item['quantity_consumed']);
+            
+            // Record stock movement via centralized service
+            app(StockMovementLogService::class)->recordMovement(
+                $productionData['warehouse_id'],
+                $item['raw_material_product_id'],
+                'PRODUCTION_OUT',
+                'PRODUCTION',
+                $productionData['production_number'],
+                $item['quantity_consumed'],
+                "Raw material consumed for production {$productionData['production_number']}",
+                $productionData['production_date']
+            );
+            
+            // Consume raw material batches (FIFO)
             $batchConsumption = $this->consumeRawMaterialFIFO(
                 $item['raw_material_product_id'],
                 $productionData['warehouse_id'],
                 $item['quantity_consumed'],
                 $productionId
             );
-
-            $product = app(ProductService::class)->findOne($item['raw_material_product_id']);
-            $movements[] = [
-                // 'movement_id' => $this->generateMovementId(),
-                'company_code' => session('user_company_code'),
-                'product_id' => $item['raw_material_product_id'],
-                'product_code' => $product->code,
-                'product_name' => $product->name,
-                'warehouse_id' => $productionData['warehouse_id'],
-                'warehouse_code' => $warehouse->code,
-                'warehouse_name' => $warehouse->name,
-                'movement_type' => 'PRODUCTION_CONSUME',
-                // IMPORTANT
-                'stock_before' => 0,
-                'movement_qty' => -$item['quantity_consumed'], // Negative for consumption
-                'stock_after' => 0,
-                'unit' => $item['unit_code'],
-                'reference_type' => 'PRODUCTION',
-                // 'reference_id' => $productionData['production_number'],
-                'reference_number' => $productionData['production_number'],
-                'movement_date' => $productionData['production_date'],
-                'notes' => "Raw material consumed for production {$productionData['production_number']}",
-                // 'batch_details' => json_encode($batchConsumption),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-
-            // Update item with batch consumption details
+            
             $item['batch_consumption'] = $batchConsumption;
+            $processedItems[] = $item;
         }
 
-        $product = app(ProductService::class)->findOne($productionData['bundle_product_id']);
-        // 2. Create bundle product (positive movement)
-        $bundleMovement = [
-            // 'movement_id' => $this->generateMovementId(),
-            'company_code' => session('user_company_code'),
-            'product_id' => $productionData['bundle_product_id'],
-            'product_code' => $product->code,
-            'product_name' => $product->name,
-            'warehouse_id' => $productionData['warehouse_id'],
-            'warehouse_code' => $warehouse->code,
-            'warehouse_name' => $warehouse->name,
-            'movement_type' => 'PRODUCTION_CREATE',
-            // IMPORTANT
-            'stock_before' => 0,
-            'movement_qty' => $productionData['quantity_produced'],
-            'stock_after' => 0,
-            'unit' => $this->getBundleProductUnitCode($productionData['bundle_product_id']),
-            'reference_type' => 'PRODUCTION',
-            // 'reference_id' => $productionId,
-            'reference_number' => $productionData['production_number'],
-            'movement_date' => $productionData['production_date'],
-            'notes' => "Bundle product created from production {$productionData['production_number']}",
-            // 'batch_details' => null,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-
-        $movements[] = $bundleMovement;
-
-        // Insert all movements
-        DB::table($this->movement_table)->insert($movements);
+        // 2. Create bundle product (increase stock)  
+        app(ProductService::class)->updateStock($productionData['bundle_product_id'], '+', $productionData['quantity_produced']);
+        
+        // Record bundle product creation movement
+        app(StockMovementLogService::class)->recordMovement(
+            $productionData['warehouse_id'],
+            $productionData['bundle_product_id'],
+            'PRODUCTION_IN',
+            'PRODUCTION',
+            $productionData['production_number'],
+            $productionData['quantity_produced'],
+            "Bundle product created from production {$productionData['production_number']}",
+            $productionData['production_date']
+        );
 
         // 3. Create new batch for bundle product
-        // IMPORTANT terlalu banyak beda field takut salah mapping
-        // $this->createProductionBatch(
-        //     $productionData['bundle_product_id'],
-        //     $productionData['warehouse_id'],
-        //     $productionData['quantity_produced'],
-        //     $productionId,
-        //     $productionData
-        // );
-
-        // 4. Update product stock totals
-        $this->updateProductStockTotals($items, $productionData);
+        $this->createProductionBatch(
+            $productionData['bundle_product_id'],
+            $productionData['warehouse_id'],
+            $productionData['quantity_produced'],
+            $productionId,
+            $productionData
+        );
 
         return [
-            'movements_created' => count($movements),
+            'movements_created' => count($items) + 1, // Raw materials + bundle product
             'raw_material_movements' => count($items),
             'bundle_product_batch_created' => true,
-            'items_with_batch_details' => $items,
+            'items_with_batch_details' => $processedItems,
         ];
     }
 
     public function reverseProductionStockMovements(int $productionId, array $reversalData): array
     {
-        $movements = [];
         $production = $reversalData['production'];
         $items = $reversalData['items'];
 
-        // 1. Remove bundle product (negative movement)
+        // 1. Remove bundle product (decrease stock)
+        app(ProductService::class)->updateStock($production['bundle_product_id'], '-', $reversalData['quantity_to_reverse']);
+        
+        // Record bundle product removal movement
+        app(StockMovementLogService::class)->recordMovement(
+            $production['warehouse_id'],
+            $production['bundle_product_id'],
+            'PRODUCTION_REVERSAL_OUT',
+            'PRODUCTION_REVERSAL',
+            $production['production_number'] . '-REV',
+            $reversalData['quantity_to_reverse'],
+            "Bundle product removed for production reversal {$production['production_number']}",
+            now()->format('Y-m-d')
+        );
+        
+        // Remove bundle product batch
         $bundleBatch = $this->removeBundleProductFIFO(
             $production['bundle_product_id'],
             $production['warehouse_id'],
@@ -122,60 +107,33 @@ class ProductionStockService
             $productionId
         );
 
-        $movements[] = [
-            // 'movement_id' => $this->generateMovementId(),
-            'company_code' => session('user_company_code'),
-            'product_id' => $production['bundle_product_id'],
-            'warehouse_id' => $production['warehouse_id'],
-            'movement_type' => 'PRODUCTION_REVERSAL_REMOVE',
-            'quantity' => -$reversalData['quantity_to_reverse'], // Negative for removal
-            'unit' => $this->getBundleProductUnitCode($production['bundle_product_id']),
-            'reference_type' => 'PRODUCTION_REVERSAL',
-            // 'reference_id' => $productionId,
-            'reference_number' => $production['production_number'].'-REV',
-            'movement_date' => now()->format('Y-m-d'),
-            'notes' => "Bundle product removed for production reversal {$production['production_number']}",
-            'batch_details' => json_encode($bundleBatch),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-
-        // 2. Restore raw materials (positive movements)
+        // 2. Restore raw materials (increase stock)
         foreach ($items as $item) {
+            app(ProductService::class)->updateStock($item['raw_material_product_id'], '+', $item['quantity_consumed']);
+            
+            // Record raw material restoration movement
+            app(StockMovementLogService::class)->recordMovement(
+                $production['warehouse_id'],
+                $item['raw_material_product_id'],
+                'PRODUCTION_REVERSAL_IN',
+                'PRODUCTION_REVERSAL',
+                $production['production_number'] . '-REV',
+                $item['quantity_consumed'],
+                "Raw material restored from production reversal {$production['production_number']}",
+                now()->format('Y-m-d')
+            );
+            
+            // Restore raw material batch
             $restoredBatch = $this->restoreRawMaterialBatch(
                 $item['raw_material_product_id'],
                 $production['warehouse_id'],
                 $item['quantity_consumed'],
                 $productionId
             );
-
-            $movements[] = [
-                // 'movement_id' => $this->generateMovementId(),
-                'company_code' => session('user_company_code'),
-                'product_id' => $item['raw_material_product_id'],
-                'warehouse_id' => $production['warehouse_id'],
-                'movement_type' => 'PRODUCTION_REVERSAL_RESTORE',
-                'quantity' => $item['quantity_consumed'], // Positive for restoration
-                'unit' => $item['unit_code'],
-                'reference_type' => 'PRODUCTION_REVERSAL',
-                // 'reference_id' => $productionId,
-                'reference_number' => $production['production_number'].'-REV',
-                'movement_date' => now()->format('Y-m-d'),
-                'notes' => "Raw material restored from production reversal {$production['production_number']}",
-                'batch_details' => json_encode($restoredBatch),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
         }
 
-        // Insert all movements
-        DB::table($this->movement_table)->insert($movements);
-
-        // Update product stock totals
-        $this->updateProductStockTotalsReversal($items, $production);
-
         return [
-            'movements_created' => count($movements),
+            'movements_created' => count($items) + 1, // Raw materials + bundle product
             'bundle_batch_removed' => $bundleBatch,
             'raw_materials_restored' => count($items),
         ];
@@ -282,53 +240,30 @@ class ProductionStockService
         $batchNumber = $this->generateBatchNumber('PROD');
 
         return DB::table($this->batch_table)->insertGetId([
-            'batch_reference_code' => $batchNumber,
             'company_code' => session('user_company_code'),
             'f_product_id' => $productId,
-            // IMPORTANT
-            // 'warehouse_id' => $warehouseId,
+            'batch_reference_code' => $batchNumber,
+            'source_type' => 'PRODUCTION',
+            'f_source_transaction_id' => $productionId,
+            'batch_date' => $productionData['production_date'],
             'initial_qty' => $quantity,
             'remaining_qty' => $quantity,
-            // 'unit_cost' => $this->calculateBundleProductUnitCost($productionData),
-            // 'reference_type' => 'PRODUCTION',
-            // 'reference_id' => $productionId,
-            'batch_date' => $productionData['production_date'],
-            // 'expiry_date' => null,
-            // 'notes' => "Produced from {$productionData['production_number']}",
+            'raw_material_cost' => 0.00,
+            'production_cost' => $this->calculateBundleProductUnitCost($productionData),
+            'purchase_price' => 0.00,
+            'estimated_hpp' => $this->calculateBundleProductUnitCost($productionData),
+            'final_hpp' => null,
+            'hpp_status' => 'UNSETTLED',
+            'status' => 'ACTIVE',
             'created_at' => now(),
-            // 'updated_at' => now()
+            'created_by' => Auth::id(),
+            'updated_at' => now(),
         ]);
     }
 
-    private function updateProductStockTotals(array $items, array $productionData): void
-    {
-        // Decrease raw material stock
-        foreach ($items as $item) {
-            DB::table('m_products')
-                ->where('id', $item['raw_material_product_id'])
-                ->decrement('total_stock', $item['quantity_consumed']);
-        }
+    // Removed: updateProductStockTotals - now handled by centralized ProductService::updateStock()
 
-        // Increase bundle product stock
-        DB::table('m_products')
-            ->where('id', $productionData['bundle_product_id'])
-            ->increment('total_stock', $productionData['quantity_produced']);
-    }
-
-    private function updateProductStockTotalsReversal(array $items, array $production): void
-    {
-        // Restore raw material stock
-        foreach ($items as $item) {
-            DB::table('m_products')
-                ->where('id', $item['raw_material_product_id'])
-                ->increment('total_stock', $item['quantity_consumed']);
-        }
-
-        // Decrease bundle product stock
-        DB::table('m_products')
-            ->where('id', $production['bundle_product_id'])
-            ->decrement('total_stock', $production['quantity_produced']);
-    }
+    // Removed: updateProductStockTotalsReversal - now handled by centralized ProductService::updateStock()
 
     // private function generateMovementId(): string
     // {

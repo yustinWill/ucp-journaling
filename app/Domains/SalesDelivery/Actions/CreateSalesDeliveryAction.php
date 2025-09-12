@@ -6,6 +6,8 @@ use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
 use App\Domains\Product\Services\ProductService;
 use App\Services\StockMovementLogService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Enums\ActionTypes;
 
 class CreateSalesDeliveryAction
@@ -81,6 +83,11 @@ class CreateSalesDeliveryAction
                 break;
             }
 
+            // Ensure batch has required properties
+            if (!isset($batch->id) || !isset($batch->remaining_qty)) {
+                continue;
+            }
+
             $availableQty = $batch->remaining_qty;
             $consumeFromThisBatch = min($remainingToConsume, $availableQty);
 
@@ -90,7 +97,7 @@ class CreateSalesDeliveryAction
                 ->update([
                     'remaining_qty' => $availableQty - $consumeFromThisBatch,
                     'updated_at' => now(),
-                    'updated_by' => auth()->id(),
+                    'updated_by' => Auth::id(),
                 ]);
 
             // Record batch consumption transaction
@@ -106,7 +113,7 @@ class CreateSalesDeliveryAction
                 'reference_code' => 'SD-' . $salesDeliveryId,
                 'notes' => 'Stock consumed by Sales Delivery',
                 'created_at' => now(),
-                'created_by' => auth()->id(),
+                'created_by' => Auth::id(),
             ]);
 
             $remainingToConsume -= $consumeFromThisBatch;
@@ -114,7 +121,7 @@ class CreateSalesDeliveryAction
 
         // Log warning if we couldn't consume all required quantity
         if ($remainingToConsume > 0) {
-            \Log::warning("Insufficient stock batches for product {$productId}. Could not consume {$remainingToConsume} units.");
+            Log::warning("Insufficient stock batches for product {$productId}. Could not consume {$remainingToConsume} units.");
         }
     }
 }

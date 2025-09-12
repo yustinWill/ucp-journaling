@@ -7,6 +7,7 @@ use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
 use App\Domains\Product\Services\ProductService;
 use App\Services\StockMovementLogService;
+use App\Services\BatchManagementService;
 use App\Enums\ActionTypes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -107,7 +108,7 @@ class CreatePurchaseDeliveryAction
     }
 
     /**
-     * Create product stock batches for HPP tracking
+     * Create product stock batches for HPP tracking using BatchManagementService
      */
     private function createProductBatches(int $deliveryId, array $data)
     {
@@ -122,7 +123,6 @@ class CreatePurchaseDeliveryAction
             ->get()
             ->keyBy('f_product_id');
 
-        $batchInserts = [];
         foreach ($data['products'] as $product) {
             if (! isset($product['delivery_qty']) || $product['delivery_qty'] <= 0) {
                 continue;
@@ -138,31 +138,19 @@ class CreatePurchaseDeliveryAction
             }
 
             $purchasePrice = (float) $poProduct->price_per_qty;
-            $batchReference = 'PD-' . $deliveryId . '-' . $productId . '-' . time();
 
-            $batchInserts[] = [
-                'company_code' => session('user_company_code'),
+            // Use BatchManagementService to create batch
+            app(BatchManagementService::class)->createBatch([
                 'f_product_id' => $productId,
-                'batch_reference_code' => $batchReference,
-                'source_type' => 'PURCHASE',
+                'source_type' => 'PURCHASE', // Use valid enum value
                 'f_source_transaction_id' => $deliveryId,
-                'batch_date' => $data['delivery_date'] ?? now()->format('Y-m-d'),
-                'initial_qty' => $deliveryQty,
-                'remaining_qty' => $deliveryQty,
-                'raw_material_cost' => 0.00, // Not applicable for purchase
-                'production_cost' => 0.00, // Not applicable for purchase
+                'quantity' => $deliveryQty,
                 'purchase_price' => $purchasePrice,
-                'estimated_hpp' => $purchasePrice, // Initial HPP equals purchase price
-                'final_hpp' => null, // To be settled later
-                'hpp_status' => 'UNSETTLED',
-                'status' => 'ACTIVE',
-                'created_at' => now(),
-                'created_by' => Auth::id(),
-            ];
-        }
-
-        if (! empty($batchInserts)) {
-            DB::table('t_product_stock_batches')->insert($batchInserts);
+                'estimated_hpp' => $purchasePrice,
+                'batch_date' => $data['delivery_date'] ?? now()->format('Y-m-d'),
+                'reference_code' => $data['reference_no'],
+                'notes' => 'Purchase Delivery: ' . $data['reference_no'],
+            ]);
         }
     }
 }
