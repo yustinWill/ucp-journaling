@@ -96,9 +96,9 @@ class PurchaseOrderProductService
                 'mp.name AS product_name',
                 'mu.code AS unit_code',
                 'mu.name AS unit_name',
-                'mt.code AS tax_code',
-                'mt.name AS tax_name',
-                'mt.rate AS tax_rate',
+                // 'mt.code AS tax_code',
+                // 'mt.name AS tax_name',
+                // 'mt.rate AS tax_rate',
                 DB::raw('COALESCE(SUM(pip.qty), 0) AS invoiced_qty'),
                 DB::raw('(pop.qty - COALESCE(SUM(pip.qty), 0)) AS remaining_qty_for_invoice')
             )
@@ -107,7 +107,7 @@ class PurchaseOrderProductService
             // ->leftJoin('m_taxes as mt', 'mt.id', '=', 'pop.f_tax_id')
             ->leftJoin('t_purchase_invoice_products as pip', 'pip.f_product_order_product_id', '=', 'pop.id')
             ->where('pop.f_purchase_order_id', $po_id)
-            ->groupBy('pop.id', 'mp.code', 'mp.name', 'mu.code', 'mu.name', 'mt.code', 'mt.name', 'mt.rate')
+            ->groupBy('pop.id', 'mp.code', 'mp.name', 'mu.code', 'mu.name')
             ->orderBy('pop.id', 'ASC')
             ->get();
     }

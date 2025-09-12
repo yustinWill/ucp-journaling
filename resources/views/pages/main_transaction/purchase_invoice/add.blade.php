@@ -159,9 +159,10 @@
                                 @foreach ($purchaseOrderProducts as $product)
                                     <tr>
                                         <td>{{ $product->product_code }} - {{ $product->product_name }}</td>
-                                        <td>{{ $product->qty }} {{ $product->unit_name }}</td>
-                                        <td>{{ $product->invoiced_qty ?? 0 }} {{ $product->unit_name }}</td>
-                                        <td>{{ $product->remaining_qty_for_invoice ?? $product->qty }}
+                                        <td>{{ number_format($product->qty, 0, ',', '.') }} {{ $product->unit_name }}</td>
+                                        <td>{{ number_format($product->invoiced_qty ?? 0, 0, ',', '.') }}
+                                            {{ $product->unit_name }}</td>
+                                        <td>{{ number_format($product->remaining_qty_for_invoice ?? $product->qty, 0, ',', '.') }}
                                             {{ $product->unit_name }}</td>
                                         <td>
                                             <input type="hidden"
@@ -367,7 +368,7 @@
                 const totalSpan = $(`#total-${index}`);
                 const totalHidden = $(`input[name="products[${index}][total_price]"]`);
 
-                const qty = parseFloat(qtyInput.val()) || 0;
+                const qty = parseCurrency(qtyInput.val()) || 0;
                 const unitPrice = parseFloat(unitPriceInput.val()) || 0;
                 const total = qty * unitPrice;
 
