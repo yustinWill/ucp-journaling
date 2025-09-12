@@ -23,7 +23,7 @@ class ProductService
     public function findAllAllowPurchase()
     {
         return DB::table($this->table_name . ' as m_products')
-            ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name')
+            ->select('m_products.id', 'm_products.name', 'm_products.code' , 'm_products.unit_purchase_price', 'm_units.name as unit_name')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
             ->where('m_products.is_item_purchased', '=', 1)
             ->orderBy('m_products.name', 'asc')

@@ -83,9 +83,9 @@ class CreatePurchaseDeliveryAction
                         $product['product_id'],
                         'PURCHASE_IN',
                         'PURCHASE_DELIVERY',
-                        $data['reference_no'] ?? 'Unknown',
+                        $data['reference_no'],
                         $product['delivery_qty'],
-                        'Purchase Delivery: ' . ($data['reference_no'] ?? 'Unknown'),
+                        'Purchase Delivery: ' . ($data['reference_no']),
                         $data['delivery_date'] ?? now()
                     );
                 }

@@ -81,7 +81,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Gudang Tujuan (dari PO)</label>
                     <input type="text" class="form-control" id="po-warehouse-info"
-                        value="{{ $purchaseOrder->warehouse_code}} - {{ $purchaseOrder->warehouse_name}}" disabled />
+                        value="{{ $purchaseOrder->warehouse_code }} - {{ $purchaseOrder->warehouse_name }}" disabled />
                 </div>
             </div>
 
@@ -139,7 +139,8 @@
                                 name="warehouse_id" data-allow-clear="false" required>
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}</option>
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -197,12 +198,17 @@
                             @endphp
                             @foreach ($purchaseOrderProducts as $purchaseOrderProduct)
                                 <tr>
-                                    <td>{{ $purchaseOrderProduct->product_code }} - {{ $purchaseOrderProduct->product_name }}</td>
-                                    <td>{{ $purchaseOrderProduct->qty }} {{ $purchaseOrderProduct->unit_name }}</td>
-                                    <td>{{ $purchaseOrderProduct->delivered_qty }} {{ $purchaseOrderProduct->unit_name }}</td>
-                                    <td>{{ $purchaseOrderProduct->remaining_qty }} {{ $purchaseOrderProduct->unit_name }}</td>
+                                    <td>{{ $purchaseOrderProduct->product_code }} -
+                                        {{ $purchaseOrderProduct->product_name }}</td>
+                                    <td>{{ number_format($purchaseOrderProduct->qty, 0, ',', '.') }}
+                                        {{ $purchaseOrderProduct->unit_name }}</td>
+                                    <td>{{ number_format($purchaseOrderProduct->delivered_qty, 0, ',', '.') }}
+                                        {{ $purchaseOrderProduct->unit_name }}</td>
+                                    <td>{{ number_format($purchaseOrderProduct->remaining_qty, 0, ',', '.') }}
+                                        {{ $purchaseOrderProduct->unit_name }}</td>
                                     <td>
-                                        <input type="hidden" name="products[{{ $counter }}][product_order_product_id]"
+                                        <input type="hidden"
+                                            name="products[{{ $counter }}][product_order_product_id]"
                                             value="{{ $purchaseOrderProduct->id }}" />
                                         <input type="hidden" name="products[{{ $counter }}][product_id]"
                                             value="{{ $purchaseOrderProduct->f_product_id }}" />
@@ -371,6 +377,7 @@
 
             $('.delivery-qty-input').on('input', function() {
                 attachQuantityListeners($(this));
+                updateSummary();
             });
 
             $('.delivery-qty-input').each(function() {
@@ -414,30 +421,38 @@
                     input.closest('tr').find('.product-status').val(productStatus);
                 } else {
                     const originalRemaining = parseInt(input.data('remaining'));
-                    const statusClass = originalRemaining > 0 ? 'bg-label-success' : 'bg-label-warning';
+                    const statusClass = originalRemaining > 0 ? 'bg-label-warning' : 'bg-label-warning';
                     const statusText = originalRemaining > 0 ? 'Available' : 'Complete';
                     statusCell.html(`<span class="badge ${statusClass}">${statusText}</span>`);
                 }
-
-                updateSummary();
             }
 
             function updateSummary() {
                 let totalDelivered = 0;
-                let hasPartialDelivery = false;
-                let hasCompleteItems = false;
+                let completeCount = 0;
+                let partialCount = 0;
+                let hasAnyDelivery = false;
+                const rowCount = $('.delivery-qty-input').length;
 
                 $('.delivery-qty-input').each(function() {
-                    const deliveryQty = parseInt($(this).val()) || 0;
-                    const remaining = parseInt($(this).data('remaining'));
+                    const deliveryQty = parseCurrency($(this).val()) || 0;
+                    const remaining = parseFloat($(this).data('remaining'));
 
                     totalDelivered += deliveryQty;
-
-                    if (deliveryQty > 0 && (remaining - deliveryQty) > 0) {
-                        hasPartialDelivery = true;
-                    }
-                    if (deliveryQty > 0 && (remaining - deliveryQty) === 0) {
-                        hasCompleteItems = true;
+                    if (deliveryQty > 0) {
+                        hasAnyDelivery = true;
+                        if ((remaining - deliveryQty) === 0) {
+                            completeCount++;
+                        } else if ((remaining - deliveryQty) > 0) {
+                            partialCount++;
+                        }
+                    } else {
+                        // If nothing delivered, but remaining > 0, treat as partial
+                        if (remaining > 0) {
+                            partialCount++;
+                        } else {
+                            completeCount++;
+                        }
                     }
                 });
 
@@ -446,16 +461,13 @@
                 $('#purchase-delivery-total-items').val(totalDelivered);
                 $('#purchase-delivery-total-delivered').val(totalDelivered);
 
-                // Update delivery status
                 const statusBadge = $('#delivery-status');
-                if (totalDelivered === 0) {
+                if (!hasAnyDelivery) {
                     statusBadge.removeClass().addClass('badge bg-label-secondary').text('Belum Ada Data');
-                } else if (hasPartialDelivery && hasCompleteItems) {
-                    statusBadge.removeClass().addClass('badge bg-label-info').text('Mixed Delivery');
-                } else if (hasPartialDelivery) {
-                    statusBadge.removeClass().addClass('badge bg-label-warning').text('Partial Delivery');
-                } else if (hasCompleteItems) {
+                } else if (completeCount === rowCount) {
                     statusBadge.removeClass().addClass('badge bg-label-success').text('Complete Delivery');
+                } else {
+                    statusBadge.removeClass().addClass('badge bg-label-warning').text('Partial Delivery');
                 }
             }
 
@@ -478,7 +490,6 @@
                     const field = $('#' + fieldId);
                     if (!field.val() || field.val().trim() === '') {
                         isValid = false;
-                        console.log(fieldId)
                         field.addClass('is-invalid');
                     } else {
                         field.removeClass('is-invalid');
@@ -574,6 +585,13 @@
                 // Collect form data
                 const formData = new FormData($('#purchase-delivery-form')[0]);
 
+                // Convert and append delivery_qty values
+                $('.delivery-qty-input').each(function(index) {
+                    const rawValue = $(this).val();
+                    const intValue = parseCurrency(rawValue);
+                    formData.set($(this).attr('name'), intValue);
+                });
+
                 const deliveryStatus = $('#delivery-status').text().trim();
 
                 const DeliveryStatus = {
@@ -602,6 +620,7 @@
                 }
 
                 formData.append('delivery_status', statusValue);
+
                 // AJAX submission
                 $.ajax({
                     url: "{{ route('main_transaction.purchase_delivery.store') }}",

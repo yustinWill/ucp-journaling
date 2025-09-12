@@ -234,7 +234,8 @@
                                 </td>
                                 <td><input type="number" class="form-control" name="products[0][quantity]"
                                         min="1" step="1" disabled /></td>
-                                <td><input type="text" class="form-control" name="products[0][unit]" disabled /></td>
+                                <td><input type="text" class="form-control unit-input-box" name="products[0][unit]"
+                                        disabled /></td>
                                 <td>
                                     <input type="text" class="form-control currency-input"
                                         name="products[0][unit_price]" disabled />
@@ -378,8 +379,8 @@
             </div>
 
             <!-- Hidden fields for calculations -->
-            <input type="hidden" id="purchase-order-subtotal" name="subtotal" value="0" />
-            <input type="hidden" id="purchase-order-tax-amount" name="tax_amount" value="0" />
+            {{-- <input type="hidden" id="purchase-order-subtotal" name="subtotal" value="0" /> --}}
+            {{-- <input type="hidden" id="purchase-order-tax-amount" name="tax_amount" value="0" /> --}}
             <input type="hidden" id="purchase-order-total" name="total" value="0" />
             <input type="hidden" id="purchase-order-currency" name="currency" value="IDR" />
 
@@ -432,14 +433,14 @@
                 });
             });
 
-            $('select.select2Tax').each(function() {
-                $(this).select2({
-                    placeholder: "Pilih Pajak",
-                    allowClear: true,
-                    dropdownParent: $(this).parent(),
-                    width: '100%'
-                });
-            });
+            // $('select.select2Tax').each(function() {
+            //     $(this).select2({
+            //         placeholder: "Pilih Pajak",
+            //         allowClear: true,
+            //         dropdownParent: $(this).parent(),
+            //         width: '100%'
+            //     });
+            // });
 
             $('.form-repeater-product').repeater({
                 show: function() {
@@ -451,7 +452,7 @@
                             'data-select2-id tabindex aria-hidden');
                         $(this).find('select.select2Product').each(function() {
                             if ($.fn.select2 && $(this).data('select2')) {
-                                alert('Destroying existing Select2 instance');
+                                // alert('Destroying existing Select2 instance');
                                 $(this).select2('destroy');
                             }
                             $(this).select2({
@@ -462,21 +463,21 @@
                             });
                         });
 
-                        $(this).find('select.select2Tax').removeClass(
-                            'select2-hidden-accessible').removeAttr(
-                            'data-select2-id tabindex aria-hidden');
-                        $(this).find('select.select2Tax').each(function() {
-                            if ($.fn.select2 && $(this).data('select2')) {
-                                alert('Destroying existing Select2 instance');
-                                $(this).select2('destroy');
-                            }
-                            $(this).select2({
-                                placeholder: "Pilih Pajak",
-                                allowClear: true,
-                                dropdownParent: $(this).parent(),
-                                width: '100%'
-                            });
-                        });
+                        // $(this).find('select.select2Tax').removeClass(
+                        //     'select2-hidden-accessible').removeAttr(
+                        //     'data-select2-id tabindex aria-hidden');
+                        // $(this).find('select.select2Tax').each(function() {
+                        //     if ($.fn.select2 && $(this).data('select2')) {
+                        //         alert('Destroying existing Select2 instance');
+                        //         $(this).select2('destroy');
+                        //     }
+                        //     $(this).select2({
+                        //         placeholder: "Pilih Pajak",
+                        //         allowClear: true,
+                        //         dropdownParent: $(this).parent(),
+                        //         width: '100%'
+                        //     });
+                        // });
                         initCleaveCurrency(document);
                     });
                 },
@@ -534,7 +535,7 @@
                     // Enable product table
                     $('#product-disabled-message').hide();
                     $('#product-table tbody tr').each(function() {
-                        $(this).find('input, select, button').prop('disabled', false);
+                        $(this).find('input:not(.unit-input-box), select, button').prop('disabled', false);
                     });
                     $('#add-product-row').prop('disabled', false);
 
@@ -544,7 +545,7 @@
                     // Disable product table
                     $('#product-disabled-message').show();
                     $('#product-table tbody tr').each(function() {
-                        $(this).find('input, select, button').prop('disabled', true);
+                        $(this).find('input:not(.unit-input-box), select, button').prop('disabled', true);
                     });
                     $('#add-product-row').prop('disabled', true);
                 }
@@ -562,10 +563,11 @@
                 // Update all product selects
                 $('#product-table tbody tr').each(function() {
                     const productSelect = $(this).find('.product-select');
+                    if (productSelect.val()) return;
                     productSelect.empty().append('<option value="">Pilih Produk</option>');
                     products.forEach(product => {
                         productSelect.append(
-                            `<option value="${product.id}" data-unit="${product.unit_name}">${product.code} - ${product.name}</option>`
+                            `<option value="${product.id}" data-unit="${product.unit_name}" data-purchase-per-price="${product.unit_purchase_price}">${product.code} - ${product.name}</option>`
                         );
                     });
                 });
@@ -575,12 +577,24 @@
             $(document).on('change', '.product-select', function() {
                 const selectedOption = $(this).find('option:selected');
                 const unit = selectedOption.data('unit');
+
+                const purchasePerPrice = selectedOption.data('purchase-per-price');
                 const row = $(this).closest('tr');
 
                 if (unit) {
                     row.find('input[name*="[unit]"]').val(unit).prop('disabled', true);
                 } else {
                     row.find('input[name*="[unit]"]').val('').prop('disabled', true);
+                }
+
+                if (purchasePerPrice) {
+                    const unitPriceInput = row.find('input[name*="[unit_price]"]')[0];
+                    $(unitPriceInput).val(purchasePerPrice);
+
+                    // If Cleave is already initialized, use setRawValue
+                    if (unitPriceInput && unitPriceInput.cleave) {
+                        unitPriceInput.cleave.setRawValue(purchasePerPrice);
+                    }
                 }
 
                 calculateTotals();

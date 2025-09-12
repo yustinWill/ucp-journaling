@@ -126,6 +126,7 @@ class SalesPersonService
             ->join('m_contacts as c', 'sp.f_employee_contact_id', '=', 'c.id')
             ->select(['sp.*', 'c.name as employee_name'])
             ->where('sp.status', GeneralStatuses::ACTIVE)
+            ->where('sp.company_code', session('user_company_code'))
             ->get();
     }
 
