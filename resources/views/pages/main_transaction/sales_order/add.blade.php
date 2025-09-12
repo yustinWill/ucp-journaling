@@ -428,7 +428,6 @@
                     loadProductsForRow();
                 } else {
                     clearCustomerInfo();
-                    clearProductTable();
                     checkProductTableEnabled();
                 }
             });
@@ -436,7 +435,6 @@
             // Warehouse selection change
             $('#sales-order-warehouse').on('change', function() {
                 checkProductTableEnabled();
-                clearProductTable();
 
             });
 
@@ -449,15 +447,6 @@
                     width: '100%'
                 });
             });
-
-            // $('select.select2Tax').each(function() {
-            //     $(this).select2({
-            //         placeholder: "Pilih Pajak",
-            //         allowClear: true,
-            //         dropdownParent: $(this).parent(),
-            //         width: '100%'
-            //     });
-            // });
 
             $('.form-repeater-product').repeater({
                 show: function() {
@@ -481,21 +470,6 @@
                             });
                         });
 
-                        // $(this).find('select.select2Tax').removeClass(
-                        //     'select2-hidden-accessible').removeAttr(
-                        //     'data-select2-id tabindex aria-hidden');
-                        // $(this).find('select.select2Tax').each(function() {
-                        //     if ($.fn.select2 && $(this).data('select2')) {
-                        //         alert('Destroying existing Select2 instance');
-                        //         $(this).select2('destroy');
-                        //     }
-                        //     $(this).select2({
-                        //         placeholder: "Pilih Pajak",
-                        //         allowClear: true,
-                        //         dropdownParent: $(this).parent(),
-                        //         width: '100%'
-                        //     });
-                        // });
                         initCleaveCurrency(document);
                     });
                 },
@@ -521,8 +495,13 @@
                     return false;
                 }
 
-                formData.append('product_lines', JSON.stringify(productLines));
-
+                // formData.append('products', productLines);
+                productLines.forEach(function(line, idx) {
+                    formData.append(`products[${idx}][product_id]`, line.product_id);
+                    formData.append(`products[${idx}][quantity]`, line.quantity);
+                    formData.append(`products[${idx}][unit_price]`, line.unit_price);
+                    formData.append(`products[${idx}][total]`, line.line_total);
+                });
                 $.ajax({
                     url: '{{ route('main_transaction.sales_order.store') }}',
                     method: 'POST',
@@ -707,31 +686,21 @@
                 $('#display-grand-total').val(formatCurrency(grandTotal));
             }
 
-
-            // Clear product table
-            function clearProductTable() {
-                $('#product-tbody').empty();
-                productRowIndex = 0;
-                calculateTotals();
-            }
-
             // Collect product lines for form submission
             function collectProductLines() {
-                const productLines = [];
+                let productLines = [];
 
-                $('#product-tbody tr').each(function() {
+                $('#products-tbody tr').each(function() {
                     const productId = $(this).find('.product-select').val();
                     const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
-                    const unitPrice = parseFloat($(this).find('.unit-price-input').val()) || 0;
-                    // const taxId = $(this).find('.tax-select').val() || null;
-                    const lineTotal = parseFloat($(this).find('.line-total-value').val()) || 0;
+                    const unitPrice = parseCurrency($(this).find('.unit-price').val()) || 0;
+                    const lineTotal = parseCurrency($(this).find('input[name*="[total]"]').val()) || 0;
 
                     if (productId && quantity > 0 && unitPrice > 0) {
                         productLines.push({
                             product_id: productId,
                             quantity: quantity,
                             unit_price: unitPrice,
-                            // tax_id: taxId,
                             line_total: lineTotal
                         });
                     }
@@ -742,10 +711,10 @@
 
             // Validate form
             function validateForm() {
-                const customerId = $('#customer_id').val();
-                const warehouseId = $('#warehouse_id').val();
-                const paymentTermId = $('#payment_term_id').val();
-                const transactionDate = $('#transaction_date').val();
+                const customerId = $('#sales-order-customer').val();
+                const warehouseId = $('#sales-order-warehouse').val();
+                const paymentTermId = $('#sales-order-payment-terms').val();
+                const transactionDate = $('#sales-order-date').val();
                 const productLines = collectProductLines();
 
                 if (!customerId) {

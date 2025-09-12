@@ -135,44 +135,65 @@ class SalesOrderController extends Controller
                 'description' => 'nullable|string|max:1000',
                 'tags' => 'nullable|string',
                 'memo' => 'nullable|string|max:500',
-                'include_tax' => 'required|boolean',
-                'subtotal' => 'required|numeric|min:0',
-                'tax_amount' => 'required|numeric|min:0',
-                'total_before_discount' => 'required|numeric|min:0',
-                'discount_amount' => 'nullable|numeric|min:0',
+                // 'include_tax' => 'required|boolean',
+                // 'subtotal' => 'required|numeric|min:0',
+                // 'tax_amount' => 'required|numeric|min:0',
+                // 'total_before_discount' => 'required|numeric|min:0',
+                // 'discount_amount' => 'nullable|numeric|min:0',
                 'total' => 'required|numeric|min:0',
                 'products' => 'required|array|min:1',
                 'products.*.product_id' => 'required|integer|exists:m_products,id',
                 'products.*.quantity' => 'required|numeric|min:0.01',
                 'products.*.unit_price' => 'required|string',
-                'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
+                // 'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
                 'products.*.total' => 'required|string',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+            ], [], [
+                'reference_no' => 'Nomor Referensi',
+                'date' => 'Tanggal',
+                'customer_id' => 'Pelanggan',
+                'email' => 'Email',
+                'address' => 'Alamat',
+                'customer_reference' => 'Referensi Pelanggan',
+                'payment_terms' => 'Syarat Pembayaran',
+                'payment_term_day_count' => 'Jumlah Hari Pembayaran',
+                'payment_term_due_date' => 'Jatuh Tempo Pembayaran',
+                'warehouse_id' => 'Gudang',
+                'description' => 'Deskripsi',
+                'tags' => 'Tag',
+                'memo' => 'Memo',
+                'total' => 'Total',
+                'products' => 'Produk',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.quantity' => 'Qty Produk',
+                'products.*.unit_price' => 'Harga Satuan Produk',
+                'products.*.total' => 'Total Produk',
+                'attachment' => 'Lampiran',
             ]);
 
-            $salesOrderId = app(CreateSalesOrderAction::class)->execute($validated);
+            app(CreateSalesOrderAction::class)->execute($validated);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Sales Order berhasil dibuat',
-                'data' => ['id' => $salesOrderId]
-            ], 201);
+                'message' => SuccessCodes::CREATE_SALES_ORDER_SUCCESS->message(),
+            ], SuccessCodes::CREATE_SALES_ORDER_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors()
-            ], 422);
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
         } catch (AppException $e) {
             return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
         } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
             return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem'
-            ], 500);
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
