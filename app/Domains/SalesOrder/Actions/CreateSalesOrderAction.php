@@ -50,7 +50,7 @@ class CreateSalesOrderAction
     {
         foreach ($products as $product) {
             DB::table('t_sales_order_products')->insert([
-                'company_code' => session('company_code'),
+                'company_code' => session('user_company_code'),
                 'f_sales_order_id' => $salesOrderId,
                 'f_product_id' => $product['product_id'],
                 'quantity' => $product['quantity'],

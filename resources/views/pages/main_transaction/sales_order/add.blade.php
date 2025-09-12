@@ -528,13 +528,18 @@
                             processData: false,
                             contentType: false,
                             success: function(response) {
-                                if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'Sales Order berhasil disimpan.',
+                                    customClass: {
+                                        confirmButton: 'btn btn-success'
+                                    },
+                                    buttonsStyling: false
+                                }).then(function() {
                                     window.location.href =
-                                        '{{ route('main_transaction.sales_order.detail', ':id') }}'
-                                        .replace(':id', response.data.id);
-                                } else {
-                                    alert('Terjadi kesalahan: ' + response.message);
-                                }
+                                        "{{ route('main_transaction.sales_order.index') }}";
+                                });
                             },
                             error: function(xhr) {
                                 let errorMessage =
