@@ -105,7 +105,7 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate transaction number: '.$e->getMessage(),
+                'message' => 'Failed to generate transaction number: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -130,7 +130,8 @@ class SalesOrderController extends Controller
                 'payment_term_due_date' => 'nullable|date|after:date',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
                 'description' => 'nullable|string|max:1000',
-                'tags' => 'nullable|string',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string|max:50',
                 'memo' => 'nullable|string|max:500',
                 // 'include_tax' => 'required|boolean',
                 // 'subtotal' => 'required|numeric|min:0',
@@ -275,6 +276,7 @@ class SalesOrderController extends Controller
 
     public function update(Request $request)
     {
+        // dd($request->all());
         // Permission check
         if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -293,48 +295,72 @@ class SalesOrderController extends Controller
                 'payment_term_due_date' => 'nullable|date|after:date',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
                 'description' => 'nullable|string|max:1000',
-                'tags' => 'nullable|string',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string|max:50',
                 'memo' => 'nullable|string|max:500',
-                'include_tax' => 'required|boolean',
-                'subtotal' => 'required|numeric|min:0',
-                'tax_amount' => 'required|numeric|min:0',
-                'total_before_discount' => 'required|numeric|min:0',
-                'discount_amount' => 'nullable|numeric|min:0',
-                'total' => 'required|numeric|min:0',
+                // 'include_tax' => 'required|boolean',
+                // 'subtotal' => 'required|numeric|min:0',
+                // 'tax_amount' => 'required|numeric|min:0',
+                // 'total_before_discount' => 'required|numeric|min:0',
+                // 'discount_amount' => 'nullable|numeric|min:0',
+                'grand_price' => 'required|numeric|min:0',
                 'products' => 'required|array|min:1',
+                'products.*.id' => 'nullable|integer|exists:t_sales_order_products,id',
                 'products.*.product_id' => 'required|integer|exists:m_products,id',
                 'products.*.quantity' => 'required|numeric|min:0.01',
                 'products.*.unit_price' => 'required|string',
-                'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
+                // 'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
                 'products.*.total' => 'required|string',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+            ], [], [
+                'id' => 'ID Sales Order',
+                'date' => 'Tanggal',
+                'customer_id' => 'Pelanggan',
+                'email' => 'Email',
+                'address' => 'Alamat',
+                'customer_reference' => 'Referensi Pelanggan',
+                'payment_terms' => 'Syarat Pembayaran',
+                'payment_term_day_count' => 'Jumlah Hari Pembayaran',
+                'payment_term_due_date' => 'Jatuh Tempo Pembayaran',
+                'warehouse_id' => 'Gudang',
+                'description' => 'Deskripsi',
+                'tags' => 'Tag',
+                'memo' => 'Memo',
+                'grand_price' => 'Grand Total',
+                'products' => 'Produk',
+                'products.*.id' => 'ID Produk',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.quantity' => 'Qty Produk',
+                'products.*.unit_price' => 'Harga Satuan Produk',
+                'products.*.total' => 'Total Produk',
+                'attachment' => 'Lampiran',
             ]);
 
             $id = $validated['id'];
-            unset($validated['id']);
 
             app(UpdateSalesOrderAction::class)->execute($id, $validated);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Sales Order berhasil diperbarui',
-            ], 200);
+                'message' => SuccessCodes::UPDATE_SALES_ORDER_SUCCESS->message(),
+            ], SuccessCodes::UPDATE_SALES_ORDER_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors(),
-            ], 422);
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
         } catch (AppException $e) {
             return response()->json([
-                'success' => false,
                 'message' => $e->getMessage(),
-            ], 400);
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
         } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
             return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem',
-            ], 500);
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 

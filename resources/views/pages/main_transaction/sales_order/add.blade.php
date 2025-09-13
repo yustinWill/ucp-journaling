@@ -438,7 +438,6 @@
 
             });
 
-
             $('select.select2Product').each(function() {
                 $(this).select2({
                     placeholder: "Pilih Produk",
@@ -565,8 +564,6 @@
                         });
                     }
                 });
-
-
             });
 
             // Generate transaction number function
@@ -799,6 +796,12 @@
                     calculateTotals();
                 });
 
+            window.removeProductRow = function(button) {
+                if ($('#product-table tbody tr').length > 1) {
+                    $(button).closest('tr').remove();
+                    calculateTotals();
+                }
+            };
         });
     </script>
 @endsection
