@@ -166,6 +166,7 @@ class SalesOrderService
             ->where('so.company_code', session('user_company_code'))
             ->select([
                 'so.*',
+                'c.f_sales_pic_id AS customer_sales_person_id',
                 'c.name as customer',
                 'c.email as customer_default_email',
                 'ca.address as customer_default_address',

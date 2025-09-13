@@ -41,7 +41,7 @@
                             data-allow-clear="false" required>
                         <option value="">Pilih Customer</option>
                         @foreach($customers as $customer)
-                            <option value="{{ $customer->id }}" {{ $customer->id == $salesOrder['customer_id'] ? 'selected' : '' }}>
+                            <option value="{{ $customer->id }}" {{ $customer->id == $salesOrder['f_customer_id'] ? 'selected' : '' }}>
                                 {{ $customer->name }}
                             </option>
                         @endforeach
@@ -86,7 +86,7 @@
                         <option value="">Pilih Syarat Pembayaran</option>
                         @foreach($paymentTerms as $term)
                             <option value="{{ $term->id }}" data-type="{{ strtoupper($term->type) }}" data-days="{{ $term->days }}"
-                                    {{ $term->id == $salesOrder['payment_term_id'] ? 'selected' : '' }}>
+                                    {{ $term->id == $salesOrder['f_payment_term_id'] ? 'selected' : '' }}>
                                 {{ $term->code }} - {{ $term->name }}
                             </option>
                         @endforeach
@@ -120,8 +120,8 @@
                             data-allow-clear="false">
                         <option value="">Pilih Sales Person</option>
                         @foreach ($salesPersons as $person)
-                            <option value="{{ $person->id }}" {{ $person->id == $salesOrder['sales_person_id'] ? 'selected' : '' }}>
-                                {{ $person->name }}
+                            <option value="{{ $person->id }}" {{ $person->id == $salesOrder['customer_sales_person_id'] ? 'selected' : '' }}>
+                                {{ $person->employee_name }}
                             </option>
                         @endforeach
                     </select>
@@ -132,7 +132,7 @@
                             data-allow-clear="false" required>
                         <option value="">Pilih Gudang</option>
                         @foreach($warehouses as $warehouse)
-                            <option value="{{ $warehouse->id }}" {{ $warehouse->id == $salesOrder['warehouse_id'] ? 'selected' : '' }}>
+                            <option value="{{ $warehouse->id }}" {{ $warehouse->id == $salesOrder['f_warehouse_id'] ? 'selected' : '' }}>
                                 {{ $warehouse->name }}
                             </option>
                         @endforeach
@@ -237,7 +237,7 @@
                         <div class="card-body">
                             <h6 class="card-title">Ringkasan Keuangan</h6>
                             <div class="row g-2">
-                                <div class="col-6"><strong>Subtotal:</strong></div>
+                                {{-- <div class="col-6"><strong>Subtotal:</strong></div>
                                 <div class="col-6 text-end" id="display-subtotal">Rp {{ number_format($salesOrder['subtotal'] ?? 0, 0, ',', '.') }}</div>
                                 
                                 <div class="col-6"><strong>Total Pajak:</strong></div>
@@ -254,7 +254,7 @@
                                 <div class="col-6 text-end pt-4" id="display-discount">Rp {{ number_format($salesOrder['discount'] ?? 0, 0, ',', '.') }}</div>
                                 
                                 <div class="col-12"><hr></div>
-                                
+                                 --}}
                                 <div class="col-6"><h5><strong>Total Akhir:</strong></h5></div>
                                 <div class="col-6 text-end"><h5 id="display-grand-total">Rp {{ number_format($salesOrder['grand_price'] ?? 0, 0, ',', '.') }}</h5></div>
                             </div>
@@ -273,7 +273,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="d-flex gap-3 justify-content-end">
-                        <button type="button" class="btn btn-danger" onclick="window.history.back()">
+                        <button type="button" class="btn btn-label-danger me-3" onclick="window.history.back()">
                             <i class="icon-base ti tabler-x me-2"></i>Batalkan
                         </button>
                         <button type="submit" class="btn btn-success" id="submit-btn">
