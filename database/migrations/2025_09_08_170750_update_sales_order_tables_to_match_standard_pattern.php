@@ -34,13 +34,13 @@ return new class extends Migration
             $table->json('f_tag_codes')->nullable()->after('internal_memo');
             $table->string('attachment')->nullable()->after('f_tag_codes');
             $table->string('status')->default('DRAFT')->change();
-            
+
             // Add foreign keys
             $table->foreign('f_customer_id')->references('id')->on('m_contacts');
             $table->foreign('f_payment_term_id')->references('id')->on('m_payment_terms');
             $table->foreign('f_warehouse_id')->references('id')->on('m_warehouses');
         });
-        
+
         // Update sales order products table to match standard pattern
         Schema::table('t_sales_order_products', function (Blueprint $table) {
             $table->string('company_code')->after('id');
@@ -64,13 +64,13 @@ return new class extends Migration
             $table->renameColumn('quantity', 'quantity_ordered');
             $table->renameColumn('f_tax_id', 'tax_id');
         });
-        
+
         // Revert sales order table
         Schema::table('t_sales_orders', function (Blueprint $table) {
             $table->dropForeign(['f_customer_id']);
             $table->dropForeign(['f_payment_term_id']);
             $table->dropForeign(['f_warehouse_id']);
-            
+
             $table->dropColumn([
                 'company_code',
                 'transaction_code',
@@ -90,9 +90,9 @@ return new class extends Migration
                 'discount',
                 'internal_memo',
                 'f_tag_codes',
-                'attachment'
+                'attachment',
             ]);
-            
+
             $table->string('status')->default('PENDING')->change();
         });
     }

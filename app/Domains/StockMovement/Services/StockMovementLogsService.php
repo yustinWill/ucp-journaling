@@ -10,7 +10,7 @@ class StockMovementLogsService
 
     public function findAllLatestStockPerWarehouse($warehouseId, $categoryId = null, $global_search = null)
     {
-        $query =  DB::table($this->table_name . ' AS t_stock_movement_logs')
+        $query = DB::table($this->table_name.' AS t_stock_movement_logs')
             ->select(
                 'm_products.id AS id',
                 'm_products.code AS code',
@@ -35,10 +35,11 @@ class StockMovementLogsService
         }
         if ($global_search) {
             $query->where(function ($subQuery) use ($global_search) {
-                $subQuery->where('m_products.code', 'LIKE', '%' . $global_search . '%')
-                    ->orWhere('m_products.name', 'LIKE', '%' . $global_search . '%');
+                $subQuery->where('m_products.code', 'LIKE', '%'.$global_search.'%')
+                    ->orWhere('m_products.name', 'LIKE', '%'.$global_search.'%');
             });
         }
+
         return $query->get();
     }
 }

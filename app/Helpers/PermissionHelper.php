@@ -13,7 +13,7 @@ class PermissionHelper
         $formattedPermissions = [];
 
         // Safety check: ensure $permissions is iterable
-        if (!is_array($permissions) && !is_object($permissions)) {
+        if (! is_array($permissions) && ! is_object($permissions)) {
             return $formattedPermissions; // Return empty array if permissions is not iterable
         }
 
@@ -35,7 +35,7 @@ class PermissionHelper
     private static function getMockPermissions(): array
     {
         $sessionPermissions = self::generatePermissions();
-        
+
         // If session permissions are empty, provide fallback mock permissions for development
         if (empty($sessionPermissions)) {
             return [
@@ -48,7 +48,7 @@ class PermissionHelper
                 'master_data_product' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
                 'master_data_user' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
                 'master_data_warehouse' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                
+
                 // Transaction permissions
                 'main_transaction_sales_order' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true, 'import' => true, 'export' => true],
                 'main_transaction_sales_delivery' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
@@ -60,7 +60,7 @@ class PermissionHelper
                 'main_transaction_journal' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
             ];
         }
-        
+
         return $sessionPermissions;
     }
 

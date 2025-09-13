@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\MasterData;
 
 use App\Domains\Category\Services\CategoryService;
+use App\Domains\Contact\Services\ContactService;
+use App\Domains\StockMovement\Services\StockMovementLogsService;
 use App\Domains\StockOpname\Actions\CreateStockOpnameAction;
 use App\Domains\StockOpname\Services\StockOpnameAuditLogService;
 use App\Domains\StockOpname\Services\StockOpnameProductService;
 use App\Domains\StockOpname\Services\StockOpnameService;
-use App\Domains\StockMovement\Services\StockMovementLogsService;
 use App\Domains\Tag\Services\TagService;
-use App\Domains\Contact\Services\ContactService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -66,6 +66,7 @@ class StockOpnameController extends Controller
                 'category' => $value->category,
             ];
         }
+
         return response()->json([
             'message' => SuccessCodes::GENERAL_SUCCESS->message(),
             'data' => $product_array,
@@ -467,39 +468,39 @@ class StockOpnameController extends Controller
     private function exportToExcel($data, $columns)
     {
         // Mock Excel export - in real implementation, use PhpSpreadsheet
-        $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $filename = 'stock_opname_export_'.date('Y-m-d_H-i-s').'.xlsx';
         $content = $this->generateMockExcelContent($data, $columns);
 
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     private function exportToCsv($data, $columns)
     {
-        $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.csv';
+        $filename = 'stock_opname_export_'.date('Y-m-d_H-i-s').'.csv';
         $content = $this->generateCsvContent($data, $columns);
 
         return response($content)
             ->header('Content-Type', 'text/csv')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     private function exportToPdf($data, $columns)
     {
         // Mock PDF export - in real implementation, use TCPDF or similar
-        $filename = 'stock_opname_export_' . date('Y-m-d_H-i-s') . '.pdf';
+        $filename = 'stock_opname_export_'.date('Y-m-d_H-i-s').'.pdf';
         $content = $this->generateMockPdfContent($data, $columns);
 
         return response($content)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     private function generateMockExcelContent($data, $columns)
     {
         // Mock Excel content - in real implementation, use PhpSpreadsheet
-        return 'Mock Excel content for Stock Opname export with ' . count($data) . ' records and ' . count($columns) . ' columns';
+        return 'Mock Excel content for Stock Opname export with '.count($data).' records and '.count($columns).' columns';
     }
 
     private function generateCsvContent($data, $columns)
@@ -519,7 +520,7 @@ class StockOpnameController extends Controller
                 $value = $row[$column['field']] ?? '';
                 // Escape CSV values
                 if (strpos($value, ',') !== false || strpos($value, '"') !== false) {
-                    $value = '"' . str_replace('"', '""', $value) . '"';
+                    $value = '"'.str_replace('"', '""', $value).'"';
                 }
                 $csvRow[] = $value;
             }
@@ -532,7 +533,7 @@ class StockOpnameController extends Controller
     private function generateMockPdfContent($data, $columns)
     {
         // Mock PDF content - in real implementation, use TCPDF
-        return 'Mock PDF content for Stock Opname export with ' . count($data) . ' records';
+        return 'Mock PDF content for Stock Opname export with '.count($data).' records';
     }
 
     public function import()
@@ -548,7 +549,7 @@ class StockOpnameController extends Controller
 
         return response($content)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     public function validateImport(Request $request)
@@ -572,7 +573,7 @@ class StockOpnameController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error reading file: ' . $e->getMessage(),
+                'message' => 'Error reading file: '.$e->getMessage(),
             ]);
         }
     }
@@ -597,7 +598,7 @@ class StockOpnameController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error importing data: ' . $e->getMessage(),
+                'message' => 'Error importing data: '.$e->getMessage(),
             ]);
         }
     }
@@ -669,7 +670,7 @@ class StockOpnameController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Stock Adjustment berhasil dibuat',
-            'adjustment_number' => 'SA-2025-' . str_pad($id, 3, '0', STR_PAD_LEFT),
+            'adjustment_number' => 'SA-2025-'.str_pad($id, 3, '0', STR_PAD_LEFT),
         ]);
     }
 }

@@ -29,14 +29,14 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             // Foreign keys
             $table->foreign('sales_order_id')->references('id')->on('t_sales_orders');
             $table->foreign('customer_id')->references('id')->on('m_contacts');
             $table->foreign('warehouse_id')->references('id')->on('m_warehouses');
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users');
-            
+
             // Indexes
             $table->index(['delivery_date', 'status']);
             $table->index(['customer_id', 'warehouse_id']);
@@ -53,7 +53,7 @@ return new class extends Migration
             $table->string('delivery_status')->default('PENDING'); // PENDING, DELIVERED, PARTIAL, CANCELLED
             $table->text('description')->nullable();
             $table->timestamps();
-            
+
             // Foreign keys
             $table->foreign('sales_delivery_id')->references('id')->on('t_sales_deliveries')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('m_products');
@@ -70,7 +70,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             // Foreign keys
             $table->foreign('f_sales_delivery_id')->references('id')->on('t_sales_deliveries')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users');

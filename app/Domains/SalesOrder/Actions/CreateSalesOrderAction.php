@@ -2,11 +2,10 @@
 
 namespace App\Domains\SalesOrder\Actions;
 
-use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
+use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Services\TransactionNumberService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class CreateSalesOrderAction
 {
@@ -14,7 +13,7 @@ class CreateSalesOrderAction
     {
         return DB::transaction(function () use ($data) {
             // Generate transaction number if not provided
-            if (!isset($data['reference_no']) || empty($data['reference_no'])) {
+            if (! isset($data['reference_no']) || empty($data['reference_no'])) {
                 $data['reference_no'] = app(TransactionNumberService::class)->generateNumber('sales_order');
             }
 
@@ -27,7 +26,7 @@ class CreateSalesOrderAction
             $salesOrderId = app(SalesOrderService::class)->create($data);
 
             // Create product lines if provided
-            if (!empty($data['products'])) {
+            if (! empty($data['products'])) {
                 $this->createProductLines($salesOrderId, $data['products']);
             }
 

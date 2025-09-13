@@ -618,6 +618,7 @@ class ProductController extends Controller
         $canAddAccounts = true; // Mock permission check
         $canAddTaxes = true; // Mock permission check
         $product->f_tag_codes = [23];
+
         // dd($product->f_tag_codes);
         return view('pages.master_data.product.edit', [
             'units' => $units,

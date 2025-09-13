@@ -2,33 +2,33 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
-use App\Http\Controllers\Controller;
 use App\Domains\SalesDelivery\Actions\CreateSalesDeliveryAction;
 use App\Domains\SalesDelivery\Actions\UpdateSalesDeliveryAction;
 use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
+use App\Exceptions\AppException;
 use App\Helpers\PermissionHelper;
+use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use App\Exceptions\AppException;
 
 class SalesDeliveryController extends Controller
 {
     public function index()
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat data.');
         }
 
         // Load filter data if has permissions
         $customers = [];
         $warehouses = [];
-        
+
         if (PermissionHelper::hasPermission('master_data_contact', 'read')) {
             $customers = app(\App\Domains\Contact\Services\ContactService::class)->findAllByType('CUSTOMER');
         }
-        
+
         if (PermissionHelper::hasPermission('master_data_warehouse', 'read')) {
             $warehouses = app(\App\Domains\Warehouse\Services\WarehouseService::class)->findAll();
         }
@@ -48,7 +48,7 @@ class SalesDeliveryController extends Controller
     public function add()
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat data.');
         }
 
@@ -68,7 +68,7 @@ class SalesDeliveryController extends Controller
     {
         try {
             $transactionNumber = app(TransactionNumberService::class)->generateNumber('sales_delivery');
-            
+
             return response()->json([
                 'success' => true,
                 'transaction_number' => $transactionNumber,
@@ -76,7 +76,7 @@ class SalesDeliveryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate transaction number: ' . $e->getMessage(),
+                'message' => 'Failed to generate transaction number: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -84,7 +84,7 @@ class SalesDeliveryController extends Controller
     public function create(Request $request)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -103,24 +103,24 @@ class SalesDeliveryController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Sales Delivery berhasil dibuat',
-                'data' => ['id' => $sales_delivery_id]
+                'data' => ['id' => $sales_delivery_id],
             ], 201);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (AppException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan sistem'
+                'message' => 'Terjadi kesalahan sistem',
             ], 500);
         }
     }
@@ -128,7 +128,7 @@ class SalesDeliveryController extends Controller
     public function detail($id)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat data.');
         }
 
@@ -154,17 +154,17 @@ class SalesDeliveryController extends Controller
         // Mock related data
         $customer = (object) [
             'name' => 'PT. Customer A',
-            'email' => 'customer@example.com', 
-            'address' => 'Jl. Customer Address No. 456'
+            'email' => 'customer@example.com',
+            'address' => 'Jl. Customer Address No. 456',
         ];
 
         $warehouse = (object) [
-            'name' => 'Gudang Utama'
+            'name' => 'Gudang Utama',
         ];
 
         $salesOrder = (object) [
             'transaction_code' => 'SO-2025-001',
-            'status' => 'COMPLETED'
+            'status' => 'COMPLETED',
         ];
 
         $productLines = [
@@ -175,8 +175,8 @@ class SalesDeliveryController extends Controller
                 'quantity_delivered' => 100,
                 'unit_name' => 'Pcs',
                 'delivery_status' => 'DELIVERED',
-                'description' => 'Sample product A'
-            ]
+                'description' => 'Sample product A',
+            ],
         ];
 
         $audit_logs = app(SalesDeliveryAuditLogService::class)->findAllBasedOnSalesDeliveryId($id);
@@ -195,7 +195,7 @@ class SalesDeliveryController extends Controller
     public function edit($id)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
         }
 
@@ -222,7 +222,7 @@ class SalesDeliveryController extends Controller
     public function update(Request $request)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -241,24 +241,24 @@ class SalesDeliveryController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Sales Delivery berhasil diperbarui'
+                'message' => 'Sales Delivery berhasil diperbarui',
             ], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (AppException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan sistem'
+                'message' => 'Terjadi kesalahan sistem',
             ], 500);
         }
     }
@@ -266,7 +266,7 @@ class SalesDeliveryController extends Controller
     public function index_data_table(Request $request)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -275,11 +275,11 @@ class SalesDeliveryController extends Controller
             $result = app(\App\Domains\SalesDelivery\Services\SalesDeliveryService::class)->findAllDatatable();
 
             return response()->json($result, 200);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Terjadi kesalahan saat memuat data',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -288,7 +288,7 @@ class SalesDeliveryController extends Controller
     public function import()
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'import')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'import')) {
             abort(403, 'Anda tidak memiliki akses untuk import data.');
         }
 
@@ -298,7 +298,7 @@ class SalesDeliveryController extends Controller
     public function export()
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'export')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'export')) {
             abort(403, 'Anda tidak memiliki akses untuk export data.');
         }
 
@@ -306,7 +306,7 @@ class SalesDeliveryController extends Controller
         $exportColumns = [];
 
         return view('pages.main_transaction.sales_delivery.export', [
-            'exportColumns' => $exportColumns
+            'exportColumns' => $exportColumns,
         ]);
     }
 
@@ -314,9 +314,9 @@ class SalesDeliveryController extends Controller
     {
         // TODO: Implement template generation
         $filename = 'sales_delivery_import_template.xlsx';
-        
+
         return response()->json([
-            'message' => 'Template download functionality - TODO: Implement'
+            'message' => 'Template download functionality - TODO: Implement',
         ]);
     }
 
@@ -330,8 +330,8 @@ class SalesDeliveryController extends Controller
                 'valid_count' => 0,
                 'error_count' => 0,
                 'valid_data' => [],
-                'error_data' => []
-            ]
+                'error_data' => [],
+            ],
         ]);
     }
 
@@ -341,7 +341,7 @@ class SalesDeliveryController extends Controller
         return response()->json([
             'success' => true,
             'imported_count' => 0,
-            'message' => 'Sales Delivery berhasil diimport'
+            'message' => 'Sales Delivery berhasil diimport',
         ]);
     }
 
@@ -350,8 +350,7 @@ class SalesDeliveryController extends Controller
         // TODO: Implement export processing
         return response()->json([
             'success' => true,
-            'message' => 'Export functionality - TODO: Implement'
+            'message' => 'Export functionality - TODO: Implement',
         ]);
     }
-
 }

@@ -261,7 +261,7 @@ class RoleController extends Controller
         foreach ($permissions as $perm) {
             $groupedData[$perm->module_name][] = [
                 'id' => $perm->id,
-                'name' => $perm->module_name . ' - ' . $perm->type,
+                'name' => $perm->module_name.' - '.$perm->type,
                 'type' => $perm->type,
                 'granted' => (bool) $perm->granted,
             ];

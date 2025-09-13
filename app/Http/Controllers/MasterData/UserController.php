@@ -145,8 +145,8 @@ class UserController extends Controller
             $validated = $request->validate([
                 'id' => 'required|exists:users,id',
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $request->id,
-                'phone' => 'nullable|string|max:255|unique:users,phone,' . $request->id,
+                'email' => 'required|string|email|max:255|unique:users,email,'.$request->id,
+                'phone' => 'nullable|string|max:255|unique:users,phone,'.$request->id,
                 'role' => 'required|exists:m_tags,id',
                 'status' => [
                     'required',

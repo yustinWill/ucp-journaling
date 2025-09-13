@@ -98,5 +98,5 @@ Artisan::call('tinker', [], [
         echo "Product ID to test: {$productId}\n";
         echo "Warehouse ID to test: {$warehouseId}\n";
         echo "\nTest data setup complete!\n";
-    '
+    ',
 ]);

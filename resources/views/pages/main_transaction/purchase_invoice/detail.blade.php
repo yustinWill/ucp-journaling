@@ -48,6 +48,7 @@
             <!-- Tabs Section -->
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
+                    <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
                         <a class="list-group-item list-group-item-action waves-effect active" id="purchase-invoice-info-list-item"
                             data-bs-toggle="list" href="#horizontal-purchase-invoice-info" aria-selected="true" role="tab">
                             <i class="icon-base ti tabler-info-circle me-2"></i>

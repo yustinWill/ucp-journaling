@@ -19,7 +19,7 @@ class StockOpnameService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as t')
+        $data = DB::table($this->table_name.' as t')
             ->select('t.*', 'w.id as warehouse_id', 'w.code as warehouse_code', 'w.name as warehouse_name', 'u.name as pic_name')
             ->leftJoin('m_warehouses as w', 't.f_warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 't.f_pic_id', '=', 'u.id')
@@ -99,7 +99,7 @@ class StockOpnameService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as so')
+        $query = DB::table($this->table_name.' as so')
             ->select([
                 'so.id',
                 'so.stock_opname_no',

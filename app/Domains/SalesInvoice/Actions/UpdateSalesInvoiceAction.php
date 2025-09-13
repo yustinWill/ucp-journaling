@@ -1,29 +1,75 @@
 <?php
+
 namespace App\Domains\SalesInvoice\Actions;
 
-use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use App\Domains\SalesInvoice\Services\SalesInvoiceAuditLogService;
+use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use Illuminate\Support\Facades\DB;
-use App\Enums\ActionTypes;
 
 class UpdateSalesInvoiceAction
 {
-    public function execute(int $id, array $data)
+    public function validateUpdateData(array $data): array
     {
-        $old_data = app(SalesInvoiceService::class)->findOne($id);
-        
-        return DB::transaction(function () use ($id, $data, $old_data) {
-            app(SalesInvoiceService::class)->update($id, $data);
-            
-            $log_data = [
-                'action_type' => ActionTypes::UPDATE,
-                'description' => "Perubahan Sales Invoice",
-                'metadata' => json_encode([
-                    'before' => $old_data,
-                    'after' => $data,
-                ])
-            ];
-            app(SalesInvoiceAuditLogService::class)->create($log_data, $id);
+        $errors = [];
+
+        // Basic validation
+        if (empty($data['invoice_date'])) {
+            $errors[] = 'Tanggal invoice wajib diisi';
+        }
+
+        if (empty($data['transaction_date'])) {
+            $errors[] = 'Tanggal transaksi wajib diisi';
+        }
+
+        if (empty($data['due_date'])) {
+            $errors[] = 'Tanggal jatuh tempo wajib diisi';
+        }
+
+        return [
+            'is_valid' => empty($errors),
+            'errors' => $errors,
+        ];
+    }
+
+    public function execute(int $invoiceId, array $data)
+    {
+        return DB::transaction(function () use ($invoiceId, $data) {
+            // Get current data for audit logging
+            $beforeData = app(SalesInvoiceService::class)->findOne($invoiceId);
+
+            // Handle file upload
+            if (isset($data['attachment']) && $data['attachment'] instanceof \Illuminate\Http\UploadedFile) {
+                $path = $data['attachment']->store('sales_invoice', 'public');
+                $data['attachment'] = $path;
+            }
+
+            // Update sales invoice record
+            $result = app(SalesInvoiceService::class)->update($invoiceId, $data);
+
+            // Get updated data
+            $afterData = app(SalesInvoiceService::class)->findOne($invoiceId);
+
+            // Identify changed fields
+            $changedFields = [];
+            $fieldsToCheck = ['invoice_date', 'transaction_date', 'due_date', 'description', 'internal_memo'];
+
+            foreach ($fieldsToCheck as $field) {
+                if (isset($beforeData->$field) && isset($afterData->$field) && $beforeData->$field !== $afterData->$field) {
+                    $changedFields[$field] = [
+                        'before' => $beforeData->$field,
+                        'after' => $afterData->$field,
+                    ];
+                }
+            }
+
+            // Create audit log
+            app(SalesInvoiceAuditLogService::class)->create($invoiceId, 'UPDATE', 'Sales Invoice updated', [
+                'changed_fields' => $changedFields,
+                'before' => $beforeData,
+                'after' => $afterData,
+            ]);
+
+            return $result;
         });
     }
 }

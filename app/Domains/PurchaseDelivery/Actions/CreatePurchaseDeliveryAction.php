@@ -2,14 +2,13 @@
 
 namespace App\Domains\PurchaseDelivery\Actions;
 
+use App\Domains\Product\Services\ProductService;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryAuditLogService;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
-use App\Domains\Product\Services\ProductService;
-use App\Services\StockMovementLogService;
-use App\Services\BatchManagementService;
 use App\Enums\ActionTypes;
-use Illuminate\Support\Facades\Auth;
+use App\Services\BatchManagementService;
+use App\Services\StockMovementLogService;
 use Illuminate\Support\Facades\DB;
 
 class CreatePurchaseDeliveryAction
@@ -77,7 +76,7 @@ class CreatePurchaseDeliveryAction
                     app(PurchaseOrderProductService::class)->updateDeliveredQuantities($data['purchase_order_id'], $product['product_order_product_id'], $product['delivery_qty']);
 
                     app(ProductService::class)->updateStock($product['product_id'], '+', $product['delivery_qty']);
-                    
+
                     // Record stock movement
                     app(StockMovementLogService::class)->recordMovement(
                         $data['warehouse_id'],
@@ -86,7 +85,7 @@ class CreatePurchaseDeliveryAction
                         'PURCHASE_DELIVERY',
                         $data['reference_no'],
                         $product['delivery_qty'],
-                        'Purchase Delivery: ' . ($data['reference_no']),
+                        'Purchase Delivery: '.($data['reference_no']),
                         $data['delivery_date'] ?? now()
                     );
                 }
@@ -149,7 +148,7 @@ class CreatePurchaseDeliveryAction
                 'estimated_hpp' => $purchasePrice,
                 'batch_date' => $data['delivery_date'] ?? now()->format('Y-m-d'),
                 'reference_code' => $data['reference_no'],
-                'notes' => 'Purchase Delivery: ' . $data['reference_no'],
+                'notes' => 'Purchase Delivery: '.$data['reference_no'],
             ]);
         }
     }

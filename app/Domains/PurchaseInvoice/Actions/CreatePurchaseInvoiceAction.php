@@ -17,7 +17,7 @@ class CreatePurchaseInvoiceAction
             $attachmentPath = null;
             if (isset($data['attachment']) && $data['attachment'] instanceof UploadedFile) {
                 $file = $data['attachment'];
-                $fileName = time() . '_' . $file->getClientOriginalName();
+                $fileName = time().'_'.$file->getClientOriginalName();
                 $attachmentPath = $file->storeAs('purchase_invoices', $fileName, 'public');
             }
 

@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\StockInformationService;
 use App\Services\BatchManagementService;
-use Illuminate\Http\Request;
+use App\Services\StockInformationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class StockInformationController extends Controller
 {
     protected $stockService;
+
     protected $batchService;
 
     public function __construct(StockInformationService $stockService, BatchManagementService $batchService)
@@ -22,11 +23,11 @@ class StockInformationController extends Controller
     /**
      * Get current stock by warehouse
      */
-    public function stockByWarehouse(Request $request, int $warehouseId = null): JsonResponse
+    public function stockByWarehouse(Request $request, ?int $warehouseId = null): JsonResponse
     {
         try {
             $filters = $request->only(['category_id', 'search', 'min_stock', 'max_stock']);
-            
+
             if ($warehouseId) {
                 $data = $this->stockService->getStockByWarehouse($warehouseId, $filters);
             } else {
@@ -176,10 +177,10 @@ class StockInformationController extends Controller
         try {
             // Get overall stock summary
             $overallStock = $this->stockService->getOverallStock();
-            
+
             // Get low stock products
             $lowStock = $this->stockService->getLowStockProducts(10);
-            
+
             // Get stock valuation
             $valuation = $this->stockService->getStockValuation();
 

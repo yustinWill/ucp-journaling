@@ -2,8 +2,8 @@
 
 namespace App\Domains\SalesOrder\Actions;
 
-use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
+use App\Domains\SalesOrder\Services\SalesOrderService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,8 +14,8 @@ class UpdateSalesOrderAction
         DB::transaction(function () use ($id, $data) {
             // Get current data for audit log
             $oldData = app(SalesOrderService::class)->findById($id);
-            
-            if (!$oldData) {
+
+            if (! $oldData) {
                 throw new \Exception('Sales Order not found');
             }
 
@@ -32,7 +32,7 @@ class UpdateSalesOrderAction
             app(SalesOrderService::class)->update($id, $data);
 
             // Update product lines if provided
-            if (!empty($data['products'])) {
+            if (! empty($data['products'])) {
                 $this->updateProductLines($id, $data['products']);
             }
 

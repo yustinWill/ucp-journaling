@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class BatchManagementService
 {
     private $batch_table = 't_product_stock_batches';
+
     private $transaction_table = 't_product_batch_transactions';
 
     /**
@@ -17,7 +18,7 @@ class BatchManagementService
     public function createBatch(array $data): int
     {
         $batchReference = $this->generateBatchReference($data['source_type'], $data['f_source_transaction_id'], $data['f_product_id']);
-        
+
         return DB::table($this->batch_table)->insertGetId([
             'company_code' => $data['company_code'] ?? session('user_company_code'),
             'f_product_id' => $data['f_product_id'],
@@ -62,7 +63,7 @@ class BatchManagementService
                 break;
             }
 
-            if (!isset($batch->id) || !isset($batch->remaining_qty)) {
+            if (! isset($batch->id) || ! isset($batch->remaining_qty)) {
                 continue;
             }
 
@@ -124,7 +125,7 @@ class BatchManagementService
             ->where('status', 'ACTIVE')
             ->orderBy('batch_date', 'asc');
 
-        if (!$includeEmptyBatches) {
+        if (! $includeEmptyBatches) {
             $query->where('remaining_qty', '>', 0);
         }
 
@@ -222,7 +223,7 @@ class BatchManagementService
      */
     private function generateBatchReference(string $sourceType, int $transactionId, int $productId): string
     {
-        $prefix = match($sourceType) {
+        $prefix = match ($sourceType) {
             'PURCHASE' => 'PD',
             'PRODUCTION' => 'PROD',
             'ADJUSTMENT' => 'ADJ',
@@ -230,6 +231,6 @@ class BatchManagementService
             default => 'BATCH'
         };
 
-        return $prefix . '-' . $transactionId . '-' . $productId . '-' . time();
+        return $prefix.'-'.$transactionId.'-'.$productId.'-'.time();
     }
 }

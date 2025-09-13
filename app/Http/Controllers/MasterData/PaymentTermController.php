@@ -175,7 +175,7 @@ class PaymentTermController extends Controller
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function ($errors) {
+                'message' => 'Kesalahan validasi: '.implode(', ', array_map(function ($errors) {
                     return implode(', ', $errors);
                 }, $e->errors())),
                 'error' => 'VALIDATION_ERROR',
@@ -264,7 +264,7 @@ class PaymentTermController extends Controller
         try {
             $validated = $request->validate([
                 'id' => 'required|integer|exists:m_payment_terms,id',
-                'code' => 'required|string|max:20|unique:m_payment_terms,code,' . $request->id,
+                'code' => 'required|string|max:20|unique:m_payment_terms,code,'.$request->id,
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
                 'days' => 'required|integer|min:0',
@@ -305,7 +305,7 @@ class PaymentTermController extends Controller
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'message' => 'Kesalahan validasi: ' . implode(', ', array_map(function ($errors) {
+                'message' => 'Kesalahan validasi: '.implode(', ', array_map(function ($errors) {
                     return implode(', ', $errors);
                 }, $e->errors())),
                 'error' => 'VALIDATION_ERROR',

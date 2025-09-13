@@ -14,14 +14,14 @@ class StockInformationService
         $query = DB::table('m_products as p')
             ->select([
                 'p.id as product_id',
-                'p.code as product_code', 
+                'p.code as product_code',
                 'p.name as product_name',
                 'p.total_stock',
                 'u.code as unit_code',
                 'u.name as unit_name',
                 'c.name as category_name',
                 'p.average_price',
-                'p.unit_purchase_price'
+                'p.unit_purchase_price',
             ])
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
             ->leftJoin('m_categories as c', 'p.f_category_id', '=', 'c.id')
@@ -33,10 +33,10 @@ class StockInformationService
         }
 
         if (isset($filters['search'])) {
-            $search = '%' . $filters['search'] . '%';
-            $query->where(function($q) use ($search) {
+            $search = '%'.$filters['search'].'%';
+            $query->where(function ($q) use ($search) {
                 $q->where('p.code', 'like', $search)
-                  ->orWhere('p.name', 'like', $search);
+                    ->orWhere('p.name', 'like', $search);
             });
         }
 
@@ -59,7 +59,7 @@ class StockInformationService
         $stockData = [];
         foreach ($products as $product) {
             $batchInfo = app(BatchManagementService::class)->getProductBatchInfo($product->product_id);
-            
+
             $stockData[] = [
                 'product_id' => $product->product_id,
                 'product_code' => $product->product_code,
@@ -120,7 +120,7 @@ class StockInformationService
                 'sml.notes',
                 'w.code as warehouse_code',
                 'w.name as warehouse_name',
-                'u.name as created_by_name'
+                'u.name as created_by_name',
             ])
             ->leftJoin('m_warehouses as w', 'sml.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'sml.created_by', '=', 'u.id')
@@ -159,7 +159,7 @@ class StockInformationService
             'summary' => [
                 'total_movements' => count($movements),
                 'current_stock' => $product->total_stock ?? 0,
-            ]
+            ],
         ];
     }
 
@@ -175,7 +175,7 @@ class StockInformationService
                 'p.name',
                 'p.total_stock',
                 'u.code as unit_code',
-                'c.name as category_name'
+                'c.name as category_name',
             ])
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
             ->leftJoin('m_categories as c', 'p.f_category_id', '=', 'c.id')
@@ -199,12 +199,12 @@ class StockInformationService
         $query = DB::table('m_products as p')
             ->select([
                 'p.id',
-                'p.code', 
+                'p.code',
                 'p.name',
                 'p.total_stock',
                 'p.average_price',
                 'c.name as category_name',
-                'u.code as unit_code'
+                'u.code as unit_code',
             ])
             ->leftJoin('m_categories as c', 'p.f_category_id', '=', 'c.id')
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
@@ -222,7 +222,7 @@ class StockInformationService
 
         foreach ($products as $product) {
             $batchInfo = app(BatchManagementService::class)->getProductBatchInfo($product->id);
-            
+
             $stockValue = $product->total_stock * $batchInfo['weighted_average_cost'];
             $totalValue += $stockValue;
 

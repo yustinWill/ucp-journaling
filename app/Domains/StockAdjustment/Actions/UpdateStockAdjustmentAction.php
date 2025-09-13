@@ -2,12 +2,12 @@
 
 namespace App\Domains\StockAdjustment\Actions;
 
+use App\Domains\Product\Services\ProductService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
-use App\Domains\Product\Services\ProductService;
-use App\Services\StockMovementLogService;
 use App\Enums\ErrorCodes;
 use App\Exceptions\AppException;
+use App\Services\StockMovementLogService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -44,7 +44,7 @@ class UpdateStockAdjustmentAction
             if (isset($data['products'])) {
                 // Reverse previous adjustments first
                 $this->reversePreviousAdjustments($id, $originalData);
-                
+
                 // Apply new adjustments
                 $this->processStockAdjustments($id, $data['products'], $data);
                 $this->updateAdjustmentItems($id, $data['products']);
@@ -199,7 +199,7 @@ class UpdateStockAdjustmentAction
             if ($item->adjustment_qty != 0) {
                 $productId = $item->product_id;
                 $previousQty = $item->adjustment_qty;
-                
+
                 if ($previousQty > 0) {
                     // Previous was positive - now reverse by decreasing stock and consuming batches
                     app(ProductService::class)->updateStock($productId, '-', $previousQty);
@@ -219,7 +219,7 @@ class UpdateStockAdjustmentAction
             if ($product['adjustment_qty'] != 0) {
                 $productId = $product['product_id'];
                 $adjustmentQty = $product['adjustment_qty'];
-                
+
                 if ($adjustmentQty > 0) {
                     // Positive adjustment - increase stock and create new batch
                     app(ProductService::class)->updateStock($productId, '+', $adjustmentQty);
@@ -235,9 +235,9 @@ class UpdateStockAdjustmentAction
 
     private function createAdjustmentBatch(int $stockAdjustmentId, array $product, array $mainData): int
     {
-        $batchReference = 'ADJ-UPD-' . $stockAdjustmentId . '-' . $product['product_id'] . '-' . time();
+        $batchReference = 'ADJ-UPD-'.$stockAdjustmentId.'-'.$product['product_id'].'-'.time();
         $unitCost = $product['unit_cost'] ?? 0;
-        
+
         return DB::table('t_product_stock_batches')->insertGetId([
             'company_code' => session('user_company_code'),
             'f_product_id' => $product['product_id'],
@@ -262,9 +262,9 @@ class UpdateStockAdjustmentAction
 
     private function createReversalBatch(int $stockAdjustmentId, $item): int
     {
-        $batchReference = 'ADJ-REV-' . $stockAdjustmentId . '-' . $item->product_id . '-' . time();
+        $batchReference = 'ADJ-REV-'.$stockAdjustmentId.'-'.$item->product_id.'-'.time();
         $unitCost = $item->unit_cost ?? 0;
-        
+
         return DB::table('t_product_stock_batches')->insertGetId([
             'company_code' => session('user_company_code'),
             'f_product_id' => $item->product_id,
@@ -305,7 +305,7 @@ class UpdateStockAdjustmentAction
                 break;
             }
 
-            if (!isset($batch->id) || !isset($batch->remaining_qty)) {
+            if (! isset($batch->id) || ! isset($batch->remaining_qty)) {
                 continue;
             }
 
@@ -331,7 +331,7 @@ class UpdateStockAdjustmentAction
                 'f_source_transaction_id' => $adjustmentId,
                 'transaction_date' => now(),
                 'qty_moved' => $consumeFromThisBatch,
-                'reference_code' => 'ADJ-' . $adjustmentId,
+                'reference_code' => 'ADJ-'.$adjustmentId,
                 'notes' => 'Stock consumed by Stock Adjustment Update',
                 'created_at' => now(),
                 'created_by' => Auth::id(),
