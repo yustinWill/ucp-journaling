@@ -278,28 +278,42 @@
                             targets: 9, // Status column (updated index due to added tag column)
                             render: function(data, type, full, meta) {
                                 let badgeClass = '';
+                                // switch (data) {
+                                //     case 'ADJUSTMENT_PENDING':
+                                //         badgeClass = 'bg-label-info';
+                                //         break;
+                                //     case 'ADJUSTMENT_CREATED':
+                                //         badgeClass = 'bg-label-primary';
+                                //         break;
+                                //     case 'COMPLETED':
+                                //         badgeClass = 'bg-label-success';
+                                //         break;
+                                //     case 'CANCELLED':
+                                //         badgeClass = 'bg-label-danger';
+                                //         break;
+                                //     default:
+                                //         badgeClass = 'bg-label-secondary';
+                                // }
+
+                                // const statusLabels = {
+                                //     'ADJUSTMENT_PENDING': 'PENDING ADJUSTMENT',
+                                //     'ADJUSTMENT_CREATED': 'ADJUSTMENT CREATED',
+                                //     'COMPLETED': 'COMPLETED',
+                                //     'CANCELLED': 'CANCELLED'
+                                // };
+
                                 switch (data) {
-                                    case 'ADJUSTMENT_PENDING':
-                                        badgeClass = 'bg-label-info';
-                                        break;
-                                    case 'ADJUSTMENT_CREATED':
+                                    case 'EXECUTED':
                                         badgeClass = 'bg-label-primary';
                                         break;
-                                    case 'COMPLETED':
-                                        badgeClass = 'bg-label-success';
+                                    case 'SUBMITTED':
+                                        badgeClass = 'bg-label-warning';
                                         break;
-                                    case 'CANCELLED':
-                                        badgeClass = 'bg-label-danger';
-                                        break;
-                                    default:
-                                        badgeClass = 'bg-label-secondary';
                                 }
 
                                 const statusLabels = {
-                                    'ADJUSTMENT_PENDING': 'PENDING ADJUSTMENT',
-                                    'ADJUSTMENT_CREATED': 'ADJUSTMENT CREATED',
-                                    'COMPLETED': 'COMPLETED',
-                                    'CANCELLED': 'CANCELLED'
+                                    'EXECUTED': 'EXECUTED',
+                                    'SUBMITTED': 'SUBMITTED'
                                 };
 
                                 return `<span class="badge ${badgeClass}">${statusLabels[data] || data}</span>`;
@@ -328,7 +342,7 @@
                                 // <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                 //         <i class="icon-base ti tabler-edit"></i>
                                 //     </a>
-                                    
+
                                 return buttons;
                             }
                         }
