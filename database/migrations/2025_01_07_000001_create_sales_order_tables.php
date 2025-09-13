@@ -30,13 +30,13 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             // Foreign keys
             $table->foreign('customer_id')->references('id')->on('m_contacts');
             $table->foreign('sales_person_id')->references('id')->on('m_sales_persons');
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users');
-            
+
             // Indexes
             $table->index(['order_date', 'status']);
             $table->index('customer_id');
@@ -54,7 +54,7 @@ return new class extends Migration
             $table->decimal('line_total', 15, 2)->default(0);
             $table->text('description')->nullable();
             $table->timestamps();
-            
+
             // Foreign keys
             $table->foreign('sales_order_id')->references('id')->on('t_sales_orders')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('m_products');
@@ -71,7 +71,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             // Foreign keys
             $table->foreign('f_sales_order_id')->references('id')->on('t_sales_orders')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users');

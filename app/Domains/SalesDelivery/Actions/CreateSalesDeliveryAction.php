@@ -1,14 +1,15 @@
 <?php
+
 namespace App\Domains\SalesDelivery\Actions;
 
-use App\Domains\SalesDelivery\Services\SalesDeliveryService;
-use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
 use App\Domains\Product\Services\ProductService;
-use App\Services\StockMovementLogService;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
+use App\Domains\SalesDelivery\Services\SalesDeliveryService;
 use App\Enums\ActionTypes;
+use App\Services\StockMovementLogService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CreateSalesDeliveryAction
 {
@@ -20,7 +21,7 @@ class CreateSalesDeliveryAction
             // Process products for stock movement
             if (isset($data['products']) && is_array($data['products'])) {
                 foreach ($data['products'] as $product) {
-                    if (!isset($product['product_id']) || !isset($product['delivery_qty']) || $product['delivery_qty'] <= 0) {
+                    if (! isset($product['product_id']) || ! isset($product['delivery_qty']) || $product['delivery_qty'] <= 0) {
                         continue;
                     }
 
@@ -30,7 +31,7 @@ class CreateSalesDeliveryAction
 
                     // Update product stock (decrease)
                     app(ProductService::class)->updateStock($productId, '-', $deliveryQty);
-                    
+
                     // Record stock movement (OUT)
                     app(StockMovementLogService::class)->recordMovement(
                         $warehouseId,
@@ -39,7 +40,7 @@ class CreateSalesDeliveryAction
                         'SALES_DELIVERY',
                         $data['delivery_number'] ?? 'Unknown',
                         $deliveryQty,
-                        'Sales Delivery: ' . ($data['delivery_number'] ?? 'Unknown'),
+                        'Sales Delivery: '.($data['delivery_number'] ?? 'Unknown'),
                         $data['delivery_date'] ?? now()
                     );
 
@@ -50,11 +51,11 @@ class CreateSalesDeliveryAction
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
-                'description' => "Pembuatan Sales Delivery",
+                'description' => 'Pembuatan Sales Delivery',
                 'metadata' => json_encode([
                     'before' => null,
                     'after' => $data,
-                ])
+                ]),
             ];
             app(SalesDeliveryAuditLogService::class)->create($log_data, $sales_delivery_id);
 
@@ -84,7 +85,7 @@ class CreateSalesDeliveryAction
             }
 
             // Ensure batch has required properties
-            if (!isset($batch->id) || !isset($batch->remaining_qty)) {
+            if (! isset($batch->id) || ! isset($batch->remaining_qty)) {
                 continue;
             }
 
@@ -110,7 +111,7 @@ class CreateSalesDeliveryAction
                 'f_source_transaction_id' => $salesDeliveryId,
                 'transaction_date' => now(),
                 'qty_moved' => $consumeFromThisBatch,
-                'reference_code' => 'SD-' . $salesDeliveryId,
+                'reference_code' => 'SD-'.$salesDeliveryId,
                 'notes' => 'Stock consumed by Sales Delivery',
                 'created_at' => now(),
                 'created_by' => Auth::id(),

@@ -87,7 +87,7 @@ class PurchaseOrderService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as po')
+        $query = DB::table($this->table_name.' as po')
             ->select(
                 'po.*',
                 'mc.name AS supplier_name',
@@ -147,7 +147,7 @@ class PurchaseOrderService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name . ' as po')
+        $data = DB::table($this->table_name.' as po')
             ->select(
                 'po.*',
                 'mc.name AS supplier_name',
@@ -188,7 +188,7 @@ class PurchaseOrderService
 
     public function findAvailableForDelivery()
     {
-        return DB::table($this->table_name . ' as po')
+        return DB::table($this->table_name.' as po')
             ->select([
                 'po.id as value',
                 DB::raw("CONCAT(po.transaction_code, ' - ', mc.name) as label"),

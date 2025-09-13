@@ -15,10 +15,10 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
+use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use App\Helpers\ValidationHelper;
 
 class PurchaseInvoiceController extends Controller
 {
@@ -409,7 +409,7 @@ class PurchaseInvoiceController extends Controller
                     'status' => 'DRAFT',
                 ],
             ],
-            'validation_key' => 'pi_validation_' . time(),
+            'validation_key' => 'pi_validation_'.time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -439,13 +439,13 @@ class PurchaseInvoiceController extends Controller
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_invoices_export_' . date('Y-m-d_H-i-s') . '.' . $format;
+        $filename = 'purchase_invoices_export_'.date('Y-m-d_H-i-s').'.'.$format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/' . $filename,
+            'download_url' => '/exports/'.$filename,
         ]);
     }
 

@@ -3,10 +3,9 @@
 namespace App\Domains\Production\Services;
 
 use App\Domains\Product\Services\ProductService;
-use App\Domains\Warehouse\Services\WarehouseService;
 use App\Services\StockMovementLogService;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductionStockService
 {
@@ -17,12 +16,12 @@ class ProductionStockService
     public function createProductionStockMovements(int $productionId, array $items, array $productionData): array
     {
         $processedItems = [];
-        
+
         // 1. Consume raw materials (decrease stock)
         foreach ($items as $item) {
             // Update product stock first (decrease)
             app(ProductService::class)->updateStock($item['raw_material_product_id'], '-', $item['quantity_consumed']);
-            
+
             // Record stock movement via centralized service
             app(StockMovementLogService::class)->recordMovement(
                 $productionData['warehouse_id'],
@@ -34,7 +33,7 @@ class ProductionStockService
                 "Raw material consumed for production {$productionData['production_number']}",
                 $productionData['production_date']
             );
-            
+
             // Consume raw material batches (FIFO)
             $batchConsumption = $this->consumeRawMaterialFIFO(
                 $item['raw_material_product_id'],
@@ -42,14 +41,14 @@ class ProductionStockService
                 $item['quantity_consumed'],
                 $productionId
             );
-            
+
             $item['batch_consumption'] = $batchConsumption;
             $processedItems[] = $item;
         }
 
-        // 2. Create bundle product (increase stock)  
+        // 2. Create bundle product (increase stock)
         app(ProductService::class)->updateStock($productionData['bundle_product_id'], '+', $productionData['quantity_produced']);
-        
+
         // Record bundle product creation movement
         app(StockMovementLogService::class)->recordMovement(
             $productionData['warehouse_id'],
@@ -86,19 +85,19 @@ class ProductionStockService
 
         // 1. Remove bundle product (decrease stock)
         app(ProductService::class)->updateStock($production['bundle_product_id'], '-', $reversalData['quantity_to_reverse']);
-        
+
         // Record bundle product removal movement
         app(StockMovementLogService::class)->recordMovement(
             $production['warehouse_id'],
             $production['bundle_product_id'],
             'PRODUCTION_REVERSAL_OUT',
             'PRODUCTION_REVERSAL',
-            $production['production_number'] . '-REV',
+            $production['production_number'].'-REV',
             $reversalData['quantity_to_reverse'],
             "Bundle product removed for production reversal {$production['production_number']}",
             now()->format('Y-m-d')
         );
-        
+
         // Remove bundle product batch
         $bundleBatch = $this->removeBundleProductFIFO(
             $production['bundle_product_id'],
@@ -110,19 +109,19 @@ class ProductionStockService
         // 2. Restore raw materials (increase stock)
         foreach ($items as $item) {
             app(ProductService::class)->updateStock($item['raw_material_product_id'], '+', $item['quantity_consumed']);
-            
+
             // Record raw material restoration movement
             app(StockMovementLogService::class)->recordMovement(
                 $production['warehouse_id'],
                 $item['raw_material_product_id'],
                 'PRODUCTION_REVERSAL_IN',
                 'PRODUCTION_REVERSAL',
-                $production['production_number'] . '-REV',
+                $production['production_number'].'-REV',
                 $item['quantity_consumed'],
                 "Raw material restored from production reversal {$production['production_number']}",
                 now()->format('Y-m-d')
             );
-            
+
             // Restore raw material batch
             $restoredBatch = $this->restoreRawMaterialBatch(
                 $item['raw_material_product_id'],

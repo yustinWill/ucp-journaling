@@ -4,8 +4,8 @@ namespace App\Domains\User\Actions;
 
 use App\Domains\GlobalConfig\Services\GlobalConfigService;
 use App\Domains\RolePermission\Services\RolePermissionService;
-use App\Domains\UserCompany\Services\UserCompanyService;
 use App\Domains\User\Services\UserService;
+use App\Domains\UserCompany\Services\UserCompanyService;
 use App\Enums\ErrorCodes;
 use App\Exceptions\AppException;
 use Illuminate\Support\Facades\Auth;

@@ -5,12 +5,9 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
 use App\Domains\Product\Services\ProductService;
-use App\Domains\SalesDelivery\Services\SalesDeliveryService;
-use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use App\Domains\SalesOrder\Actions\CreateSalesOrderAction;
 use App\Domains\SalesOrder\Actions\UpdateSalesOrderAction;
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
-use App\Domains\SalesOrder\Services\SalesOrderProductService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\SalesPerson\Services\SalesPersonService;
 use App\Domains\Tag\Services\TagService;
@@ -33,7 +30,7 @@ class SalesOrderController extends Controller
     public function index()
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat data.');
         }
 
@@ -108,7 +105,7 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate transaction number: ' . $e->getMessage(),
+                'message' => 'Failed to generate transaction number: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -116,7 +113,7 @@ class SalesOrderController extends Controller
     public function store(Request $request)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -200,14 +197,14 @@ class SalesOrderController extends Controller
     public function detail($id)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat data.');
         }
 
         // Load sales order with full details
         $salesOrder = app(SalesOrderService::class)->findWithDetails($id);
 
-        if (!$salesOrder) {
+        if (! $salesOrder) {
             abort(404, 'Sales Order tidak ditemukan.');
         }
 
@@ -231,14 +228,14 @@ class SalesOrderController extends Controller
     public function edit($id)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
         }
 
         // Load sales order with details
         $salesOrder = app(SalesOrderService::class)->findWithDetails($id);
 
-        if (!$salesOrder) {
+        if (! $salesOrder) {
             abort(404, 'Sales Order tidak ditemukan.');
         }
 
@@ -279,7 +276,7 @@ class SalesOrderController extends Controller
     public function update(Request $request)
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -320,23 +317,23 @@ class SalesOrderController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Sales Order berhasil diperbarui'
+                'message' => 'Sales Order berhasil diperbarui',
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (AppException $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan sistem'
+                'message' => 'Terjadi kesalahan sistem',
             ], 500);
         }
     }
@@ -344,11 +341,12 @@ class SalesOrderController extends Controller
     public function index_data_table()
     {
         // Check read permission
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $data = app(SalesOrderService::class)->findAllDatatable();
+
         return response()->json($data, 200);
     }
 
@@ -356,7 +354,7 @@ class SalesOrderController extends Controller
     public function import()
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'import')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'import')) {
             abort(403, 'Anda tidak memiliki akses untuk import data.');
         }
 
@@ -366,7 +364,7 @@ class SalesOrderController extends Controller
     public function export()
     {
         // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_order', 'export')) {
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'export')) {
             abort(403, 'Anda tidak memiliki akses untuk export data.');
         }
 
@@ -374,7 +372,7 @@ class SalesOrderController extends Controller
         $exportColumns = [];
 
         return view('pages.main_transaction.sales_order.export', [
-            'exportColumns' => $exportColumns
+            'exportColumns' => $exportColumns,
         ]);
     }
 
@@ -384,7 +382,7 @@ class SalesOrderController extends Controller
         $filename = 'sales_order_import_template.xlsx';
 
         return response()->json([
-            'message' => 'Template download functionality - TODO: Implement'
+            'message' => 'Template download functionality - TODO: Implement',
         ]);
     }
 
@@ -398,8 +396,8 @@ class SalesOrderController extends Controller
                 'valid_count' => 0,
                 'error_count' => 0,
                 'valid_data' => [],
-                'error_data' => []
-            ]
+                'error_data' => [],
+            ],
         ]);
     }
 
@@ -409,7 +407,7 @@ class SalesOrderController extends Controller
         return response()->json([
             'success' => true,
             'imported_count' => 0,
-            'message' => 'Sales Order berhasil diimport'
+            'message' => 'Sales Order berhasil diimport',
         ]);
     }
 
@@ -418,7 +416,7 @@ class SalesOrderController extends Controller
         // TODO: Implement export processing
         return response()->json([
             'success' => true,
-            'message' => 'Export functionality - TODO: Implement'
+            'message' => 'Export functionality - TODO: Implement',
         ]);
     }
 
@@ -432,7 +430,7 @@ class SalesOrderController extends Controller
                 't.email',
                 'ca.address as billing_address',
                 't.f_sales_pic_id',
-                'u.name as sales_person_name'
+                'u.name as sales_person_name',
             ])
             ->leftJoin('m_contact_addresses as ca', function ($join) {
                 $join->on('ca.f_contact_id', '=', 't.id')
@@ -444,10 +442,10 @@ class SalesOrderController extends Controller
             ->where('t.type', 'CUSTOMER')
             ->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return response()->json([
                 'success' => false,
-                'message' => 'Customer not found'
+                'message' => 'Customer not found',
             ], 404);
         }
 
@@ -457,7 +455,7 @@ class SalesOrderController extends Controller
                 'email' => $customer->email,
                 'address' => $customer->billing_address,
                 'sales_person_name' => $customer->sales_person_name,
-            ]
+            ],
         ]);
     }
 
@@ -465,10 +463,10 @@ class SalesOrderController extends Controller
     {
         $customerId = request()->input('customer_id');
 
-        if (!$customerId) {
+        if (! $customerId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Customer ID is required'
+                'message' => 'Customer ID is required',
             ], 400);
         }
 
@@ -494,7 +492,7 @@ class SalesOrderController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $products
+            'data' => $products,
         ]);
     }
 }

@@ -89,7 +89,7 @@ class SalesOrderService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name . ' as so')
+        $query = DB::table($this->table_name.' as so')
             ->select(
                 'so.*',
                 'mc.name AS customer_name',
@@ -153,7 +153,7 @@ class SalesOrderService
 
     public function findWithDetails(int $id)
     {
-        $salesOrder = DB::table($this->table_name . ' as so')
+        $salesOrder = DB::table($this->table_name.' as so')
             ->leftJoin('m_contacts as c', 'so.f_customer_id', '=', 'c.id')
             ->leftJoin('m_warehouses as w', 'so.f_warehouse_id', '=', 'w.id')
             ->leftJoin('m_payment_terms as pt', 'so.f_payment_term_id', '=', 'pt.id')
@@ -173,11 +173,11 @@ class SalesOrderService
                 'u.name as sales_person_name',
                 'w.name as warehouse',
                 'pt.name as payment_terms',
-                'pt.type as payment_terms_type'
+                'pt.type as payment_terms_type',
             ])
             ->first();
 
-        if (!$salesOrder) {
+        if (! $salesOrder) {
             return null;
         }
 
@@ -185,9 +185,9 @@ class SalesOrderService
         $salesOrder = (array) $salesOrder;
 
         // Process tags
-        if (!empty($salesOrder['f_tag_codes'])) {
+        if (! empty($salesOrder['f_tag_codes'])) {
             $tagIds = json_decode($salesOrder['f_tag_codes'], true);
-            if (is_array($tagIds) && !empty($tagIds)) {
+            if (is_array($tagIds) && ! empty($tagIds)) {
                 $tags = DB::table('m_tags')
                     ->whereIn('id', $tagIds)
                     ->pluck('name')
@@ -223,7 +223,7 @@ class SalesOrderService
                 'p.code as product_code',
                 'u.name as unit_name',
                 't.name as tax_name',
-                't.rate as tax_rate'
+                't.rate as tax_rate',
             ])
             ->orderBy('sop.id', 'asc')
             ->get();

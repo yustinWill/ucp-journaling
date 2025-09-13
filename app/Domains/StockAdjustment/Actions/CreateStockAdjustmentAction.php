@@ -2,12 +2,12 @@
 
 namespace App\Domains\StockAdjustment\Actions;
 
+use App\Domains\Product\Services\ProductService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
 use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockOpname\Services\StockOpnameService;
-use App\Domains\Product\Services\ProductService;
-use App\Services\StockMovementLogService;
 use App\Services\BatchManagementService;
+use App\Services\StockMovementLogService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -108,7 +108,7 @@ class CreateStockAdjustmentAction
                     app(BatchManagementService::class)->consumeBatches($productId, abs($adjustmentQty), [
                         'source_type' => 'STOCK_ADJUSTMENT',
                         'f_source_transaction_id' => $stockAdjustmentId,
-                        'reference_code' => 'ADJ-' . $stockAdjustmentId,
+                        'reference_code' => 'ADJ-'.$stockAdjustmentId,
                         'notes' => 'Stock consumed by Stock Adjustment',
                     ]);
                 }

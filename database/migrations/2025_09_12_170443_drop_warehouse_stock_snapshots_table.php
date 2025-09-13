@@ -39,7 +39,7 @@ return new class extends Migration
             $table->foreign('f_product_id')->references('id')->on('m_products');
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users');
-            
+
             $table->unique(['f_warehouse_id', 'f_product_id', 'snapshot_date'], 'unq_warehouse_product_snapshot');
             $table->index(['f_warehouse_id', 'snapshot_date'], 'idx_warehouse_snapshot_date');
         });

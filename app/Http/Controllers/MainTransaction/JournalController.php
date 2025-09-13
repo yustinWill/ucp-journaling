@@ -157,8 +157,8 @@ class JournalController extends Controller
                 'account_code' => $row->f_coa_code,
                 'account_name' => $row->coa_name,
                 'description' => $row->coa_description,
-                'debit_amount' => $row->debit_credit == 'D' ? 'Rp ' . number_format($row->amount, 0, ',', '.') : null,
-                'credit_amount' => $row->debit_credit == 'C' ? 'Rp ' . number_format($row->amount, 0, ',', '.') : null,
+                'debit_amount' => $row->debit_credit == 'D' ? 'Rp '.number_format($row->amount, 0, ',', '.') : null,
+                'credit_amount' => $row->debit_credit == 'C' ? 'Rp '.number_format($row->amount, 0, ',', '.') : null,
             ];
         }
 
@@ -173,9 +173,9 @@ class JournalController extends Controller
             'description' => $header->description,
             'memo' => $header->internal_memo,
             'tags' => json_decode($header->tags, true),
-            'total_debit' => 'Rp ' . number_format($total_debit, 0, ',', '.'),
-            'total_credit' => 'Rp ' . number_format($total_credit, 0, ',', '.'),
-            'difference' => 'Rp ' . number_format($total_debit - $total_credit, 0, ',', '.'),
+            'total_debit' => 'Rp '.number_format($total_debit, 0, ',', '.'),
+            'total_credit' => 'Rp '.number_format($total_credit, 0, ',', '.'),
+            'difference' => 'Rp '.number_format($total_debit - $total_credit, 0, ',', '.'),
             'entries' => $entries,
             'audit_logs' => $auditLogs,
             'auditLogType' => AuditLogTypes::MAIN_TRANSACTION_JOURNAL->code(),
@@ -225,9 +225,9 @@ class JournalController extends Controller
             'memo' => $header->internal_memo,
             'tags' => json_decode($header->tags, true),
             'f_tag_codes' => json_decode($header->f_tag_codes, true),
-            'total_debit' => 'Rp ' . number_format($total_debit, 0, ',', '.'),
-            'total_credit' => 'Rp ' . number_format($total_credit, 0, ',', '.'),
-            'difference' => 'Rp ' . number_format($total_debit - $total_credit, 0, ',', '.'),
+            'total_debit' => 'Rp '.number_format($total_debit, 0, ',', '.'),
+            'total_credit' => 'Rp '.number_format($total_credit, 0, ',', '.'),
+            'difference' => 'Rp '.number_format($total_debit - $total_credit, 0, ',', '.'),
             'entries' => $entries,
         ];
 

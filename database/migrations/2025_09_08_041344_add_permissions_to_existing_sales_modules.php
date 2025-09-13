@@ -15,7 +15,7 @@ return new class extends Migration
         $salesDelivery = DB::table('modules')->where('name', 'main_transaction_sales_delivery')->first();
         $salesInvoice = DB::table('modules')->where('name', 'main_transaction_sales_invoice')->first();
 
-        if (!$salesOrder || !$salesDelivery || !$salesInvoice) {
+        if (! $salesOrder || ! $salesDelivery || ! $salesInvoice) {
             throw new Exception('Sales modules not found. Please run the sales modules creation migration first.');
         }
 
@@ -72,7 +72,7 @@ return new class extends Migration
             ->whereIn('name', [
                 'main_transaction_sales_order',
                 'main_transaction_sales_delivery',
-                'main_transaction_sales_invoice'
+                'main_transaction_sales_invoice',
             ])
             ->pluck('id');
 

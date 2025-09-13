@@ -301,7 +301,7 @@ class PurchaseOrderController extends Controller
         $product_lines = [];
         foreach ($po_products as $prod) {
             $product_lines[] = [
-                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
+                'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
@@ -315,7 +315,7 @@ class PurchaseOrderController extends Controller
         foreach ($po_products as $prod) {
             $product_delivery_summary[] = [
                 'product_id' => $prod->id,
-                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
+                'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'total_qty' => $prod->qty,
                 'qty_delivered' => $prod->delivered_qty,
                 'remaining_qty' => $prod->remaining_qty,
@@ -362,11 +362,11 @@ class PurchaseOrderController extends Controller
             'supplier_reference' => $po_data->supplier_reference_no,
             'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
-            'payment_terms' => $po_data->payment_term_code . ' - ' . $po_data->payment_term_name,
+            'payment_terms' => $po_data->payment_term_code.' - '.$po_data->payment_term_name,
             'payment_terms_type' => $po_data->payment_term_type,
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
-            'warehouse' => $po_data->warehouse_code . ' - ' . $po_data->warehouse_name,
+            'warehouse' => $po_data->warehouse_code.' - '.$po_data->warehouse_name,
             'customer_name' => $po_data->customer_name,
             // 'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
@@ -474,7 +474,7 @@ class PurchaseOrderController extends Controller
             $product_lines[] = [
                 'id' => $prod->id,
                 'product_id' => $prod->f_product_id,
-                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
+                'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
                 'unit' => $prod->unit_code,
@@ -489,7 +489,7 @@ class PurchaseOrderController extends Controller
         foreach ($po_products as $prod) {
             $product_delivery_summary[] = [
                 'product_id' => $prod->id,
-                'product_name' => $prod->product_code . ' - ' . $prod->product_name,
+                'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'total_qty' => $prod->qty,
                 'qty_delivered' => $prod->delivered_qty,
                 'remaining_qty' => $prod->remaining_qty,
@@ -546,11 +546,11 @@ class PurchaseOrderController extends Controller
             'status' => $po_data->status,
             'due_date' => $po_data->payment_term_due_date,
             'payment_term_id' => $po_data->f_payment_term_id,
-            'payment_terms' => $po_data->payment_term_code . ' - ' . $po_data->payment_term_name,
+            'payment_terms' => $po_data->payment_term_code.' - '.$po_data->payment_term_name,
             'payment_terms_type' => $po_data->payment_term_type,
             'days' => $po_data->payment_term_day_count,
             'description' => $po_data->description,
-            'warehouse' => $po_data->warehouse_code . ' - ' . $po_data->warehouse_name,
+            'warehouse' => $po_data->warehouse_code.' - '.$po_data->warehouse_name,
             'warehouse_id' => $po_data->f_warehouse_id,
             // 'include_tax' => $po_data->is_price_include_tax,
             // 'down_payment' => 5000000,
@@ -773,7 +773,7 @@ class PurchaseOrderController extends Controller
                     'status' => 'DRAFT',
                 ],
             ],
-            'validation_key' => 'po_validation_' . time(),
+            'validation_key' => 'po_validation_'.time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -828,13 +828,13 @@ class PurchaseOrderController extends Controller
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'purchase_orders_export_' . date('Y-m-d_H-i-s') . '.' . $format;
+        $filename = 'purchase_orders_export_'.date('Y-m-d_H-i-s').'.'.$format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/' . $filename,
+            'download_url' => '/exports/'.$filename,
         ]);
     }
 }

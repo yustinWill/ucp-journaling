@@ -34,13 +34,13 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             // Foreign keys
             $table->foreign('sales_delivery_id')->references('id')->on('t_sales_deliveries');
             $table->foreign('customer_id')->references('id')->on('m_contacts');
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users');
-            
+
             // Indexes
             $table->index(['invoice_date', 'status']);
             $table->index(['customer_id', 'status']);
@@ -60,7 +60,7 @@ return new class extends Migration
             $table->decimal('tax_amount', 15, 2)->default(0);
             $table->decimal('line_total', 15, 2)->default(0);
             $table->timestamps();
-            
+
             // Foreign keys
             $table->foreign('sales_invoice_id')->references('id')->on('t_sales_invoices')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('m_products');
@@ -79,7 +79,7 @@ return new class extends Migration
             $table->text('payment_notes')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
-            
+
             // Foreign keys
             $table->foreign('sales_invoice_id')->references('id')->on('t_sales_invoices')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users');
@@ -95,7 +95,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            
+
             // Foreign keys
             $table->foreign('f_sales_invoice_id')->references('id')->on('t_sales_invoices')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users');

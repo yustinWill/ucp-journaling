@@ -16,11 +16,11 @@ return new class extends Migration
             // Drop old foreign keys first
             $table->dropForeign(['customer_id']);
             $table->dropForeign(['sales_person_id']);
-            
+
             // Drop old columns
             $table->dropColumn([
                 'order_number',
-                'customer_id', 
+                'customer_id',
                 'sales_person_id',
                 'order_date',
                 'payment_terms',
@@ -29,7 +29,7 @@ return new class extends Migration
                 'discount_amount',
                 'total_amount',
                 'tags',
-                'attachment_path'
+                'attachment_path',
             ]);
         });
     }
@@ -52,7 +52,7 @@ return new class extends Migration
             $table->decimal('total_amount', 15, 2)->default(0)->after('discount_amount');
             $table->text('tags')->nullable()->after('total_amount');
             $table->string('attachment_path')->nullable()->after('tags');
-            
+
             // Restore foreign keys
             $table->foreign('customer_id')->references('id')->on('m_contacts');
             $table->foreign('sales_person_id')->references('id')->on('m_sales_persons');

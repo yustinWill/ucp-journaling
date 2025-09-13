@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Domains\SalesDelivery\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SalesDeliveryService
 {
@@ -19,7 +20,7 @@ class SalesDeliveryService
             'status' => $data['status'] ?? 'PENDING',
             'warehouse_id' => $data['warehouse_id'] ?? null,
             'created_at' => now(),
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -32,7 +33,7 @@ class SalesDeliveryService
                 'status' => $data['status'] ?? null,
                 'delivery_date' => $data['delivery_date'] ?? null,
                 'updated_at' => now(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
     }
 
@@ -42,14 +43,14 @@ class SalesDeliveryService
             ->where('id', $id)
             ->first();
     }
-    
+
     public function findById($id)
     {
         return DB::table($this->table_name)
             ->where('id', $id)
             ->first();
     }
-    
+
     public function findProductLines($salesDeliveryId)
     {
         return DB::table('t_sales_delivery_products as sdp')
@@ -57,7 +58,7 @@ class SalesDeliveryService
                 'sdp.*',
                 'p.code as product_code',
                 'p.name as product_name',
-                'u.name as unit_name'
+                'u.name as unit_name',
             ])
             ->join('m_products as p', 'sdp.product_id', '=', 'p.id')
             ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
@@ -132,9 +133,9 @@ class SalesDeliveryService
         }
 
         $data = $query->get();
-        
+
         return [
-            'data' => $data
+            'data' => $data,
         ];
     }
 

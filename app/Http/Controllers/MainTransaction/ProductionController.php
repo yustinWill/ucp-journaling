@@ -248,7 +248,7 @@ class ProductionController extends Controller
         $timestamp = time();
 
         // Mock generation - replace with proper sequence
-        $number = "PROD-{$year}-" . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        $number = "PROD-{$year}-".str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
 
         return response()->json([
             'success' => true,
