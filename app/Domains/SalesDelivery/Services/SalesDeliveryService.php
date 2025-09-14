@@ -120,23 +120,47 @@ class SalesDeliveryService
             $query->where('sd.warehouse_id', $warehouseId);
         }
 
+        // if ($deliveryNo = request()->input('delivery_no')) {
+        //     $query->where('sd.delivery_number', 'LIKE', "%{$deliveryNo}%");
+        // }
+
         if ($deliveryNo = request()->input('delivery_no')) {
-            $query->where('sd.delivery_number', 'LIKE', "%{$deliveryNo}%");
+            $query->where(function ($q) use ($deliveryNo) {
+                $q->where('so.transaction_code', 'LIKE', "%{$deliveryNo}%")
+                    ->orWhere('sd.delivery_number', 'LIKE', "%{$deliveryNo}%");
+            });
         }
 
-        if ($status = request()->input('status')) {
-            $query->where('sd.status', $status);
-        }
+        // if ($salesOrderNo = request()->input('sales_order_no')) {
+        //     $query->where('so.transaction_code', 'LIKE', "%{$salesOrderNo}%");
 
-        if ($salesOrderNo = request()->input('sales_order_no')) {
-            $query->where('so.transaction_code', 'LIKE', "%{$salesOrderNo}%");
-        }
+        // }
+        $query->groupBy('sd.id');
 
+        $draw = (int) request()->input('draw', 1);
+        $recordsTotal = DB::table($this->table_name)->count();
+        $filteredQuery = clone $query;
+
+        // Pagination
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
+        $query->skip($start)->take($length);
+        $recordsFiltered = $filteredQuery->get()->count();
+        $query->orderBy('sd.id', 'DESC');
         $data = $query->get();
 
         return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ];
+
+        // $data = $query->get();
+
+        // return [
+        //     'data' => $data,
+        // ];
     }
 
     public function delete($id)

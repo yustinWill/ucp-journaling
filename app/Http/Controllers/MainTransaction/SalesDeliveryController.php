@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Domains\SalesDelivery\Actions\CreateSalesDeliveryAction;
 use App\Domains\SalesDelivery\Actions\UpdateSalesDeliveryAction;
 use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
+use App\Domains\SalesDelivery\Services\SalesDeliveryService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\Warehouse\Services\WarehouseService;
@@ -28,9 +29,8 @@ class SalesDeliveryController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk melihat data.');
         }
 
-        // Load filter data if has permissions
-        $customers = [];
-        $warehouses = [];
+        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $warehouses = app(WarehouseService::class)->findAll();
 
         if (PermissionHelper::hasPermission('master_data_contact', 'read')) {
             $customers = app(\App\Domains\Contact\Services\ContactService::class)->findAllByType('CUSTOMER');
@@ -69,7 +69,6 @@ class SalesDeliveryController extends Controller
 
         $salesOrderList = app(SalesOrderService::class)->findAllPending();
 
-        // TODO: Load customers, warehouses, sales orders, etc.
         $customers = app(ContactService::class)->findAllByType('CUSTOMER');
         $warehouses = app(WarehouseService::class)->findAll();
         $products = [];
@@ -315,24 +314,15 @@ class SalesDeliveryController extends Controller
         }
     }
 
-    public function index_data_table(Request $request)
+    public function index_data_table()
     {
         // Permission check
         if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        try {
-            // Get data from service (filters are applied within the service via request())
-            $result = app(\App\Domains\SalesDelivery\Services\SalesDeliveryService::class)->findAllDatatable();
-
-            return response()->json($result, 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Terjadi kesalahan saat memuat data',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+        $data = app(SalesDeliveryService::class)->findAllDatatable();
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     // Import/Export methods
