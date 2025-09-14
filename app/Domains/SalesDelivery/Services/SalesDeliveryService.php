@@ -4,6 +4,7 @@ namespace App\Domains\SalesDelivery\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class SalesDeliveryService
 {
@@ -13,9 +14,15 @@ class SalesDeliveryService
     {
         // TODO: Implement sales delivery creation logic
         return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
             'delivery_number' => $data['delivery_number'],
+            'attachment_path' => $data['attachment'] ?? null,
             'sales_order_id' => $data['sales_order_id'] ?? null,
             'customer_id' => $data['customer_id'] ?? null,
+            'customer_reference' => $data['customer_reference'] ?? null,
+            'delivery_notes' => $data['delivery_notes'] ?? null,
+            'delivery_address' => $data['delivery_address'] ?? null,
+            'tags' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'delivery_date' => $data['delivery_date'] ?? now(),
             'status' => $data['status'] ?? 'PENDING',
             'warehouse_id' => $data['warehouse_id'] ?? null,
@@ -39,15 +46,52 @@ class SalesDeliveryService
 
     public function findOne($id)
     {
-        return DB::table($this->table_name)
-            ->where('id', $id)
+        $data = DB::table($this->table_name . ' as t_sales_deliveries')
+            ->select([
+                't_sales_deliveries.*',
+                'so.transaction_code as sales_order_number',
+                't_sales_deliveries.attachment_path AS attachment',
+                'c.name as customer_name',
+                'c.email as customer_email',
+                'ca.address as customer_address',
+
+                'w.name as warehouse_name',
+                'u.name as created_by_name',
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
+            ])
+            ->leftJoin('m_contacts as c', 't_sales_deliveries.customer_id', '=', 'c.id')
+            ->leftJoin('m_contact_addresses as ca', function ($join) {
+                $join->on('c.id', '=', 'ca.f_contact_id')
+                    ->where('ca.type', '=', 'SHIPPING');
+            })
+            ->leftJoin('m_warehouses as w', 't_sales_deliveries.warehouse_id', '=', 'w.id')
+            ->leftJoin('t_sales_orders as so', 't_sales_deliveries.sales_order_id', '=', 'so.id')
+            ->leftJoin('users as u', 't_sales_deliveries.created_by', '=', 'u.id')
+            ->leftJoin(DB::raw("JSON_TABLE(t_sales_deliveries.tags, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
+            ->where('t_sales_deliveries.id', $id)
+            ->where('t_sales_deliveries.company_code', session('user_company_code'))
+            ->groupBy('t_sales_deliveries.id','ca.address')
             ->first();
+
+        if ($data && $data->tags) {
+            $data->tags = json_decode($data->tags); // Returns objects for view compatibility
+        }
+        if ($data->attachment) {
+            $data->attachment = Storage::disk('public')->url($data->attachment);
+        }
+
+        return $data;
     }
 
     public function findById($id)
     {
         return DB::table($this->table_name)
             ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
             ->first();
     }
 
@@ -69,6 +113,7 @@ class SalesDeliveryService
     public function findAll()
     {
         return DB::table($this->table_name)
+            ->where('company_code', session('user_company_code'))
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -101,6 +146,7 @@ class SalesDeliveryService
             })
             ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
+            ->where('sd.company_code', session('user_company_code'))
             ->groupBy('sd.id')
             ->orderBy('sd.created_at', 'desc');
 
@@ -120,10 +166,6 @@ class SalesDeliveryService
             $query->where('sd.warehouse_id', $warehouseId);
         }
 
-        // if ($deliveryNo = request()->input('delivery_no')) {
-        //     $query->where('sd.delivery_number', 'LIKE', "%{$deliveryNo}%");
-        // }
-
         if ($deliveryNo = request()->input('delivery_no')) {
             $query->where(function ($q) use ($deliveryNo) {
                 $q->where('so.transaction_code', 'LIKE', "%{$deliveryNo}%")
@@ -131,10 +173,6 @@ class SalesDeliveryService
             });
         }
 
-        // if ($salesOrderNo = request()->input('sales_order_no')) {
-        //     $query->where('so.transaction_code', 'LIKE', "%{$salesOrderNo}%");
-
-        // }
         $query->groupBy('sd.id');
 
         $draw = (int) request()->input('draw', 1);
@@ -155,12 +193,6 @@ class SalesDeliveryService
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ];
-
-        // $data = $query->get();
-
-        // return [
-        //     'data' => $data,
-        // ];
     }
 
     public function delete($id)

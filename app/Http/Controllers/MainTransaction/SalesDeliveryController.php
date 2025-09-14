@@ -64,7 +64,6 @@ class SalesDeliveryController extends Controller
         if (isset($req['so_id'])) {
             $preselectedSOId = $req['so_id'];
             $salesOrderProducts = app(SalesOrderService::class)->findProductLines($preselectedSOId, true);
-            // dd($salesOrderProducts);
         }
 
         $salesOrderList = app(SalesOrderService::class)->findAllPending();
@@ -184,52 +183,56 @@ class SalesDeliveryController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk melihat data.');
         }
 
+        $salesDeliveryHeader = app(SalesDeliveryService::class)->findOne($id);
+        $salesDeliveryProduct = app(SalesDeliveryService::class)->findProductLines($id, true);
         // TODO: Replace with actual data loading
         $sales_delivery = (object) [
             'id' => $id,
-            'delivery_number' => 'SD-2025-001',
-            'customer_name' => 'PT. Customer A',
-            'delivery_date' => '2025-01-15',
-            'warehouse_name' => 'Gudang Utama',
-            'status' => 'PENDING',
-            'created_by' => 'Admin User',
-            'delivery_address' => 'Jl. Test Address No. 123',
-            'customer_reference' => 'REF-001',
-            'delivery_notes' => 'Test delivery notes',
-            'tags' => '[]',
-            'attachment' => null,
-            'memo' => 'Internal memo test',
-            'created_at' => '2025-01-15 10:00:00',
-            'updated_at' => '2025-01-15 10:00:00',
+            'delivery_number' => $salesDeliveryHeader->delivery_number,
+            'customer_name' => $salesDeliveryHeader->customer_name,
+            'delivery_date' => $salesDeliveryHeader->delivery_date,
+            'warehouse_name' => $salesDeliveryHeader->warehouse_name,
+            'status' => $salesDeliveryHeader->status,
+            'created_by' => $salesDeliveryHeader->created_by_name,
+            'delivery_address' => $salesDeliveryHeader->delivery_address,
+            'customer_reference' => $salesDeliveryHeader->customer_reference,
+            'delivery_notes' => $salesDeliveryHeader->delivery_notes,
+            'tags' => $salesDeliveryHeader->tags,
+            'attachment' => $salesDeliveryHeader->attachment,
+            'memo' => $salesDeliveryHeader->memo,
+            'created_at' => $salesDeliveryHeader->created_at,
+            'updated_at' => $salesDeliveryHeader->updated_at,
         ];
+        // dd($sales_delivery);
 
         // Mock related data
         $customer = (object) [
-            'name' => 'PT. Customer A',
-            'email' => 'customer@example.com',
-            'address' => 'Jl. Customer Address No. 456',
+            'name' => $salesDeliveryHeader->customer_name,
+            'email' => $salesDeliveryHeader->customer_email,
+            'address' => $salesDeliveryHeader->customer_address,
         ];
 
         $warehouse = (object) [
-            'name' => 'Gudang Utama',
+            'name' => $salesDeliveryHeader->warehouse_name,
         ];
 
         $salesOrder = (object) [
-            'transaction_code' => 'SO-2025-001',
+            'transaction_code' => $salesDeliveryHeader->sales_order_number,
             'status' => 'COMPLETED',
         ];
 
-        $productLines = [
-            (object) [
-                'product_name' => 'Product A',
-                'product_code' => 'PROD-A',
-                'quantity_ordered' => 100,
-                'quantity_delivered' => 100,
-                'unit_name' => 'Pcs',
-                'delivery_status' => 'DELIVERED',
-                'description' => 'Sample product A',
-            ],
-        ];
+        $productLines = [];
+        foreach ($salesDeliveryProduct as $product) {
+            $productLines[] = (object) [
+                'product_name' => $product->product_name,
+                'product_code' => $product->product_code,
+                'quantity_ordered' => $product->delivered_qty_after + $product->remaining_qty_after,
+                'quantity_delivered' => $product->delivered_qty_after,
+                'unit_name' => $product->unit_name,
+                'delivery_status' => $product->delivery_status,
+                'description' => $product->description,
+            ];
+        }
 
         $audit_logs = app(SalesDeliveryAuditLogService::class)->findAllBasedOnSalesDeliveryId($id);
 

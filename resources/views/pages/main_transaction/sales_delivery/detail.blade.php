@@ -10,7 +10,7 @@
                 <div class="col-md-8">
                     <h4 class="mb-3">Detail Sales Delivery</h4>
                 </div>
-                <div class="col-md-4">
+                {{-- <div class="col-md-4">
                     @php
                         $totalActions = 0;
                         if($canEdit) $totalActions++; // Edit always present
@@ -49,7 +49,7 @@
                             </div>
                         </div>
                     @endif
-                </div>
+                </div> --}}
             </div>
 
             <!-- Sales Delivery Title -->
@@ -148,11 +148,11 @@
                             <input type="text" class="form-control"
                                 value="{{ $salesOrder->transaction_code ?? 'N/A' }}" disabled />
                         </div>
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <label class="form-label">Status SO</label>
                             <input type="text" class="form-control"
                                 value="{{ $salesOrder->status ?? 'N/A' }}" disabled />
-                        </div>
+                        </div> --}}
                     </div>
                     @endif
 
@@ -201,10 +201,10 @@
                                     @forelse($productLines ?? [] as $product)
                                         <tr>
                                             <td>{{ $product->product_name ?? $product->product_code }}</td>
-                                            <td class="text-center">{{ number_format($product->quantity_ordered ?? 0) }}</td>
-                                            <td class="text-center">{{ number_format($product->quantity_delivered ?? 0) }}</td>
-                                            <td class="text-center">{{ $product->unit_name ?? '-' }}</td>
-                                            <td class="text-center">
+                                            <td>{{ number_format($product->quantity_ordered ?? 0) }}</td>
+                                            <td>{{ number_format($product->quantity_delivered ?? 0) }}</td>
+                                            <td>{{ $product->unit_name ?? '-' }}</td>
+                                            <td>
                                                 @php
                                                     $deliveryStatus = $product->delivery_status ?? 'PENDING';
                                                     $deliveryBadges = [
@@ -240,12 +240,12 @@
                         <div class="col-md-6 mb-4">
                             <div class="mb-3">
                                 <label class="form-label">Tag</label>
-                                @if (isset($salesDelivery->tags) && $salesDelivery->tags)
+                                @if (isset($salesDelivery->tags) && $salesDelivery->tags != null)
                                     @php $tags = is_string($salesDelivery->tags) ? json_decode($salesDelivery->tags, true) : $salesDelivery->tags; @endphp
                                     <div class="d-flex flex-wrap gap-1">
                                         @foreach ($tags as $tag)
-                                            @if(isset($tag['name']) && $tag['name'])
-                                                <span class="badge {{ $tag['preview'] ?? 'bg-primary' }}">{{ $tag['name'] }}</span>
+                                            @if(isset($tag->name) && $tag->name)
+                                                <span class="badge {{ $tag->preview ?? 'bg-primary' }}">{{ $tag->name }}</span>
                                             @endif
                                         @endforeach
                                     </div>
@@ -279,7 +279,7 @@
                     </div>
 
                     <!-- Timestamps Section -->
-                    <div class="section-header mt-12">
+                    <div class="section-header mt-5">
                         <h6>Informasi Sistem</h6>
                         <hr class="mx-n6">
                     </div>
@@ -289,11 +289,11 @@
                             <input type="text" class="form-control" value="{{ $salesDelivery->created_at }}"
                                 disabled />
                         </div>
-                        <div class="col-md-6">
+                        {{-- <div class="col-md-6">
                             <label class="form-label">Diupdate Pada</label>
                             <input type="text" class="form-control" value="{{ $salesDelivery->updated_at ?? 'Belum pernah diupdate' }}"
                                 disabled />
-                        </div>
+                        </div> --}}
                     </div>
                             </div>
                         </div>
