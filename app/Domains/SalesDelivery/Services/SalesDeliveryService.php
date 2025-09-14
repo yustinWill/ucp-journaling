@@ -13,7 +13,7 @@ class SalesDeliveryService
     {
         // TODO: Implement sales delivery creation logic
         return DB::table($this->table_name)->insertGetId([
-            'delivery_number' => $data['delivery_number'] ?? null,
+            'delivery_number' => $data['delivery_number'],
             'sales_order_id' => $data['sales_order_id'] ?? null,
             'customer_id' => $data['customer_id'] ?? null,
             'delivery_date' => $data['delivery_date'] ?? now(),
@@ -75,7 +75,7 @@ class SalesDeliveryService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name.' as sd')
+        $query = DB::table($this->table_name . ' as sd')
             ->select([
                 'sd.id',
                 'sd.delivery_number',
@@ -144,5 +144,30 @@ class SalesDeliveryService
         return DB::table($this->table_name)
             ->where('id', $id)
             ->delete();
+    }
+
+    public function createDeliveryProducts(int $deliveryId, array $products)
+    {
+        $insertData = [];
+        foreach ($products as $product) {
+            $insertData[] = [
+                'sales_delivery_id' => $deliveryId,
+                'sales_order_product_id' => $product['sales_order_product_id'],
+                'product_id' => $product['product_id'],
+                'delivered_qty_before' => $product['delivered_qty_before'],
+                'remaining_qty_before' => $product['remaining_qty_before'],
+                'qty' => $product['delivery_qty'],
+                'delivered_qty_after' => $product['delivered_qty_before'] + $product['delivery_qty'],
+                'remaining_qty_after' => $product['remaining_qty_before'] - $product['delivery_qty'],
+                'description' => $product['note'],
+                'delivery_status' => $product['status'],
+                'created_at' => now(),
+                'created_by' => Auth::id(),
+            ];
+        }
+
+        if (! empty($insertData)) {
+            DB::table('t_sales_delivery_products')->insert($insertData);
+        }
     }
 }

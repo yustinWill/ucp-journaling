@@ -41,6 +41,8 @@ enum SuccessCodes: string
     case UPDATE_STOCK_OPNAME_SUCCESS = 'UPDATE_STOCK_OPNAME_SUCCESS';
     case CREATE_SALES_ORDER_SUCCESS = 'CREATE_SALES_ORDER_SUCCESS';
     case UPDATE_SALES_ORDER_SUCCESS = 'UPDATE_SALES_ORDER_SUCCESS';
+    case CREATE_SALES_DELIVERY_SUCCESS = 'CREATE_SALES_DELIVERY_SUCCESS';
+    case UPDATE_SALES_DELIVERY_SUCCESS = 'UPDATE_SALES_DELIVERY_SUCCESS';
 
     public function message(): string
     {
@@ -80,6 +82,8 @@ enum SuccessCodes: string
             self::UPDATE_PURCHASE_INVOICE_SUCCESS => 'Purchase Invoice berhasil diperbarui.',
             self::CREATE_SALES_ORDER_SUCCESS => 'Sales Order berhasil dibuat.',
             self::UPDATE_SALES_ORDER_SUCCESS => 'Sales Order berhasil diperbarui.',
+            self::CREATE_SALES_DELIVERY_SUCCESS => 'Sales Delivery berhasil dibuat.',
+            self::UPDATE_SALES_DELIVERY_SUCCESS => 'Sales Delivery berhasil diperbarui.',
         };
     }
 
@@ -121,6 +125,8 @@ enum SuccessCodes: string
             self::UPDATE_PURCHASE_INVOICE_SUCCESS => self::OK,
             self::CREATE_SALES_ORDER_SUCCESS => self::OK,
             self::UPDATE_SALES_ORDER_SUCCESS => self::OK,
+            self::CREATE_SALES_DELIVERY_SUCCESS => self::OK,
+            self::UPDATE_SALES_DELIVERY_SUCCESS => self::OK,
         };
     }
 

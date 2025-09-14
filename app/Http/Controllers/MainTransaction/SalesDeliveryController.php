@@ -5,12 +5,19 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Domains\SalesDelivery\Actions\CreateSalesDeliveryAction;
 use App\Domains\SalesDelivery\Actions\UpdateSalesDeliveryAction;
 use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
+use App\Domains\SalesOrder\Services\SalesOrderService;
+use App\Domains\Contact\Services\ContactService;
+use App\Domains\Warehouse\Services\WarehouseService;
+use App\Domains\Tag\Services\TagService;
 use App\Exceptions\AppException;
 use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Helpers\DiscordNotifier;
 
 class SalesDeliveryController extends Controller
 {
@@ -45,22 +52,37 @@ class SalesDeliveryController extends Controller
         ]);
     }
 
-    public function add()
+    public function add(Request $req)
     {
         // Permission check
         if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat data.');
         }
 
+        $preselectedSOId = null;
+        $salesOrderProducts = [];
+        if (isset($req['so_id'])) {
+            $preselectedSOId = $req['so_id'];
+            $salesOrderProducts = app(SalesOrderService::class)->findProductLines($preselectedSOId, true);
+            // dd($salesOrderProducts);
+        }
+
+        $salesOrderList = app(SalesOrderService::class)->findAllPending();
+
         // TODO: Load customers, warehouses, sales orders, etc.
-        $customers = [];
-        $warehouses = [];
-        $salesOrders = [];
+        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $warehouses = app(WarehouseService::class)->findAll();
+        $products = [];
+        $tags = app(TagService::class)->findAll();
 
         return view('pages.main_transaction.sales_delivery.add', [
             'customers' => $customers,
             'warehouses' => $warehouses,
-            'salesOrders' => $salesOrders,
+            'products' => $products,
+            'tags' => $tags,
+            'salesOrderList' => $salesOrderList,
+            'preselectedSOId' => $preselectedSOId,
+            'salesOrderProducts' => $salesOrderProducts,
         ]);
     }
 
@@ -76,7 +98,7 @@ class SalesDeliveryController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate transaction number: '.$e->getMessage(),
+                'message' => 'Failed to generate transaction number: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -90,38 +112,69 @@ class SalesDeliveryController extends Controller
 
         try {
             $validated = $request->validate([
-                'delivery_number' => 'required|string|max:255',
-                'customer_id' => 'required|integer',
                 'delivery_date' => 'required|date',
-                'warehouse_id' => 'required|integer',
-                'status' => 'required|string',
-                // TODO: Add more validation rules
+                'delivery_number' => 'required|string|max:255',
+                'delivery_address' => 'required|string|max:500',
+                'customer_reference' => 'nullable|string|max:255',
+                'delivery_notes' => 'nullable|string|max:1000',
+                'memo' => 'nullable|string|max:500',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+                'sales_order_id' => 'nullable|integer|exists:t_sales_orders,id',
+                'customer_id' => 'required|integer|exists:m_contacts,id',
+                'warehouse_id' => 'required|integer|exists:m_warehouses,id',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+                'products' => 'required|array|min:1',
+                'products.*.sales_order_product_id' => 'required|integer|exists:t_sales_order_products,id',
+                'products.*.product_id' => 'required|integer|exists:m_products,id',
+                'products.*.so_qty' => 'required|numeric|min:0',
+                'products.*.delivered_qty_before' => 'required|numeric|min:0',
+                'products.*.remaining_qty_before' => 'required|numeric|min:0',
+                'products.*.delivery_qty' => 'required|numeric|min:0.01',
+                'products.*.note' => 'nullable|string|max:255',
+                'products.*.status' => 'required|string|in:COMPLETED,PARTIAL',
+            ], [], [
+                'delivery_date' => 'Tanggal Pengiriman',
+                'delivery_number' => 'Nomor Pengiriman',
+                'delivery_address' => 'Alamat Pengiriman',
+                'customer_reference' => 'Referensi Pelanggan',
+                'delivery_notes' => 'Catatan Pengiriman',
+                'memo' => 'Memo',
+                'tags' => 'Tag',
+                'tags.*' => 'Tag',
+                'sales_order_id' => 'Sales Order',
+                'customer_id' => 'Pelanggan',
+                'warehouse_id' => 'Gudang',
+                'attachment' => 'Lampiran',
+                'products' => 'Produk',
+                'products.*.sales_order_product_id' => 'ID Produk Sales Order',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.so_qty' => 'Qty Sales Order',
+                'products.*.delivered_qty_before' => 'Qty Sudah Dikirim',
+                'products.*.remaining_qty_before' => 'Qty Sisa',
+                'products.*.delivery_qty' => 'Qty Pengiriman',
+                'products.*.note' => 'Catatan Produk',
+                'products.*.status' => 'Status Pengiriman',
             ]);
 
-            $sales_delivery_id = app(CreateSalesDeliveryAction::class)->execute($validated);
+            app(CreateSalesDeliveryAction::class)->execute($validated);
 
             return response()->json([
-                'success' => true,
-                'message' => 'Sales Delivery berhasil dibuat',
-                'data' => ['id' => $sales_delivery_id],
-            ], 201);
-
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors(),
-            ], 422);
+                'message' => SuccessCodes::CREATE_SALES_DELIVERY_SUCCESS->message(),
+            ], SuccessCodes::CREATE_SALES_DELIVERY_SUCCESS->httpStatus());
         } catch (AppException $e) {
             return response()->json([
-                'success' => false,
                 'message' => $e->getMessage(),
-            ], 400);
-        } catch (\Throwable $e) {
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Exception $e) {
+            DiscordNotifier::reportException($e);
+
             return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem',
-            ], 500);
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
@@ -243,7 +296,6 @@ class SalesDeliveryController extends Controller
                 'success' => true,
                 'message' => 'Sales Delivery berhasil diperbarui',
             ], 200);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -275,7 +327,6 @@ class SalesDeliveryController extends Controller
             $result = app(\App\Domains\SalesDelivery\Services\SalesDeliveryService::class)->findAllDatatable();
 
             return response()->json($result, 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Terjadi kesalahan saat memuat data',

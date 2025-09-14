@@ -89,7 +89,7 @@ class SalesOrderService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name.' as so')
+        $query = DB::table($this->table_name . ' as so')
             ->select(
                 'so.*',
                 'mc.name AS customer_name',
@@ -153,7 +153,7 @@ class SalesOrderService
 
     public function findWithDetails(int $id)
     {
-        $salesOrder = DB::table($this->table_name.' as so')
+        $salesOrder = DB::table($this->table_name . ' as so')
             ->leftJoin('m_contacts as c', 'so.f_customer_id', '=', 'c.id')
             ->leftJoin('m_warehouses as w', 'so.f_warehouse_id', '=', 'w.id')
             ->leftJoin('m_payment_terms as pt', 'so.f_payment_term_id', '=', 'pt.id')
@@ -210,7 +210,22 @@ class SalesOrderService
         return $salesOrder;
     }
 
-    public function findProductLines(int $salesOrderId)
+    public function findAllPending()
+    {
+        $salesOrder = DB::table($this->table_name . ' as so')
+            ->select([
+                'so.*',
+                'c.name as customer',
+            ])
+            ->leftJoin('m_contacts as c', 'so.f_customer_id', '=', 'c.id')
+            ->where('so.status', 'PENDING')
+            ->where('so.company_code', session('user_company_code'))
+            ->get();
+
+        return $salesOrder;
+    }
+
+    public function findProductLines(int $salesOrderId, bool $returnAsJson = false)
     {
         $productLines = DB::table('t_sales_order_products as sop')
             ->leftJoin('m_products as p', 'sop.f_product_id', '=', 'p.id')
@@ -228,10 +243,15 @@ class SalesOrderService
             ->orderBy('sop.id', 'asc')
             ->get();
 
+        if ($returnAsJson === false) {
+            return $productLines->map(function ($item) {
+                return (array) $item;
+            })->toArray();
+        }
+    
+        return $productLines;
         // Convert stdClass objects to arrays for consistency
-        return $productLines->map(function ($item) {
-            return (array) $item;
-        })->toArray();
+
     }
 
     public function delete(int $id): int
@@ -241,4 +261,18 @@ class SalesOrderService
             ->where('company_code', session('user_company_code'))
             ->delete();
     }
+
+    public function updateDeliveredQuantities($so_id, $product_order_product_id, $qty)
+    {
+        return DB::table('t_sales_order_products')
+            ->where('f_sales_order_id', $so_id)
+            ->where('id', $product_order_product_id)
+            ->update([
+                'delivered_qty' => DB::raw('delivered_qty + '.$qty),
+                'remaining_qty' => DB::raw('remaining_qty - '.$qty),
+                'updated_at' => now(),
+                'updated_by' => Auth::id(),
+            ]);
+    }
+
 }

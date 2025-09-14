@@ -5,6 +5,7 @@ namespace App\Domains\SalesDelivery\Actions;
 use App\Domains\Product\Services\ProductService;
 use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
 use App\Domains\SalesDelivery\Services\SalesDeliveryService;
+use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Enums\ActionTypes;
 use App\Services\StockMovementLogService;
 use Illuminate\Support\Facades\Auth;
@@ -15,8 +16,15 @@ class CreateSalesDeliveryAction
 {
     public function execute(array $data)
     {
+        // Handle file upload
+        if (isset($data['attachment']) && $data['attachment'] instanceof \Illuminate\Http\UploadedFile) {
+            $path = $data['attachment']->store('sales_delivery', 'public');
+            $data['attachment'] = $path;
+        }
         return DB::transaction(function () use ($data) {
             $sales_delivery_id = app(SalesDeliveryService::class)->create($data);
+
+            app(SalesDeliveryService::class)->createDeliveryProducts($sales_delivery_id, $data['products']);
 
             // Process products for stock movement
             if (isset($data['products']) && is_array($data['products'])) {
@@ -27,7 +35,7 @@ class CreateSalesDeliveryAction
 
                     $productId = $product['product_id'];
                     $deliveryQty = $product['delivery_qty'];
-                    $warehouseId = $data['warehouse_id'] ?? 1; // Default warehouse if not specified
+                    $warehouseId = $data['warehouse_id'];
 
                     // Update product stock (decrease)
                     app(ProductService::class)->updateStock($productId, '-', $deliveryQty);
@@ -40,9 +48,11 @@ class CreateSalesDeliveryAction
                         'SALES_DELIVERY',
                         $data['delivery_number'] ?? 'Unknown',
                         $deliveryQty,
-                        'Sales Delivery: '.($data['delivery_number'] ?? 'Unknown'),
+                        'Sales Delivery: ' . ($data['delivery_number'] ?? 'Unknown'),
                         $data['delivery_date'] ?? now()
                     );
+
+                    app(SalesOrderService::class)->updateDeliveredQuantities($data['sales_order_id'], $product['sales_order_product_id'], $deliveryQty);
 
                     // Consume stock batches (FIFO)
                     $this->consumeStockBatches($productId, $deliveryQty, $sales_delivery_id);
@@ -111,7 +121,7 @@ class CreateSalesDeliveryAction
                 'f_source_transaction_id' => $salesDeliveryId,
                 'transaction_date' => now(),
                 'qty_moved' => $consumeFromThisBatch,
-                'reference_code' => 'SD-'.$salesDeliveryId,
+                'reference_code' => 'SD-' . $salesDeliveryId,
                 'notes' => 'Stock consumed by Sales Delivery',
                 'created_at' => now(),
                 'created_by' => Auth::id(),
