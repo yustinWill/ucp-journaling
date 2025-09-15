@@ -61,7 +61,7 @@
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        {{-- <div class="d-flex gap-2">
                             @if($canImportSalesInvoice)
                                 <a href="{{ route('main_transaction.sales_invoice.import') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -72,7 +72,7 @@
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                             @endif
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
