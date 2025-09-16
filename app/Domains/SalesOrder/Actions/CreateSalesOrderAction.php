@@ -54,8 +54,7 @@ class CreateSalesOrderAction
                 'f_product_id' => $product['product_id'],
                 'quantity' => $product['quantity'],
                 'unit_price' => $this->parsePrice($product['unit_price']),
-                'f_tax_id' => $product['tax_id'] ?? null,
-                'tax_amount' => $product['tax_amount'] ?? 0,
+                // Tax fields removed - handled at invoice level
                 'line_total' => $this->parsePrice($product['total']),
                 'description' => $product['description'] ?? null,
                 'created_at' => now(),

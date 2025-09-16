@@ -13,12 +13,27 @@
                 <div class="col-md-4">
                     <!-- Show buttons directly -->
                     <div class="d-flex gap-2 justify-content-end">
+                        {{-- Future: Invoice Settlement Button - will redirect to settlement page for payment processing --}}
+                        @if(in_array($invoice_data->status, ['DRAFT', 'PENDING', 'APPROVED']))
+                            <button type="button" class="btn btn-info btn-md waves-effect waves-light" onclick="alert('Feature coming soon: Invoice Settlement')">
+                                <i class="icon-base ti tabler-credit-card me-2"></i>
+                                Settle Invoice
+                            </button>
+                        @endif
+                        
                         <button type="button" class="btn btn-primary btn-md waves-effect waves-light" onclick="window.print()">
                             <i class="icon-base ti tabler-printer me-2"></i>Print
                         </button>
+                        
                         @if($canEditSalesInvoice)
                             <a href="{{ route('main_transaction.sales_invoice.edit', $invoice_data->id) }}" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-edit me-2"></i>Edit
+                            </a>
+                        @endif
+                        
+                        @if(in_array($invoice_data->status, ['PAID', 'UNPAID', 'PARTIAL_PAID']))
+                            <a href="{{ route('main_transaction.return_management.add') }}?return_type=SALES_RETURN&source_invoice_id={{ $invoice_data->id }}" class="btn btn-warning btn-md waves-effect waves-light">
+                                <i class="icon-base ti tabler-arrow-back-up me-2"></i>Return
                             </a>
                         @endif
                     </div>
@@ -78,152 +93,214 @@
                                     <hr class="mx-n6">
                                 </div>
 
-                        <!-- Row 1: Customer and SO Reference -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Customer</label>
-                                <input type="text" class="form-control" value="{{ $invoice_data->customer_name }}" disabled />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Referensi SO</label>
-                                <input type="text" class="form-control" value="{{ $invoice_data->so_reference }}" disabled />
-                            </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Sales Order</label>
+                            @if($canViewSalesOrder && $invoice_data->so_id)
+                                <div class="input-group">
+                                    <input type="text" class="form-control" value="{{ $invoice_data->so_reference ?? '-' }}" disabled />
+                                    <a href="{{ route('main_transaction.sales_order.detail', $invoice_data->so_id) }}" class="btn btn-outline-primary" title="Lihat Detail SO">
+                                        <i class="icon-base ti tabler-external-link"></i>
+                                    </a>
+                                </div>
+                            @else
+                                <input type="text" class="form-control" value="{{ $invoice_data->so_reference ?? '-' }}" disabled />
+                            @endif
                         </div>
-
-                        <!-- Row 2: Email and Address -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Email Customer</label>
-                                <input type="text" class="form-control" value="{{ $invoice_data->customer_email ?? '-' }}" disabled />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Alamat Customer</label>
-                                <textarea class="form-control" rows="2" disabled>{{ $invoice_data->customer_address ?? '-' }}</textarea>
-                            </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Customer</label>
+                            <input type="text" class="form-control" value="{{ $invoice_data->customer_name ?? '-' }}" disabled />
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Customer</label>
+                            <input type="text" class="form-control" value="{{ $invoice_data->customer_email ?? '-' }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Alamat Customer</label>
+                            <textarea class="form-control" rows="2" disabled>{{ $invoice_data->customer_address ?? '-' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status SO</label>
+                            <input type="text" class="form-control" value="{{ $invoice_data->so_status ?? '-' }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal SO</label>
+                            <input type="text" class="form-control" value="{{ $invoice_data->so_date ? date('d/m/Y', strtotime($invoice_data->so_date)) : '-' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Grand Total SO</label>
+                            <input type="text" class="form-control" value="{{ $invoice_data->so_grand_total ? 'Rp ' . number_format($invoice_data->so_grand_total, 0, ',', '.') : '-' }}" disabled />
+                        </div>
+                    </div>
 
-                        <!-- Invoice Details Section -->
+                    <!-- Informasi Invoice Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Invoice</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Transaksi</label>
+                            <input type="text" class="form-control" value="{{ $invoice_data->transaction_date ? date('d/m/Y', strtotime($invoice_data->transaction_date)) : '-' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Jatuh Tempo</label>
+                            <input type="text" class="form-control" value="{{ $invoice_data->due_date ? date('d/m/Y', strtotime($invoice_data->due_date)) : '-' }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Termin Pembayaran</label>
+                            <input type="text" class="form-control" value="{{ $invoice_data->payment_term_name ?? $invoice_data->payment_terms ?? '-' }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            @php
+                                $statusClass = '';
+                                switch($invoice_data->status) {
+                                    case 'DRAFT':
+                                        $statusClass = 'bg-label-secondary';
+                                        break;
+                                    case 'UNPAID':
+                                        $statusClass = 'bg-label-warning';
+                                        break;
+                                    case 'PAID':
+                                        $statusClass = 'bg-label-success';
+                                        break;
+                                    case 'PARTIAL_PAID':
+                                        $statusClass = 'bg-label-info';
+                                        break;
+                                    case 'OVERDUE':
+                                        $statusClass = 'bg-label-danger';
+                                        break;
+                                    case 'CANCELLED':
+                                        $statusClass = 'bg-label-dark';
+                                        break;
+                                    default:
+                                        $statusClass = 'bg-label-secondary';
+                                }
+                            @endphp
+                            <span class="badge {{ $statusClass }} fs-6 py-2 px-3">{{ $invoice_data->status }}</span>
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Keterangan</label>
+                            <textarea class="form-control" rows="3" disabled>{{ $invoice_data->description ?? '-' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Financial Information Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Keuangan</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Subtotal</label>
+                            <input type="text" class="form-control" value="Rp {{ number_format($invoice_data->subtotal ?? 0, 0, ',', '.') }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Total Pajak</label>
+                            <input type="text" class="form-control" value="Rp {{ number_format($invoice_data->total_tax ?? 0, 0, ',', '.') }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Total Discount</label>
+                            <input type="text" class="form-control" value="Rp {{ number_format($invoice_data->total_discount ?? 0, 0, ',', '.') }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Grand Total</label>
+                            <input type="text" class="form-control fw-bold text-primary" value="Rp {{ number_format($invoice_data->grand_total ?? 0, 0, ',', '.') }}" disabled />
+                        </div>
+                    </div>
+
+                    <!-- Additional Information Section -->
+                    <div class="section-header mt-12">
+                        <h6>Informasi Tambahan</h6>
+                        <hr class="mx-n6">
+                    </div>
+
+                        <!-- Return Information Section -->
+                        @if($returnData)
                         <div class="section-header mt-12">
-                            <h6>Detail Invoice</h6>
+                            <h6>Informasi Return</h6>
                             <hr class="mx-n6">
                         </div>
-
-                        <!-- Row 1: Dates -->
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label">Tanggal Transaksi</label>
-                                <input type="text" class="form-control" value="{{ $invoice_data->transaction_date }}" disabled />
+                                <label class="form-label">No Return</label>
+                                @if($canViewReturnManagement)
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" value="{{ $returnData->transaction_code }}" disabled />
+                                        <a href="{{ route('main_transaction.return_management.detail', $returnData->id) }}" class="btn btn-outline-primary" title="Lihat Detail Return">
+                                            <i class="icon-base ti tabler-external-link"></i>
+                                        </a>
+                                    </div>
+                                @else
+                                    <input type="text" class="form-control" value="{{ $returnData->transaction_code }}" disabled />
+                                @endif
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Tanggal Jatuh Tempo</label>
-                                <input type="text" class="form-control" value="{{ $invoice_data->due_date }}" disabled />
+                                <label class="form-label">Tanggal Return</label>
+                                <input type="text" class="form-control" value="{{ \Carbon\Carbon::parse($returnData->return_date)->format('d/m/Y') }}" disabled />
                             </div>
                         </div>
-
-                        <!-- Row 2: Payment Terms and Status -->
+                        
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label">Syarat Pembayaran</label>
-                                <input type="text" class="form-control" value="{{ $invoice_data->payment_term_name ?? '-' }}" disabled />
+                                <label class="form-label">Total Return</label>
+                                <input type="text" class="form-control" value="Rp {{ number_format($returnData->grand_total, 0, ',', '.') }}" disabled />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">Status Return</label>
                                 @php
-                                    $statusClass = 'secondary';
-                                    $statusText = $invoice_data->status;
-                                    switch($invoice_data->status) {
-                                        case 'DRAFT': $statusClass = 'secondary'; $statusText = 'Draft'; break;
-                                        case 'UNPAID': $statusClass = 'warning'; $statusText = 'Belum Dibayar'; break;
-                                        case 'PAID': $statusClass = 'success'; $statusText = 'Lunas'; break;
-                                        case 'PARTIAL_PAID': $statusClass = 'info'; $statusText = 'Sebagian Dibayar'; break;
-                                        case 'OVERDUE': $statusClass = 'danger'; $statusText = 'Jatuh Tempo'; break;
-                                        case 'CANCELLED': $statusClass = 'dark'; $statusText = 'Dibatalkan'; break;
-                                    }
+                                    $badgeClass = match($returnData->status) {
+                                        'DRAFT' => 'bg-label-secondary',
+                                        'PENDING_APPROVAL' => 'bg-label-warning',
+                                        'APPROVED' => 'bg-label-success',
+                                        'PROCESSED' => 'bg-label-info',
+                                        'REJECTED' => 'bg-label-danger',
+                                        default => 'bg-label-secondary'
+                                    };
                                 @endphp
-                                <div>
-                                    <span class="badge bg-label-{{ $statusClass }} fs-6 px-3 py-2">{{ $statusText }}</span>
+                                <div class="form-control bg-light">
+                                    <span class="badge {{ $badgeClass }}">{{ $returnData->status }}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Row 3: Description -->
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label">Keterangan</label>
-                                <textarea class="form-control" rows="3" disabled>{{ $invoice_data->description ?? '-' }}</textarea>
-                            </div>
-                        </div>
-
-                        <!-- Informasi Keuangan Section -->
-                        <div class="section-header mt-12">
-                            <h6>Informasi Keuangan</h6>
-                            <hr class="mx-n6">
-                        </div>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Subtotal</label>
-                                <input type="text" class="form-control" value="Rp {{ number_format($invoice_data->subtotal ?? 0, 0, ',', '.') }}" disabled />
+                                <label class="form-label">Alasan Return</label>
+                                <input type="text" class="form-control" value="{{ $returnData->return_reason }}" disabled />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Total Pajak</label>
-                                <input type="text" class="form-control" value="Rp {{ number_format($invoice_data->total_tax ?? 0, 0, ',', '.') }}" disabled />
-                            </div>
-                        </div>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Total Diskon</label>
-                                <input type="text" class="form-control" value="Rp {{ number_format($invoice_data->total_discount ?? 0, 0, ',', '.') }}" disabled />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Grand Total</label>
-                                <input type="text" class="form-control fw-bold text-primary" value="Rp {{ number_format($invoice_data->grand_total ?? 0, 0, ',', '.') }}" disabled />
-                            </div>
-                        </div>
-
-                        <!-- Informasi Tambahan Section -->
-                        <div class="section-header mt-12">
-                            <h6>Informasi Tambahan</h6>
-                            <hr class="mx-n6">
-                        </div>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Tag</label>
-                                @if($invoice_data->tags)
-                                    @php $tags = json_decode($invoice_data->tags, true); @endphp
-                                    @if($tags && count($tags) > 0)
-                                        <div class="d-flex flex-wrap gap-1">
-                                            @foreach($tags as $tag)
-                                                @if($tag && isset($tag['code']))
-                                                    <span class="badge" style="background-color: {{ $tag['preview'] ?? '#6c757d' }}; color: white;">{{ $tag['code'] }}</span>
-                                                @endif
-                                            @endforeach
-                                        </div>
+                                <label class="form-label">Stock Adjustment</label>
+                                <div class="form-control bg-light">
+                                    @if($returnData->processing_status === 'PROCESSED')
+                                        <span class="badge bg-label-success">Sudah Disesuaikan</span>
                                     @else
-                                        <input type="text" class="form-control" value="-" disabled />
+                                        <span class="badge bg-label-warning">Belum Disesuaikan</span>
                                     @endif
-                                @else
-                                    <input type="text" class="form-control" value="-" disabled />
-                                @endif
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Memo Internal</label>
-                                <textarea class="form-control" rows="3" disabled>{{ $invoice_data->internal_memo ?? '-' }}</textarea>
+                                </div>
                             </div>
                         </div>
+
+                        @if($returnData->return_reason_description)
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Lampiran</label>
-                                @if($invoice_data->attachment)
-                                    <div>
-                                        <a href="{{ $invoice_data->attachment }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                            <i class="icon-base ti tabler-download me-1"></i>Download
-                                        </a>
-                                    </div>
-                                @else
-                                    <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
-                                @endif
+                            <div class="col-md-12">
+                                <label class="form-label">Deskripsi Return</label>
+                                <textarea class="form-control" rows="2" disabled>{{ $returnData->return_reason_description }}</textarea>
                             </div>
                         </div>
+                        @endif
+                        @endif
 
                         <!-- Informasi Sistem Section -->
                         <div class="section-header mt-12">
@@ -237,7 +314,16 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Dibuat Oleh</label>
-                                <input type="text" class="form-control" value="{{ $invoice_data->created_by_name ?? '-' }}" disabled />
+                                @if($canViewUser && $invoice_data->created_by)
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" value="{{ $invoice_data->created_by_name ?? '-' }}" disabled />
+                                        <a href="{{ route('master_data.user.detail', $invoice_data->created_by) }}" class="btn btn-outline-primary" title="Lihat Detail User">
+                                            <i class="icon-base ti tabler-external-link"></i>
+                                        </a>
+                                    </div>
+                                @else
+                                    <input type="text" class="form-control" value="{{ $invoice_data->created_by_name ?? '-' }}" disabled />
+                                @endif
                             </div>
                         </div>
                         @if($invoice_data->updated_at)
@@ -248,7 +334,16 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Diupdate Oleh</label>
-                                <input type="text" class="form-control" value="{{ $invoice_data->updated_by_name ?? '-' }}" disabled />
+                                @if($canViewUser && $invoice_data->updated_by)
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" value="{{ $invoice_data->updated_by_name ?? '-' }}" disabled />
+                                        <a href="{{ route('master_data.user.detail', $invoice_data->updated_by) }}" class="btn btn-outline-primary" title="Lihat Detail User">
+                                            <i class="icon-base ti tabler-external-link"></i>
+                                        </a>
+                                    </div>
+                                @else
+                                    <input type="text" class="form-control" value="{{ $invoice_data->updated_by_name ?? '-' }}" disabled />
+                                @endif
                             </div>
                         </div>
                         @endif
@@ -314,13 +409,14 @@
                             </div>
                         </div>
 
+
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
                             <div class="section-header mt-6">
                                 <h6>Riwayat Perubahan</h6>
                             </div>
 
-                            <div class="table-responsive">
+                            <div class="mx-n6">
                                 <table class="table table-bordered" id="audit-log-table">
                                     <thead>
                                         <tr>
@@ -330,6 +426,41 @@
                                             <th>Deskripsi</th>
                                         </tr>
                                     </thead>
+                                    <tbody>
+                                        @forelse($auditLogs as $log)
+                                            <tr>
+                                                <td>{{ $log->created_at ? date('d/m/Y H:i:s', strtotime($log->created_at)) : '-' }}</td>
+                                                <td>
+                                                    @if($canViewUser && $log->user_id)
+                                                        <a href="{{ route('master_data.user.detail', $log->user_id) }}" class="text-primary fw-semibold">
+                                                            {{ $log->user_name ?? 'System' }}
+                                                        </a>
+                                                    @else
+                                                        {{ $log->user_name ?? 'System' }}
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($log->action_type === 'CREATE')
+                                                        <span class="badge bg-label-success">CREATE</span>
+                                                    @elseif($log->action_type === 'UPDATE')
+                                                        <span class="badge bg-label-warning">UPDATE</span>
+                                                    @elseif($log->action_type === 'DELETE')
+                                                        <span class="badge bg-label-danger">DELETE</span>
+                                                    @else
+                                                        <span class="badge bg-label-info">{{ $log->action_type }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $log->description ?? '-' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-4">
+                                                    <i class="icon-base ti tabler-history me-2"></i>
+                                                    Belum ada riwayat perubahan
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -342,56 +473,9 @@
 
 @section('js_script')
 <script>
-$(document).ready(function() {
-    // Initialize audit log DataTable to match PO pattern
+$(function() {
+    // Audit Log DataTable
     $('#audit-log-table').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: '{{ route("main_transaction.sales_invoice.auditLogDataTable", $invoice_data->id) }}',
-        },
-        columns: [
-            {
-                data: 'created_at',
-                name: 'created_at',
-                render: function(data) {
-                    return moment(data).format('DD/MM/YYYY HH:mm');
-                }
-            },
-            {
-                data: 'user_name',
-                name: 'user_name',
-                render: function(data) {
-                    return data || '-';
-                }
-            },
-            {
-                data: 'action_type',
-                name: 'action_type',
-                render: function(data) {
-                    let badgeClass = 'bg-label-secondary';
-                    switch(data) {
-                        case 'CREATE':
-                            badgeClass = 'bg-label-success';
-                            break;
-                        case 'UPDATE':
-                            badgeClass = 'bg-label-warning';
-                            break;
-                        case 'DELETE':
-                            badgeClass = 'bg-label-danger';
-                            break;
-                    }
-                    return '<span class="badge ' + badgeClass + '">' + data + '</span>';
-                }
-            },
-            {
-                data: 'description',
-                name: 'description',
-                render: function(data) {
-                    return data || '-';
-                }
-            }
-        ],
         orderCellsTop: true,
         order: [[0, 'desc']], // Sort by date descending
         searching: false,

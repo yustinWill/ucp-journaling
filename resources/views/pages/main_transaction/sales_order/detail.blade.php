@@ -72,6 +72,11 @@
                             <i class="icon-base ti tabler-truck-delivery me-2"></i>
                             <b>Sales Delivery & Invoice</b>
                         </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="return-history-list-item"
+                            data-bs-toggle="list" href="#horizontal-return-history" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-arrow-back-up me-2"></i>
+                            <b>Return History</b>
+                        </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>
@@ -173,11 +178,10 @@
                                     <table class="table table-bordered" id="product-table">
                                         <thead>
                                             <tr>
-                                                <th style="width: 25%;">Produk</th>
-                                                <th style="width: 12%;">Kuantitas</th>
-                                                <th style="width: 10%;">Satuan</th>
-                                                <th style="width: 18%;">Harga Satuan</th>
-                                                <th style="width: 15%;">Pajak</th>
+                                                <th style="width: 30%;">Produk</th>
+                                                <th style="width: 15%;">Kuantitas</th>
+                                                <th style="width: 15%;">Satuan</th>
+                                                <th style="width: 20%;">Harga Satuan</th>
                                                 <th style="width: 20%;">Jumlah</th>
                                             </tr>
                                         </thead>
@@ -198,16 +202,13 @@
                                                         <input type="text" class="form-control text-end" value="Rp {{ number_format($line['unit_price'], 0, ',', '.') }}" disabled />
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control" value="{{ $line['tax_name'] ?? 'Tanpa Pajak' }}" disabled />
-                                                    </td>
-                                                    <td>
                                                         <input type="text" class="form-control text-end" value="Rp {{ number_format($line['line_total'], 0, ',', '.') }}" disabled />
                                                     </td>
                                                 </tr>
                                                 @endforeach
                                             @else
                                                 <tr>
-                                                    <td colspan="6" class="text-center text-muted py-3">Tidak ada produk</td>
+                                                    <td colspan="5" class="text-center text-muted py-3">Tidak ada produk</td>
                                                 </tr>
                                             @endif
                                         </tbody>
@@ -216,7 +217,7 @@
 
                                 <!-- Financial Summary & Additional Information Section -->
                                 <div class="section-header mt-12">
-                                    <h6>Ringkasan & Informasi Tambahan</h6>
+                                    <h6>Informasi Tambahan & Ringkasan</h6>
                                     <hr class="mx-n6">
                                 </div>
 
@@ -264,42 +265,6 @@
                                     <!-- Right Side: Financial Summary -->
                                     <div class="col-md-6">
                                         <div class="summary-section ps-4">
-                                            <div class="row mb-3">
-                                                <div class="col-6">
-                                                    <label class="form-label">Subtotal</label>
-                                                </div>
-                                                <div class="col-6">
-                                                    <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($salesOrder['subtotal'] ?? 0, 0, ',', '.') }}" disabled>
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-3">
-                                                <div class="col-6">
-                                                    <label class="form-label">Total Pajak</label>
-                                                </div>
-                                                <div class="col-6">
-                                                    <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($salesOrder['total_tax'] ?? 0, 0, ',', '.') }}" disabled>
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-3">
-                                                <div class="col-6">
-                                                    <label class="form-label">Total Sebelum Diskon</label>
-                                                </div>
-                                                <div class="col-6">
-                                                    <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($salesOrder['total_price_before_discount'] ?? 0, 0, ',', '.') }}" disabled>
-                                                </div>
-                                            </div>
-
-                                            <div class="row mb-3">
-                                                <div class="col-6">
-                                                    <label class="form-label">Diskon</label>
-                                                </div>
-                                                <div class="col-6">
-                                                    <input type="text" class="form-control readonly-field" dir="rtl" value="Rp {{ number_format($salesOrder['discount'] ?? 0, 0, ',', '.') }}" disabled>
-                                                </div>
-                                            </div>
-
                                             <div class="row mb-3">
                                                 <div class="col-6">
                                                     <label class="form-label"><strong>Grand Total</strong></label>
@@ -437,6 +402,74 @@
                             </div>
                         </div>
 
+                        <!-- Return History Tab -->
+                        <div class="tab-pane fade" id="horizontal-return-history" role="tabpanel">
+                            <div class="section-header mt-12">
+                                <h6>Daftar Sales Return</h6>
+                            </div>
+                            
+                            <div class="mx-n5 my-4">
+                                <table class="table table-bordered" id="sales-return-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 15%;">Tanggal Return</th>
+                                            <th>No Return</th>
+                                            <th>Invoice Terkait</th>
+                                            <th style="width: 15%;" class="text-end">Total Return</th>
+                                            <th style="width: 12%;" class="text-start">Status</th>
+                                            <th style="width: 12%;" class="text-start">Stock Adjustment</th>
+                                            <th style="width: 8%;" class="text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($sales_returns as $return)
+                                        <tr>
+                                            <td>{{ $return['return_date'] }}</td>
+                                            <td>
+                                                @if($canViewReturnManagement)
+                                                    <a href="{{ route('main_transaction.return_management.detail', $return['id']) }}" class="text-primary fw-semibold">
+                                                        {{ $return['transaction_code'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $return['transaction_code'] }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($canViewSalesInvoice && $return['f_source_invoice_id'])
+                                                    <a href="{{ route('main_transaction.sales_invoice.detail', $return['f_source_invoice_id']) }}" class="text-primary fw-semibold">
+                                                        {{ $return['source_invoice_code'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $return['source_invoice_code'] }}
+                                                @endif
+                                            </td>
+                                            <td class="text-end">Rp {{ number_format($return['grand_total'], 0, ',', '.') }}</td>
+                                            <td class="text-start">
+                                                <span class="badge {{ $return['status_badge_class'] }}">{{ $return['status'] }}</span>
+                                            </td>
+                                            <td class="text-start">
+                                                <span class="badge {{ $return['stock_adjustment_status_badge_class'] }}">
+                                                    @if($return['stock_adjustment_status'] === 'ADJUSTED')
+                                                        Sudah Disesuaikan
+                                                    @else
+                                                        Belum Disesuaikan
+                                                    @endif
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($canViewReturnManagement)
+                                                    <a href="{{ route('main_transaction.return_management.detail', $return['id']) }}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                                        <i class="icon-xs icon-base ti tabler-eye"></i>
+                                                    </a>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
                         <div class="section-header mt-6">
@@ -498,6 +531,15 @@ $(document).ready(function() {
     $('#audit-log-table').DataTable({
         orderCellsTop: true,
         order: [[0, 'desc']], // Sort by date descending
+        searching: false,
+        paging: false,
+        info: false
+    });
+
+    // Initialize Sales Return Table
+    $('#sales-return-table').DataTable({
+        orderCellsTop: true,
+        ordering: false,
         searching: false,
         paging: false,
         info: false

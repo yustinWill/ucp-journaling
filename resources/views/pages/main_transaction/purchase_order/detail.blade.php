@@ -123,6 +123,11 @@
                             <i class="icon-base ti tabler-truck-delivery me-2"></i>
                             <b>Purchase Delivery & Invoice</b>
                         </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="return-history-list-item"
+                            data-bs-toggle="list" href="#horizontal-return-history" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-arrow-back-up me-2"></i>
+                            <b>Return History</b>
+                        </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>
@@ -236,7 +241,13 @@
                                                 @foreach($purchaseOrder['product_lines'] as $line)
                                                 <tr>
                                                     <td>
-                                                        <input type="text" class="form-control" value="{{ $line['product_name'] }}" disabled />
+                                                        @if($canViewProduct)
+                                                            <a href="{{ route('master_data.product.detail', $line['product_id']) }}" class="text-primary fw-semibold">
+                                                                <strong>{{ $line['product_name'] }}</strong>
+                                                            </a>
+                                                        @else
+                                                            <input type="text" class="form-control" value="{{ $line['product_name'] }}" disabled />
+                                                        @endif
                                                     </td>
                                                     <td>
                                                         <input type="text" class="form-control" value="{{ number_format($line['quantity'], 0, ',', '.') }}" disabled />
@@ -545,6 +556,74 @@
                             </div>
                         </div>
 
+                        <!-- Return History Tab -->
+                        <div class="tab-pane fade" id="horizontal-return-history" role="tabpanel">
+                            <div class="section-header mt-12">
+                                <h6>Daftar Purchase Return</h6>
+                            </div>
+                            
+                            <div class="mx-n5 my-4">
+                                <table class="table table-bordered" id="purchase-return-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 15%;">Tanggal Return</th>
+                                            <th>No Return</th>
+                                            <th>Invoice Terkait</th>
+                                            <th style="width: 15%;" class="text-end">Total Return</th>
+                                            <th style="width: 12%;" class="text-start">Status</th>
+                                            <th style="width: 12%;" class="text-start">Stock Adjustment</th>
+                                            <th style="width: 8%;" class="text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($purchaseOrder['purchase_returns'] as $return)
+                                        <tr>
+                                            <td>{{ $return['return_date'] }}</td>
+                                            <td>
+                                                @if($canViewReturnManagement)
+                                                    <a href="{{ route('main_transaction.return_management.detail', $return['id']) }}" class="text-primary fw-semibold">
+                                                        {{ $return['transaction_code'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $return['transaction_code'] }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($canViewPurchaseInvoice && $return['f_source_invoice_id'])
+                                                    <a href="{{ route('main_transaction.purchase_invoice.detail', $return['f_source_invoice_id']) }}" class="text-primary fw-semibold">
+                                                        {{ $return['source_invoice_code'] }}
+                                                    </a>
+                                                @else
+                                                    {{ $return['source_invoice_code'] }}
+                                                @endif
+                                            </td>
+                                            <td class="text-end">Rp {{ number_format($return['grand_total'], 0, ',', '.') }}</td>
+                                            <td class="text-start">
+                                                <span class="badge {{ $return['status_badge_class'] }}">{{ $return['status'] }}</span>
+                                            </td>
+                                            <td class="text-start">
+                                                <span class="badge {{ $return['stock_adjustment_status_badge_class'] }}">
+                                                    @if($return['stock_adjustment_status'] === 'ADJUSTED')
+                                                        Sudah Disesuaikan
+                                                    @else
+                                                        Belum Disesuaikan
+                                                    @endif
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($canViewReturnManagement)
+                                                    <a href="{{ route('main_transaction.return_management.detail', $return['id']) }}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                                        <i class="icon-xs icon-base ti tabler-eye"></i>
+                                                    </a>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
                             <div class="section-header mt-6">
@@ -627,6 +706,15 @@
         });
 
         $('#purchase-invoice-table').DataTable({
+            orderCellsTop: true,
+            ordering: false,
+            searching: false,
+            paging: false,
+            info: false
+        });
+
+        // Initialize Purchase Return Table
+        $('#purchase-return-table').DataTable({
             orderCellsTop: true,
             ordering: false,
             searching: false,

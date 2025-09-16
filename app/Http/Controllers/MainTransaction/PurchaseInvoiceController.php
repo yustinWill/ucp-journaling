@@ -9,7 +9,9 @@ use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceAuditLogService;
 use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderService;
+use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\Tag\Services\TagService;
+use App\Domains\Tax\Services\TaxService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
@@ -94,6 +96,9 @@ class PurchaseInvoiceController extends Controller
 
         $availableTags = app(TagService::class)->findAll();
 
+        // Get tax options for discount/tax calculations
+        $taxOptions = app(TaxService::class)->findAllForOptions();
+
         // Permission checks for related data creation
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
@@ -101,6 +106,7 @@ class PurchaseInvoiceController extends Controller
             'purchaseOrder' => $purchaseOrder,
             'purchaseOrderProducts' => $purchaseOrderProducts,
             'availableTags' => $availableTags,
+            'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
             'preselectedPOId' => $preselectedPOId,
         ]);
@@ -201,18 +207,30 @@ class PurchaseInvoiceController extends Controller
         $invoice_products = app(PurchaseInvoiceService::class)->findAllProducts($id);
         $auditLogs = app(PurchaseInvoiceAuditLogService::class)->findAllBasedOnInvoiceId($id);
 
+        // Get return data for this invoice (one invoice can only have one return)
+        $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'PURCHASE_RETURN');
+
+        // Get tax options for discount/tax calculations (for potential edits)
+        $taxOptions = app(TaxService::class)->findAllForOptions();
+
         // Permission checks
         $canEditPurchaseInvoice = PermissionHelper::canWrite('main_transaction_purchase_invoice');
         $canViewUser = PermissionHelper::canRead('master_data_user');
         $canViewPurchaseOrder = PermissionHelper::canRead('main_transaction_purchase_order');
+        $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
+        $canViewProduct = PermissionHelper::canRead('master_data_product');
 
         return view('pages.main_transaction.purchase_invoice.detail', [
             'invoice_data' => $invoice_data,
             'invoice_products' => $invoice_products,
             'auditLogs' => $auditLogs,
+            'returnData' => $returnData,
+            'taxOptions' => $taxOptions,
             'canEditPurchaseInvoice' => $canEditPurchaseInvoice,
             'canViewUser' => $canViewUser,
             'canViewPurchaseOrder' => $canViewPurchaseOrder,
+            'canViewReturnManagement' => $canViewReturnManagement,
+            'canViewProduct' => $canViewProduct,
         ]);
     }
 
@@ -266,6 +284,9 @@ class PurchaseInvoiceController extends Controller
         $invoice_products = app(PurchaseInvoiceService::class)->findAllProducts($id);
         $availableTags = app(TagService::class)->findAll();
 
+        // Get tax options for discount/tax calculations
+        $taxOptions = app(TaxService::class)->findAllForOptions();
+
         // Permission checks for related data creation
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
@@ -273,6 +294,7 @@ class PurchaseInvoiceController extends Controller
             'invoice_data' => $invoice_data,
             'invoice_products' => $invoice_products,
             'availableTags' => $availableTags,
+            'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
         ]);
     }

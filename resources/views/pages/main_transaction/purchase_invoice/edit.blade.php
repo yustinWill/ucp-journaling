@@ -17,14 +17,14 @@
             <hr class="mx-n6">
         </div>
 
-        <!-- Row 1: Tanggal Invoice, Nomor Invoice -->
+        <!-- Row 1: Tanggal Transaksi, Nomor Transaksi -->
         <div class="row g-3 mb-4">
             <div class="col-md-6">
-                <label class="form-label">Tanggal Invoice <span style="color: red;">*</span></label>
+                <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
                 <input type="date" class="form-control global-single-date-picker" id="invoice-date" name="invoice_date" value="{{ $invoice_data->invoice_date }}" required />
             </div>
             <div class="col-md-6">
-                <label class="form-label">Nomor Invoice <span style="color: red;">*</span></label>
+                <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
                 <input type="text" class="form-control" name="invoice_number" value="{{ $invoice_data->transaction_code }}" required />
             </div>
         </div>

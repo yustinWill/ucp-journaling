@@ -12,10 +12,25 @@
                 </div>
                 <div class="col-md-4">
                     <div class="d-flex gap-2 justify-content-end">
+                        {{-- Future: Invoice Settlement Button - will redirect to settlement page for payment processing --}}
+                        @if(in_array($invoice_data->status, ['DRAFT', 'PENDING', 'APPROVED']))
+                            <button type="button" class="btn btn-info btn-md waves-effect waves-light" onclick="alert('Feature coming soon: Invoice Settlement')">
+                                <i class="icon-base ti tabler-credit-card me-2"></i>
+                                Settle Invoice
+                            </button>
+                        @endif
+                        
                         @if($canEditPurchaseInvoice)
                             <a href="{{ route('main_transaction.purchase_invoice.edit', $invoice_data->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-edit me-2"></i>
                                 Edit
+                            </a>
+                        @endif
+                        
+                        @if(in_array($invoice_data->status, ['PAID', 'UNPAID', 'PARTIAL_PAID']))
+                            <a href="{{ route('main_transaction.return_management.add') }}?return_type=PURCHASE_RETURN&source_invoice_id={{ $invoice_data->id }}" class="btn btn-warning btn-md waves-effect waves-light">
+                                <i class="icon-base ti tabler-arrow-back-up me-2"></i>
+                                Return
                             </a>
                         @endif
                     </div>
@@ -203,9 +218,85 @@
 
                     <!-- Additional Information Section -->
                     <div class="section-header mt-12">
-                        <h6>Informasi Tambahan</h6>
+                        <h6>Informasi Tambahan & Ringkasan</h6>
                         <hr class="mx-n6">
                     </div>
+
+                    <!-- Return Information Section -->
+                    @if($returnData)
+                    <div class="section-header mt-12">
+                        <h6>Informasi Return</h6>
+                        <hr class="mx-n6">
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">No Return</label>
+                            @if($canViewReturnManagement)
+                                <div class="input-group">
+                                    <input type="text" class="form-control" value="{{ $returnData->transaction_code }}" disabled />
+                                    <a href="{{ route('main_transaction.return_management.detail', $returnData->id) }}" class="btn btn-outline-primary" title="Lihat Detail Return">
+                                        <i class="icon-base ti tabler-external-link"></i>
+                                    </a>
+                                </div>
+                            @else
+                                <input type="text" class="form-control" value="{{ $returnData->transaction_code }}" disabled />
+                            @endif
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tanggal Return</label>
+                            <input type="text" class="form-control" value="{{ \Carbon\Carbon::parse($returnData->return_date)->format('d/m/Y') }}" disabled />
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Total Return</label>
+                            <input type="text" class="form-control" value="Rp {{ number_format($returnData->grand_total, 0, ',', '.') }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status Return</label>
+                            @php
+                                $badgeClass = match($returnData->status) {
+                                    'DRAFT' => 'bg-label-secondary',
+                                    'PENDING_APPROVAL' => 'bg-label-warning',
+                                    'APPROVED' => 'bg-label-success',
+                                    'PROCESSED' => 'bg-label-info',
+                                    'REJECTED' => 'bg-label-danger',
+                                    default => 'bg-label-secondary'
+                                };
+                            @endphp
+                            <div class="form-control bg-light">
+                                <span class="badge {{ $badgeClass }}">{{ $returnData->status }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Alasan Return</label>
+                            <input type="text" class="form-control" value="{{ $returnData->return_reason }}" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Stock Adjustment</label>
+                            <div class="form-control bg-light">
+                                @if($returnData->processing_status === 'PROCESSED')
+                                    <span class="badge bg-label-success">Sudah Disesuaikan</span>
+                                @else
+                                    <span class="badge bg-label-warning">Belum Disesuaikan</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    @if($returnData->return_reason_description)
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label">Deskripsi Return</label>
+                            <textarea class="form-control" rows="2" disabled>{{ $returnData->return_reason_description }}</textarea>
+                        </div>
+                    </div>
+                    @endif
+                    @endif
 
                     <!-- System Information Section -->
                     <div class="section-header mt-12">
@@ -279,7 +370,15 @@
                             <tbody>
                                 @forelse($invoice_products as $product)
                                     <tr>
-                                        <td>{{ $product->product_code ?? '' }} - {{ $product->product_name ?? '' }}</td>
+                                        <td>
+                                            @if($canViewProduct)
+                                                <a href="{{ route('master_data.product.detail', $product->f_product_id) }}" class="text-primary fw-semibold">
+                                                    <strong>{{ $product->product_code ?? '' }} - {{ $product->product_name ?? '' }}</strong>
+                                                </a>
+                                            @else
+                                                {{ $product->product_code ?? '' }} - {{ $product->product_name ?? '' }}
+                                            @endif
+                                        </td>
                                         <td>{{ $product->ordered_qty ?? 0 }} {{ $product->unit_name ?? '' }}</td>
                                         <td>{{ $product->qty ?? 0 }} {{ $product->unit_name ?? '' }}</td>
                                         <td>{{ number_format($product->unit_price ?? 0, 0, ',', '.') }}</td>
@@ -310,6 +409,7 @@
                         </div>
                     </div>
                         </div>
+
 
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
@@ -374,6 +474,7 @@
 @section('js_script')
 <script>
 $(function() {
+    // Audit Log DataTable
     $('#audit-log-table').DataTable({
         orderCellsTop: true,
         order: [[0, 'desc']], // Sort by date descending

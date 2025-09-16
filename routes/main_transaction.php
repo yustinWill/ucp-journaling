@@ -9,6 +9,7 @@ use App\Http\Controllers\MainTransaction\PurchaseController;
 use App\Http\Controllers\MainTransaction\PurchaseDeliveryController;
 use App\Http\Controllers\MainTransaction\PurchaseInvoiceController;
 use App\Http\Controllers\MainTransaction\PurchaseOrderController;
+use App\Http\Controllers\MainTransaction\ReturnManagementController;
 use App\Http\Controllers\MainTransaction\SalesDeliveryController;
 use App\Http\Controllers\MainTransaction\SalesInvoiceController;
 use App\Http\Controllers\MainTransaction\SalesOrderController;
@@ -28,8 +29,9 @@ $credit_memo_segment = '/credit_memo';
 $expense_segment = '/expense';
 $stock_adjustment_segment = '/stock_adjustment';
 $production_segment = '/production';
+$return_management_segment = '/return_management';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $return_management_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment.$journal_segment.'/index', 'index')->name('main_transaction.journal.index');
         Route::get($base_segment.$journal_segment.'/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table');
@@ -272,5 +274,21 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         // Action Routes for production management
         Route::post($base_segment.$production_segment.'/complete/{id}', 'complete')->name('main_transaction.production.complete');
         Route::post($base_segment.$production_segment.'/cancel/{id}', 'cancel')->name('main_transaction.production.cancel');
+    });
+
+    // Return Management Routes
+    Route::controller(ReturnManagementController::class)->group(function () use ($base_segment, $return_management_segment) {
+        Route::get($base_segment.$return_management_segment.'/index', 'index')->name('main_transaction.return_management.index');
+        Route::get($base_segment.$return_management_segment.'/index_data_table', 'index_data_table')->name('main_transaction.return_management.index_data_table');
+        Route::get($base_segment.$return_management_segment.'/add', 'add')->name('main_transaction.return_management.add');
+        Route::post($base_segment.$return_management_segment.'/store', 'store')->name('main_transaction.return_management.store');
+        Route::get($base_segment.$return_management_segment.'/detail/{id}', 'detail')->name('main_transaction.return_management.detail');
+        Route::get($base_segment.$return_management_segment.'/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.return_management.audit_log_data_table');
+        Route::get($base_segment.$return_management_segment.'/edit/{id}', 'edit')->name('main_transaction.return_management.edit');
+        Route::post($base_segment.$return_management_segment.'/update', 'update')->name('main_transaction.return_management.update');
+        
+        // API endpoints
+        Route::get($base_segment.$return_management_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.return_management.generate_transaction_number');
+        Route::get($base_segment.$return_management_segment.'/get_invoice_products', 'getInvoiceProducts')->name('main_transaction.return_management.get_invoice_products');
     });
 });

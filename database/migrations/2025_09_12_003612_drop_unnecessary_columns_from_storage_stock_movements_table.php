@@ -11,10 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('t_storage_stock_movements', function (Blueprint $table) {
-            // Drop the unnecessary columns for simplified stock movement tracking
-            $table->dropColumn(['unit_hpp', 'total_value', 'f_consumed_batch_ids']);
-        });
+        // Check if table exists before attempting to modify it
+        if (Schema::hasTable('t_storage_stock_movements')) {
+            Schema::table('t_storage_stock_movements', function (Blueprint $table) {
+                // Drop the unnecessary columns for simplified stock movement tracking
+                if (Schema::hasColumn('t_storage_stock_movements', 'unit_hpp')) {
+                    $table->dropColumn('unit_hpp');
+                }
+                if (Schema::hasColumn('t_storage_stock_movements', 'total_value')) {
+                    $table->dropColumn('total_value');
+                }
+                if (Schema::hasColumn('t_storage_stock_movements', 'f_consumed_batch_ids')) {
+                    $table->dropColumn('f_consumed_batch_ids');
+                }
+            });
+        }
     }
 
     /**

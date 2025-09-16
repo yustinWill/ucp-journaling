@@ -120,6 +120,12 @@
                 <div data-i18n="Chat">Stock Adjustment</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.return_management.*'])) active @endif">
+            <a href="{{ route('main_transaction.return_management.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-arrow-back-up"></i>
+                <div data-i18n="Chat">Return Management</div>
+            </a>
+        </li>
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Master Data & Operasional</span>
         </li>

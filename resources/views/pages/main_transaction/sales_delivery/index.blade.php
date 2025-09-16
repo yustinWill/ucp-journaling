@@ -112,6 +112,16 @@
                     </thead>
                 </table>
             </div>
+
+            <!-- Information Text (right-aligned at bottom) -->
+            <div class="card-footer">
+                <div class="d-flex justify-content-end">
+                    <small class="text-muted">
+                        <i class="icon-base ti tabler-info-circle me-1"></i>
+                        Sales Delivery dapat dibuat dari halaman detail Sales Order
+                    </small>
+                </div>
+            </div>
         </div>
     </div>
 @stop

@@ -8,6 +8,7 @@ use App\Domains\Product\Services\ProductService;
 use App\Domains\PurchaseDelivery\Services\PurchaseDeliveryService;
 use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceService;
 use App\Domains\PurchaseOrder\Actions\CreatePurchaseOrderAction;
+use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\PurchaseOrder\Actions\UpdatePurchaseOrderAction;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderAuditLogService;
 use App\Domains\PurchaseOrder\Services\PurchaseOrderProductService;
@@ -63,6 +64,38 @@ class PurchaseOrderController extends Controller
         //     default:
         //         return 'bg-label-secondary';
         // }
+    }
+
+    public function get_return_status_design($status)
+    {
+        switch ($status) {
+            case 'DRAFT':
+                return 'bg-label-secondary';
+            case 'PENDING_APPROVAL':
+                return 'bg-label-warning';
+            case 'APPROVED':
+                return 'bg-label-success';
+            case 'PROCESSED':
+                return 'bg-label-info';
+            case 'REJECTED':
+                return 'bg-label-danger';
+            case 'CANCELLED':
+                return 'bg-label-dark';
+            default:
+                return 'bg-label-secondary';
+        }
+    }
+
+    public function get_stock_adjustment_status_design($status)
+    {
+        switch ($status) {
+            case 'NOT_ADJUSTED':
+                return 'bg-label-warning';
+            case 'ADJUSTED':
+                return 'bg-label-success';
+            default:
+                return 'bg-label-secondary';
+        }
     }
 
     public function index()
@@ -286,6 +319,9 @@ class PurchaseOrderController extends Controller
 
         $purchaseDeliveries = app(PurchaseDeliveryService::class)->findAllHeaderBasedOnPoId($id);
         $purchaseInvoices = app(PurchaseInvoiceService::class)->findAllHeaderBasedOnPoId($id);
+        
+        // Get return data for this PO
+        $purchaseReturns = app(ReturnManagementService::class)->findByPurchaseOrderId($id);
 
         $auditLogs = [];
         foreach ($audit_logs as $log) {
@@ -301,6 +337,7 @@ class PurchaseOrderController extends Controller
         $product_lines = [];
         foreach ($po_products as $prod) {
             $product_lines[] = [
+                'product_id' => $prod->f_product_id,
                 'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'description' => '',
                 'quantity' => $prod->qty,
@@ -314,7 +351,7 @@ class PurchaseOrderController extends Controller
         $product_delivery_summary = [];
         foreach ($po_products as $prod) {
             $product_delivery_summary[] = [
-                'product_id' => $prod->id,
+                'product_id' => $prod->f_product_id,
                 'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'total_qty' => $prod->qty,
                 'qty_delivered' => $prod->delivered_qty,
@@ -348,6 +385,24 @@ class PurchaseOrderController extends Controller
                 'created_by' => $row->created_by_name,
                 'created_by_id' => $row->created_by,
                 'tags' => json_decode($row->tags),
+            ];
+        }
+
+        $purchase_returns = [];
+        foreach ($purchaseReturns as $return) {
+            $purchase_returns[] = [
+                'id' => $return->id,
+                'return_date' => $return->return_date,
+                'transaction_code' => $return->transaction_code,
+                'source_invoice_code' => $return->source_invoice_code,
+                'grand_total' => $return->grand_total,
+                'status' => $return->status,
+                'status_badge_class' => $this->get_return_status_design($return->status),
+                'stock_adjustment_status' => $return->stock_adjustment_status,
+                'stock_adjustment_status_badge_class' => $this->get_stock_adjustment_status_design($return->stock_adjustment_status),
+                'created_by' => $return->created_by_name,
+                'created_by_id' => $return->created_by,
+                'f_source_invoice_id' => $return->f_source_invoice_id,
             ];
         }
 
@@ -393,6 +448,7 @@ class PurchaseOrderController extends Controller
             'delivery_summary' => $product_delivery_summary,
             'purchase_deliveries' => $purchase_deliveries,
             'purchase_invoices' => $purchase_invoices,
+            'purchase_returns' => $purchase_returns,
         ];
 
         $data = [
@@ -407,6 +463,7 @@ class PurchaseOrderController extends Controller
             'canViewPurchaseInvoice' => PermissionHelper::canRead('main_transaction_purchase_invoice'),
             'canCreatePurchaseDelivery' => PermissionHelper::canWrite('main_transaction_purchase_delivery'),
             'canCreatePurchaseInvoice' => PermissionHelper::canWrite('main_transaction_purchase_invoice'),
+            'canViewReturnManagement' => PermissionHelper::canRead('main_transaction_return_management'),
         ];
 
         return view('pages.main_transaction.purchase_order.detail', array_merge($data, $permissionData));
@@ -488,7 +545,7 @@ class PurchaseOrderController extends Controller
         $product_delivery_summary = [];
         foreach ($po_products as $prod) {
             $product_delivery_summary[] = [
-                'product_id' => $prod->id,
+                'product_id' => $prod->f_product_id,
                 'product_name' => $prod->product_code.' - '.$prod->product_name,
                 'total_qty' => $prod->qty,
                 'qty_delivered' => $prod->delivered_qty,

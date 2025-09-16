@@ -5,13 +5,13 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
 use App\Domains\Product\Services\ProductService;
+use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\SalesOrder\Actions\CreateSalesOrderAction;
 use App\Domains\SalesOrder\Actions\UpdateSalesOrderAction;
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\SalesPerson\Services\SalesPersonService;
 use App\Domains\Tag\Services\TagService;
-use App\Domains\Tax\Services\TaxService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -27,6 +27,38 @@ use Illuminate\Validation\ValidationException;
 
 class SalesOrderController extends Controller
 {
+    public function get_return_status_design($status)
+    {
+        switch ($status) {
+            case 'DRAFT':
+                return 'bg-label-secondary';
+            case 'PENDING_APPROVAL':
+                return 'bg-label-warning';
+            case 'APPROVED':
+                return 'bg-label-success';
+            case 'PROCESSED':
+                return 'bg-label-info';
+            case 'REJECTED':
+                return 'bg-label-danger';
+            case 'CANCELLED':
+                return 'bg-label-dark';
+            default:
+                return 'bg-label-secondary';
+        }
+    }
+
+    public function get_stock_adjustment_status_design($status)
+    {
+        switch ($status) {
+            case 'NOT_ADJUSTED':
+                return 'bg-label-warning';
+            case 'ADJUSTED':
+                return 'bg-label-success';
+            default:
+                return 'bg-label-secondary';
+        }
+    }
+
     public function index()
     {
         // Permission check
@@ -66,7 +98,6 @@ class SalesOrderController extends Controller
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
         $products = app(ProductService::class)->findAll();
-        $taxOptions = app(TaxService::class)->findAll();
         $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
@@ -84,7 +115,6 @@ class SalesOrderController extends Controller
             'paymentTerms' => $paymentTerms,
             'warehouses' => $warehouses,
             'products' => $products,
-            'taxOptions' => $taxOptions,
             'availableTags' => $availableTags,
             'canAddCustomers' => $canAddCustomers,
             'canAddPaymentTerms' => $canAddPaymentTerms,
@@ -212,17 +242,43 @@ class SalesOrderController extends Controller
         // Get audit logs
         $auditLogs = app(SalesOrderAuditLogService::class)->findAllBasedOnSalesOrderId($id);
 
+        // Get return data for this SO
+        $salesReturns = app(ReturnManagementService::class)->findBySalesOrderId($id);
+
+        // Format return data
+        $sales_returns = [];
+        foreach ($salesReturns as $return) {
+            $sales_returns[] = [
+                'id' => $return->id,
+                'return_date' => $return->return_date,
+                'transaction_code' => $return->transaction_code,
+                'source_invoice_code' => $return->source_invoice_code,
+                'grand_total' => $return->grand_total,
+                'status' => $return->status,
+                'status_badge_class' => $this->get_return_status_design($return->status),
+                'stock_adjustment_status' => $return->stock_adjustment_status,
+                'stock_adjustment_status_badge_class' => $this->get_stock_adjustment_status_design($return->stock_adjustment_status),
+                'created_by' => $return->created_by_name,
+                'created_by_id' => $return->created_by,
+                'f_source_invoice_id' => $return->f_source_invoice_id,
+            ];
+        }
+
         // Get permissions
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
 
         return view('pages.main_transaction.sales_order.detail', [
             'salesOrder' => $salesOrder,
             'audit_logs' => $auditLogs,
+            'sales_returns' => $sales_returns,
             'canEdit' => $permissionData['canWrite'],
             'canDelete' => $permissionData['canDelete'],
             'canCreateSalesDelivery' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
             'canCreateSalesInvoice' => PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write'),
             'canViewUser' => PermissionHelper::hasPermission('master_data_user', 'read'),
+            'canViewReturnManagement' => PermissionHelper::hasPermission('main_transaction_return_management', 'read'),
+            'canViewSalesInvoice' => PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read'),
+            'canViewProduct' => PermissionHelper::hasPermission('master_data_product', 'read'),
         ]);
     }
 
@@ -246,7 +302,6 @@ class SalesOrderController extends Controller
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
         $products = app(ProductService::class)->findAll();
-        $taxOptions = app(TaxService::class)->findAll();
         $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
@@ -265,7 +320,6 @@ class SalesOrderController extends Controller
             'paymentTerms' => $paymentTerms,
             'warehouses' => $warehouses,
             'products' => $products,
-            'taxOptions' => $taxOptions,
             'tags' => $availableTags,
             'canAddCustomers' => $canAddCustomers,
             'canAddPaymentTerms' => $canAddPaymentTerms,

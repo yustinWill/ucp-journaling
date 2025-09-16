@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\MainTransaction;
 
 use App\Domains\Contact\Services\ContactService;
+use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\SalesInvoice\Actions\CreateSalesInvoiceAction;
 use App\Domains\SalesInvoice\Actions\UpdateSalesInvoiceAction;
 use App\Domains\SalesInvoice\Services\SalesInvoiceAuditLogService;
 use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use App\Domains\SalesOrder\Services\SalesOrderProductService;
 use App\Domains\Tag\Services\TagService;
+use App\Domains\Tax\Services\TaxService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
@@ -88,12 +90,16 @@ class SalesInvoiceController extends Controller
 
         $availableTags = app(TagService::class)->findAll();
 
+        // Get tax options for discount/tax calculations
+        $taxOptions = app(TaxService::class)->findAllForOptions();
+
         // Permission checks for related data creation
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
         return view('pages.main_transaction.sales_invoice.add', [
             'availableSalesOrders' => $availableSalesOrders,
             'availableTags' => $availableTags,
+            'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
         ]);
     }
@@ -159,18 +165,28 @@ class SalesInvoiceController extends Controller
         $invoice_products = app(SalesInvoiceService::class)->findAllProducts($id);
         $auditLogs = app(SalesInvoiceAuditLogService::class)->findAllBySalesInvoiceId($id);
 
+        // Get return data for this invoice (one invoice can only have one return)
+        $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'SALES_RETURN');
+
+        // Get tax options for discount/tax calculations (for potential edits)
+        $taxOptions = app(TaxService::class)->findAllForOptions();
+
         // Permission checks
         $canEditSalesInvoice = PermissionHelper::canWrite('main_transaction_sales_invoice');
         $canViewUser = PermissionHelper::canRead('master_data_user');
         $canViewSalesOrder = PermissionHelper::canRead('main_transaction_sales_order');
+        $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
 
         return view('pages.main_transaction.sales_invoice.detail', [
             'invoice_data' => $invoice_data,
             'invoice_products' => $invoice_products,
             'auditLogs' => $auditLogs,
+            'returnData' => $returnData,
+            'taxOptions' => $taxOptions,
             'canEditSalesInvoice' => $canEditSalesInvoice,
             'canViewUser' => $canViewUser,
             'canViewSalesOrder' => $canViewSalesOrder,
+            'canViewReturnManagement' => $canViewReturnManagement,
         ]);
     }
 
@@ -201,6 +217,9 @@ class SalesInvoiceController extends Controller
         $invoice_products = app(SalesInvoiceService::class)->findAllProducts($id);
         $availableTags = app(TagService::class)->findAll();
 
+        // Get tax options for discount/tax calculations
+        $taxOptions = app(TaxService::class)->findAllForOptions();
+
         // Permission checks for related data creation
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
@@ -208,6 +227,7 @@ class SalesInvoiceController extends Controller
             'invoice_data' => $invoice_data,
             'invoice_products' => $invoice_products,
             'availableTags' => $availableTags,
+            'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
         ]);
     }
