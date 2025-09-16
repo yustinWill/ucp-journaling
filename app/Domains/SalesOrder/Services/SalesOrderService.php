@@ -230,16 +230,20 @@ class SalesOrderService
         $productLines = DB::table('t_sales_order_products as sop')
             ->leftJoin('m_products as p', 'sop.f_product_id', '=', 'p.id')
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
-            ->leftJoin('m_taxes as t', 'sop.f_tax_id', '=', 't.id')
+            ->leftJoin('t_sales_invoice_products as sip', 'sip.f_sales_order_product_id', '=', 'sop.id')
+            // ->leftJoin('m_taxes as t', 'sop.f_tax_id', '=', 't.id')
             ->where('sop.f_sales_order_id', $salesOrderId)
             ->select([
                 'sop.*',
                 'p.name as product_name',
                 'p.code as product_code',
                 'u.name as unit_name',
-                't.name as tax_name',
-                't.rate as tax_rate',
+                // 't.name as tax_name',
+                // 't.rate as tax_rate',
+                DB::raw('COALESCE(SUM(sip.qty), 0) AS invoiced_qty'),
+                DB::raw('(sop.quantity - COALESCE(SUM(sip.qty), 0)) AS remaining_qty_for_invoice')
             ])
+            ->groupBy('sop.id', 'p.code', 'p.name', 'u.code', 'u.name')
             ->orderBy('sop.id', 'asc')
             ->get();
 

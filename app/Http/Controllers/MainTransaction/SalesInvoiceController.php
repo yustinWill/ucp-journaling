@@ -8,7 +8,7 @@ use App\Domains\SalesInvoice\Actions\CreateSalesInvoiceAction;
 use App\Domains\SalesInvoice\Actions\UpdateSalesInvoiceAction;
 use App\Domains\SalesInvoice\Services\SalesInvoiceAuditLogService;
 use App\Domains\SalesInvoice\Services\SalesInvoiceService;
-use App\Domains\SalesOrder\Services\SalesOrderProductService;
+use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Tax\Services\TaxService;
 use App\Enums\ErrorCodes;
@@ -16,10 +16,8 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
-use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class SalesInvoiceController extends Controller
 {
@@ -84,14 +82,16 @@ class SalesInvoiceController extends Controller
         if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
+        $so_id = $request->query('so_id');
 
         // Get available Sales Orders for invoicing
         $availableSalesOrders = app(SalesInvoiceService::class)->findAvailableForInvoicing();
 
+        // dd($availableSalesOrders);
         $availableTags = app(TagService::class)->findAll();
 
         // Get tax options for discount/tax calculations
-        $taxOptions = app(TaxService::class)->findAllForOptions();
+        // $taxOptions = app(TaxService::class)->findAll();
 
         // Permission checks for related data creation
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
@@ -99,8 +99,9 @@ class SalesInvoiceController extends Controller
         return view('pages.main_transaction.sales_invoice.add', [
             'availableSalesOrders' => $availableSalesOrders,
             'availableTags' => $availableTags,
-            'taxOptions' => $taxOptions,
+            // 'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
+            'so_id' => $so_id,
         ]);
     }
 
@@ -112,34 +113,57 @@ class SalesInvoiceController extends Controller
         }
 
         try {
-            // Use validation from CreateSalesInvoiceAction
-            $validation = app(CreateSalesInvoiceAction::class)->validateSalesInvoiceData($request->all());
+            $validated = $request->validate([
+                'invoice_number' => 'required|string|max:50|unique:t_sales_invoices,transaction_code',
+                'invoice_date' => 'required|date',
+                'transaction_date' => 'required|date',
+                'due_date' => 'required|date',
+                'description' => 'nullable|string|max:255',
+                'memo' => 'nullable|string|max:255',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+                'sales_order_id' => 'required|integer|exists:t_sales_orders,id',
+                'total_amount' => 'required|numeric|min:0',
+                'total_items' => 'required|integer|min:1',
+                'products' => 'required|array|min:1',
+                'products.*.sales_order_product_id' => 'required|integer|exists:t_sales_order_products,id',
+                'products.*.product_id' => 'required|integer|exists:m_products,id',
+                'products.*.po_qty' => 'required|numeric|min:0',
+                'products.*.invoice_qty' => 'required|numeric|min:0.01',
+                'products.*.remaining_qty_before' => 'required|numeric|min:0',
+                'products.*.unit_price' => 'required|numeric|min:0',
+            ], [], [
+                'invoice_number' => 'Nomor Invoice',
+                'invoice_date' => 'Tanggal Invoice',
+                'transaction_date' => 'Tanggal Transaksi',
+                'due_date' => 'Tanggal Jatuh Tempo',
+                'description' => 'Deskripsi',
+                'memo' => 'Memo',
+                'tags' => 'Tag',
+                'tags.*' => 'Tag',
+                'sales_order_id' => 'Sales Order',
+                'total_amount' => 'Total Amount',
+                'total_items' => 'Total Item',
+                'products' => 'Produk',
+                'products.*.sales_order_product_id' => 'ID Produk Sales Order',
+                'products.*.product_id' => 'ID Produk',
+                'products.*.po_qty' => 'Qty PO',
+                'products.*.invoice_qty' => 'Qty Invoice',
+                'products.*.remaining_qty_before' => 'Qty Sisa Sebelum',
+                'products.*.unit_price' => 'Harga Satuan',
+            ]);
 
-            if (! $validation['is_valid']) {
-                return response()->json([
-                    'message' => implode(', ', $validation['errors']),
-                    'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
-                ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
-            }
-
-            $invoiceId = app(CreateSalesInvoiceAction::class)->execute($request->all());
+            app(CreateSalesInvoiceAction::class)->execute($request->all());
 
             return response()->json([
-                'message' => 'Sales Invoice berhasil dibuat',
-                'invoice_id' => $invoiceId,
-            ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
-
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => ValidationHelper::formatErrors($e->errors()),
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+                'message' => SuccessCodes::CREATE_SALES_DELIVERY_SUCCESS->message(),
+            ], SuccessCodes::CREATE_SALES_DELIVERY_SUCCESS->httpStatus());
         } catch (AppException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'error' => $e->getCodeValue(),
             ], $e->getCode());
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             DiscordNotifier::reportException($e);
 
             return response()->json([
@@ -255,7 +279,6 @@ class SalesInvoiceController extends Controller
             return response()->json([
                 'message' => 'Sales Invoice berhasil diperbarui',
             ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
-
         } catch (AppException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -337,7 +360,7 @@ class SalesInvoiceController extends Controller
                     'status' => 'UNPAID',
                 ],
             ],
-            'validation_key' => 'si_validation_'.time(),
+            'validation_key' => 'si_validation_' . time(),
         ];
 
         return response()->json($mockValidationResults);
@@ -367,13 +390,13 @@ class SalesInvoiceController extends Controller
 
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
-        $filename = 'sales_invoices_export_'.date('Y-m-d_H-i-s').'.'.$format;
+        $filename = 'sales_invoices_export_' . date('Y-m-d_H-i-s') . '.' . $format;
 
         return response()->json([
             'success' => true,
             'message' => 'Export berhasil diproses.',
             'filename' => $filename,
-            'download_url' => '/exports/'.$filename,
+            'download_url' => '/exports/' . $filename,
         ]);
     }
 
@@ -386,16 +409,14 @@ class SalesInvoiceController extends Controller
 
         try {
             $soId = $request->input('so_id');
+
             if (! $soId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Sales Order ID diperlukan.',
                 ], 400);
             }
-
-            // This would need to be implemented in SalesOrderProductService
-            // For now, return empty array until the service method is created
-            $products = [];
+            $products = app(SalesOrderService::class)->findProductLines($soId, true);
 
             return response()->json([
                 'success' => true,

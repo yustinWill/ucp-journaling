@@ -97,7 +97,7 @@ class PurchaseInvoiceController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Get tax options for discount/tax calculations
-        $taxOptions = app(TaxService::class)->findAllForOptions();
+        // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks for related data creation
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
@@ -106,7 +106,7 @@ class PurchaseInvoiceController extends Controller
             'purchaseOrder' => $purchaseOrder,
             'purchaseOrderProducts' => $purchaseOrderProducts,
             'availableTags' => $availableTags,
-            'taxOptions' => $taxOptions,
+            // 'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
             'preselectedPOId' => $preselectedPOId,
         ]);

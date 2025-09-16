@@ -8,57 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 class CreateSalesInvoiceAction
 {
-    public function validateSalesInvoiceData(array $data): array
-    {
-        $errors = [];
-
-        // Basic validation
-        if (empty($data['invoice_date'])) {
-            $errors[] = 'Tanggal invoice wajib diisi';
-        }
-
-        if (empty($data['invoice_number'])) {
-            $errors[] = 'Nomor invoice wajib diisi';
-        }
-
-        if (empty($data['sales_order_id'])) {
-            $errors[] = 'Sales Order wajib dipilih';
-        }
-
-        if (empty($data['transaction_date'])) {
-            $errors[] = 'Tanggal transaksi wajib diisi';
-        }
-
-        if (empty($data['due_date'])) {
-            $errors[] = 'Tanggal jatuh tempo wajib diisi';
-        }
-
-        // Validate products
-        if (empty($data['products']) || ! is_array($data['products'])) {
-            $errors[] = 'Minimal satu produk harus diinvoice';
-        } else {
-            $totalAmount = 0;
-            foreach ($data['products'] as $product) {
-                if (isset($product['invoice_qty']) && $product['invoice_qty'] > 0) {
-                    $totalAmount += $product['invoice_qty'] * ($product['unit_price'] ?? 0);
-                }
-            }
-
-            if ($totalAmount <= 0) {
-                $errors[] = 'Total invoice harus lebih dari 0';
-            }
-        }
-
-        return [
-            'is_valid' => empty($errors),
-            'errors' => $errors,
-        ];
-    }
-
     public function execute(array $data)
     {
         return DB::transaction(function () use ($data) {
             // Handle file upload
+            
             if (isset($data['attachment']) && $data['attachment'] instanceof \Illuminate\Http\UploadedFile) {
                 $path = $data['attachment']->store('sales_invoice', 'public');
                 $data['attachment'] = $path;
