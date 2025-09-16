@@ -201,7 +201,7 @@ class SalesInvoiceService
                 'so.grand_price as total',
                 'pt.name as payment_terms',
                 'pt.type as payment_term_type',
-                'pt.day_count as payment_term_days',
+                // 'pt.day_count as payment_term_days',
             ])
             ->leftJoin('m_contacts as c', 'c.id', '=', 'so.f_customer_id')
             ->leftJoin('m_payment_terms as pt', 'pt.id', '=', 'so.f_payment_term_id')
@@ -222,7 +222,7 @@ class SalesInvoiceService
                     'total' => $item->total,
                     'payment_terms' => $item->payment_terms,
                     'payment_term_type' => $item->payment_term_type,
-                    'payment_term_days' => $item->payment_term_days,
+                    // 'payment_term_days' => $item->payment_term_days,
                 ];
             })
             ->toArray();

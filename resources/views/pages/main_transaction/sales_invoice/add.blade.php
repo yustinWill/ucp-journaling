@@ -92,17 +92,18 @@
                 </div>
 
                 <div class="row g-3 mb-4">
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <label class="form-label">Keterangan</label>
-                        <textarea class="form-control" name="description" id="description" rows="4" placeholder="Keterangan tambahan untuk Invoice" maxlength="1000"></textarea>
+                        <textarea class="form-control" name="description" id="description" rows="3" placeholder="Keterangan tambahan untuk Invoice" maxlength="1000"></textarea>
                     </div>
-                </div>
-
-                <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label class="form-label">Internal Memo</label>
                         <textarea class="form-control" name="memo" id="memo" rows="3" placeholder="Memo internal" maxlength="500"></textarea>
                     </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    
                     <div class="col-md-6">
                         <label class="form-label">Tags</label>
                         <select class="form-select global-select2" name="tags[]" id="tags" multiple>
@@ -111,14 +112,15 @@
                             @endforeach
                         </select>
                     </div>
-                </div>
-
-                <div class="row g-3 mb-6">
                     <div class="col-md-6">
                         <label class="form-label">Lampiran</label>
                         <input type="file" class="form-control" name="attachment" id="attachment" accept=".xlsx,.xls,.doc,.docx,.pdf,.png,.jpg,.jpeg,.zip" />
                         <small class="text-muted">Max 10MB. Format: xlsx, xls, doc, docx, pdf, png, jpg, jpeg, zip</small>
                     </div>
+                </div>
+
+                <div class="row g-3 mb-6">
+                    
                 </div>
 
                 <!-- Section 3: Items Invoice -->
