@@ -151,6 +151,8 @@ class SalesInvoiceService
                 'c.name AS customer_name',
                 'so.customer_email as customer_email',
                 'so.customer_address as customer_address',
+                'so.transaction_date AS so_transaction_date',
+                'so.grand_price AS so_grand_price',
                 'pt.code AS payment_term_code',
                 'pt.name AS payment_term_name',
                 'pt.type AS payment_term_type',
@@ -158,7 +160,7 @@ class SalesInvoiceService
                 'w.name AS warehouse_name',
                 'u_created.name as created_by_name',
                 'u_updated.name as updated_by_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags")
             )
             ->leftJoin('t_sales_orders as so', 'so.id', '=', 'si.f_sales_order_id')
             ->leftJoin('m_contacts as c', 'c.id', '=', 'so.f_customer_id')
@@ -264,6 +266,7 @@ class SalesInvoiceService
                 'sop.quantity AS ordered_qty',
                 'sop.unit_price AS price_per_qty',
                 'mp.name AS product_name',
+                'mp.code AS product_code',
                 'mu.code AS unit_code',
                 'mu.name AS unit_name',
             ])

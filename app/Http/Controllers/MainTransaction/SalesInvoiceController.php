@@ -187,13 +187,16 @@ class SalesInvoiceController extends Controller
         }
 
         $invoice_products = app(SalesInvoiceService::class)->findAllProducts($id);
+        // dd($invoice_products);
         $auditLogs = app(SalesInvoiceAuditLogService::class)->findAllBySalesInvoiceId($id);
+
+        // dd($auditLogs);
 
         // Get return data for this invoice (one invoice can only have one return)
         $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'SALES_RETURN');
 
         // Get tax options for discount/tax calculations (for potential edits)
-        $taxOptions = app(TaxService::class)->findAllForOptions();
+        // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks
         $canEditSalesInvoice = PermissionHelper::canWrite('main_transaction_sales_invoice');
@@ -206,7 +209,7 @@ class SalesInvoiceController extends Controller
             'invoice_products' => $invoice_products,
             'auditLogs' => $auditLogs,
             'returnData' => $returnData,
-            'taxOptions' => $taxOptions,
+            // 'taxOptions' => $taxOptions,
             'canEditSalesInvoice' => $canEditSalesInvoice,
             'canViewUser' => $canViewUser,
             'canViewSalesOrder' => $canViewSalesOrder,
