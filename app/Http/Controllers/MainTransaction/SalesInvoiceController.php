@@ -187,10 +187,8 @@ class SalesInvoiceController extends Controller
         }
 
         $invoice_products = app(SalesInvoiceService::class)->findAllProducts($id);
-        // dd($invoice_products);
         $auditLogs = app(SalesInvoiceAuditLogService::class)->findAllBySalesInvoiceId($id);
 
-        // dd($auditLogs);
 
         // Get return data for this invoice (one invoice can only have one return)
         $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'SALES_RETURN');
