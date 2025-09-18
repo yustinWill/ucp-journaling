@@ -211,7 +211,7 @@ class PurchaseInvoiceController extends Controller
         $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'PURCHASE_RETURN');
 
         // Get tax options for discount/tax calculations (for potential edits)
-        $taxOptions = app(TaxService::class)->findAllForOptions();
+        // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks
         $canEditPurchaseInvoice = PermissionHelper::canWrite('main_transaction_purchase_invoice');
@@ -225,7 +225,7 @@ class PurchaseInvoiceController extends Controller
             'invoice_products' => $invoice_products,
             'auditLogs' => $auditLogs,
             'returnData' => $returnData,
-            'taxOptions' => $taxOptions,
+            // 'taxOptions' => $taxOptions,
             'canEditPurchaseInvoice' => $canEditPurchaseInvoice,
             'canViewUser' => $canViewUser,
             'canViewPurchaseOrder' => $canViewPurchaseOrder,
@@ -285,7 +285,7 @@ class PurchaseInvoiceController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Get tax options for discount/tax calculations
-        $taxOptions = app(TaxService::class)->findAllForOptions();
+        // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks for related data creation
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
@@ -294,7 +294,7 @@ class PurchaseInvoiceController extends Controller
             'invoice_data' => $invoice_data,
             'invoice_products' => $invoice_products,
             'availableTags' => $availableTags,
-            'taxOptions' => $taxOptions,
+            // 'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
         ]);
     }
