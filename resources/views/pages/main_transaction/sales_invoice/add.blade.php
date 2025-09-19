@@ -81,7 +81,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Tanggal Invoice <span style="color: red;">*</span></label>
                             <input type="date" class="form-control global-single-date-picker" name="invoice_date"
-                                id="invoice_date" required />
+                                id="invoice_date" value="{{ date('Y-m-d') }}" required />
                         </div>
                     </div>
 
@@ -89,7 +89,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
                             <input type="date" class="form-control global-single-date-picker" name="transaction_date"
-                                id="transaction_date" required />
+                                id="transaction_date" value="{{ date('Y-m-d') }}" required />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Tanggal Jatuh Tempo</label>
@@ -230,10 +230,6 @@
 @section('js_script')
     <script>
         $(document).ready(function() {
-            // Initialize date inputs with today's date
-            const today = new Date().toISOString().split('T')[0];
-            $('#invoice_date').val(today);
-            $('#transaction_date').val(today);
 
             // Generate invoice number
             generateInvoiceNumber();
