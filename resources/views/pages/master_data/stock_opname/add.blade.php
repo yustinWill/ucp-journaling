@@ -21,7 +21,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Opname <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control global-single-date-picker" id="opname-date" />
+                    <input type="date" class="form-control global-single-date-picker" id="opname-date" value="{{ date('Y-m-d') }}" />
                 </div>
             </div>
 
@@ -166,8 +166,6 @@
             const sequence = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
             $('#opname-number').val(`SO-${year}-${sequence}`);
 
-            // Set today's date
-            $('#opname-date').val(today.toISOString().split('T')[0]);
 
             // Clear products table when warehouse changes
             $('#warehouse-select').on('change', function() {

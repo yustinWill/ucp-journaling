@@ -654,7 +654,7 @@ class StockAdjustmentController extends Controller
                 'adjustment_date' => 'required|date',
                 'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,STOCK_OPNAME,PRODUCT_RETURN',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
-                'pic_id' => 'nullable|integer|exists:users,id',
+                'pic_id' => 'nullable|integer|exists:m_contacts,id',
                 // 'status' => 'required|string|in:DRAFT,WAITING_APPROVAL',
                 'description' => 'required|string|max:1000',
                 'memo' => 'nullable|string|max:500',

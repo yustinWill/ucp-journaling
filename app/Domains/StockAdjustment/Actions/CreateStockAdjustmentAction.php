@@ -152,7 +152,10 @@ class CreateStockAdjustmentAction
         $movements = [];
         foreach ($products as $product) {
             if ($product['adjustment_qty'] != 0) {
-                $movementType = $product['adjustment_qty'] > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
+                $rawAdjustmentQty = $product['adjustment_qty'] - $product['stock_before'];
+                $adjustmentQty = abs($rawAdjustmentQty);
+
+                $movementType = $rawAdjustmentQty > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
 
                 $movements[] = [
                     'movement_date' => $mainData['adjustment_date'],
@@ -167,10 +170,10 @@ class CreateStockAdjustmentAction
                     'product_name' => $product['product_name'],
                     'unit' => $product['unit'],
                     'stock_before' => $product['stock_before'],
-                    'movement_qty' => $product['adjustment_qty'],
-                    'stock_after' => $product['stock_before'] + $product['adjustment_qty'],
+                    'movement_qty' => $adjustmentQty,
+                    'stock_after' => $product['stock_before'] + $rawAdjustmentQty,
                     'unit_cost' => $product['unit_cost'] ?? 0,
-                    'total_value' => ($product['adjustment_qty'] * ($product['unit_cost'] ?? 0)),
+                    'total_value' => ($adjustmentQty * ($product['unit_cost'] ?? 0)),
                     'notes' => $product['reason'] ?? $mainData['description'],
                 ];
             }

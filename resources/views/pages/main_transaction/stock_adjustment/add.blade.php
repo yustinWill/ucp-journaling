@@ -261,8 +261,8 @@
                                     <th>Nama Produk</th>
                                     <th>Unit</th>
                                     <th>Stok Sistem</th>
-                                    <th>Qty Adjustment</th>
-                                    <th>Selisih</th>
+                                    <th>Qty Fisik</th>
+                                    <th>QTY Adjustment</th>
                                     <th>Alasan</th>
                                     @if (!isset($header_data['form_type']))
                                         <th>Hapus</th>
@@ -711,7 +711,7 @@
                 let totalValue = 0;
 
                 selectedProducts.forEach(function(product) {
-                    const adjustmentQty = parseInt(product.adjustment_qty) || 0;
+                    const adjustmentQty = parseInt(product.adjustment_qty - product.current_stock) || 0;
                     const unitCost = parseInt(product.unit_cost) || 0;
 
                     if (adjustmentQty !== 0) {
