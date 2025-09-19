@@ -109,11 +109,11 @@
                 <!-- Action Buttons -->
                 <div class="d-flex justify-content-end">
                     <div class="d-flex gap-2">
-                        @if ($canExportProduction)
+                        {{-- @if ($canExportProduction)
                             <a href="{{ route('main_transaction.production.export') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
                                     class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                        @endif
+                        @endif --}}
                         @if ($canAddProduction)
                             <a href="{{ route('main_transaction.production.add') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span

@@ -43,7 +43,7 @@
                     <div class="row g-2">
                         <div class="col">
                             <select class="global-select2 form-select" id="purchase-order-supplier" name="supplier_id"
-                                data-allow-clear="false" required>
+                                data-allow-clear="false" required disabled>
                                 <option value="">Pilih Supplier</option>
                                 @foreach ($suppliers as $supplier)
                                     <option value="{{ $supplier->id }}" @if ($purchaseOrder['supplier_id'] == $supplier->id) selected @endif>
@@ -63,7 +63,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="purchase-order-email" name="email"
+                    <input type="email" class="form-control" id="purchase-order-email" disabled name="email"
                         value="{{ $purchaseOrder['email'] ?? '' }}" placeholder="Email akan otomatis terisi" />
                 </div>
             </div>
@@ -72,7 +72,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Alamat</label>
-                    <textarea class="form-control" id="purchase-order-address" name="address" rows="2"
+                    <textarea class="form-control" id="purchase-order-address" name="address" disabled rows="2"
                         placeholder="Alamat akan otomatis terisi">{{ $purchaseOrder['address'] ?? '' }}</textarea>
                 </div>
                 <div class="col-md-6">
@@ -116,7 +116,7 @@
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Customer <span style="color: red;">*</span></label>
+                    <label class="form-label">Buyer <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
                             <select class="global-select2 form-select" id="purchase-order-customer" name="customer_id"
@@ -858,6 +858,10 @@
                 // Collect form data
                 const formData = new FormData($('#purchase-order-form')[0]);
                 formData.append('id', $('#purchase-order-id').val());
+
+                formData.append('email', $('#purchase-order-email').val());
+                formData.append('address', $('#purchase-order-address').val());
+                formData.append('supplier_id', $('#purchase-order-supplier').val());
                 // const includeTax = $('#include-tax').is(':checked') ? 1 : 0;
                 // formData.append('include_tax', includeTax);
                 // const totalBeforeDiscount = parseCurrency($('#total-before-discount').val());

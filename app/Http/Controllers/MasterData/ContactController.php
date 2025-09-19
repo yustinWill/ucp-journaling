@@ -108,7 +108,7 @@ class ContactController extends Controller
                 'shipping_postal_code' => 'nullable|string|max:5',
                 'payable_account' => 'required|exists:m_coas,code',
                 'receivable_account' => 'required|exists:m_coas,code',
-                'payment_term' => 'required|exists:m_payment_terms,code',
+                'payment_term' => 'nullable|exists:m_payment_terms,code',
                 'tags' => 'nullable|array',
                 'tags.*' => 'nullable|exists:m_tags,id',
 

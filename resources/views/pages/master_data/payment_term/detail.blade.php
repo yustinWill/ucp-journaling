@@ -104,7 +104,7 @@
                             <div class="row g-6">
                                 <div class="col-md-6">
                                     <label class="form-label">Tipe Syarat Pembayaran</label>
-                                    <input type="text" class="form-control" value="{{ $paymentTerm->type == 'net' ? 'Net Payment' : ($paymentTerm->type == 'immediate' ? 'Immediate Payment' : ($paymentTerm->type == 'cod' ? 'Cash on Delivery' : 'Custom Terms')) }}" disabled />
+                                    <input type="text" class="form-control" value="{{ $paymentTerm->type == 'NET' ? 'Net Payment' : ($paymentTerm->type == 'IMMEDIATE' ? 'Immediate Payment' : ($paymentTerm->type == 'COD' ? 'Cash on Delivery' : 'Custom Terms')) }}" disabled />
                                 </div>
                                 <div class="col-md-6">
                                     <!-- Empty for alignment -->

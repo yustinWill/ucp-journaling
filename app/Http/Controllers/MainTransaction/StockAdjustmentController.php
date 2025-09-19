@@ -655,7 +655,7 @@ class StockAdjustmentController extends Controller
             $validated = $request->validate([
                 'adjustment_date' => 'required|date',
                 'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,STOCK_OPNAME',
-                'warehouse_id' => 'required|integer|exists:m_warehouses,id',
+                'warehouse_id' => 'required|integer|exists:m_contacts,id',
                 'pic_id' => 'nullable|integer|exists:users,id',
                 // 'status' => 'required|string|in:DRAFT,WAITING_APPROVAL',
                 'description' => 'required|string|max:1000',
@@ -727,7 +727,7 @@ class StockAdjustmentController extends Controller
                 'adjustment_date' => 'required|date',
                 'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,PRODUCT_RETURN,DAMAGE_LOSS,EXPIRY_DISPOSAL,WAREHOUSE_TRANSFER',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
-                'pic_id' => 'required|integer|exists:users,id',
+                'pic_id' => 'required|integer|exists:m_contacts,id',
                 'status' => 'required|string|in:DRAFT,WAITING_APPROVAL,APPROVED,CANCELLED',
                 'description' => 'required|string|max:1000',
                 'memo' => 'nullable|string|max:500',

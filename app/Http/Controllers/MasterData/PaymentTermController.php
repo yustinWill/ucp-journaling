@@ -105,15 +105,15 @@ class PaymentTermController extends Controller
         }
 
         $statuses = [
-            ['value' => 'active', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'inactive', 'label' => 'INACTIVE - Tidak Aktif'],
+            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
         ];
 
         $types = [
-            ['value' => 'net', 'label' => 'NET - Net Payment'],
-            ['value' => 'immediate', 'label' => 'IMMEDIATE - Immediate Payment'],
-            ['value' => 'cod', 'label' => 'COD - Cash on Delivery'],
-            ['value' => 'custom', 'label' => 'CUSTOM - Custom Terms'],
+            ['value' => 'NET', 'label' => 'NET - Net Payment'],
+            ['value' => 'IMMEDIATE', 'label' => 'IMMEDIATE - Immediate Payment'],
+            ['value' => 'COD', 'label' => 'COD - Cash on Delivery'],
+            ['value' => 'CUSTOM', 'label' => 'CUSTOM - Custom Terms'],
         ];
 
         return view('pages.master_data.payment_term.add', [
@@ -138,9 +138,9 @@ class PaymentTermController extends Controller
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
                 'days' => 'required|integer|min:0',
-                'type' => 'required|in:net,immediate,cod,custom',
-                'status' => 'required|in:active,inactive',
-                'is_default' => 'boolean',
+                'type' => 'required|in:NET,IMMEDIATE,COD,CUSTOM',
+                'status' => 'required|in:ACTIVE,INACTIVE',
+                // 'is_default' => 'boolean',
             ], [], [
                 'code' => 'Kode Syarat Pembayaran',
                 'name' => 'Nama Syarat Pembayaran',
@@ -148,7 +148,7 @@ class PaymentTermController extends Controller
                 'days' => 'Jumlah Hari',
                 'type' => 'Tipe Syarat Pembayaran',
                 'status' => 'Status Syarat Pembayaran',
-                'is_default' => 'Default Syarat Pembayaran',
+                // 'is_default' => 'Default Syarat Pembayaran',
             ]);
 
             DB::transaction(function () use ($validated) {
@@ -227,15 +227,15 @@ class PaymentTermController extends Controller
         }
 
         $statuses = [
-            ['value' => 'active', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'inactive', 'label' => 'INACTIVE - Tidak Aktif'],
+            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
         ];
 
         $types = [
-            ['value' => 'net', 'label' => 'NET - Net Payment'],
-            ['value' => 'immediate', 'label' => 'IMMEDIATE - Immediate Payment'],
-            ['value' => 'cod', 'label' => 'COD - Cash on Delivery'],
-            ['value' => 'custom', 'label' => 'CUSTOM - Custom Terms'],
+            ['value' => 'NET', 'label' => 'NET - Net Payment'],
+            ['value' => 'IMMEDIATE', 'label' => 'IMMEDIATE - Immediate Payment'],
+            ['value' => 'COD', 'label' => 'COD - Cash on Delivery'],
+            ['value' => 'CUSTOM', 'label' => 'CUSTOM - Custom Terms'],
         ];
 
         // Get permission data for view
@@ -268,9 +268,9 @@ class PaymentTermController extends Controller
                 'name' => 'required|string|max:100',
                 'description' => 'nullable|string',
                 'days' => 'required|integer|min:0',
-                'type' => 'required|in:net,immediate,cod,custom',
-                'status' => 'required|in:active,inactive',
-                'is_default' => 'boolean',
+                'type' => 'required|in:NET,IMMEDIATE,COD,CUSTOM',
+                'status' => 'required|in:ACTIVE,INACTIVE',
+                // 'is_default' => 'boolean',
             ], [], [
                 'id' => 'ID Syarat Pembayaran',
                 'code' => 'Kode Syarat Pembayaran',
@@ -279,7 +279,7 @@ class PaymentTermController extends Controller
                 'days' => 'Jumlah Hari',
                 'type' => 'Tipe Syarat Pembayaran',
                 'status' => 'Status Syarat Pembayaran',
-                'is_default' => 'Default Syarat Pembayaran',
+                // 'is_default' => 'Default Syarat Pembayaran',
             ]);
 
             DB::transaction(function () use ($validated) {

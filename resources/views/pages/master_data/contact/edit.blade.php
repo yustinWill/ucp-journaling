@@ -213,7 +213,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-6">
+                {{-- <div class="col-md-6">
                     <label class="form-label">Syarat Pembayaran <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="payment_term" data-allow-clear="false">
                         <option value="">Pilih Syarat Pembayaran</option>
@@ -223,7 +223,7 @@
                                 {{ $payment_term->name }}</option>
                         @endforeach
                     </select>
-                </div>
+                </div> --}}
             </div>
 
             <div class="row g-3 mb-4">

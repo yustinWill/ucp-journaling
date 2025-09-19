@@ -136,10 +136,12 @@
                     <div class="row g-2">
                         <div class="col">
                             <select class="global-select2 form-select" id="purchase-delivery-warehouse"
-                                name="warehouse_id" data-allow-clear="false" required>
+                                name="warehouse_id" data-allow-clear="false" required disabled>
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}
+                                    <option value="{{ $warehouse->id }}" @if ($purchaseOrder->warehouse_code == $warehouse->code) selected
+                                        
+                                    @endif>{{ $warehouse->code }} - {{ $warehouse->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -620,6 +622,7 @@
                 }
 
                 formData.append('delivery_status', statusValue);
+                formData.append('warehouse_id', $('#purchase-delivery-warehouse').val());
 
                 // AJAX submission
                 $.ajax({

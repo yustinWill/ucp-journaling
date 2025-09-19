@@ -181,7 +181,7 @@
                                         <input type="text" class="form-control" value="{{ $purchaseOrder['payment_terms'] ?? '-' }}" disabled />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Customer</label>
+                                        <label class="form-label">Buyer</label>
                                         <input type="text" class="form-control" value="{{ $purchaseOrder['customer_name'] }}" disabled />
                                     </div>
                                 </div>

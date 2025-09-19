@@ -82,7 +82,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Alamat</label>
-                    <textarea class="form-control" id="purchase-order-address" name="address" rows="2"
+                    <textarea class="form-control" id="purchase-order-address" name="address" rows="2" disabled
                         placeholder="Alamat akan otomatis terisi"></textarea>
                 </div>
                 <div class="col-md-6">
@@ -126,7 +126,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Customer <span style="color: red;">*</span></label>
+                    <label class="form-label">Buyer <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
                             <select class="global-select2 form-select" id="purchase-order-customer" name="customer_id"
@@ -492,10 +492,10 @@
                 if (supplierId) {
                     // Mock data - in real implementation, fetch from server
                     $('#purchase-order-email').val($('#purchase-order-supplier option:selected').data(
-                        'email')).prop('disabled', false);
+                        'email')).prop('disabled', true);
                     $('#purchase-order-address').val($('#purchase-order-supplier option:selected').data(
                         'billing-address')).prop(
-                        'disabled', false);
+                        'disabled', true);
 
                     // Auto-calculate due date based on payment terms
                     updateDueDate();
@@ -835,6 +835,12 @@
 
                 const dueDate = $('#purchase-order-due-date').val();
                 formData.append('payment_term_due_date', dueDate);
+
+                const email = $('#purchase-order-email').val();
+                formData.append('email', email);
+
+                const address = $('#purchase-order-address').val();
+                formData.append('address', address);
 
                 // Collect product rows from data-repeater-list
                 $('#products-tbody tr[data-repeater-item]').each(function(index) {

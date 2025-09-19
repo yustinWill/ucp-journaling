@@ -339,10 +339,6 @@
                     <label class="form-label">Akun Piutang</label>
                     <input type="text" class="form-control" value="${contactData.receivable_account}" disabled />
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Syarat Pembayaran</label>
-                    <input type="text" class="form-control" value="${contactData.payment_terms}" disabled />
-                </div>
             </div>
 
             <hr class="my-6 mx-n6" />

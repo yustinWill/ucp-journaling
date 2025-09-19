@@ -9,6 +9,8 @@ use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\SalesOrder\Actions\CreateSalesOrderAction;
 use App\Domains\SalesOrder\Actions\UpdateSalesOrderAction;
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
+use App\Domains\SalesDelivery\Services\SalesDeliveryService;
+use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\SalesPerson\Services\SalesPersonService;
 use App\Domains\Tag\Services\TagService;
@@ -245,6 +247,9 @@ class SalesOrderController extends Controller
         // Get return data for this SO
         $salesReturns = app(ReturnManagementService::class)->findBySalesOrderId($id);
 
+        $salesDeliveries = app(SalesDeliveryService::class)->findAllById($id);
+        $salesInvoices = app(SalesInvoiceService::class)->findAllHeaderBasedOnSoId($id);
+
         // Format return data
         $sales_returns = [];
         foreach ($salesReturns as $return) {
@@ -267,10 +272,13 @@ class SalesOrderController extends Controller
         // Get permissions
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
 
+        // dd($salesOrder);
         return view('pages.main_transaction.sales_order.detail', [
             'salesOrder' => $salesOrder,
             'audit_logs' => $auditLogs,
             'sales_returns' => $sales_returns,
+            'salesDeliveries' => $salesDeliveries,
+            'salesInvoices' => $salesInvoices,
             'canEdit' => $permissionData['canWrite'],
             'canDelete' => $permissionData['canDelete'],
             'canCreateSalesDelivery' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),

@@ -53,6 +53,8 @@ class CreateSalesOrderAction
                 'f_sales_order_id' => $salesOrderId,
                 'f_product_id' => $product['product_id'],
                 'quantity' => $product['quantity'],
+                'delivered_qty' => 0,
+                'remaining_qty' => $product['quantity'],
                 'unit_price' => $this->parsePrice($product['unit_price']),
                 // Tax fields removed - handled at invoice level
                 'line_total' => $this->parsePrice($product['total']),

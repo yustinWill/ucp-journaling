@@ -222,9 +222,10 @@
                             data: 'status',
                             responsivePriority: 7,
                             render: function(data, type, row) {
-                                const badgeClass = data === 'active' ? 'bg-label-success' :
+                                console.log(data)
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
                                     'bg-label-secondary';
-                                const statusText = data === 'active' ? 'AKTIF' : 'TIDAK AKTIF';
+                                const statusText = data === 'ACTIVE' ? 'AKTIF' : 'TIDAK AKTIF';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         },

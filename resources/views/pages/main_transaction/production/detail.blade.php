@@ -149,7 +149,7 @@
                             </div>
 
                             <div class="row g-6 mt-3">
-                                <div class="col-md-6">
+                                {{-- <div class="col-md-6">
                                     <label class="form-label">Progress</label>
                                     @php
                                         $progress =
@@ -164,12 +164,8 @@
                                             {{ number_format($progress, 1) }}%
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Created By</label>
-                                    <input type="text" class="form-control" value="{{ $production->created_by }}"
-                                        disabled />
-                                </div>
+                                </div> --}}
+                                
                             </div>
 
                             <div class="row g-6 mt-3">
@@ -200,9 +196,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Created At</label>
-                                    <input type="text" class="form-control" value="{{ $production->created_at }}"
+                                    <input type="text" class="form-control" value="{{ $production->created_by }} - {{ $production->created_at }}"
                                         disabled />
                                 </div>
+                                
                             </div>
                         </div>
 

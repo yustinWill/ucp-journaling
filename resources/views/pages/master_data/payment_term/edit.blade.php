@@ -67,7 +67,7 @@
                 </div>
             </div>
             
-            <div class="row g-3 mb-4">
+            {{-- <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="is_default" name="is_default" value="1" {{ $paymentTerm->is_default ? 'checked' : '' }}>
@@ -80,7 +80,7 @@
                 <div class="col-md-6">
                     <!-- Empty for alignment -->
                 </div>
-            </div>
+            </div> --}}
             
             <div class="row g-3 mb-4">
                 <div class="col-md-6">

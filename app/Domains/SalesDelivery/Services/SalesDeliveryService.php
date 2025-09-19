@@ -118,6 +118,20 @@ class SalesDeliveryService
             ->get();
     }
 
+    public function findAllById($id)
+    {
+        return DB::table($this->table_name)
+            ->select([
+                't_sales_deliveries.*',
+                'u.name as created_by_name',
+            ])
+            ->leftJoin('users as u', 't_sales_deliveries.created_by', '=', 'u.id')
+            ->where('company_code', session('user_company_code'))
+            ->where('sales_order_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
     public function findAllDatatable()
     {
         $query = DB::table($this->table_name . ' as sd')
