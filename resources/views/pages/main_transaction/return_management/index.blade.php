@@ -22,8 +22,8 @@
                             <option value="SALES_RETURN">Sales Return</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Status:</label>
+                    {{-- <div class="col-md-3">
+                        <label class="form-label">Status Eksekusi:</label>
                         <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
                             <option value="">Pilih Status</option>
                             <option value="DRAFT">Draft</option>
@@ -32,8 +32,9 @@
                             <option value="PROCESSED">Processed</option>
                             <option value="REJECTED">Rejected</option>
                             <option value="CANCELLED">Cancelled</option>
+
                         </select>
-                    </div>
+                    </div> --}}
                     <div class="col-12 col-sm-6 col-lg-3">
                         <label class="form-label">No Return:</label>
                         <input type="text" class="form-control" id="transaction-code-filter"
@@ -68,15 +69,15 @@
                 <table id="return-management-table" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th style="width: 100px;">Tanggal</th>
-                            <th style="width: 140px;">No Return</th>
-                            <th style="width: 120px;">Jenis Return</th>
-                            <th style="width: 140px;">No Invoice Asal</th>
-                            <th style="width: 120px;">Total Return</th>
-                            <th style="width: 100px;">Status</th>
-                            <th style="width: 120px;">Dibuat Oleh</th>
-                            <th style="width: 120px;">Tag</th>
-                            <th style="width: 80px;">Aksi</th>
+                            <th>Tanggal</th>
+                            <th>No Return</th>
+                            <th>Jenis Return</th>
+                            <th>No Invoice Asal</th>
+                            <th>Total Return</th>
+                            {{-- <th>Status</th> --}}
+                            <th>Dibuat Oleh</th>
+                            <th>Tag</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -113,18 +114,17 @@
                     },
                     columns: [{
                             data: 'return_date',
-                            width: '100px'
                         },
                         {
                             data: 'transaction_code',
-                            width: '140px',
+
                             render: function(data, type, row) {
                                 return data; // Non-clickable as per standard
                             }
                         },
                         {
                             data: 'return_type',
-                            width: '120px',
+
                             render: function(data, type, row) {
                                 if (data === 'PURCHASE_RETURN') {
                                     return '<span class="badge bg-label-primary">Purchase Return</span>';
@@ -136,11 +136,10 @@
                         },
                         {
                             data: 'source_invoice_code',
-                            width: '140px'
                         },
                         {
                             data: 'grand_total',
-                            width: '120px',
+
                             className: 'text-end',
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
@@ -149,25 +148,25 @@
                                 return data ?? '';
                             }
                         },
-                        {
-                            data: 'status',
-                            width: '100px',
-                            render: function(data, type, row) {
-                                const statusClasses = {
-                                    'DRAFT': 'bg-label-secondary',
-                                    'PENDING_APPROVAL': 'bg-label-warning',
-                                    'APPROVED': 'bg-label-success',
-                                    'PROCESSED': 'bg-label-info',
-                                    'REJECTED': 'bg-label-danger',
-                                    'CANCELLED': 'bg-label-dark'
-                                };
-                                const badgeClass = statusClasses[data] || 'bg-label-secondary';
-                                return `<span class="badge ${badgeClass}">${data || '-'}</span>`;
-                            }
-                        },
+                        // {
+                        //     data: 'status',
+                        //     
+                        //     render: function(data, type, row) {
+                        //         const statusClasses = {
+                        //             'DRAFT': 'bg-label-secondary',
+                        //             'PENDING_APPROVAL': 'bg-label-warning',
+                        //             'APPROVED': 'bg-label-success',
+                        //             'PROCESSED': 'bg-label-info',
+                        //             'REJECTED': 'bg-label-danger',
+                        //             'CANCELLED': 'bg-label-dark'
+                        //         };
+                        //         const badgeClass = statusClasses[data] || 'bg-label-secondary';
+                        //         return `<span class="badge ${badgeClass}">${data || '-'}</span>`;
+                        //     }
+                        // },
                         {
                             data: 'created_by_name',
-                            width: '120px',
+
                             render: function(data, type, row) {
                                 if (canRead) {
                                     const detailUrl =
@@ -180,7 +179,7 @@
                         },
                         {
                             data: 'tags',
-                            width: '120px',
+
                             render: function(data, type, row) {
                                 let tags = JSON.parse(data);
                                 return tags.map(tag => {
@@ -205,8 +204,8 @@
 
                                 if (canRead) {
                                     actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                <i class="icon-xs icon-base ti tabler-eye"></i>
-                            </a>`;
+                                        <i class="icon-xs icon-base ti tabler-eye"></i>
+                                    </a>`;
                                 }
 
                                 actions += '</div>';
@@ -264,39 +263,39 @@
                 });
 
             // Date range picker initialization
-            if ($('#date-range-picker').length) {
-                $('#date-range-picker').daterangepicker({
-                    opens: 'left',
-                    locale: {
-                        format: 'DD/MM/YYYY',
-                        separator: ' - ',
-                        applyLabel: 'Terapkan',
-                        cancelLabel: 'Batal',
-                        fromLabel: 'Dari',
-                        toLabel: 'Ke',
-                        customRangeLabel: 'Custom',
-                        weekLabel: 'W',
-                        daysOfWeek: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
-                        monthNames: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-                                   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-                    },
-                    autoUpdateInput: false
-                });
+            // if ($('#date-range-picker').length) {
+            //     $('#date-range-picker').daterangepicker({
+            //         opens: 'left',
+            //         locale: {
+            //             format: 'DD/MM/YYYY',
+            //             separator: ' - ',
+            //             applyLabel: 'Terapkan',
+            //             cancelLabel: 'Batal',
+            //             fromLabel: 'Dari',
+            //             toLabel: 'Ke',
+            //             customRangeLabel: 'Custom',
+            //             weekLabel: 'W',
+            //             daysOfWeek: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+            //             monthNames: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            //                        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+            //         },
+            //         autoUpdateInput: false
+            //     });
 
-                $('#date-range-picker').on('apply.daterangepicker', function(ev, picker) {
-                    $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
-                    if (returnManagementTable) {
-                        returnManagementTable.ajax.reload();
-                    }
-                });
+            //     $('#date-range-picker').on('apply.daterangepicker', function(ev, picker) {
+            //         $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            //         if (returnManagementTable) {
+            //             returnManagementTable.ajax.reload();
+            //         }
+            //     });
 
-                $('#date-range-picker').on('cancel.daterangepicker', function(ev, picker) {
-                    $(this).val('');
-                    if (returnManagementTable) {
-                        returnManagementTable.ajax.reload();
-                    }
-                });
-            }
+            //     $('#date-range-picker').on('cancel.daterangepicker', function(ev, picker) {
+            //         $(this).val('');
+            //         if (returnManagementTable) {
+            //             returnManagementTable.ajax.reload();
+            //         }
+            //     });
+            // }
         });
 
         // Action button functions

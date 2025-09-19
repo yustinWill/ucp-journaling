@@ -16,8 +16,8 @@
                         <button type="button" class="btn btn-primary btn-md waves-effect waves-light" onclick="window.print()">
                             <i class="icon-base ti tabler-printer me-2"></i>Print
                         </button>
-                        @if($return_data->processing_status === 'NOT_PROCESSED' && $return_data->status === 'APPROVED')
-                            <a href="{{ route('main_transaction.stock_adjustment.add') }}?return_id={{ $return_data->id }}" class="btn btn-warning btn-md waves-effect waves-light">
+                        @if($return_data->processing_status === 'NOT_PROCESSED')
+                            <a href="{{ route('main_transaction.stock_adjustment.add', ['id' => $return_data->id, 'type' => 'PRODUCT_RETURN']) }}" class="btn btn-warning btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-adjustments me-2"></i>Buat Stock Adjustment
                             </a>
                         @endif
@@ -120,7 +120,8 @@
                                         <label class="form-label">Tanggal Transaksi</label>
                                         <input type="text" class="form-control" value="{{ $return_data->transaction_date ? date('d/m/Y', strtotime($return_data->transaction_date)) : '-' }}" disabled />
                                     </div>
-                                    <div class="col-md-6">
+                                   
+                                    {{-- <div class="col-md-6">
                                         <label class="form-label">Status</label>
                                         @php
                                             $statusClass = '';
@@ -148,13 +149,9 @@
                                             }
                                         @endphp
                                         <span class="badge {{ $statusClass }} fs-6 py-2 px-3">{{ $return_data->status }}</span>
-                                    </div>
-                                </div>
-
-                                <!-- Row 2: Status Proses, Status Stock Adjustment -->
-                                <div class="row g-3 mb-4">
+                                    </div> --}}
                                     <div class="col-md-6">
-                                        <label class="form-label">Status Proses</label>
+                                        <label class="form-label">Status Proses</label><br>
                                         @php
                                             $processingClass = '';
                                             switch($return_data->processing_status) {
@@ -172,6 +169,12 @@
                                             }
                                         @endphp
                                         <span class="badge {{ $processingClass }} fs-6 py-2 px-3">{{ $return_data->processing_status }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Row 2: Status Proses, Status Stock Adjustment -->
+                                <div class="row g-3 mb-4">
+                                     <div class="col-md-6">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Status Stock Adjustment</label>

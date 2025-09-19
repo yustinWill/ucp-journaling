@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
-use App\Domains\Contact\Services\ContactService;
-use App\Domains\Product\Services\ProductService;
+use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceService;
 use App\Domains\ReturnManagement\Actions\CreateReturnManagementAction;
-use App\Domains\ReturnManagement\Actions\UpdateReturnManagementAction;
 use App\Domains\ReturnManagement\Services\ReturnManagementAuditLogService;
 use App\Domains\ReturnManagement\Services\ReturnManagementProductService;
 use App\Domains\ReturnManagement\Services\ReturnManagementService;
+use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use App\Domains\Tag\Services\TagService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
+use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
@@ -76,29 +77,46 @@ class ReturnManagementController extends Controller
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
-    public function add()
+    public function add(Request $request)
     {
+        $return_type = $request->input('return_type');
+        $source_invoice_id = $request->input('source_invoice_id');
         $canCreateReturnManagement = PermissionHelper::canWrite('main_transaction_return_management');
 
-        if (!$canCreateReturnManagement) {
+        $transaction_number = '';
+        if ($return_type == 'PURCHASE_RETURN') {
+            $invoice_data = app(PurchaseInvoiceService::class)->findOne($source_invoice_id);
+            $transaction_number = $invoice_data->transaction_code;
+            // dd($transaction_number);
+        } elseif ($return_type == 'SALES_RETURN') {
+            $invoice_data = app(SalesInvoiceService::class)->findOne($source_invoice_id);
+            $transaction_number = $invoice_data->transaction_code;
+        }
+
+        if (! $canCreateReturnManagement) {
             return redirect()->route('main_transaction.return_management.index')->with('error', 'Anda tidak memiliki akses untuk membuat Return Management');
         }
 
-        $tags = app(TagService::class)->getAll();
+        $tags = app(TagService::class)->findAll();
         $canViewProduct = PermissionHelper::canRead('master_data_product');
 
         return view('pages.main_transaction.return_management.add', [
             'canCreateReturnManagement' => $canCreateReturnManagement,
             'availableTags' => $tags,
             'canViewProduct' => $canViewProduct,
+            'return_type' => $return_type,
+            'source_invoice_id' => $source_invoice_id,
+            'invoice_data' => $invoice_data,
+            'transaction_number' => $transaction_number,
         ]);
     }
 
     public function store(Request $request)
     {
+        // dd($request->all());
         $canCreateReturnManagement = PermissionHelper::canWrite('main_transaction_return_management');
 
-        if (!$canCreateReturnManagement) {
+        if (! $canCreateReturnManagement) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -106,6 +124,7 @@ class ReturnManagementController extends Controller
             // Validate basic request data
             $validatedData = $request->validate([
                 'return_type' => 'required|in:PURCHASE_RETURN,SALES_RETURN',
+                'transaction_code' => 'required|unique:t_return_managements,transaction_code',
                 'source_invoice_id' => 'required|integer',
                 'source_invoice_code' => 'required|string',
                 'return_date' => 'required|date',
@@ -124,36 +143,59 @@ class ReturnManagementController extends Controller
                 'products.*.return_condition' => 'required|string',
                 'products.*.return_reason' => 'nullable|string',
                 'products.*.note' => 'nullable|string',
+            ], [], [
+                'return_type' => 'Tipe Return',
+                'transaction_code' => 'Kode Transaksi',
+                'source_invoice_id' => 'ID Invoice Sumber',
+                'source_invoice_code' => 'Kode Invoice Sumber',
+                'return_date' => 'Tanggal Return',
+                'transaction_date' => 'Tanggal Transaksi',
+                'return_reason' => 'Alasan Return',
+                'return_reason_description' => 'Deskripsi Alasan Return',
+                'description' => 'Deskripsi',
+                'internal_memo' => 'Memo Internal',
+                'tags' => 'Tag',
+                'attachment' => 'Lampiran',
+                'products' => 'Produk',
+                'products.*.f_product_id' => 'ID Produk',
+                'products.*.f_source_invoice_product_id' => 'ID Produk Invoice Sumber',
+                'products.*.return_qty' => 'Qty Return',
+                'products.*.return_unit_price' => 'Harga Satuan Return',
+                'products.*.return_condition' => 'Kondisi Return',
+                'products.*.return_reason' => 'Alasan Return Produk',
+                'products.*.note' => 'Catatan Produk',
             ]);
-
-            // Additional validation using Action
-            $createAction = app(CreateReturnManagementAction::class);
-            $validationErrors = $createAction->validateData($validatedData);
-
-            if (!empty($validationErrors)) {
-                throw ValidationException::withMessages($validationErrors);
-            }
-
             // Execute creation
-            $returnId = $createAction->execute($validatedData);
+            app(CreateReturnManagementAction::class)->execute($validatedData);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Return berhasil dibuat',
-                'data' => ['id' => $returnId]
-            ], 201);
+            if ($validatedData['return_type'] == 'PURCHASE_RETURN') {
+                return response()->json([
+                    'message' => SuccessCodes::CREATE_PURCHASE_RETURN_SUCCESS->message(),
+                ], SuccessCodes::CREATE_PURCHASE_RETURN_SUCCESS->httpStatus());
+            } else {
+                return response()->json([
+                    'message' => SuccessCodes::UPDATE_SALES_RETURN_SUCCESS->message(),
+                ], SuccessCodes::UPDATE_SALES_RETURN_SUCCESS->httpStatus());
+            }
 
         } catch (ValidationException $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Data tidak valid',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
             return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 
@@ -161,19 +203,19 @@ class ReturnManagementController extends Controller
     {
         $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
 
-        if (!$canViewReturnManagement) {
+        if (! $canViewReturnManagement) {
             return redirect()->route('main_transaction.return_management.index')->with('error', 'Anda tidak memiliki akses untuk melihat detail Return Management');
         }
 
         $return = app(ReturnManagementService::class)->findById($id);
 
-        if (!$return) {
+        if (! $return) {
             return redirect()->route('main_transaction.return_management.index')->with('error', 'Return tidak ditemukan');
         }
 
         $returnProducts = app(ReturnManagementProductService::class)->getByReturnId($id);
         $auditLogs = app(ReturnManagementAuditLogService::class)->findByReturnId($id);
-        
+
         // Permission checks
         $canViewUser = PermissionHelper::canRead('master_data_user');
         $canViewProduct = PermissionHelper::canRead('master_data_product');
@@ -192,7 +234,7 @@ class ReturnManagementController extends Controller
     {
         $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
 
-        if (!$canViewReturnManagement) {
+        if (! $canViewReturnManagement) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -214,24 +256,23 @@ class ReturnManagementController extends Controller
             ->make(true);
     }
 
-
     public function generateTransactionNumber(Request $request)
     {
         $returnType = $request->input('return_type', 'PURCHASE_RETURN');
-        
+
         try {
             // Map return type to transaction number module name
             $moduleName = $returnType === 'PURCHASE_RETURN' ? 'purchase_return' : 'sales_return';
             $transactionNumber = app(TransactionNumberService::class)->generateNumber($moduleName);
-            
+
             return response()->json([
                 'success' => true,
-                'transaction_number' => $transactionNumber
+                'transaction_number' => $transactionNumber,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate nomor transaksi: ' . $e->getMessage()
+                'message' => 'Gagal generate nomor transaksi: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -244,7 +285,7 @@ class ReturnManagementController extends Controller
 
         try {
             $products = [];
-            
+
             if ($returnType === 'PURCHASE_RETURN') {
                 $products = DB::table('t_purchase_invoice_products as pip')
                     ->join('m_products as p', 'pip.f_product_id', '=', 'p.id')
@@ -258,7 +299,7 @@ class ReturnManagementController extends Controller
                         'pip.qty as original_qty',
                         'pip.unit_price',
                         'pip.total_price',
-                        'u.code as unit_code'
+                        'u.code as unit_code',
                     ])
                     ->get();
             } elseif ($returnType === 'SALES_RETURN') {
@@ -274,10 +315,12 @@ class ReturnManagementController extends Controller
                         'sip.qty as original_qty',
                         'sip.unit_price',
                         'sip.line_total as total_price',
-                        'u.code as unit_code'
+                        'u.code as unit_code',
                     ])
                     ->get();
             }
+
+            // dd($products);
 
             // Calculate available quantities for return
             foreach ($products as $product) {
@@ -288,13 +331,13 @@ class ReturnManagementController extends Controller
 
             return response()->json([
                 'success' => true,
-                'products' => $products
+                'products' => $products,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data produk: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data produk: '.$e->getMessage(),
             ], 500);
         }
     }

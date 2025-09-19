@@ -11,6 +11,8 @@ use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockMovement\Services\StockMovementLogsService;
 use App\Domains\StockOpname\Services\StockOpnameProductService;
 use App\Domains\StockOpname\Services\StockOpnameService;
+use App\Domains\ReturnManagement\Services\ReturnManagementService;
+use App\Domains\ReturnManagement\Services\ReturnManagementProductService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
@@ -205,6 +207,32 @@ class StockAdjustmentController extends Controller
                             'current_stock' => $item->system_stock,
                             'adjustment_qty' => $item->physical_qty,
                             'unit_cost' => 0,
+                            'reason' => $item->note,
+                        ];
+                    }
+                    break;
+                case 'PRODUCT_RETURN':
+                    $header = app(ReturnManagementService::class)->findById($request->id);
+                    // dd($header);
+                    $opnameProducts = app(ReturnManagementProductService::class)->getByReturnId($request->id);
+                    // dd($opnameProducts);
+                    $header_data['transaction_date'] = $header->transaction_date;
+                    $header_data['form_type'] = $request->type;
+                    $header_data['form_reference_id'] = $header->id;
+                    // $header_data['warehouse_id'] = $header->warehouse_id;
+                    $header_data['pic'] = null;
+                    $header_data['description'] = $header->description;
+                    $header_data['memo'] = $header->internal_memo;
+                    
+                    foreach ($opnameProducts as $item) {
+                        $items[] = [
+                            'product_id' => $item->f_product_id,
+                            'product_code' => $item->product_code,
+                            'product_name' => $item->product_name,
+                            'unit' => $item->unit_name,
+                            'current_stock' => 0,
+                            'adjustment_qty' => $item->return_qty,
+                            'unit_cost' => $item->return_unit_price,
                             'reason' => $item->note,
                         ];
                     }
@@ -628,7 +656,7 @@ class StockAdjustmentController extends Controller
                 'adjustment_date' => 'required|date',
                 'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,STOCK_OPNAME',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
-                'pic_id' => 'required|integer|exists:users,id',
+                'pic_id' => 'nullable|integer|exists:users,id',
                 // 'status' => 'required|string|in:DRAFT,WAITING_APPROVAL',
                 'description' => 'required|string|max:1000',
                 'memo' => 'nullable|string|max:500',

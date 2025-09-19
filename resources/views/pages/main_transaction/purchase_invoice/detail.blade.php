@@ -13,7 +13,7 @@
                 <div class="col-md-4">
                     <div class="d-flex gap-2 justify-content-end">
                         {{-- Future: Invoice Settlement Button - will redirect to settlement page for payment processing --}}
-                        @if(in_array($invoice_data->status, ['DRAFT', 'PENDING', 'APPROVED']))
+                        {{-- @if(in_array($invoice_data->status, ['DRAFT', 'PENDING', 'APPROVED']))
                             <button type="button" class="btn btn-info btn-md waves-effect waves-light" onclick="alert('Feature coming soon: Invoice Settlement')">
                                 <i class="icon-base ti tabler-credit-card me-2"></i>
                                 Settle Invoice
@@ -25,14 +25,14 @@
                                 <i class="icon-base ti tabler-edit me-2"></i>
                                 Edit
                             </a>
-                        @endif
+                        @endif --}}
                         
-                        @if(in_array($invoice_data->status, ['PAID', 'UNPAID', 'PARTIAL_PAID']))
+                        {{-- @if(in_array($invoice_data->status, ['PAID', 'UNPAID', 'PARTIAL_PAID'])) --}}
                             <a href="{{ route('main_transaction.return_management.add') }}?return_type=PURCHASE_RETURN&source_invoice_id={{ $invoice_data->id }}" class="btn btn-warning btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-arrow-back-up me-2"></i>
                                 Return
                             </a>
-                        @endif
+                        {{-- @endif --}}
                     </div>
                 </div>
             </div>

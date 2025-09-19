@@ -367,7 +367,7 @@
             // Form validation
             function validateForm() {
                 let isValid = true;
-                const requiredFields = ['adjustment-date', 'adjustment-type', 'warehouse-select', 'pic-select',
+                const requiredFields = ['adjustment-date', 'adjustment-type', 'warehouse-select',
                     'description'
                 ];
 

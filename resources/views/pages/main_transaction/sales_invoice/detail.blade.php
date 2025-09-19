@@ -32,12 +32,12 @@
                             </a>
                         @endif --}}
 
-                        @if (in_array($invoice_data->status, ['PAID', 'UNPAID', 'PARTIAL_PAID']))
+                        {{-- @if (in_array($invoice_data->status, ['PAID', 'UNPAID', 'PARTIAL_PAID'])) --}}
                             <a href="{{ route('main_transaction.return_management.add') }}?return_type=SALES_RETURN&source_invoice_id={{ $invoice_data->id }}"
                                 class="btn btn-warning btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-arrow-back-up me-2"></i>Return
                             </a>
-                        @endif
+                        {{-- @endif --}}
                     </div>
                 </div>
             </div>

@@ -22,10 +22,10 @@ class CreateReturnManagementAction
             }
 
             // Generate transaction code if not provided
-            if (empty($data['transaction_code'])) {
-                $data['transaction_code'] = app(ReturnManagementService::class)
-                    ->generateTransactionNumber($data['return_type']);
-            }
+            // if (empty($data['transaction_code'])) {
+            //     $data['transaction_code'] = app(ReturnManagementService::class)
+            //         ->generateTransactionNumber($data['return_type']);
+            // }
 
             // Calculate totals from products
             if (!empty($data['products'])) {
@@ -52,7 +52,7 @@ class CreateReturnManagementAction
                     $productData = array_merge($product, [
                         'f_return_management_id' => $returnId
                     ]);
-                    
+
                     app(ReturnManagementProductService::class)->create($productData);
                 }
             }
