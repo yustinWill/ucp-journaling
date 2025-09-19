@@ -372,15 +372,13 @@
                 onSalesListSelected(this);
             });
 
-            // Customer selection handler
-            $('#sales-delivery-customer').change(function() {
-                const selectedOption = $(this).find('option:selected');
-                const email = selectedOption.data('email') || '';
-                const address = selectedOption.data('address') || '';
+            const selectedOptionCust = $('#sales-delivery-customer').find('option:selected');
+            const cust_email = selectedOptionCust.data('email') || '';
+            const cust_address = selectedOptionCust.data('address') || '';
 
-                $('#sales-delivery-email').val(email);
-                $('#sales-delivery-customer-address').val(address);
-            });
+            $('#sales-delivery-email').val(cust_email);
+            $('#sales-delivery-customer-address').val(cust_address);
+            $('#sales-delivery-address').val(cust_address);
 
             // Product line management
             // $('#add-product-line-btn').click(function() {
