@@ -87,7 +87,6 @@ class SalesInvoiceController extends Controller
         // Get available Sales Orders for invoicing
         $availableSalesOrders = app(SalesInvoiceService::class)->findAvailableForInvoicing();
 
-        // dd($availableSalesOrders);
         $availableTags = app(TagService::class)->findAll();
 
         // Get tax options for discount/tax calculations
@@ -156,8 +155,8 @@ class SalesInvoiceController extends Controller
             app(CreateSalesInvoiceAction::class)->execute($request->all());
 
             return response()->json([
-                'message' => SuccessCodes::CREATE_SALES_DELIVERY_SUCCESS->message(),
-            ], SuccessCodes::CREATE_SALES_DELIVERY_SUCCESS->httpStatus());
+                'message' => SuccessCodes::CREATE_SALES_INVOICE_SUCCESS->message(),
+            ], SuccessCodes::CREATE_SALES_INVOICE_SUCCESS->httpStatus());
         } catch (AppException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
@@ -243,7 +242,7 @@ class SalesInvoiceController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Get tax options for discount/tax calculations
-        $taxOptions = app(TaxService::class)->findAllForOptions();
+        // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks for related data creation
         $canAddTags = PermissionHelper::canWrite('master_data_tag');
@@ -252,7 +251,7 @@ class SalesInvoiceController extends Controller
             'invoice_data' => $invoice_data,
             'invoice_products' => $invoice_products,
             'availableTags' => $availableTags,
-            'taxOptions' => $taxOptions,
+            // 'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
         ]);
     }
