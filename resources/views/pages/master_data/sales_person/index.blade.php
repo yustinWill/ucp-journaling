@@ -167,34 +167,34 @@
                     },
                     columns: [{
                             data: 'created_at',
-                            responsivePriority: 2,
-                            render: function(data, type, row) {
-                                return new Date(data).toLocaleDateString('id-ID') + ' ' + new Date(
-                                    data).toLocaleTimeString('id-ID', {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                });
-                            }
+                            // responsivePriority: 2,
+                            // render: function(data, type, row) {
+                            //     return new Date(data).toLocaleDateString('id-ID') + ' ' + new Date(
+                            //         data).toLocaleTimeString('id-ID', {
+                            //         hour: '2-digit',
+                            //         minute: '2-digit'
+                            //     });
+                            // }
                         },
                         {
-                            data: 'sales_person_code',
-                            responsivePriority: 3
+                            data: 'code',
+                            // responsivePriority: 3
                         },
                         {
                             data: 'employee_name',
-                            responsivePriority: 4
+                            // responsivePriority: 4
                         },
                         {
                             data: 'commission_rate',
                             className: 'text-end',
-                            responsivePriority: 5,
+                            // responsivePriority: 5,
                             render: function(data, type, row) {
                                 return `${parseFloat(data).toFixed(2)}%`;
                             }
                         },
                         {
                             data: 'status',
-                            responsivePriority: 6,
+                            // responsivePriority: 6,
                             render: function(data, type, row) {
                                 const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
                                     'bg-label-secondary';
@@ -206,8 +206,6 @@
                             data: null,
                             orderable: false,
                             searchable: false,
-                            responsivePriority: 1,
-                            width: '120px',
                             render: function(data, type, row, meta) {
                                 const detailUrl =
                                     `{{ route('master_data.sales_person.detail', ':id') }}`.replace(

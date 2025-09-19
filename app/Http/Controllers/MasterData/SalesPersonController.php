@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MasterData;
 
 // Main
+use App\Domains\Contact\Services\ContactService;
 use App\Domains\SalesPerson\Actions\CreateSalesPersonAction;
 use App\Domains\SalesPerson\Actions\UpdateSalesPersonAction;
 use App\Domains\SalesPerson\Services\SalesPersonAuditLogService;
@@ -58,12 +59,12 @@ class SalesPersonController extends Controller
         }
 
         $statuses = $this->statuses;
-        $availableEmployees = app(SalesPersonService::class)->getAvailableEmployees();
+        $employees = app(ContactService::class)->findAllByType('EMPLOYEE');
         $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
 
         return view('pages.master_data.sales_person.add', array_merge([
             'statuses' => $statuses,
-            'availableEmployees' => $availableEmployees,
+            'employees' => $employees,
         ], $permissionData));
     }
 
@@ -139,16 +140,13 @@ class SalesPersonController extends Controller
         }
 
         $statuses = $this->statuses;
-        $availableEmployees = app(SalesPersonService::class)->getAvailableEmployees($id);
+        $employees = app(ContactService::class)->findAllByType('EMPLOYEE');
         $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
-
-        // Convert to array for consistency
-        $salesPersonArray = (array) $salesPerson;
 
         return view('pages.master_data.sales_person.edit', array_merge([
             'statuses' => $statuses,
-            'availableEmployees' => $availableEmployees,
-            'salesPerson' => $salesPersonArray,
+            'employees' => $employees,
+            'salesPerson' => $salesPerson,
         ], $permissionData));
     }
 

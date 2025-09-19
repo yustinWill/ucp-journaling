@@ -19,8 +19,8 @@
                     <label class="form-label">Pilih Karyawan <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="sales-person-employee" name="sales_person_employee" data-allow-clear="false" required>
                         <option value="">Pilih Karyawan</option>
-                        @foreach($availableEmployees as $employee)
-                            <option value="{{ $employee['id'] }}">{{ $employee['name'] }}</option>
+                        @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                         @endforeach
                     </select>
                     <small class="form-text text-muted">Pilih karyawan yang akan dijadikan sales person</small>
