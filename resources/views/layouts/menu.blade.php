@@ -1,7 +1,7 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu">
     <div class="app-brand demo">
         <a href="{{ route('home.view') }}" class="app-brand-link">
-            <span class="app-brand-text demo menu-text fw-bold ms-3">RIYO WATER</span>
+            <span class="app-brand-text demo menu-text fw-bold ms-3">COMPANY</span>
         </a>
 
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
