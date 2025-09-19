@@ -808,7 +808,7 @@
                 $('#productForm input[type="text"], #productForm input[type="number"]').not(
                     '#product-code, #product-name, #product-status').val(
                     '');
-                $('#productForm select').not('#unit-select,#category-select').val('').trigger('change');
+                $('#productForm select').not('#unit-select,#category-select, #product-status').val('').trigger('change');
             }
 
             // Conditional field toggles - Single Product
