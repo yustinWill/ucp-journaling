@@ -319,8 +319,8 @@
                                             <th>Kode Gudang</th>
                                             <th>Nama Gudang</th>
                                             <th>Stok Tersedia</th>
-                                            <th>Stok Reserved</th>
-                                            <th>Total Stok</th>
+                                            {{-- <th>Stok Reserved</th> --}}
+                                            {{-- <th>Total Stok</th> --}}
                                             <th>Harga Rata-rata</th>
                                             <th>Nilai Persediaan</th>
                                         </tr>
@@ -328,24 +328,24 @@
                                     <tbody>
                                         @foreach ($inventoryData as $inventory)
                                             <tr>
-                                                <td>{{ $inventory['warehouse_code'] }}</td>
+                                                <td>{{ $inventory->warehouse_code }}</td>
                                                 <td>
-                                                    <a href="{{ route('master_data.warehouse.detail', ['id' => $inventory['warehouse_id']]) }}"
+                                                    <a href="{{ route('master_data.warehouse.detail', ['id' => $inventory->warehouse_id]) }}"
                                                         class="text-primary fw-semibold">
-                                                        {{ $inventory['warehouse_name'] }}
+                                                        {{ $inventory->warehouse_name }}
                                                     </a>
                                                 </td>
-                                                <td class="text-end">{{ number_format($inventory['available_stock']) }}
+                                                <td class="text-end">{{ number_format($inventory->system_stock) }} {{ $inventory->unit }}
                                                 </td>
-                                                <td class="text-end">{{ number_format($inventory['reserved_stock']) }}
-                                                </td>
-                                                <td class="text-end">{{ number_format($inventory['total_stock']) }}</td>
-                                                <td class="text-end">{{ $inventory['average_price'] }}</td>
-                                                <td class="text-end">{{ $inventory['inventory_value'] }}</td>
+                                                {{-- <td class="text-end">{{ number_format($inventory->reserved_stock) }} --}}
+                                                {{-- </td> --}}
+                                                {{-- <td class="text-end">{{ number_format($inventory->total_stock) }}</td> --}}
+                                                <td class="text-end">0</td>
+                                                <td class="text-end">0</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
-                                    <tfoot>
+                                    {{-- <tfoot>
                                         <tr class="table-info">
                                             <th></th>
                                             <th>Total Keseluruhan</th>
@@ -365,7 +365,7 @@
                                                 {{ number_format(array_sum(array_map(function ($item) {return (float) str_replace(['Rp ', ','], '', $item['inventory_value']);}, $inventoryData))) }}
                                             </th>
                                         </tr>
-                                    </tfoot>
+                                    </tfoot> --}}
                                 </table>
                             </div>
                         </div>

@@ -14,6 +14,7 @@ use App\Domains\StockStatus\Services\StockStatusService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Tax\Services\TaxService;
 use App\Domains\Unit\Services\UnitService;
+use App\Domains\StockMovement\Services\StockMovementLogsService;
 use App\Enums\AuditLogTypes;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -544,39 +545,42 @@ class ProductController extends Controller
 
         $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
 
+        $inventoryData = app(StockMovementLogsService::class)->findAllLatestStockPerProduct($id);
+
+        // dd($inventoryData);
         // Inventory data per warehouse from controller
-        $inventoryData = [
-            [
-                'warehouse_id' => 1,
-                'warehouse_code' => 'GDG-001',
-                'warehouse_name' => 'Gudang Utama Produksi',
-                'available_stock' => 2500,
-                'reserved_stock' => 150,
-                'total_stock' => 2650,
-                'average_price' => 'Rp 2,750',
-                'inventory_value' => 'Rp 7,287,500',
-            ],
-            [
-                'warehouse_id' => 2,
-                'warehouse_code' => 'GDG-002',
-                'warehouse_name' => 'Gudang Raw Material',
-                'available_stock' => 800,
-                'reserved_stock' => 50,
-                'total_stock' => 850,
-                'average_price' => 'Rp 2,700',
-                'inventory_value' => 'Rp 2,295,000',
-            ],
-            [
-                'warehouse_id' => 3,
-                'warehouse_code' => 'GDG-003',
-                'warehouse_name' => 'Gudang Produk Jadi',
-                'available_stock' => 1200,
-                'reserved_stock' => 80,
-                'total_stock' => 1280,
-                'average_price' => 'Rp 2,750',
-                'inventory_value' => 'Rp 3,520,000',
-            ],
-        ];
+        // $inventoryData = [
+        //     [
+        //         'warehouse_id' => 1,
+        //         'warehouse_code' => 'GDG-001',
+        //         'warehouse_name' => 'Gudang Utama Produksi',
+        //         'available_stock' => 2500,
+        //         'reserved_stock' => 150,
+        //         'total_stock' => 2650,
+        //         'average_price' => 'Rp 2,750',
+        //         'inventory_value' => 'Rp 7,287,500',
+        //     ],
+        //     [
+        //         'warehouse_id' => 2,
+        //         'warehouse_code' => 'GDG-002',
+        //         'warehouse_name' => 'Gudang Raw Material',
+        //         'available_stock' => 800,
+        //         'reserved_stock' => 50,
+        //         'total_stock' => 850,
+        //         'average_price' => 'Rp 2,700',
+        //         'inventory_value' => 'Rp 2,295,000',
+        //     ],
+        //     [
+        //         'warehouse_id' => 3,
+        //         'warehouse_code' => 'GDG-003',
+        //         'warehouse_name' => 'Gudang Produk Jadi',
+        //         'available_stock' => 1200,
+        //         'reserved_stock' => 80,
+        //         'total_stock' => 1280,
+        //         'average_price' => 'Rp 2,750',
+        //         'inventory_value' => 'Rp 3,520,000',
+        //     ],
+        // ];
 
         $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
 

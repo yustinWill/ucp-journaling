@@ -42,4 +42,34 @@ class StockMovementLogsService
 
         return $query->get();
     }
+
+    public function findAllLatestStockPerProduct($productId)
+    {
+        $query = DB::table($this->table_name.' AS t_stock_movement_logs')
+            ->select(
+                'm_products.id AS id',
+                'm_products.code AS code',
+                'm_products.name AS name',
+                'm_units.name AS unit',
+                't_stock_movement_logs.warehouse_id AS warehouse_id',
+                 'm_warehouses.code AS warehouse_code',
+                'm_warehouses.name AS warehouse_name',
+                'm_products.f_category_id AS category',
+                DB::raw('SUM(
+                    CASE 
+                        WHEN t_stock_movement_logs.movement_type LIKE "%_IN" THEN t_stock_movement_logs.movement_qty
+                        WHEN t_stock_movement_logs.movement_type LIKE "%_OUT" THEN -t_stock_movement_logs.movement_qty
+                        ELSE 0
+                    END
+                ) as system_stock')
+            )
+            ->join('m_products', 't_stock_movement_logs.product_id', '=', 'm_products.id')
+            ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
+            ->join('m_warehouses', 't_stock_movement_logs.warehouse_id', '=', 'm_warehouses.id')
+            ->where('t_stock_movement_logs.product_id', $productId)
+            ->where('t_stock_movement_logs.company_code', session('user_company_code'))
+            ->groupBy('t_stock_movement_logs.warehouse_id','m_products.id');
+
+        return $query->get();
+    }
 }
