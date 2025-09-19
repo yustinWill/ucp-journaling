@@ -257,7 +257,7 @@
                         <table class="table table-bordered" id="selected-products-table">
                             <thead>
                                 <tr>
-                                    <th>Kode Produk</th>
+                                    <th>Kodee Produk</th>
                                     <th>Nama Produk</th>
                                     <th>Unit</th>
                                     <th>Stok Sistem</th>

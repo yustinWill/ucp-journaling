@@ -4,6 +4,8 @@ namespace App\Http\Controllers\MainTransaction;
 
 use App\Domains\Category\Services\CategoryService;
 use App\Domains\Contact\Services\ContactService;
+use App\Domains\ReturnManagement\Services\ReturnManagementProductService;
+use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\StockAdjustment\Actions\CreateStockAdjustmentAction;
 use App\Domains\StockAdjustment\Actions\UpdateStockAdjustmentAction;
 use App\Domains\StockAdjustment\Services\StockAdjustmentAuditLogService;
@@ -11,8 +13,6 @@ use App\Domains\StockAdjustment\Services\StockAdjustmentService;
 use App\Domains\StockMovement\Services\StockMovementLogsService;
 use App\Domains\StockOpname\Services\StockOpnameProductService;
 use App\Domains\StockOpname\Services\StockOpnameService;
-use App\Domains\ReturnManagement\Services\ReturnManagementService;
-use App\Domains\ReturnManagement\Services\ReturnManagementProductService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
@@ -199,12 +199,14 @@ class StockAdjustmentController extends Controller
                     $header_data['memo'] = $header->memo;
 
                     foreach ($opnameProducts as $item) {
+                        $latest_stock = app(StockMovementLogsService::class)->findAllLatestStockPerProductAndWarehouse($item->f_product_id, $header->f_warehouse_id);
                         $items[] = [
                             'product_id' => $item->product_id,
                             'product_code' => $item->product_code,
                             'product_name' => $item->product_name,
                             'unit' => $item->unit_name,
-                            'current_stock' => $item->system_stock,
+                            // 'current_stock' => $item->system_stock,
+                            'current_stock' => $latest_stock->system_stock ?? 0,
                             'adjustment_qty' => $item->physical_qty,
                             'unit_cost' => 0,
                             'reason' => $item->note,
@@ -213,6 +215,7 @@ class StockAdjustmentController extends Controller
                     break;
                 case 'PRODUCT_RETURN':
                     $header = app(ReturnManagementService::class)->findById($request->id);
+
                     $opnameProducts = app(ReturnManagementProductService::class)->getByReturnId($request->id);
                     $header_data['transaction_date'] = $header->transaction_date;
                     $header_data['form_type'] = $request->type;
@@ -221,15 +224,22 @@ class StockAdjustmentController extends Controller
                     $header_data['pic'] = null;
                     $header_data['description'] = $header->description;
                     $header_data['memo'] = $header->internal_memo;
-                    
+
                     foreach ($opnameProducts as $item) {
+                        $latest_stock = app(StockMovementLogsService::class)->findAllLatestStockPerProductAndWarehouse($item->f_product_id, $header->f_warehouse_id);
+                    
+                        if ($header->return_type == 'SALES_RETURN') {
+                            $adjustment_qty = $latest_stock->system_stock + $item->return_qty;
+                        } else {
+                            $adjustment_qty = $latest_stock->system_stock - $item->return_qty;
+                        }
                         $items[] = [
                             'product_id' => $item->f_product_id,
                             'product_code' => $item->product_code,
                             'product_name' => $item->product_name,
                             'unit' => $item->unit_name,
-                            'current_stock' => 0,
-                            'adjustment_qty' => $item->return_qty,
+                            'current_stock' => $latest_stock->system_stock ?? 0,
+                            'adjustment_qty' => $adjustment_qty,
                             'unit_cost' => $item->return_unit_price,
                             'reason' => $item->note,
                         ];
