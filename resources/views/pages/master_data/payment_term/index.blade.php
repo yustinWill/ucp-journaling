@@ -75,7 +75,7 @@
                             <div class="row g-3">
                                 <div class="col-12 col-sm-6 col-lg-4">
                                     <label class="form-label">Status:</label>
-                                    <select class="global-select2 form-select" id="status-filter" data-allow-clear="false">
+                                    <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
                                         <option value="">Semua Status</option>
                                         @foreach ($statuses as $status)
                                             <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
@@ -84,7 +84,7 @@
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-4">
                                     <label class="form-label">Tipe:</label>
-                                    <select class="global-select2 form-select" id="type-filter" data-allow-clear="false">
+                                    <select class="global-select2 form-select" id="type-filter" data-allow-clear="true">
                                         <option value="">Semua Tipe</option>
                                         @foreach ($types as $type)
                                             <option value="{{ $type['value'] }}">{{ $type['label'] }}</option>

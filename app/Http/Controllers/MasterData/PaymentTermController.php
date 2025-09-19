@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\MasterData;
 
+use App\Domains\PaymentTerm\Services\PaymentTermService;
 use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
+use App\Enums\SuccessCodes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -59,42 +61,9 @@ class PaymentTermController extends Controller
 
     public function indexDataTable(Request $request)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('master_data_payment_term', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        $data = app(PaymentTermService::class)->findAllDatatable();
 
-        $query = DB::table($this->table_name)->select([
-            'id',
-            'code',
-            'name',
-            'description',
-            'days',
-            'type',
-            'status',
-            'is_default',
-            'created_at',
-        ]);
-
-        // Apply filters
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('code', 'like', "%{$search}%")
-                    ->orWhere('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-
-        $paymentTerms = $query->orderBy('created_at', 'desc')->get();
-
-        return response()->json(['data' => $paymentTerms], 200);
+        return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     public function add()
