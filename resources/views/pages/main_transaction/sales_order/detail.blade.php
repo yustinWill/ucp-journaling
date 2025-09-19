@@ -302,7 +302,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="row mb-3">
+                                            {{-- <div class="row mb-3">
                                                 <div class="col-6">
                                                     <label class="form-label">Status</label>
                                                 </div>
@@ -312,7 +312,7 @@
                                                         {{ $salesOrder['status'] }}
                                                     </span>
                                                 </div>
-                                            </div>
+                                            </div> --}}
                                         </div>
                                     </div>
                                 </div>
