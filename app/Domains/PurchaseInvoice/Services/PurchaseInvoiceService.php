@@ -174,6 +174,8 @@ class PurchaseInvoiceService
                 'po.supplier_email',
                 'po.supplier_address',
                 'po.f_warehouse_id',
+                'po.f_warehouse_id AS warehouse_id',
+                'mw.name AS warehouse_name',
                 'mc.name as supplier_name',
                 'mc.id as supplier_id',
                 'pt.code AS payment_term_code',

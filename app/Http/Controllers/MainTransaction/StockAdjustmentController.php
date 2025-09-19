@@ -213,13 +213,11 @@ class StockAdjustmentController extends Controller
                     break;
                 case 'PRODUCT_RETURN':
                     $header = app(ReturnManagementService::class)->findById($request->id);
-                    // dd($header);
                     $opnameProducts = app(ReturnManagementProductService::class)->getByReturnId($request->id);
-                    // dd($opnameProducts);
                     $header_data['transaction_date'] = $header->transaction_date;
                     $header_data['form_type'] = $request->type;
                     $header_data['form_reference_id'] = $header->id;
-                    // $header_data['warehouse_id'] = $header->warehouse_id;
+                    $header_data['warehouse_id'] = $header->f_warehouse_id;
                     $header_data['pic'] = null;
                     $header_data['description'] = $header->description;
                     $header_data['memo'] = $header->internal_memo;
@@ -654,8 +652,8 @@ class StockAdjustmentController extends Controller
         try {
             $validated = $request->validate([
                 'adjustment_date' => 'required|date',
-                'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,STOCK_OPNAME',
-                'warehouse_id' => 'required|integer|exists:m_contacts,id',
+                'adjustment_type' => 'required|string|in:MANUAL_ADJUSTMENT,STOCK_OPNAME,PRODUCT_RETURN',
+                'warehouse_id' => 'required|integer|exists:m_warehouses,id',
                 'pic_id' => 'nullable|integer|exists:users,id',
                 // 'status' => 'required|string|in:DRAFT,WAITING_APPROVAL',
                 'description' => 'required|string|max:1000',

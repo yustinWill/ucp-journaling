@@ -78,11 +78,11 @@
                     </select> --}}
                     {{-- <small class="text-muted">Pilih jenis return terlebih dahulu</small> --}}
                 </div>
-                {{-- <div class="col-md-6">
-                    <label class="form-label">No Invoice Asal</label>
-                    <input type="text" class="form-control" id="source-invoice-code" name="source_invoice_code" readonly
-                        disabled />
-                </div> --}}
+                <div class="col-md-6">
+                    <label class="form-label">Gudang <span style="color: red;">*</span></label>
+                    <input type="hidden" id="warehouse_id" name="warehouse_id" value="{{ $invoice_data->warehouse_id }}" />
+                    <input type="text" class="form-control"value="{{ $invoice_data->warehouse_code }} - {{ $invoice_data->warehouse_name }}" required disabled />
+                </div>
             </div>
 
             <!-- Detail Return Section -->
@@ -523,7 +523,7 @@
 
                 formData.append('return_type', $('#return-type').val());
                 formData.append('source_invoice_code', $('#source-invoice-display').val());
-                // alert($('#return-type').val())
+                formData.append('warehouse_id', $('#warehouse_id').val());
 
                 Swal.fire({
                     title: 'Buat Return Management?',

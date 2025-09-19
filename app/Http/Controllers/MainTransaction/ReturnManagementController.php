@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
-use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceService;
+
 use App\Domains\ReturnManagement\Actions\CreateReturnManagementAction;
 use App\Domains\ReturnManagement\Services\ReturnManagementAuditLogService;
 use App\Domains\ReturnManagement\Services\ReturnManagementProductService;
 use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\SalesInvoice\Services\SalesInvoiceService;
+use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceService;
 use App\Domains\Tag\Services\TagService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -87,7 +88,6 @@ class ReturnManagementController extends Controller
         if ($return_type == 'PURCHASE_RETURN') {
             $invoice_data = app(PurchaseInvoiceService::class)->findOne($source_invoice_id);
             $transaction_number = $invoice_data->transaction_code;
-            // dd($transaction_number);
         } elseif ($return_type == 'SALES_RETURN') {
             $invoice_data = app(SalesInvoiceService::class)->findOne($source_invoice_id);
             $transaction_number = $invoice_data->transaction_code;
@@ -127,6 +127,7 @@ class ReturnManagementController extends Controller
                 'transaction_code' => 'required|unique:t_return_managements,transaction_code',
                 'source_invoice_id' => 'required|integer',
                 'source_invoice_code' => 'required|string',
+                'warehouse_id' => 'required|exists:m_warehouses,id',
                 'return_date' => 'required|date',
                 'transaction_date' => 'required|date',
                 'return_reason' => 'required|string',
@@ -148,6 +149,7 @@ class ReturnManagementController extends Controller
                 'transaction_code' => 'Kode Transaksi',
                 'source_invoice_id' => 'ID Invoice Sumber',
                 'source_invoice_code' => 'Kode Invoice Sumber',
+                'warehouse_id' => 'Gudang',
                 'return_date' => 'Tanggal Return',
                 'transaction_date' => 'Tanggal Transaksi',
                 'return_reason' => 'Alasan Return',

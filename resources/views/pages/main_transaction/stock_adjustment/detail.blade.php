@@ -23,7 +23,7 @@
 
                     @if($totalActions < 3)
                         <!-- Show buttons directly when less than 3 actions -->
-                        <div class="d-flex gap-2 justify-content-end">
+                        {{-- <div class="d-flex gap-2 justify-content-end">
                             <a href="{{ route('main_transaction.stock_adjustment.edit', $stockAdjustment->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-edit me-2"></i>
                                 Edit
@@ -34,10 +34,10 @@
                                     Terapkan ke Stok
                                 </button>
                             @endif
-                        </div>
+                        </div> --}}
                     @else
                         <!-- Show dropdown for 3 or more actions -->
-                        <div class="d-flex gap-2 justify-content-end">
+                        {{-- <div class="d-flex gap-2 justify-content-end">
                             <a href="{{ route('main_transaction.stock_adjustment.detail', $stockAdjustment->id) }}" class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-eye me-2"></i>
                                 Detail
@@ -73,7 +73,7 @@
                                     @endif
                                 </ul>
                             </div>
-                        </div>
+                        </div> --}}
                     @endif
                 </div>
             </div>

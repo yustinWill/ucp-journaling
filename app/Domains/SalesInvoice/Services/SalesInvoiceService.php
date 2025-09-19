@@ -146,6 +146,9 @@ class SalesInvoiceService
         $data = DB::table($this->table_name.' as si')
             ->select(
                 'si.*',
+                'so.f_warehouse_id AS warehouse_id',
+                'w.name AS warehouse_name',
+
                 'so.transaction_code as so_reference',
                 'so.id as so_id',
                 'c.name AS customer_name',

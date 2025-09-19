@@ -25,6 +25,7 @@ class ReturnManagementService
             'company_code' => session('user_company_code'),
             'transaction_code' => $data['transaction_code'],
             'return_type' => $data['return_type'],
+            'f_warehouse_id' => $data['warehouse_id'],
             'f_source_invoice_id' => $data['source_invoice_id'],
             'source_invoice_code' => $data['source_invoice_code'],
             'return_date' => $data['return_date'],
