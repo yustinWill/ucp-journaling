@@ -7,6 +7,7 @@
 
     <meta name="description" content />
 
+     @vite(['resources/js/app.js']) {{-- Load JS --}}
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../../custom_assets/company_logo.png" />
 
