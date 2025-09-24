@@ -56,5 +56,60 @@
         }
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        window.Echo.channel("public-messages")
+            .listen(".message.sent", (event) => {
+                console.log("PUSH Notification Received:", event);
+                const notifList = document.getElementById(
+                    "notification-list");
+                if (notifList) {
+                    notifList.insertAdjacentHTML('beforeend', `
+                    <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="avatar">
+                                    <span class="avatar-initial rounded-circle bg-label-success"><i
+                                            class="icon-base ti tabler-shopping-cart"></i></span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 small">Whoo! You have new order 🛒</h6>
+                                <small class="mb-1 d-block text-body">ACME Inc. made new order
+                                    $1,154</small>
+                                <small class="text-body-secondary">1 day ago</small>
+                            </div>
+                            <div class="flex-shrink-0 dropdown-notifications-actions">
+                                <a href="javascript:void(0)" class="dropdown-notifications-read"><span
+                                        class="badge badge-dot"></span></a>
+                            </div>
+                        </div>
+                    </li>
+                    `);
+
+                    const bell = document.getElementById('notification-bell-important');
+                    if (bell) {
+                        bell.style.display = 'inline-block';
+                    }
+                }
+            });
+
+        document.addEventListener('click', function(e) {
+            const listItem = e.target.closest('.dropdown-notifications-item');
+            if (listItem) {
+                const badge = listItem.querySelector('.badge');
+                if (badge) {
+                    badge.classList.remove('badge', 'badge-dot');
+                }
+
+                const unread = document.querySelector('.dropdown-notifications-item .badge-dot');
+                const bell = document.getElementById('notification-bell-important');
+                if (bell) {
+                    bell.style.display = unread ? '' : 'none';
+                }
+            }
+        });
+    });
+</script>
 
 </html>
