@@ -64,7 +64,7 @@
                 const notifList = document.getElementById(
                     "notification-list");
                 if (notifList) {
-                    notifList.insertAdjacentHTML('beforeend', `
+                    notifList.insertAdjacentHTML('afterbegin', `
                     <li class="list-group-item list-group-item-action dropdown-notifications-item">
                         <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
@@ -108,6 +108,63 @@
                     bell.style.display = unread ? '' : 'none';
                 }
             }
+        });
+    });
+
+
+    $(function() {
+        function timeAgo(dateString) {
+            const now = new Date();
+            const created = new Date(dateString);
+            const diffMs = now - created;
+            const diffMins = Math.floor(diffMs / 60000);
+            const hours = Math.floor(diffMins / 60);
+            const minutes = diffMins % 60;
+
+            if (hours > 0) {
+                return `${hours} hour${hours > 1 ? 's' : ''}${minutes > 0 ? ` ${minutes} minute${minutes > 1 ? 's' : ''}` : ''} ago`;
+            } else if (minutes > 0) {
+                return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+            } else {
+                return 'Just now';
+            }
+        }
+        $.ajax({
+            url: "{{ route('notification.header_list.notification_list') }}",
+            method: 'GET',
+            data: {
+                _token: '{{ csrf_token() }}',
+            },
+            success: function(response) {
+                console.log("Initial Notification Load:", response);
+
+                const notifList = document.getElementById("notification-list");
+                if (notifList) {
+                    response.forEach(function(notif) {
+                        notifList.insertAdjacentHTML('beforeend', `
+                        <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="avatar">
+                                        <span class="avatar-initial rounded-circle bg-label-success"><i
+                                                class="icon-base ${notif.icon_text}"></i></span>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 small">${notif.title}</h6>
+                                    <small class="mb-1 d-block text-body">${notif.message}</small>
+                                    <small class="text-body-secondary">${notif.created_at} (${timeAgo(notif.created_at)})</small>
+                                </div>
+                                <div class="flex-shrink-0 dropdown-notifications-actions">
+                                    <a href="javascript:void(0)" class="dropdown-notifications-read">
+                                        ${notif.is_read == 0 ? '<span class="badge badge-dot"></span>' : ''}
+                                </div>
+                            </div>
+                        </li>
+                        `);
+                    });
+                }
+            },
         });
     });
 </script>
