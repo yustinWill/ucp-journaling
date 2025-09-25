@@ -118,7 +118,7 @@ class StockOpnameController extends Controller
                 'memo' => 'nullable|string|max:500',
                 'tags' => 'nullable|array',
                 'tags.*' => 'string|max:50',
-                'products' => 'required|array|min:1',
+                'products' => 'required|array',
                 'products.*.product_id' => 'required|integer|exists:m_products,id',
                 'products.*.system_stock' => 'required|integer|min:0',
                 'products.*.physical_qty' => 'required|integer|min:0',
