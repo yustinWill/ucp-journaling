@@ -144,13 +144,13 @@
                     <table class="table table-bordered" id="invoice-items-table">
                         <thead>
                             <tr>
-                                <th style="width: 30%;">Produk</th>
-                                <th style="width: 12%;">Qty PO</th>
-                                <th style="width: 12%;">Invoiced</th>
-                                <th style="width: 12%;">Remaining</th>
-                                <th style="width: 20%;">Qty Invoice</th>
-                                <th style="width: 20%;">Unit Price</th>
-                                <th style="width: 20%;">Total</th>
+                                <th>Produk</th>
+                                <th>Qty PO</th>
+                                <th>Invoiced</th>
+                                <th>Remaining</th>
+                                <th>Qty Invoice</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
                             </tr>
                         </thead>
                         <tbody id="invoice-items-tbody">
@@ -159,10 +159,10 @@
                                 @foreach ($purchaseOrderProducts as $product)
                                     <tr>
                                         <td>{{ $product->product_code }} - {{ $product->product_name }}</td>
-                                        <td>{{ number_format($product->qty, 0, ',', '.') }} {{ $product->unit_name }}</td>
-                                        <td>{{ number_format($product->invoiced_qty ?? 0, 0, ',', '.') }}
+                                        <td>{{ number_format($product->qty, 4, ',', '.') }} {{ $product->unit_name }}</td>
+                                        <td>{{ number_format($product->invoiced_qty, 4, ',', '.') }}
                                             {{ $product->unit_name }}</td>
-                                        <td>{{ number_format($product->remaining_qty_for_invoice ?? $product->qty, 0, ',', '.') }}
+                                        <td>{{ number_format($product->remaining_qty_for_invoice ?? $product->qty, 4, ',', '.') }}
                                             {{ $product->unit_name }}</td>
                                         <td>
                                             <input type="hidden"
@@ -184,7 +184,7 @@
                                                 name="products[{{ $counter }}][invoice_qty]" min="0"
                                                 max="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
                                         </td>
-                                        <td>{{ number_format($product->price_per_qty ?? 0, 0, ',', '.') }}
+                                        <td>{{ number_format($product->price_per_qty ?? 0, 4, ',', '.') }}
                                             <input type="hidden" name="products[{{ $counter }}][unit_price]"
                                                 value="{{ $product->price_per_qty ?? 0 }}" />
                                         </td>
@@ -533,8 +533,16 @@
 
                 // Prepare form data
                 const formData = new FormData($('#purchaseInvoiceForm')[0]);
+               
                 const invoiceStatus = $('#invoice-status').text().trim();
                 formData.append('invoice_status', invoiceStatus);
+
+                $('input[name*="[invoice_qty]"]').each(function(index) {
+                    const rawQty = $(this).val();
+                    const formattedQty = parseCurrency(rawQty);
+                    formData.append(`products[${index}][invoice_qty]`, formattedQty);
+                });
+
                 // Submit via AJAX
                 $.ajax({
                     url: "{{ route('main_transaction.purchase_invoice.store') }}",

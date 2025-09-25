@@ -185,13 +185,13 @@
                     <table class="table table-bordered" id="product-table">
                         <thead>
                             <tr>
-                                <th style="width: 30%;">Produk</th>
-                                <th style="width: 12%;">Qty PO</th>
-                                <th style="width: 12%;">Delivered</th>
-                                <th style="width: 12%;">Remaining</th>
-                                <th style="width: 20%;">Qty Delivery</th>
-                                <th style="width: 20%;">Note</th>
-                                <th style="width: 14%;">Status</th>
+                                <th>Produk</th>
+                                <th>Qty PO</th>
+                                <th>Delivered</th>
+                                <th>Remaining</th>
+                                <th>Qty Delivery</th>
+                                <th>Note</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="products-tbody">
@@ -202,11 +202,11 @@
                                 <tr>
                                     <td>{{ $purchaseOrderProduct->product_code }} -
                                         {{ $purchaseOrderProduct->product_name }}</td>
-                                    <td>{{ number_format($purchaseOrderProduct->qty, 0, ',', '.') }}
+                                    <td>{{ number_format($purchaseOrderProduct->qty, 4, ',', '.') }}
                                         {{ $purchaseOrderProduct->unit_name }}</td>
-                                    <td>{{ number_format($purchaseOrderProduct->delivered_qty, 0, ',', '.') }}
+                                    <td>{{ number_format($purchaseOrderProduct->delivered_qty, 4, ',', '.') }}
                                         {{ $purchaseOrderProduct->unit_name }}</td>
-                                    <td>{{ number_format($purchaseOrderProduct->remaining_qty, 0, ',', '.') }}
+                                    <td>{{ number_format($purchaseOrderProduct->remaining_qty, 4, ',', '.') }}
                                         {{ $purchaseOrderProduct->unit_name }}</td>
                                     <td>
                                         <input type="hidden"
@@ -459,7 +459,7 @@
                 });
 
                 // Update display fields
-                $('#total-delivery-qty').val(totalDelivered + ' items');
+                $('#total-delivery-qty').val(toIndonesianNumberFormat(totalDelivered) + ' items');
                 $('#purchase-delivery-total-items').val(totalDelivered);
                 $('#purchase-delivery-total-delivered').val(totalDelivered);
 

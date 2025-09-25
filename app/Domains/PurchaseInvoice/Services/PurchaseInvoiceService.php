@@ -251,6 +251,7 @@ class PurchaseInvoiceService
                 'pip.note AS product_invoice_note',
                 'pop.qty AS ordered_qty',
                 'pop.price_per_qty AS unit_price',
+                'mp.code AS product_code',
                 'mp.name AS product_name',
                 'mu.code AS unit_code',
                 'mu.name AS unit_name',
