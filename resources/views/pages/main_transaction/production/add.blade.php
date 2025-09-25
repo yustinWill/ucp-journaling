@@ -137,11 +137,11 @@
                     <table class="table table-bordered" id="components-table">
                         <thead>
                             <tr>
-                                <th style="width: 35%;">Komponen Product</th>
-                                <th style="width: 15%;">Qty per Bundle</th>
-                                <th style="width: 15%;">Total Required</th>
-                                <th style="width: 15%;">Stock Available</th>
-                                <th style="width: 20%;">Status</th>
+                                <th>Komponen Product</th>
+                                <th>Qty per Bundle</th>
+                                <th>Total Required</th>
+                                <th>Stock Available</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="components-rows">
@@ -196,6 +196,7 @@
 @section('js_script')
     <script>
         $(function() {
+
             // Generate number button functionality
             $('#generate-number-btn').on('click', function() {
                 $.ajax({
@@ -222,7 +223,6 @@
                 const bundleProductId = $(this).val();
 
                 if (bundleProductId) {
-                    // TODO: Load bundle components via AJAX
                     loadBundleComponents(bundleProductId);
                     $('#components-disabled-message').hide();
                     $('#components-section').show();
@@ -262,16 +262,16 @@
             function displayComponents(components) {
                 let componentsHtml = '';
                 components.forEach(component => {
-                    const qtyPlanned = parseInt($('#quantity-planned').val()) || 0;
+                    const qtyPlanned = $('#quantity-planned').val();
                     const totalRequired = component.quantity_required * qtyPlanned;
                     const isAvailable = totalRequired <= component.stock_available;
 
                     componentsHtml += `
                 <tr>
                     <td>${component.product_name}</td>
-                    <td class="text-center">${component.quantity_required} ${component.unit}</td>
-                    <td class="text-center total-required" data-qty-per-bundle="${component.quantity_required}">${totalRequired} ${component.unit}</td>
-                    <td class="text-center">${component.stock_available} ${component.unit}</td>
+                    <td class="text-center">${convertToIndonesianFormat(component.quantity_required)} ${component.unit}</td>
+                    <td class="text-center total-required" data-stock-available="${component.stock_available}" data-qty-per-bundle="${component.quantity_required}">${toIndonesianNumberFormat(totalRequired)} ${component.unit}</td>
+                    <td class="text-center">${convertToIndonesianFormat(component.stock_available)} ${component.unit}</td>
                     <td class="text-center">
                         ${isAvailable 
                             ? '<span class="badge bg-label-success">Available</span>'
@@ -286,21 +286,21 @@
             }
 
             function updateTotalRequiredQuantities() {
-                const qtyPlanned = parseInt($('#quantity-planned').val()) || 0;
+                const qtyPlanned = $('#quantity-planned').val();
 
                 $('#components-rows .total-required').each(function() {
-                    const qtyPerBundle = parseInt($(this).data('qty-per-bundle'));
+                    const qtyPerBundle = $(this).data('qty-per-bundle');
                     const totalRequired = qtyPerBundle * qtyPlanned;
 
                     // Extract unit from current text
                     const currentText = $(this).text();
                     const unit = currentText.split(' ').pop();
 
-                    $(this).text(totalRequired + ' ' + unit);
+                    $(this).text(toIndonesianNumberFormat(String(totalRequired)) + ' ' + unit);
 
                     // Update status based on availability
                     const row = $(this).closest('tr');
-                    const stockAvailable = parseInt(row.find('td').eq(3).text());
+                    const stockAvailable = $(this).data('stock-available');
                     const statusCell = row.find('td').eq(4);
 
                     if (totalRequired <= stockAvailable) {
