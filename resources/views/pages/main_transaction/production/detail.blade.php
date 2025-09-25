@@ -212,20 +212,20 @@
                                 <table class="table table-bordered" id="components-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 35%;">Komponen Product</th>
-                                            <th style="width: 15%;">Qty per Bundle</th>
-                                            <th style="width: 15%;">Total Required</th>
-                                            <th style="width: 15%;">Stock Available</th>
-                                            <th style="width: 20%;">Status</th>
+                                            <th>Komponen Product</th>
+                                            <th>Qty per Bundle</th>
+                                            <th>Total Required</th>
+                                            <th>Stock Available</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse($production_items as $component)
                                             <tr>
                                                 <td>{{ $component->product_name }}</td>
-                                                <td class="text-center">{{ $component->quantity_required }} {{ $component->unit_code }}</td>
-                                                <td class="text-center">{{ $component->quantity_required }} {{ $component->unit_code }}</td>
-                                                <td class="text-center">{{ $component->quantity_required }} {{ $component->unit_code }}</td>
+                                                <td class="text-center">{{ number_format($component->quantity_per_bundle, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                <td class="text-center">{{ number_format($component->quantity_required, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                <td class="text-center">{{ number_format($component->current_stock, 4, ',', '.') }} {{ $component->unit_code }}</td>
                                                 <td class="text-center">
                                                     @if ($component->quantity_required >= $component->quantity_required)
                                                         <span class="badge bg-label-success">Available</span>
