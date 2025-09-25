@@ -229,12 +229,12 @@
                                     <table class="table table-bordered" id="product-table">
                                             <thead>
                                                 <tr>
-                                                    <th style="width: 25%;">Produk</th>
-                                                    <th style="width: 12%;">Kuantitas</th>
-                                                    <th style="width: 10%;">Satuan</th>
-                                                    <th style="width: 18%;">Harga Satuan</th>
-                                                    {{-- <th style="width: 15%;">Pajak</th> --}}
-                                                    <th style="width: 20%;">Jumlah</th>
+                                                    <th>Produk</th>
+                                                    <th>Kuantitas</th>
+                                                    <th>Satuan</th>
+                                                    <th>Harga Satuan</th>
+                                                    {{-- <th>Pajak</th> --}}
+                                                    <th>Jumlah</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -250,19 +250,19 @@
                                                         @endif
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control" value="{{ number_format($line['quantity'], 0, ',', '.') }}" disabled />
+                                                        <input type="text" class="form-control" value="{{ number_format($line['quantity'], 4, ',', '.') }}" disabled />
                                                     </td>
                                                     <td>
                                                         <input type="text" class="form-control" value="{{ $line['unit'] }}" disabled />
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control" value="Rp {{ number_format($line['unit_price'], 0, ',', '.') }}" disabled />
+                                                        <input type="text" class="form-control" value="Rp {{ number_format($line['unit_price'], 4, ',', '.') }}" disabled />
                                                     </td>
                                                     {{-- <td>
                                                         <input type="text" class="form-control" value="{{ $line['tax_name'] ?: 'Tanpa Pajak' }}" disabled />
                                                     </td> --}}
                                                     <td>
-                                                        <input type="text" class="form-control" value="Rp {{ number_format($line['total'], 0, ',', '.') }}" disabled />
+                                                        <input type="text" class="form-control" value="Rp {{ number_format($line['total'], 4, ',', '.') }}" disabled />
                                                     </td>
                                                 </tr>
                                                 @endforeach
@@ -425,9 +425,9 @@
                                                     {{ $delivery['product_name'] }}
                                                 @endif
                                             </td>
-                                            <td class="text-end">{{ number_format($delivery['total_qty'], 0, ',', '.') }}</td>
-                                            <td class="text-end">{{ number_format($delivery['qty_delivered'], 0, ',', '.') }}</td>
-                                            <td class="text-end">{{ number_format($delivery['remaining_qty'], 0, ',', '.') }}</td>
+                                            <td class="text-end">{{ number_format($delivery['total_qty'], 4, ',', '.') }}</td>
+                                            <td class="text-end">{{ number_format($delivery['qty_delivered'], 4, ',', '.') }}</td>
+                                            <td class="text-end">{{ number_format($delivery['remaining_qty'], 4, ',', '.') }}</td>
                                             <td class="text-start">
                                                 @if($delivery['remaining_qty'] == 0)
                                                     <span class="badge bg-label-success">Complete</span>

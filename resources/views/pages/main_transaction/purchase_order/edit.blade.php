@@ -230,9 +230,9 @@
                                                 </select>
                                             </div>
                                         </td>
-                                        <td><input type="number" class="form-control"
+                                        <td><input type="text" class="form-control numeric-input"
                                                 name="products[{{ $index }}][quantity]"
-                                                value="{{ $line['quantity'] }}" min="1" step="1" /></td>
+                                                value="{{ $line['quantity'] }}"  /></td>
                                         <td><input type="text" class="form-control"
                                                 name="products[{{ $index }}][unit]" value="{{ $line['unit'] }}"
                                                 disabled /></td>
@@ -276,8 +276,8 @@
                                         </select>
                                     </div>
                                 </td>
-                                <td><input type="number" class="form-control" name="products[0][quantity]"
-                                        min="1" step="1" disabled /></td>
+                                <td><input type="text" class="form-control numeric-input" name="products[0][quantity]"
+                                        disabled /></td>
                                 <td><input type="text" class="form-control" name="products[0][unit]" disabled />
                                 </td>
                                 <td>
@@ -459,6 +459,11 @@
     <script>
         $(function() {
             $('.currency-input').each(function() {
+                const val = $(this).val();
+                $(this).val(convertToIndonesianFormat(val));
+            });
+
+            $('.numeric-input').each(function() {
                 const val = $(this).val();
                 $(this).val(convertToIndonesianFormat(val));
             });
@@ -653,7 +658,7 @@
 
                 // Calculate from product table rows
                 $('#product-table tbody tr').each(function() {
-                    const quantity = parseFloat($(this).find('input[name*="[quantity]"]').val()) || 0;
+                    const quantity = parseCurrency($(this).find('input[name*="[quantity]"]').val()) || 0;
                     const unitPriceInput = $(this).find('input[name*="[unit_price]"]');
                     const unitPrice = parseCurrency(unitPriceInput.val()) || 0;
                     // const taxSelect = $(this).find('select[name*="[tax_id]"]').val();
@@ -882,7 +887,7 @@
                 $('.product-row.existing-entry:visible').each(function() {
                     const id = $(this).find('.product-id').val();
                     const productId = $(this).find('.product-select').val();
-                    const quantity = $(this).find('input[name*="[quantity]"]').val();
+                    const quantity = parseCurrency($(this).find('input[name*="[quantity]"]').val());
                     const unit = $(this).find('input[name*="[unit]"]').val();
                     const unitPrice = parseCurrency($(this).find('input[name*="[unit_price]"]').val());
                     // const taxId = $(this).find('select[name*="[tax_id]"]').val();
@@ -909,7 +914,7 @@
 
                 $('#products-tbody tr[data-repeater-item]').each(function(index) {
                     const productId = $(this).find('.product-select').val();
-                    const quantity = $(this).find('input[name*="[quantity]"]').val();
+                    const quantity = parseCurrency($(this).find('input[name*="[quantity]"]').val());
                     const unit = $(this).find('input[name*="[unit]"]').val();
                     const unitPrice = parseCurrency($(this).find('input[name*="[unit_price]"]').val());
                     // const taxId = $(this).find('select[name*="[tax_id]"]').val();
