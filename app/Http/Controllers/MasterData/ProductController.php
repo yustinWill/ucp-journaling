@@ -404,7 +404,7 @@ class ProductController extends Controller
                 ],
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
-                'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|integer|min:1',
+                'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric|min:1',
                 // Bundle accounts
                 'bundle_accounts' => [
                     function ($attribute, $value, $fail) use ($req) {

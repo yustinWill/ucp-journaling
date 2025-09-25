@@ -891,19 +891,19 @@
                 // Find the closest row and update fields in that row
                 const $row = $(this).closest('tr');
                 $row.find('.component-unit').val(unit);
-                updateComponentPriceRow($row);
+                // updateComponentPriceRow($row);
             });
 
-            function updateComponentPriceRow($row) {
-                const qty = parseInt($row.find('.component-qty').val() || 1);
-                const selectedOption = $row.find('.component-product option:selected');
-                const unitPrice = parseFloat(selectedOption.data('price') || 0);
-                const totalPrice = unitPrice * qty;
-            }
-            $(document).on('input', '.component-qty', function() {
-                const $row = $(this).closest('tr');
-                updateComponentPriceRow($row);
-            });
+            // function updateComponentPriceRow($row) {
+            //     const qty = parseInt($row.find('.component-qty').val() || 1);
+            //     const selectedOption = $row.find('.component-product option:selected');
+            //     const unitPrice = parseFloat(selectedOption.data('price') || 0);
+            //     const totalPrice = unitPrice * qty;
+            // }
+            // $(document).on('input', '.component-qty', function() {
+            //     const $row = $(this).closest('tr');
+            //     updateComponentPriceRow($row);
+            // });
 
             $(document).on('click', '.remove-account', function() {
                 const id = $(this).data('id');
@@ -1065,9 +1065,9 @@
 
                         $('#bundle-components-tbody tr.bundle-component-row').each(function() {
                             const productId = $(this).find('.component-product').val();
-                            const qtyRaw = $(this).find('.component-qty').val();
-                            const qty = qtyRaw ? qtyRaw.replace(/[^0-9]/g, '') : null;
-
+                            // const qtyRaw = $(this).find('.component-qty').val();
+                            // const qty = qtyRaw ? qtyRaw.replace(/[^0-9]/g, '') : null;
+                            const qty = parseCurrency($(this).find('.component-qty').val());
                             if (productId && productId !== "null" && qty && qty !== "null") {
                                 data.bundle_components.push({
                                     product_id: productId,
