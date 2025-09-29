@@ -16,10 +16,16 @@ class ProductionItemService
                 'p.name as product_name',
                 'p.code as product_code',
                 'p.total_stock as current_stock',
+                'pc.qty as quantity_per_bundle',
                 'u.name as unit_name',
                 'u.code as unit_code'
             )
             ->leftJoin('m_products as p', 'pi.raw_material_product_id', '=', 'p.id')
+            ->leftJoin('t_productions as pro', 'pi.production_id', '=', 'pro.id')
+            ->leftJoin('m_product_compositions as pc', function($join) {
+                $join->on('pi.raw_material_product_id', '=', 'pc.f_product_composition_product_id')
+                    ->on('pro.bundle_product_id', '=', 'pc.f_product_id');
+            })
             ->leftJoin('m_units as u', 'pi.unit_code', '=', 'u.code')
             ->where('pi.production_id', $productionId)
             ->orderBy('pi.id')

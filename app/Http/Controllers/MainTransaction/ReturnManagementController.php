@@ -136,7 +136,7 @@ class ReturnManagementController extends Controller
                 'internal_memo' => 'nullable|string',
                 'tags' => 'nullable|array',
                 'attachment' => 'nullable|file|max:10240|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip',
-                'products' => 'required|array|min:1',
+                'products' => 'required|array',
                 'products.*.f_product_id' => 'required|integer',
                 'products.*.f_source_invoice_product_id' => 'required|integer',
                 'products.*.return_qty' => 'required|numeric|min:0.001',

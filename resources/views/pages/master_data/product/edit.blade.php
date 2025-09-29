@@ -793,6 +793,10 @@
                 const val = $(this).val();
                 $(this).val(convertToIndonesianFormat(val));
             });
+            $('.numeric-input').each(function() {
+                const val = $(this).val();
+                $(this).val(convertToIndonesianFormat(val));
+            });
             initCleaveCurrency(document);
 
             let currentProductType = null;
@@ -1045,7 +1049,7 @@
                 }
             });
 
-            function onComponentProductChanbge(thisvar) {
+            function onComponentProductChange(thisvar) {
                 const selectedOption = $(thisvar).find(':selected');
                 const unit = selectedOption.data('unit') || 'pcs';
                 const price = selectedOption.data('price') || 0;
@@ -1053,29 +1057,30 @@
                 // Find the closest row and update fields in that row
                 const $row = $(thisvar).closest('tr');
                 $row.find('.component-unit').val(unit);
-                updateComponentPriceRow($row);
+                // updateComponentPriceRow($row);
             }
 
             // Bundle component events
             $(document).on('change', '.component-product', function() {
-                onComponentProductChanbge(this)
+                onComponentProductChange(this)
             });
 
 
             $('.component-product').each(function(index, element) {
-                onComponentProductChanbge(this)
+                onComponentProductChange(this)
             });
 
-            function updateComponentPriceRow($row) {
-                const qty = parseInt($row.find('.component-qty').val() || 1);
-                const selectedOption = $row.find('.component-product option:selected');
-                const unitPrice = parseFloat(selectedOption.data('price') || 0);
-                const totalPrice = unitPrice * qty;
-            }
-            $(document).on('input', '.component-qty', function() {
-                const $row = $(this).closest('tr');
-                updateComponentPriceRow($row);
-            });
+            // function updateComponentPriceRow($row) {
+            //     const qty = convertToIndonesianFormat($row.find('.component-qty').val());
+            //     alert('qty: ' + qty);   
+            //     const selectedOption = $row.find('.component-product option:selected');
+            //     // const unitPrice = parseFloat(selectedOption.data('price') || 0);
+            //     // const totalPrice = unitPrice * qty;
+            // }
+            // $(document).on('input', '.component-qty', function() {
+            //     const $row = $(this).closest('tr');
+            //     updateComponentPriceRow($row);
+            // });
 
             $(document).on('click', '.remove-account', function() {
                 const id = $(this).data('id');
@@ -1223,9 +1228,8 @@
                         $('#bundle-components-tbody tr.bundle-component-row').each(function() {
                             const productId = $(this).find('.component-product').val();
                             const compositionId = $(this).find('.composition_id').val();
-                            const qtyRaw = $(this).find('.component-qty').val();
-                            const qty = qtyRaw ? qtyRaw.replace(/[^0-9.]/g, '') : null;
-
+                            const qty = parseCurrency($(this).find('.component-qty').val());
+                            
                             if (productId && productId !== "null" && qty && qty !== "null") {
                                 data.bundle_components.push({
                                     product_id: productId,

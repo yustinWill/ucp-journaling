@@ -204,7 +204,7 @@ app/Domains/PurchaseInvoice/
 'transaction_date' => 'required|date|after_or_equal:invoice_date',
 'due_date' => 'required|date|after_or_equal:transaction_date',
 'purchase_order_id' => 'required|exists:t_purchase_orders,id',
-'products' => 'required|array|min:1',
+'products' => 'required|array',
 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240'
 ```
 

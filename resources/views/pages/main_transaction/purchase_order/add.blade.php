@@ -213,13 +213,13 @@
                     <table class="table table-bordered" id="product-table">
                         <thead>
                             <tr>
-                                <th style="width: 25%;">Produk</th>
-                                <th style="width: 12%;">Kuantitas</th>
-                                <th style="width: 10%;">Satuan</th>
-                                <th style="width: 18%;">Harga Satuan</th>
-                                {{-- <th style="width: 15%;">Pajak</th> --}}
-                                <th style="width: 15%;">Jumlah</th>
-                                <th style="width: 5%;">Aksi</th>
+                                <th>Produk</th>
+                                <th>Kuantitas</th>
+                                <th>Satuan</th>
+                                <th>Harga Satuan</th>
+                                {{-- <th>Pajak</th> --}}
+                                <th>Jumlah</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="products-tbody" data-repeater-list>
@@ -232,8 +232,8 @@
                                         </select>
                                     </div>
                                 </td>
-                                <td><input type="number" class="form-control" name="products[0][quantity]"
-                                        min="1" step="1" disabled /></td>
+                                <td><input type="text" class="form-control numeric-input" name="products[0][quantity]"
+                                         /></td>
                                 <td><input type="text" class="form-control unit-input-box" name="products[0][unit]"
                                         disabled /></td>
                                 <td>
@@ -329,42 +329,6 @@
                 <!-- Right Side: Financial Summary Section -->
                 <div class="col-md-6">
                     <div class="summary-section ps-4">
-                        {{-- <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="form-label">Subtotal</label>
-                            </div>
-                            <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="subtotal-amount"
-                                    dir="rtl" value="Rp 0" disabled>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="form-label">Total Pajak</label>
-                            </div>
-                            <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="tax-amount" dir="rtl"
-                                    value="Rp 0" disabled>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="form-label">Total Sebelum Diskon</label>
-                            </div>
-                            <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="total-before-discount"
-                                    name="total_price_before_discount" dir="rtl" value="Rp 0" disabled>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="form-label">Diskon</label>
-                            </div>
-                            <div class="col-6">
-                                <input type="text" class="form-control currency-input" id="discount-amount"
-                                    name="discount_amount" dir="rtl" value="Rp 0">
-                            </div>
-                        </div> --}}
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label"><strong>Total Akhir</strong></label>
@@ -379,8 +343,6 @@
             </div>
 
             <!-- Hidden fields for calculations -->
-            {{-- <input type="hidden" id="purchase-order-subtotal" name="subtotal" value="0" /> --}}
-            {{-- <input type="hidden" id="purchase-order-tax-amount" name="tax_amount" value="0" /> --}}
             <input type="hidden" id="purchase-order-total" name="total" value="0" />
             <input type="hidden" id="purchase-order-currency" name="currency" value="IDR" />
 
@@ -663,7 +625,7 @@
 
                 // Calculate from product table rows
                 $('#product-table tbody tr').each(function() {
-                    const quantity = parseFloat($(this).find('input[name*="[quantity]"]').val()) || 0;
+                    const quantity = parseCurrency($(this).find('input[name*="[quantity]"]').val()) || 0;
                     const unitPriceInput = $(this).find('input[name*="[unit_price]"]');
                     const unitPrice = parseCurrency(unitPriceInput.val()) || 0;
                     const taxSelect = $(this).find('select[name*="[tax_id]"]').val();

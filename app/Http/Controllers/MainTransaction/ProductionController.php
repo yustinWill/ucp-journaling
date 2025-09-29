@@ -336,7 +336,7 @@ class ProductionController extends Controller
 
         try {
             $reversalData = $request->validate([
-                'quantity_to_reverse' => 'nullable|numeric|min:1',
+                'quantity_to_reverse' => 'nullable|numeric',
                 'reason' => 'required|string|max:500',
                 'confirmation' => 'required|accepted',
             ]);

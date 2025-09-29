@@ -210,31 +210,31 @@
                             <table class="table table-bordered" id="product-detail-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 30%;">Produk</th>
-                                        <th style="width: 12%;">Qty PO</th>
-                                        <th style="width: 12%;">Previously Delivered</th>
-                                        <th style="width: 12%;">This Delivery</th>
-                                        <th style="width: 12%;">Remaining</th>
-                                        <th style="width: 14%;">Unit Price</th>
-                                        <th style="width: 14%;">Note</th>
-                                        <th style="width: 8%;">Status</th>
+                                        <th>Produk</th>
+                                        <th>Qty PO</th>
+                                        <th>Previously Delivered</th>
+                                        <th>This Delivery</th>
+                                        <th>Remaining</th>
+                                        <th>Unit Price</th>
+                                        <th>Note</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($purchaseDeliveryProducts ?? [] as $product)
                                         <tr>
                                             <td>{{ $product->product_name }}</td>
-                                            <td class="text-center">{{ number_format($product->ordered_qty ?? 0) }} {{ $product->unit_name }}</td>
-                                            <td class="text-center">
-                                                {{ number_format($product->delivered_qty_before ?? 0) }} {{ $product->unit_name }}
+                                            <td class="text-end">{{ number_format($product->ordered_qty, 4, ',', '.') }} {{ $product->unit_name }}</td>
+                                            <td class="text-end">
+                                                {{ number_format($product->delivered_qty_before , 4, ',', '.') }} {{ $product->unit_name }}
                                             </td>
-                                            <td class="text-center">{{ number_format($product->qty ?? 0) }} {{ $product->unit_name }}</td>
-                                            </td>
-                                            <td class="text-center">
-                                                {{ number_format($product->remaining_qty_after ?? 0) }} {{ $product->unit_name }}
+                                            <td class="text-end">{{ number_format($product->qty, 4, ',', '.') }} {{ $product->unit_name }}</td>
                                             </td>
                                             <td class="text-end">
-                                                {{ number_format($product->price_per_qty ?? 0, 0, ',', '.') }}</td>
+                                                {{ number_format($product->remaining_qty_after, 4, ',', '.') }} {{ $product->unit_name }}
+                                            </td>
+                                            <td class="text-end">
+                                                {{ number_format($product->price_per_qty, 4, ',', '.') }}</td>
                                             <td>
                                                 {{ $product->product_delivery_note ?? '-' }}
                                             </td>

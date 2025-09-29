@@ -137,8 +137,8 @@ class TransactionNumberController extends Controller
         $request->validate([
             'id' => 'required|exists:m_transaction_numbers,id',
             'format_template' => 'required|string|max:500',
-            'current_counter' => 'required|integer|min:1',
-            'counter_padding' => 'required|integer|min:1|max:10',
+            'current_counter' => 'required|integer',
+            'counter_padding' => 'required|integer|max:10',
             'reset_frequency' => 'required|in:never,daily,monthly,yearly',
         ]);
 
@@ -187,8 +187,8 @@ class TransactionNumberController extends Controller
             'template' => 'required|string',
             'module_initial' => 'required|string|max:2',
             'module_name' => 'required|string',
-            'counter' => 'required|integer|min:1',
-            'padding' => 'required|integer|min:1|max:10',
+            'counter' => 'required|integer',
+            'padding' => 'required|integer|max:10',
         ]);
 
         // Validate template
@@ -266,7 +266,7 @@ class TransactionNumberController extends Controller
         }
 
         $request->validate([
-            'counter' => 'required|integer|min:1',
+            'counter' => 'required|integer',
         ]);
 
         try {

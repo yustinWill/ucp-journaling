@@ -23,9 +23,9 @@ function initCleaveCurrency(context) {
                 numeralThousandsGroupStyle: 'thousand',
                 numeralDecimalMark: ',',
                 delimiter: '.',
+                numeralDecimalScale: 4, // <-- allow up to 4 decimals
                 noImmediatePrefix: false,
                 rawValueTrimPrefix: true
-
             });
         }
     });
@@ -34,8 +34,8 @@ function initCleaveCurrency(context) {
 function formatCurrency(amount) {
     if (!amount || isNaN(amount)) return 'Rp 0';
     return 'Rp ' + new Intl.NumberFormat('id-ID', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 4
     }).format(amount)
 }
 
@@ -50,17 +50,59 @@ function parseCurrency(str) {
     return parseFloat(str) || 0;
 }
 
+// function convertToIndonesianFormat(str) {
+//     if (!str) return '';
+//     // Remove all non-digit, non-dot, non-comma
+//     str = str.replace(/[^0-9.,]/g, '');
+//     // US format: 100,000.00 → Indonesian: 100.000,00
+//     // Remove commas (thousand separator), replace dot (decimal) with comma
+//     str = str.replace(/,/g, '.').replace(/\.(\d{2})$/, ',$1');
+//     return str;
+// }
+
 function convertToIndonesianFormat(str) {
     if (!str) return '';
     // Remove all non-digit, non-dot, non-comma
     str = str.replace(/[^0-9.,]/g, '');
-    // US format: 100,000.00 → Indonesian: 100.000,00
-    // Remove commas (thousand separator), replace dot (decimal) with comma
-    str = str.replace(/,/g, '.').replace(/\.(\d{2})$/, ',$1');
+    // Remove commas (thousand separator)
+    str = str.replace(/,/g, '.');
+    // Replace last dot (decimal separator) with comma, allowing up to 4 decimals
+    str = str.replace(/\.([0-9]{1,4})$/, ',$1');
     return str;
+    //convert ke format display
 }
+
+function toIndonesianNumberFormat(value) {
+    if (value == null || value === '') return '';
+    // Remove all non-digit, non-dot, non-comma
+    value = value.toString().replace(/[^0-9.,]/g, '');
+
+    // Normalize to dot as decimal separator
+    if (value.indexOf(',') > -1 && value.indexOf('.') > -1) {
+        // Indonesian format: 1.234,5678
+        value = value.replace(/\./g, ''); // remove thousand separator
+        value = value.replace(',', '.');  // convert decimal to dot
+    } else {
+        // US format: 1,234.5678 or plain: 1234.5678
+        value = value.replace(/,/g, ''); // remove thousand separator
+    }
+
+    let num = parseFloat(value);
+    if (isNaN(num)) return '';
+
+    // Limit to max 4 decimals
+    num = num.toFixed(4);
+
+    // Split integer and decimals
+    let parts = num.split('.');
+    // Add thousand separator to integer part
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    // Join with comma as decimal separator
+    return parts[1] ? `${parts[0]},${parts[1]}` : parts[0];
+}   // "1.234.567,8912"
 
 window.initCleaveCurrency = initCleaveCurrency;
 window.formatCurrency = formatCurrency;
 window.parseCurrency = parseCurrency;
 window.convertToIndonesianFormat = convertToIndonesianFormat;
+window.toIndonesianNumberFormat = toIndonesianNumberFormat;

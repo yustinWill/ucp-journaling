@@ -368,7 +368,7 @@ class ExpenseController extends Controller
             'description' => 'nullable|string',
             'memo' => 'nullable|string',
             'tags' => 'nullable|array',
-            'expense_lines' => 'required|array|min:1',
+            'expense_lines' => 'required|array',
         ]);
 
         // Update logic would go here
