@@ -13,6 +13,7 @@ use App\Http\Controllers\MainTransaction\ReturnManagementController;
 use App\Http\Controllers\MainTransaction\SalesDeliveryController;
 use App\Http\Controllers\MainTransaction\SalesInvoiceController;
 use App\Http\Controllers\MainTransaction\SalesOrderController;
+use App\Http\Controllers\MainTransaction\SalesOrderRevenueSplitController;
 use App\Http\Controllers\MainTransaction\StockAdjustmentController;
 use Illuminate\Support\Facades\Route;
 
@@ -157,6 +158,14 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         // AJAX endpoints
         Route::get($base_segment.$sales_order_segment.'/get_customer_info/{customer_id}', 'getCustomerInfo')->name('main_transaction.sales_order.get_customer_info');
         Route::get($base_segment.$sales_order_segment.'/get_warehouse_products/{customer_id}', 'getWarehouseProducts')->name('main_transaction.sales_order.get_warehouse_products');
+    });
+
+    // Sales Order Revenue Split Routes
+    Route::controller(SalesOrderRevenueSplitController::class)->group(function () use ($base_segment, $sales_order_segment) {
+        Route::get($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}', 'getRevenueSplits')->name('main_transaction.sales_order.revenue_split.get');
+        Route::get($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}/breakdown', 'showRevenueSplitBreakdown')->name('main_transaction.sales_order.revenue_split.breakdown');
+        Route::put($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}/product/{productId}', 'updateRevenueSplit')->name('main_transaction.sales_order.revenue_split.update');
+        Route::post($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}/product/{productId}/reset', 'resetRevenueSplit')->name('main_transaction.sales_order.revenue_split.reset');
     });
 
     // Sales Delivery Routes (Separated Module)

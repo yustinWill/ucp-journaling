@@ -77,6 +77,11 @@
                             <i class="icon-base ti tabler-truck-delivery me-2"></i>
                             <b>Sales Delivery & Invoice</b>
                         </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="revenue-split-list-item"
+                            data-bs-toggle="list" href="#horizontal-revenue-split" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-percentage me-2"></i>
+                            <b>Revenue Split</b>
+                        </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="return-history-list-item"
                             data-bs-toggle="list" href="#horizontal-return-history" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-arrow-back-up me-2"></i>
@@ -489,13 +494,29 @@
                             </div>
                         </div>
 
+                        <!-- Revenue Split Tab -->
+                        <div class="tab-pane fade" id="horizontal-revenue-split" role="tabpanel">
+                            <div class="section-header mt-12">
+                                <h6>Revenue Split Breakdown</h6>
+                            </div>
+                            
+                            <div id="revenue-split-content">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Memuat revenue split breakdown...</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Return History Tab -->
                         <div class="tab-pane fade" id="horizontal-return-history" role="tabpanel">
-                            <div class="section-header mt-12">
+                            <div class="section-header mt-6">
                                 <h6>Daftar Sales Return</h6>
                             </div>
 
-                            <div class="mx-n5 my-4">
+                            <div class="table-responsive">
                                 <table class="table table-bordered" id="sales-return-table">
                                     <thead>
                                         <tr>
@@ -641,6 +662,220 @@
                 paging: false,
                 info: false
             });
+
+            // Revenue Split Tab Loading
+            let revenueSplitLoaded = false;
+            $('#revenue-split-list-item').on('click', function() {
+                if (!revenueSplitLoaded) {
+                    loadRevenueSplit();
+                }
+            });
         });
+
+        // Load Revenue Split Function
+        function loadRevenueSplit() {
+            const salesOrderId = {{ $salesOrder->id }};
+            
+            $.ajax({
+                url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/breakdown`,
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        $('#revenue-split-content').html(response.html);
+                        revenueSplitLoaded = true;
+                        
+                        // Initialize currency formatting for revenue split inputs
+                        initializeCurrencyFormatting();
+                    } else {
+                        $('#revenue-split-content').html(`
+                            <div class="alert alert-danger">
+                                <i class="icon-base ti tabler-alert-circle me-2"></i>
+                                ${response.message}
+                            </div>
+                        `);
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Terjadi kesalahan saat memuat revenue split breakdown';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
+                    $('#revenue-split-content').html(`
+                        <div class="alert alert-danger">
+                            <i class="icon-base ti tabler-alert-circle me-2"></i>
+                            ${errorMessage}
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // Refresh Revenue Split Function
+        function refreshRevenueSplit() {
+            revenueSplitLoaded = false;
+            $('#revenue-split-content').html(`
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Memuat revenue split breakdown...</p>
+                </div>
+            `);
+            loadRevenueSplit();
+        }
+
+        // Edit Revenue Split Function
+        function editRevenueSplit(productId, productName, splitData) {
+            // Populate modal with data
+            $('#editProductId').val(productId);
+            $('#editProductName').text(productName);
+            $('#editProductTotal').val(splitData.product_total_amount);
+            $('#editTotalDisplay').text('Rp ' + formatNumber(splitData.product_total_amount));
+            
+            // Set split amounts
+            $('#editPorsiPabrik').val(formatNumber(splitData.porsi_pabrik));
+            $('#editPorsiOwner').val(formatNumber(splitData.porsi_owner)); 
+            $('#editPorsiPerusahaan').val(formatNumber(splitData.porsi_perusahaan));
+            
+            // Set remaining allocation radio
+            $(`input[name="edit_remaining_allocation"][value="${splitData.remaining_allocation}"]`).prop('checked', true);
+            
+            // Set notes
+            $('#editSplitNotes').val(splitData.split_notes || '');
+            
+            // Calculate totals
+            calculateEditSplitTotals();
+            
+            // Show modal
+            $('#editRevenueSplitModal').modal('show');
+        }
+
+        // Reset Revenue Split Function
+        function resetRevenueSplit(productId, productName) {
+            if (confirm(`Apakah Anda yakin ingin reset revenue split untuk produk "${productName}" ke konfigurasi default?`)) {
+                const salesOrderId = {{ $salesOrder->id }};
+                
+                $.ajax({
+                    url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/product/${productId}/reset`,
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            refreshRevenueSplit();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = 'Terjadi kesalahan saat reset revenue split';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        toastr.error(errorMessage);
+                    }
+                });
+            }
+        }
+
+        // Initialize Currency Formatting
+        function initializeCurrencyFormatting() {
+            // Currency input formatting for edit modal
+            $('.currency-input').on('input', function() {
+                let value = $(this).val().replace(/[^\d]/g, '');
+                $(this).val(formatNumber(value));
+                calculateEditSplitTotals();
+            });
+
+            // Handle edit revenue split form submission
+            $('#editRevenueSplitForm').on('submit', function(e) {
+                e.preventDefault();
+                saveRevenueSplit();
+            });
+        }
+
+        // Calculate Edit Split Totals
+        function calculateEditSplitTotals() {
+            const pabrik = parseNumber($('#editPorsiPabrik').val()) || 0;
+            const owner = parseNumber($('#editPorsiOwner').val()) || 0;
+            const perusahaan = parseNumber($('#editPorsiPerusahaan').val()) || 0;
+            const productTotal = parseNumber($('#editProductTotal').val()) || 0;
+            
+            const totalSplit = pabrik + owner + perusahaan;
+            const difference = totalSplit - productTotal;
+            
+            $('#editTotalSplit').val(formatNumber(totalSplit));
+            $('#editDifference').val(formatNumber(Math.abs(difference)));
+            
+            // Update difference styling
+            if (Math.abs(difference) > 0.01) {
+                $('#editDifference').removeClass('text-success').addClass('text-danger');
+            } else {
+                $('#editDifference').removeClass('text-danger').addClass('text-success');
+            }
+        }
+
+        // Save Revenue Split
+        function saveRevenueSplit() {
+            const productId = $('#editProductId').val();
+            const salesOrderId = {{ $salesOrder->id }};
+            
+            const formData = {
+                porsi_pabrik: parseNumber($('#editPorsiPabrik').val()),
+                porsi_owner: parseNumber($('#editPorsiOwner').val()),
+                porsi_perusahaan: parseNumber($('#editPorsiPerusahaan').val()),
+                remaining_allocation: $('input[name="edit_remaining_allocation"]:checked').val(),
+                product_total_amount: parseNumber($('#editProductTotal').val()),
+                split_notes: $('#editSplitNotes').val()
+            };
+            
+            // Validate totals match
+            const totalSplit = formData.porsi_pabrik + formData.porsi_owner + formData.porsi_perusahaan;
+            if (Math.abs(totalSplit - formData.product_total_amount) > 0.01) {
+                toastr.error('Total porsi harus sama dengan total produk');
+                return;
+            }
+            
+            $.ajax({
+                url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/product/${productId}`,
+                type: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $('#editRevenueSplitModal').modal('hide');
+                        refreshRevenueSplit();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'Terjadi kesalahan saat menyimpan revenue split';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        errorMessage = Object.values(xhr.responseJSON.errors).flat().join('<br>');
+                    }
+                    toastr.error(errorMessage);
+                }
+            });
+        }
+
+        // Utility Functions
+        function formatNumber(value) {
+            if (!value || value === 0) return '0';
+            return parseInt(value).toLocaleString('id-ID');
+        }
+
+        function parseNumber(value) {
+            if (!value) return 0;
+            return parseInt(value.toString().replace(/[^\d]/g, '')) || 0;
+        }
     </script>
 @endsection

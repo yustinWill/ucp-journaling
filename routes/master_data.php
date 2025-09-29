@@ -6,6 +6,8 @@ use App\Http\Controllers\MasterData\CoaController;
 use App\Http\Controllers\MasterData\ContactController;
 use App\Http\Controllers\MasterData\PaymentTermController;
 use App\Http\Controllers\MasterData\ProductController;
+use App\Http\Controllers\MasterData\ProductRevenueSplitController;
+use App\Http\Controllers\MasterData\RevenueSplitController;
 use App\Http\Controllers\MasterData\RoleController;
 use App\Http\Controllers\MasterData\SalesPersonController;
 use App\Http\Controllers\MasterData\StockOpnameController;
@@ -32,8 +34,9 @@ $category_segment = '/category';
 $sales_person_segment = '/sales_person';
 $payment_term_segment = '/payment_term';
 $transaction_number_segment = '/transaction_number';
+$revenue_split_segment = '/revenue_split';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment, $revenue_split_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment.$contact_segment.'/index', 'index')->name('master_data.contact.index');
         Route::get($base_segment.$contact_segment.'/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table');
@@ -220,5 +223,32 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::post($base_segment.$transaction_number_segment.'/generate_number/{module}', 'generateNumber')->name('master_data.transaction_number.generate_number');
         Route::post($base_segment.$transaction_number_segment.'/check_duplicate/{module}', 'checkDuplicate')->name('master_data.transaction_number.check_duplicate');
         Route::post($base_segment.$transaction_number_segment.'/reset_counter/{id}', 'resetCounter')->name('master_data.transaction_number.reset_counter');
+    });
+
+    // Revenue Split Routes
+    Route::controller(RevenueSplitController::class)->group(function () use ($base_segment, $revenue_split_segment) {
+        Route::get($base_segment.$revenue_split_segment, function() {
+            return redirect()->route('master_data.revenue_split.index');
+        });
+        Route::get($base_segment.$revenue_split_segment.'/index', 'index')->name('master_data.revenue_split.index');
+        Route::get($base_segment.$revenue_split_segment.'/index_data_table', 'index_data_table')->name('master_data.revenue_split.index_data_table');
+        Route::get($base_segment.$revenue_split_segment.'/add', 'add')->name('master_data.revenue_split.add');
+        Route::post($base_segment.$revenue_split_segment.'/save', 'save')->name('master_data.revenue_split.save');
+        Route::get($base_segment.$revenue_split_segment.'/edit/{id}', 'edit')->name('master_data.revenue_split.edit');
+        Route::post($base_segment.$revenue_split_segment.'/update', 'update')->name('master_data.revenue_split.update');
+        Route::get($base_segment.$revenue_split_segment.'/detail/{id}', 'detail')->name('master_data.revenue_split.detail');
+        Route::get($base_segment.$revenue_split_segment.'/preview/{id}', 'preview')->name('master_data.revenue_split.preview');
+        Route::get($base_segment.$revenue_split_segment.'/audit_log_data_table/{id}', 'audit_log_data_table')->name('master_data.revenue_split.audit_log_data_table');
+        Route::get($base_segment.$revenue_split_segment.'/export', 'export')->name('master_data.revenue_split.export');
+        Route::get($base_segment.$revenue_split_segment.'/import', 'import')->name('master_data.revenue_split.import');
+    });
+
+    // Product Revenue Split Configuration Routes
+    Route::controller(ProductRevenueSplitController::class)->group(function () use ($base_segment, $product_segment) {
+        Route::get($base_segment.'/product_revenue_split/configurations', 'getAllConfigurations')->name('master_data.product_revenue_split.configurations');
+        Route::get($base_segment.$product_segment.'/revenue-split/{productId}', 'getConfiguration')->name('master_data.product.revenue_split.get');
+        Route::post($base_segment.$product_segment.'/revenue-split/{productId}', 'saveConfiguration')->name('master_data.product.revenue_split.save');
+        Route::delete($base_segment.$product_segment.'/revenue-split/{productId}', 'deleteConfiguration')->name('master_data.product.revenue_split.delete');
+        Route::post($base_segment.$product_segment.'/revenue-split/{productId}/calculate', 'calculateSplit')->name('master_data.product.revenue_split.calculate');
     });
 });

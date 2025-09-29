@@ -13,6 +13,7 @@ enum AuditLogTypes: string
     case MASTER_DATA_CONTACT = 'MASTER_DATA_CONTACT';
     case MAIN_TRANSACTION_JOURNAL = 'MAIN_TRANSACTION_JOURNAL';
     case MASTER_DATA_PRODUCT = 'MASTER_DATA_PRODUCT';
+    case MASTER_DATA_REVENUE_SPLIT = 'MASTER_DATA_REVENUE_SPLIT';
 
     public function label(): string
     {
@@ -26,6 +27,7 @@ enum AuditLogTypes: string
             self::MASTER_DATA_CONTACT => 'Master Data Kontak',
             self::MAIN_TRANSACTION_JOURNAL => 'Main Transaction Journal',
             self::MASTER_DATA_PRODUCT => 'Master Data Produk',
+            self::MASTER_DATA_REVENUE_SPLIT => 'Master Data Keuntungan Penjualan',
         };
     }
 
@@ -41,6 +43,7 @@ enum AuditLogTypes: string
             self::MASTER_DATA_CONTACT => 'MASTER_DATA_CONTACT',
             self::MAIN_TRANSACTION_JOURNAL => 'MAIN_TRANSACTION_JOURNAL',
             self::MASTER_DATA_PRODUCT => 'MASTER_DATA_PRODUCT',
+            self::MASTER_DATA_REVENUE_SPLIT => 'MASTER_DATA_REVENUE_SPLIT',
         };
     }
 }

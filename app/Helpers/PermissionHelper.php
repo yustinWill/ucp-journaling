@@ -48,6 +48,7 @@ class PermissionHelper
                 'master_data_product' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
                 'master_data_user' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
                 'master_data_warehouse' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_revenue_split' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
 
                 // Transaction permissions
                 'main_transaction_sales_order' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true, 'import' => true, 'export' => true],

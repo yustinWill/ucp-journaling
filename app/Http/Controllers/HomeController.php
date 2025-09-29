@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\RevenueSplit\Services\RevenueSplitService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -95,6 +96,12 @@ class HomeController extends Controller
             ],
         ];
 
-        return view('pages.dashboard', $dashboardData);
+        // Add Revenue Split data for Dashboard Keuntungan Penjualan section
+        $revenueSplitData = [
+            'current_cycle' => app(RevenueSplitService::class)->findAll()->where('status', 'ACTIVE')->first(),
+            'revenue_split_summary' => app(RevenueSplitService::class)->getSummaryCards(),
+        ];
+
+        return view('pages.dashboard', array_merge($dashboardData, $revenueSplitData));
     }
 }

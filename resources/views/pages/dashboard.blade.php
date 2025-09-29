@@ -171,7 +171,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-3">
-                        <a href="{{ route('main_transaction.sales.add.so') }}" class="btn btn-primary">
+                        <a href="{{ route('main_transaction.sales_order.add') }}" class="btn btn-primary">
                             <i class="icon-base ti tabler-plus me-2"></i>
                             Buat Penjualan
                         </a>
@@ -201,6 +201,156 @@
                             Kelola Kontak
                         </a>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Keuntungan Penjualan Section -->
+    <div class="row mt-6">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Dashboard Keuntungan Penjualan</h5>
+                    <a href="{{ route('master_data.revenue_split.index') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="icon-base ti tabler-eye me-1"></i>
+                        Lihat Detail
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if($current_cycle)
+                        <!-- Current Cycle Information -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-8">
+                                <h6 class="text-primary mb-2">Cycle Q1 2025</h6>
+                                <h4 class="mb-1">{{ $current_cycle->cycle_name }}</h4>
+                                <p class="text-muted mb-3">{{ $current_cycle->description }}</p>
+                                
+                                <!-- Cycle Progress Indicators -->
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-3">
+                                                <span class="avatar-initial rounded bg-label-success">
+                                                    <i class="icon-base ti tabler-calendar"></i>
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted">Periode</small>
+                                                <div class="fw-semibold">{{ date('M Y', strtotime($current_cycle->start_date)) }} - {{ date('M Y', strtotime($current_cycle->end_date)) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-3">
+                                                <span class="avatar-initial rounded bg-label-warning">
+                                                    <i class="icon-base ti tabler-target"></i>
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted">Status Cycle</small>
+                                                <div class="fw-semibold">
+                                                    <span class="badge bg-label-warning">{{ $current_cycle->status }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm me-3">
+                                                <span class="avatar-initial rounded bg-label-info">
+                                                    <i class="icon-base ti tabler-coins"></i>
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted">Total Target</small>
+                                                <div class="fw-semibold">Rp {{ number_format($current_cycle->total_target, 0, ',', '.') }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <!-- Komponen Keuntungan Summary -->
+                                <div class="border rounded p-3">
+                                    <h6 class="text-center mb-3">Komponen Keuntungan</h6>
+                                    
+                                    <!-- Pabrik -->
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="badge bg-label-primary me-2">P</div>
+                                            <small>Pabrik</small>
+                                        </div>
+                                        <small class="fw-semibold">{{ number_format(($current_cycle->target_pabrik / $current_cycle->total_target) * 100, 1) }}%</small>
+                                    </div>
+                                    
+                                    <!-- Owner -->
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="badge bg-label-success me-2">O</div>
+                                            <small>Owner</small>
+                                        </div>
+                                        <small class="fw-semibold">{{ number_format(($current_cycle->target_owner / $current_cycle->total_target) * 100, 1) }}%</small>
+                                    </div>
+                                    
+                                    <!-- Perusahaan -->
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="badge bg-label-info me-2">C</div>
+                                            <small>Perusahaan</small>
+                                        </div>
+                                        <small class="fw-semibold">{{ number_format(($current_cycle->target_perusahaan / $current_cycle->total_target) * 100, 1) }}%</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Breakdown Cards -->
+                        <div class="row g-3">
+                            <div class="col-lg-4">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <i class="icon-base ti tabler-building-factory mb-2" style="font-size: 2rem;"></i>
+                                        <h6 class="text-white mb-1">Bagian Pabrik</h6>
+                                        <h4 class="text-white mb-1">Rp {{ number_format($current_cycle->target_pabrik, 0, ',', '.') }}</h4>
+                                        <small class="text-white-50">{{ number_format(($current_cycle->target_pabrik / $current_cycle->total_target) * 100, 1) }}% dari target</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <i class="icon-base ti tabler-user-circle mb-2" style="font-size: 2rem;"></i>
+                                        <h6 class="text-white mb-1">Bagian Owner</h6>
+                                        <h4 class="text-white mb-1">Rp {{ number_format($current_cycle->target_owner, 0, ',', '.') }}</h4>
+                                        <small class="text-white-50">{{ number_format(($current_cycle->target_owner / $current_cycle->total_target) * 100, 1) }}% dari target</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="icon-base ti tabler-building mb-2" style="font-size: 2rem;"></i>
+                                        <h6 class="text-white mb-1">Bagian Perusahaan</h6>
+                                        <h4 class="text-white mb-1">Rp {{ number_format($current_cycle->target_perusahaan, 0, ',', '.') }}</h4>
+                                        <small class="text-white-50">{{ number_format(($current_cycle->target_perusahaan / $current_cycle->total_target) * 100, 1) }}% dari target</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <!-- No Active Cycle -->
+                        <div class="text-center py-4">
+                            <i class="icon-base ti tabler-chart-pie text-muted mb-3" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted">Tidak ada cycle aktif</h5>
+                            <p class="text-muted mb-3">Belum ada cycle keuntungan yang sedang aktif saat ini</p>
+                            <a href="{{ route('master_data.revenue_split.add') }}" class="btn btn-primary">
+                                <i class="icon-base ti tabler-plus me-2"></i>
+                                Buat Cycle Baru
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

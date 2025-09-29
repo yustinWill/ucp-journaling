@@ -129,6 +129,12 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Master Data & Operasional</span>
         </li>
+        <li class="menu-item @if (request()->routeIs(['master_data.revenue_split.*'])) active @endif">
+            <a href="{{ route('master_data.revenue_split.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-chart-pie"></i>
+                <div data-i18n="RevenueSpilt">Keuntungan Penjualan</div>
+            </a>
+        </li>
         <li class="menu-item @if (request()->routeIs(['master_data.contact.*'])) active @endif">
             <a href="{{ route('master_data.contact.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-address-book"></i>
