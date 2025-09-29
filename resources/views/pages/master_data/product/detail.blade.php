@@ -21,10 +21,10 @@
                         @if ($totalActions < 3)
                             <!-- Show buttons directly when less than 3 actions -->
                             <div class="d-flex gap-2 justify-content-end">
-                                <button type="button" class="btn btn-outline-warning btn-md waves-effect waves-light" 
+                                <!-- <button type="button" class="btn btn-outline-warning btn-md waves-effect waves-light" 
                                     onclick="openRevenueSplitModal()" id="revenue-split-btn">
                                     <i class="icon-base ti tabler-percentage me-2"></i>Revenue Split
-                                </button>
+                                </button> -->
                                 <a href="{{ route('master_data.product.edit', ['id' => $product->id]) }}"
                                     class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
@@ -39,8 +39,8 @@
                                     Aksi
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="openRevenueSplitModal()">
-                                            <i class="icon-base ti tabler-percentage me-2"></i>Revenue Split Config</a></li>
+                                    <!-- <li><a class="dropdown-item" href="javascript:void(0)" onclick="openRevenueSplitModal()">
+                                            <i class="icon-base ti tabler-percentage me-2"></i>Revenue Split Config</a></li> -->
                                     <li><a class="dropdown-item"
                                             href="{{ route('master_data.product.edit', ['id' => $product->id]) }}">
                                             <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
@@ -82,6 +82,11 @@
                             data-bs-toggle="list" href="#horizontal-inventory" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-package me-2"></i>
                             <b>Persediaan</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="batch-list-item"
+                            data-bs-toggle="list" href="#horizontal-batch" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-layers-linked me-2"></i>
+                            <b>Batch Produk</b>
                         </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
@@ -323,8 +328,6 @@
                                             <th>Stok Tersedia</th>
                                             {{-- <th>Stok Reserved</th> --}}
                                             {{-- <th>Total Stok</th> --}}
-                                            <th>Harga Rata-rata</th>
-                                            <th>Nilai Persediaan</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -342,8 +345,6 @@
                                                 {{-- <td class="text-end">{{ number_format($inventory->reserved_stock) }} --}}
                                                 {{-- </td> --}}
                                                 {{-- <td class="text-end">{{ number_format($inventory->total_stock) }}</td> --}}
-                                                <td class="text-end">0</td>
-                                                <td class="text-end">0</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -368,6 +369,57 @@
                                             </th>
                                         </tr>
                                     </tfoot> --}}
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Batch Tab -->
+                        <div class="tab-pane fade" id="horizontal-batch" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Riwayat Batch Produk</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table class="table table-bordered" id="batch-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal Batch</th>
+                                            <th>Kode Batch</th>
+                                            <th>Referensi Batch</th>
+                                            <th>Sumber</th>
+                                            <th>Qty Awal</th>
+                                            <th>Qty Tersisa</th>
+                                            <th>HPP</th>
+                                            <th>Status HPP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(count($batchData['batches']) === 0)
+                                            <tr>
+                                                <td colspan="8" class="text-center">Belum ada data batch untuk produk ini</td>
+                                            </tr>
+                                        @else
+                                            @foreach($batchData['batches'] as $batch)
+                                                <tr>
+                                                    <td>{{ \Carbon\Carbon::parse($batch['batch_date'])->format('d/m/Y') }}</td>
+                                                    <td><span class="badge bg-label-info">{{ $batch['batch_reference'] }}</span></td>
+                                                    <td>{{ $batch['batch_reference'] }}</td>
+                                                    <td><span class="badge bg-label-primary">{{ $batch['source_type'] }}</span></td>
+                                                    <td class="text-end">{{ number_format($batch['initial_qty'], 0, ',', '.') }}</td>
+                                                    <td class="text-end">{{ number_format($batch['remaining_qty'], 0, ',', '.') }}</td>
+                                                    <td class="text-end">Rp {{ number_format($batch['estimated_hpp'], 0, ',', '.') }}</td>
+                                                    <td>
+                                                        @if($batch['hpp_status'] === 'SETTLED')
+                                                            <span class="badge bg-label-success">SETTLED</span>
+                                                        @elseif($batch['hpp_status'] === 'UNSETTLED')
+                                                            <span class="badge bg-label-warning">UNSETTLED</span>
+                                                        @else
+                                                            <span class="badge bg-label-secondary">UNKNOWN</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -627,6 +679,18 @@
                     paging: false,
                     info: false
                 });
+
+                $('#batch-table').DataTable({
+                    responsive: true,
+                    orderCellsTop: true,
+                    order: [
+                        [0, 'desc']
+                    ], // Sort by date descending
+                    searching: false,
+                    paging: false,
+                    info: false
+                });
+
 
                 // Currency formatting
                 $('.currency-input').on('keyup', function() {
@@ -909,5 +973,6 @@
                     }
                 });
             }
+
         </script>
     @endsection

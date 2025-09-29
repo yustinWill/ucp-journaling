@@ -33,7 +33,7 @@ class BatchManagementService
             'purchase_price' => $data['purchase_price'] ?? 0.00,
             'estimated_hpp' => $data['estimated_hpp'] ?? ($data['purchase_price'] ?? 0.00),
             'final_hpp' => $data['final_hpp'] ?? null,
-            'hpp_status' => $data['hpp_status'] ?? 'UNSETTLED',
+            'hpp_status' => $data['hpp_status'] ?? $this->determineHppStatus($data['source_type'] ?? 'PURCHASE'),
             'status' => 'ACTIVE',
             'created_at' => now(),
             'created_by' => Auth::id(),
@@ -232,5 +232,17 @@ class BatchManagementService
         };
 
         return $prefix.'-'.$transactionId.'-'.$productId.'-'.time();
+    }
+
+    /**
+     * Determine HPP status based on source type
+     */
+    private function determineHppStatus(string $sourceType): string
+    {
+        return match ($sourceType) {
+            'PURCHASE', 'STOCK_ADJUSTMENT' => 'SETTLED',
+            'PRODUCTION' => 'UNSETTLED',
+            default => 'UNSETTLED'
+        };
     }
 }

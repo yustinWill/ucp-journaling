@@ -584,11 +584,14 @@ class ProductController extends Controller
 
         $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
 
+        $batchData = app(\App\Services\BatchManagementService::class)->getProductBatchInfo($id, true);
+
         return view('pages.master_data.product.detail', [
             'product' => $product,
             'inventoryData' => $inventoryData,
             'auditLogs' => $auditLogs,
             'auditLogType' => AuditLogTypes::MASTER_DATA_PRODUCT->code(),
+            'batchData' => $batchData,
         ]);
     }
 

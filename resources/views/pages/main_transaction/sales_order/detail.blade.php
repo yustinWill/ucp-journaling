@@ -77,11 +77,11 @@
                             <i class="icon-base ti tabler-truck-delivery me-2"></i>
                             <b>Sales Delivery & Invoice</b>
                         </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="revenue-split-list-item"
+                        <!-- <a class="list-group-item list-group-item-action waves-effect" id="revenue-split-list-item"
                             data-bs-toggle="list" href="#horizontal-revenue-split" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-percentage me-2"></i>
                             <b>Revenue Split</b>
-                        </a>
+                        </a> -->
                         <a class="list-group-item list-group-item-action waves-effect" id="return-history-list-item"
                             data-bs-toggle="list" href="#horizontal-return-history" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-arrow-back-up me-2"></i>
