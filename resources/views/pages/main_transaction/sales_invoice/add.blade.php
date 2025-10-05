@@ -318,6 +318,7 @@
 
                     let itemsHtml = '';
                     data_products.forEach(function(item) {
+                        let qty = item.quantity;
                         itemsHtml += `
                     <tr data-item-id="${item.id}">
                         <td>
@@ -326,11 +327,11 @@
                             <input type="hidden" name="products[${item.id}][product_id]" value="${item.f_product_id}">
                         </td>
                         <td class="text-end">
-                            ${item.quantity.toLocaleString('id-ID')}
+                            ${convertToIndonesianFormat(qty)}
                             <input type="hidden" name="products[${item.id}][po_qty]" value="${item.quantity}">
                         </td>
                         <td>
-                            <input type="number" class="form-control invoice-qty" 
+                            <input type="text" class="form-control invoice-qty numeric-input" 
                                 name="products[${item.id}][invoice_qty]" 
                                 min="0" value="0" max="${item.remaining_qty_for_invoice}"
                                 data-item-id="${item.id}" data-unit-price="${item.unit_price}">
@@ -353,13 +354,13 @@
                     $('.invoice-qty').on('input', function() {
                         const itemId = $(this).data('item-id');
                         const unitPrice = $(this).data('unit-price');
-                        const qty = parseInt($(this).val()) || 0;
+                        const qty = parseCurrency($(this).val()) || 0;
                         const total = qty * unitPrice;
 
                         $(`.item-total[data-item-id="${itemId}"]`).text(formatRupiah(total));
                         updateInvoiceTotals();
                     });
-
+                    initCleaveCurrency(document);
                     updateInvoiceTotals();
                 },
                 error: function() {
@@ -373,7 +374,7 @@
             let totalItems = 0;
 
             $('.invoice-qty').each(function() {
-                const qty = parseInt($(this).val()) || 0;
+                const qty = parseCurrency($(this).val()) || 0;
                 const unitPrice = $(this).data('unit-price') || 0;
 
                 if (qty > 0) {
@@ -425,6 +426,16 @@
             formData.append('sales_order_id', $('#sales_order_id').val());
             formData.append('due_date', $('#due_date').val());
             formData.append('total_items', $('#total_items_invoice').text().split(' ')[0]);
+
+            $('.invoice-qty').each(function() {
+                const name = $(this).attr('name');
+                const rawValue = $(this).val();
+                const parsedValue = parseCurrency(rawValue);
+                if (name) {
+                    formData.set(name, parsedValue); // overwrite with parsed numeric value
+                }
+            });
+
 
             Swal.fire({
                 title: 'Buat Sales Invoice?',

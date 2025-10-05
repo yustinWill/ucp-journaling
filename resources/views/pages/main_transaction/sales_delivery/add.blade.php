@@ -213,11 +213,11 @@
                                     <tr>
                                         <td>{{ $row->product_code }} -
                                             {{ $row->product_name }}</td>
-                                        <td>{{ number_format($row->quantity, 0, ',', '.') }}
+                                        <td>{{ number_format($row->quantity, 4, ',', '.') }}
                                             {{ $row->unit_name }}</td>
-                                        <td>{{ number_format($row->delivered_qty, 0, ',', '.') }}
+                                        <td>{{ number_format($row->delivered_qty, 4, ',', '.') }}
                                             {{ $row->unit_name }}</td>
-                                        <td>{{ number_format($row->remaining_qty, 0, ',', '.') }}
+                                        <td>{{ number_format($row->remaining_qty, 4, ',', '.') }}
                                             {{ $row->unit_name }}</td>
                                         <td>
                                             <input type="hidden"
@@ -465,6 +465,7 @@
 
                 const formData = new FormData(this);
 
+
                 // Append all disabled select values to formData
                 $('#sales-delivery-form select:disabled').each(function() {
                     const name = $(this).attr('name');
@@ -473,6 +474,17 @@
                         formData.append(name, value);
                     }
                 });
+
+                // Append parsed delivery qty for each product line
+                $('.delivery-qty-input').each(function(index) {
+                    const name = $(this).attr('name');
+                    const rawValue = $(this).val();
+                    const parsedValue = parseCurrency(rawValue);
+                    if (name) {
+                        formData.set(name, parsedValue); // overwrite with parsed numeric value
+                    }
+                });
+
                 // Show confirmation
                 Swal.fire({
                     title: 'Buat Sales Delivery?',

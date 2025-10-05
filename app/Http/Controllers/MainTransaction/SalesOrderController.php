@@ -272,7 +272,6 @@ class SalesOrderController extends Controller
         // Get permissions
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
 
-        // dd($salesOrder);
         return view('pages.main_transaction.sales_order.detail', [
             'salesOrder' => $salesOrder,
             'audit_logs' => $auditLogs,

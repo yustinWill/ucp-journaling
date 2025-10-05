@@ -421,11 +421,11 @@
                                             @forelse($invoice_products as $product)
                                                 <tr>
                                                     <td><strong>{{ $product->product_code ?? '' }} - {{ $product->product_name ?? '' }}</strong></td>
-                                                    <td class="text-center">{{ $product->ordered_qty ?? 0 }}
+                                                    <td class="text-center">{{ number_format($product->ordered_qty, 4, ',', '.') }}
                                                         {{ $product->unit_code ?? '' }}</td>
                                                     <td class="text-center">
                                                         <span
-                                                            class="badge bg-label-info">{{ number_format($product->qty ?? 0, 0, ',', '.') }}</span>
+                                                            class="badge bg-label-info">{{ number_format($product->qty , 4, ',', '.') }}</span>
                                                         {{ $product->unit_code ?? '' }}
                                                     </td>
                                                     <td class="text-end">Rp

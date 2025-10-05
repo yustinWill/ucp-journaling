@@ -201,8 +201,8 @@
                                     @forelse($productLines ?? [] as $product)
                                         <tr>
                                             <td>{{ $product->product_name ?? $product->product_code }}</td>
-                                            <td>{{ number_format($product->quantity_ordered ?? 0) }}</td>
-                                            <td>{{ number_format($product->quantity_delivered ?? 0) }}</td>
+                                            <td>{{ number_format($product->quantity_ordered, 4, ',', '.') }}</td>
+                                            <td>{{ number_format($product->quantity_delivered, 4, ',', '.') }}</td>
                                             <td>{{ $product->unit_name ?? '-' }}</td>
                                             <td>
                                                 @php

@@ -240,7 +240,7 @@
                                         </select>
                                     </div>
                                 </td>
-                                <td><input type="number" class="form-control quantity-input"
+                                <td><input type="text" class="form-control numeric-input quantity-input"
                                         name="products[0][quantity]" min="1" step="1" value="1"
                                         disabled /></td>
                                 <td><input type="text" class="form-control unit-display" name="products[0][unit]"
@@ -707,7 +707,7 @@
                 // let totalTax = 0;
 
                 $('#products-tbody tr').each(function() {
-                    const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
+                    const quantity = parseCurrency($(this).find('.quantity-input').val()) || 0;
                     const unitPrice = parseCurrency($(this).find('.unit-price-input').val()) || 0;
                     // const taxId = $(this).find('.tax-select').val();
 
@@ -729,7 +729,7 @@
 
                 $('#products-tbody tr').each(function() {
                     const productId = $(this).find('.product-select').val();
-                    const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
+                    const quantity = parseCurrency($(this).find('.quantity-input').val()) || 0;
                     const unitPrice = parseCurrency($(this).find('.unit-price').val()) || 0;
                     const lineTotal = parseCurrency($(this).find('input[name*="[total]"]').val()) || 0;
 

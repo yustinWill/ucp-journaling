@@ -214,7 +214,7 @@
                                                         </td>
                                                         <td>
                                                             <input type="text" class="form-control text-end"
-                                                                value="{{ number_format($line['quantity'], 2) }}"
+                                                                value="{{ number_format($line['quantity'], 4, ',', '.') }}"
                                                                 disabled />
                                                         </td>
                                                         <td>
@@ -347,10 +347,10 @@
                                             @foreach ($salesOrder['product_lines'] as $line)
                                                 <tr>
                                                     <td>{{ $line['product_code'] }} - {{ $line['product_name'] }}</td>
-                                                    <td class="text-end">{{ number_format($line['quantity'], 2) }}</td>
-                                                    <td class="text-end">{{ number_format($line['delivered_qty'], 2) }}
+                                                    <td class="text-end">{{ number_format($line['quantity'], 4, ',', '.') }}</td>
+                                                    <td class="text-end">{{ number_format($line['delivered_qty'], 4, ',', '.') }}
                                                     </td>
-                                                    <td class="text-end">{{ number_format($line['remaining_qty'], 2) }}
+                                                    <td class="text-end">{{ number_format($line['remaining_qty'], 4, ',', '.') }}
                                                     </td>
                                                     <td>{{ $line['unit_name'] }}</td>
                                                 </tr>
@@ -674,7 +674,7 @@
 
         // Load Revenue Split Function
         function loadRevenueSplit() {
-            const salesOrderId = {{ $salesOrder->id }};
+            const salesOrderId = {{ $salesOrder['id'] }};
             
             $.ajax({
                 url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/breakdown`,
@@ -754,7 +754,7 @@
         // Reset Revenue Split Function
         function resetRevenueSplit(productId, productName) {
             if (confirm(`Apakah Anda yakin ingin reset revenue split untuk produk "${productName}" ke konfigurasi default?`)) {
-                const salesOrderId = {{ $salesOrder->id }};
+                const salesOrderId = {{ $salesOrder['id'] }};
                 
                 $.ajax({
                     url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/product/${productId}/reset`,
@@ -821,7 +821,7 @@
         // Save Revenue Split
         function saveRevenueSplit() {
             const productId = $('#editProductId').val();
-            const salesOrderId = {{ $salesOrder->id }};
+            const salesOrderId = {{ $salesOrder['id'] }};
             
             const formData = {
                 porsi_pabrik: parseNumber($('#editPorsiPabrik').val()),
