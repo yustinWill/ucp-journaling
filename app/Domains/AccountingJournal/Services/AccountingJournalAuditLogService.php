@@ -26,6 +26,7 @@ class AccountingJournalAuditLogService
     {
         return DB::table($this->table_name.' as t')
             ->select([
+                't.id',
                 't.f_accounting_journal_id',
                 't.action_type',
                 't.description',

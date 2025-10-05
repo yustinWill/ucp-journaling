@@ -202,7 +202,7 @@
                                                 <td>
                                                     @if ($log->action_type == 'UPDATE')
                                                         <a target="_blank"
-                                                            href="{{ route('audit_log.detail', ['id' => $log->id, 'audit_log_type' => $auditLogType]) }}"
+                                                            href="{{ route('audit_log.detail', ['id' => $log->id, 'audit_log_type' => $journal['auditLogType']]) }}"
                                                             class="btn btn-sm btn-primary waves-effect waves-light"
                                                             title="Detail">
                                                             <i class="icon-xs icon-base ti tabler-eye"></i>
