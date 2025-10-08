@@ -33,6 +33,8 @@ class UpdateContactAction
                 'subdistrict' => $data['billing_subdistrict'] ?? null,
                 'address' => $data['billing_address'],
                 'postal_code' => $data['billing_postal_code'] ?? null,
+                'area' => $data['billing_area'] ?? null,
+                'maps_url' => $data['billing_maps_url'] ?? null,
             ]);
 
             app(ContactAddressService::class)->update($contact_id, [
@@ -43,6 +45,8 @@ class UpdateContactAction
                 'subdistrict' => $data['shipping_subdistrict'] ?? null,
                 'address' => $data['shipping_address'],
                 'postal_code' => $data['shipping_postal_code'] ?? null,
+                'area' => $data['shipping_area'] ?? null,
+                'maps_url' => $data['shipping_maps_url'] ?? null,
             ]);
 
             $current_contact = app(ContactBankService::class)->findAllBasedOnContactId($contact_id);

@@ -56,10 +56,9 @@
             <h6>2. Data Umum</h6>
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label" for="multicol-country">Jenis Identitas <span
-                            style="color: red;">*</span></label>
+                    <label class="form-label" for="multicol-country">Jenis Identitas</label>
                     <select class="global-select2 form-select" id="identity_type" data-allow-clear="false">
-                        <option value="CC">Pilih Jenis Identitas</option>
+                        <option value="">Pilih Jenis Identitas</option>
                         @foreach ($identity_types as $identity_type)
                             <option value="{{ $identity_type->code }}" @if ($identity_type->code == $contact->f_identity_type_code) selected @endif>
                                 {{ $identity_type->name }}</option>
@@ -67,7 +66,7 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">No Identitas <span style="color: red;">*</span></label>
+                    <label class="form-label">No Identitas</label>
                     <input type="text" class="form-control" id="identity_number" placeholder="Masukkan No Identitas"
                         maxlength="16" value="{{ $contact->identity_number }}" />
                 </div>
@@ -97,7 +96,7 @@
             <h6>3. Data Perusahaan</h6>
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label">Nama Perusahaan <span style="color: red;">*</span></label>
+                    <label class="form-label">Nama Perusahaan</label>
                     <input type="text" class="form-control" id="company_name" placeholder="Masukkan Nama Perusahaan"
                         maxlength="255" value="{{ $contact->company_name }}" />
                 </div>
@@ -151,10 +150,30 @@
                     <input type="text" class="form-control" id="billing_postal_code" placeholder="Masukkan Kode POS"
                         maxlength="5" value="{{ $billing_contact_address->postal_code }}" />
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">Area</label>
+                    <input type="text" class="form-control" id="billing_area" placeholder="Masukkan Area"
+                        maxlength="255" value="{{ $billing_contact_address->area }}" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Url Maps</label>
+                    <input type="text" class="form-control" id="billing_maps_url" placeholder="Masukkan Url Maps"
+                        maxlength="1000" value="{{ $billing_contact_address->maps_url }}" />
+                </div>
             </div>
 
             <hr class="my-6 mx-n6" />
             <h6>5. Alamat Pengiriman</h6>
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="copy-from-billing-address">
+                        <label class="form-check-label" for="copy-from-billing-address">
+                            Samakan Dengan Alamat Penagihan
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label">Provinsi</label>
@@ -185,6 +204,16 @@
                     <label class="form-label">Kode POS</label>
                     <input type="text" class="form-control" placeholder="Masukkan Kode POS" id="shipping_postal_code"
                         maxlength="5" value="{{ $shipping_contact_address->postal_code }}" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Area</label>
+                    <input type="text" class="form-control" id="shipping_area" placeholder="Masukkan Area"
+                        maxlength="255" value="{{ $shipping_contact_address->area }}" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Url Maps</label>
+                    <input type="text" class="form-control" id="shipping_maps_url" placeholder="Masukkan Url Maps"
+                        maxlength="1000" value="{{ $shipping_contact_address->maps_url }}" />
                 </div>
             </div>
 
@@ -267,8 +296,7 @@
                                     <div data-repeater-item>
                                         <div class="row g-6">
                                             <div class="col-md-6">
-                                                <label class="form-label">Nama Bank <span
-                                                        style="color: red;">*</span></label>
+                                                <label class="form-label">Nama Bank</label>
                                                 <div class="position-relative">
                                                     <select class="select2Bank form-select bank_code"
                                                         data-allow-clear="true">
@@ -282,20 +310,17 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label">Kantor Cabang <span
-                                                        style="color: red;">*</span></label>
+                                                <label class="form-label">Kantor Cabang </label>
                                                 <input type="text" class="form-control branch_office"
                                                     maxlength="255" />
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label">Pemegang Akun Bank <span
-                                                        style="color: red;">*</span></label>
+                                                <label class="form-label">Pemegang Akun Bank</label>
                                                 <input type="text" class="form-control account_holder"
                                                     maxlength="255" />
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label">No Rekening <span
-                                                        style="color: red;">*</span></label>
+                                                <label class="form-label">No Rekening</label>
                                                 <input type="text" class="form-control account_number"
                                                     maxlength="255" />
                                             </div>
@@ -640,6 +665,99 @@
                 });
             }
 
+            // Store initial shipping values
+            const initialShippingData = {
+                province: $('#shipping_province').val(),
+                city: $('#shipping_city').val(),
+                district: $('#shipping_district').val(),
+                subdistrict: $('#shipping_subdistrict').val(),
+                address: $('#shipping_address').val(),
+                postal_code: $('#shipping_postal_code').val(),
+                area: $('#shipping_area').val(),
+                maps_url: $('#shipping_maps_url').val()
+            };
+
+            function syncShippingWithBilling() {
+                if ($('#copy-from-billing-address').is(':checked')) {
+                    $('#shipping_province').val($('#billing_province').val());
+                    $('#shipping_city').val($('#billing_city').val());
+                    $('#shipping_district').val($('#billing_district').val());
+                    $('#shipping_subdistrict').val($('#billing_subdistrict').val());
+                    $('#shipping_address').val($('#billing_address').val());
+                    $('#shipping_postal_code').val($('#billing_postal_code').val());
+                    $('#shipping_area').val($('#billing_area').val());
+                    $('#shipping_maps_url').val($('#billing_maps_url').val());
+                }
+            }
+
+            // When checkbox is toggled, copy or restore shipping fields
+            $('#copy-from-billing-address').on('change', function() {
+                if ($(this).is(':checked')) {
+                    syncShippingWithBilling();
+                    // Listen for changes in billing fields and sync
+                    $('.billing-sync').on('input change', syncShippingWithBilling);
+                } else {
+                    // Restore previous shipping data
+                    $('#shipping_province').val(initialShippingData.province);
+                    $('#shipping_city').val(initialShippingData.city);
+                    $('#shipping_district').val(initialShippingData.district);
+                    $('#shipping_subdistrict').val(initialShippingData.subdistrict);
+                    $('#shipping_address').val(initialShippingData.address);
+                    $('#shipping_postal_code').val(initialShippingData.postal_code);
+                    $('#shipping_area').val(initialShippingData.area);
+                    $('#shipping_maps_url').val(initialShippingData.maps_url);
+                    // Remove listeners when unchecked
+                    $('.billing-sync').off('input change', syncShippingWithBilling);
+                }
+            });
+
+            // Add a class to billing fields for easy selection
+            $('#billing_province, #billing_city, #billing_district, #billing_subdistrict, #billing_address, #billing_postal_code, #billing_area, #billing_maps_url')
+                .addClass('billing-sync');
+
+
+            function checkIfAddressesMatch() {
+                const billingFields = [
+                    $('#billing_province').val(),
+                    $('#billing_city').val(),
+                    $('#billing_district').val(),
+                    $('#billing_subdistrict').val(),
+                    $('#billing_address').val(),
+                    $('#billing_postal_code').val(),
+                    $('#billing_area').val(),
+                    $('#billing_maps_url').val()
+                ];
+                const shippingFields = [
+                    $('#shipping_province').val(),
+                    $('#shipping_city').val(),
+                    $('#shipping_district').val(),
+                    $('#shipping_subdistrict').val(),
+                    $('#shipping_address').val(),
+                    $('#shipping_postal_code').val(),
+                    $('#shipping_area').val(),
+                    $('#shipping_maps_url').val()
+                ];
+
+                // Compare each field
+                const isSame = billingFields.every((val, idx) => val === shippingFields[idx]);
+                $('#copy-from-billing-address').prop('checked', isSame);
+
+                if (isSame) {
+
+                    // If they match, ensure shipping fields are synced
+                    syncShippingWithBilling();
+                    // Listen for changes in billing fields and sync
+                    $('.billing-sync').on('input change', syncShippingWithBilling);
+                } else {
+                    // If they don't match, remove listeners to prevent overwriting
+                    $('.billing-sync').off('input change', syncShippingWithBilling);
+
+                }
+            }
+
+            // Run on page load
+            checkIfAddressesMatch();
+
             $('#submit-btn').click(function(e) {
                 e.preventDefault();
                 Swal.fire({
@@ -693,6 +811,8 @@
                                     billing_address: $('#billing_address').val(),
                                     billing_postal_code: $('#billing_postal_code')
                                         .val(),
+                                    billing_area: $('#billing_area').val(),
+                                    billing_maps_url: $('#billing_maps_url').val(),
                                     shipping_province: $('#shipping_province').val(),
                                     shipping_city: $('#shipping_city').val(),
                                     shipping_district: $('#shipping_district').val(),
@@ -701,6 +821,8 @@
                                     shipping_address: $('#shipping_address').val(),
                                     shipping_postal_code: $('#shipping_postal_code')
                                         .val(),
+                                    shipping_area: $('#shipping_area').val(),
+                                    shipping_maps_url: $('#shipping_maps_url').val(),
                                     payable_account: $('#payable_account').val(),
                                     receivable_account: $('#receivable_account').val(),
                                     payment_term: $('#payment_term').val(),

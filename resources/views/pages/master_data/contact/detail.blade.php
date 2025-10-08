@@ -240,6 +240,10 @@
                 debt_account: "{{ $contact->f_coa_account_payable }} - {{ $contact->coa_account_payable_name }}",
                 receivable_account: "{{ $contact->f_coa_account_receivable }} - {{ $contact->coa_account_receivable_name }}",
                 payment_terms: "{{ $contact->f_payment_terms_id }} - {{ $contact->payment_terms_name }}",
+                shipping_area: "{{ $shipping_contact_address->area }}",
+                shipping_maps_url: "{{ $shipping_contact_address->maps_url }}",
+                billing_area: "{{ $billing_contact_address->area }}",
+                billing_maps_url: "{{ $billing_contact_address->maps_url }}",
             };
 
             // Load profile content immediately
@@ -318,6 +322,16 @@
                     <textarea class="form-control" disabled>${contactData.billing_address}</textarea>
                 </div>
             </div>
+             <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">Area</label>
+                    <textarea class="form-control" disabled>${contactData.billing_area}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Maps URL</label>
+                    <textarea class="form-control" disabled>${contactData.billing_maps_url}</textarea>
+                </div>
+            </div>
 
             <hr class="my-6 mx-n6" />
             <h6>5. Alamat Pengiriman</h6>
@@ -325,6 +339,16 @@
                 <div class="col-md-6">
                     <label class="form-label">Alamat</label>
                     <textarea class="form-control" disabled>${contactData.shipping_address}</textarea>
+                </div>
+            </div>
+            <div class="row g-6">
+                <div class="col-md-6">
+                    <label class="form-label">Area</label>
+                    <textarea class="form-control" disabled>${contactData.shipping_area}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Maps URL</label>
+                    <textarea class="form-control" disabled>${contactData.shipping_maps_url}</textarea>
                 </div>
             </div>
 

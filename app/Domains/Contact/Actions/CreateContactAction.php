@@ -28,6 +28,8 @@ class CreateContactAction
                     'subdistrict' => $data['billing_subdistrict'] ?? null,
                     'address' => $data['billing_address'],
                     'postal_code' => $data['billing_postal_code'] ?? null,
+                    'area' => $data['billing_area'] ?? null,
+                    'maps_url' => $data['billing_maps_url'] ?? null,
                 ],
                 [
                     'f_contact_id' => $contact_id,
@@ -38,6 +40,8 @@ class CreateContactAction
                     'subdistrict' => $data['shipping_subdistrict'] ?? null,
                     'address' => $data['shipping_address'],
                     'postal_code' => $data['shipping_postal_code'] ?? null,
+                    'area' => $data['shipping_area'] ?? null,
+                    'maps_url' => $data['shipping_maps_url'] ?? null,
                 ],
             ]);
 
