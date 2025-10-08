@@ -494,6 +494,9 @@
                     return false;
                 }
 
+                formData.append('payment_term_due_date', $('#sales-order-due-date').val());
+                formData.append('payment_term_day_count', $('#sales-order-days').val());
+
                 // formData.append('products', productLines);
                 productLines.forEach(function(line, idx) {
                     formData.append(`products[${idx}][product_id]`, line.product_id);

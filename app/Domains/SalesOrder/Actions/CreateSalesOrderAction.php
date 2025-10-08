@@ -4,6 +4,8 @@ namespace App\Domains\SalesOrder\Actions;
 
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
+use App\Domains\GlobalConfig\Services\GlobalConfigService;
+use App\Domains\SalesInvoice\Actions\CreateSalesInvoiceAction;
 use App\Services\TransactionNumberService;
 use Illuminate\Support\Facades\DB;
 
@@ -40,6 +42,38 @@ class CreateSalesOrderAction
                     'after' => $data,
                 ]
             );
+
+            $config_data = app(GlobalConfigService::class)->findOne('AUTO_GENERATE_SI_AFTER_SO');
+
+            if ($config_data && $config_data->value == 'true') {
+                $invoiceData = [
+                    'invoice_number' => $data['reference_no'],
+                    'invoice_date' => $data['date'],
+                    'transaction_date' => $data['date'],
+                    'due_date' => $data['payment_term_due_date'],
+                    'description' => $data['description'],
+                    'memo' => $data['memo'] ?? null,
+                    'tags' => isset($data['tags']) ? json_encode($data['tags']) : null,
+                    'sales_order_id' => $salesOrderId,
+                    'total_amount' => $data['total'] ?? 0,
+                    'total_items' => is_array($data['products']) ? count($data['products']) : 0,
+                    'products' => [],
+                ];
+
+                $soProducts = app(SalesOrderService::class)->findProductLines($salesOrderId, true);
+
+                foreach ($soProducts as $product) {
+                    $invoiceData['products'][] = [
+                        'sales_order_product_id' => $product->id,
+                        'product_id'             => $product->f_product_id,
+                        'po_qty'                 => $product->quantity,
+                        'invoice_qty'            => $product->quantity, // or use actual invoice qty if available
+                        'remaining_qty_before'   => $product->remaining_qty_for_invoice,
+                        'unit_price'             => $product->unit_price,
+                    ];
+                }
+                app(CreateSalesInvoiceAction::class)->execute($invoiceData);
+            }
 
             return $salesOrderId;
         });
