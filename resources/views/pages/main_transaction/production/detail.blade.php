@@ -95,6 +95,21 @@
                     </div>
                 </div>
                 <div class="col-md-6">
+                    <label class="form-label">Mode Produksi</label>
+                    <div class="form-control-plaintext">
+                        @if (($production->production_mode ?? 'QUANTITY_PLANNED') == 'MATERIAL_BASED')
+                            <span class="badge bg-label-warning">Material-Based Input</span>
+                            <small class="text-muted d-block mt-1">Produksi berdasarkan material yang tersedia</small>
+                        @else
+                            <span class="badge bg-label-info">Quantity Planned</span>
+                            <small class="text-muted d-block mt-1">Produksi berdasarkan target quantity</small>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-6 mt-3">
+                <div class="col-md-6">
                     <label class="form-label">PIC Produksi</label>
                     <div class="form-control-plaintext">
                         <a href="{{ route('master_data.user.detail', $production->pic_id) }}"
@@ -102,6 +117,9 @@
                             {{ $production->pic_name }}
                         </a>
                     </div>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty for alignment -->
                 </div>
             </div>
             <hr class="my-6 mx-n6" />
@@ -208,40 +226,92 @@
                             <div class="section-header mt-6">
                                 <h6>Komponen Bundle</h6>
                             </div>
-                            <div class="mx-n5">
-                                <table class="table table-bordered" id="components-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Komponen Product</th>
-                                            <th>Qty per Bundle</th>
-                                            <th>Total Required</th>
-                                            <th>Stock Available</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($production_items as $component)
+
+                            @if (($production->production_mode ?? 'QUANTITY_PLANNED') == 'MATERIAL_BASED')
+                                {{-- Material-Based Mode Table --}}
+                                <div class="mx-n5">
+                                    <table class="table table-bordered" id="components-table">
+                                        <thead>
                                             <tr>
-                                                <td>{{ $component->product_name }}</td>
-                                                <td class="text-center">{{ number_format($component->quantity_per_bundle, 4, ',', '.') }} {{ $component->unit_code }}</td>
-                                                <td class="text-center">{{ number_format($component->quantity_required, 4, ',', '.') }} {{ $component->unit_code }}</td>
-                                                <td class="text-center">{{ number_format($component->current_stock, 4, ',', '.') }} {{ $component->unit_code }}</td>
-                                                <td class="text-center">
-                                                    @if ($component->quantity_required >= $component->quantity_required)
-                                                        <span class="badge bg-label-success">Available</span>
-                                                    @else
-                                                        <span class="badge bg-label-danger">Insufficient</span>
-                                                    @endif
-                                                </td>
+                                                <th>Komponen Product</th>
+                                                <th>Stock Available</th>
+                                                <th>Material Input</th>
+                                                <th>Qty per Bundle</th>
+                                                <th>Leftover Material</th>
+                                                <th>Status</th>
                                             </tr>
-                                        @empty
+                                        </thead>
+                                        <tbody>
+                                            @forelse($production_items as $component)
+                                                <tr>
+                                                    <td>{{ $component->product_name }}</td>
+                                                    <td class="text-center">{{ number_format($component->current_stock, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                    <td class="text-center">
+                                                        <strong>{{ number_format($component->material_input ?? $component->quantity_consumed, 4, ',', '.') }} {{ $component->unit_code }}</strong>
+                                                    </td>
+                                                    <td class="text-center">{{ number_format($component->quantity_per_bundle, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-label-warning">{{ number_format($component->leftover_amount ?? 0, 4, ',', '.') }} {{ $component->unit_code }}</span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if (($component->leftover_amount ?? 0) > 0)
+                                                            <span class="badge bg-label-warning">Has Leftover</span>
+                                                        @elseif (($component->leftover_amount ?? 0) == 0)
+                                                            <span class="badge bg-label-success">Exact Match</span>
+                                                        @else
+                                                            <span class="badge bg-label-secondary">-</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted">Tidak ada komponen tersedia</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="alert alert-info mt-3">
+                                    <i class="icon-base ti tabler-info-circle me-2"></i>
+                                    <strong>Informasi:</strong> Produksi menggunakan mode Material-Based. Leftover material telah dicatat dengan presisi 4 desimal untuk proses stock opname.
+                                </div>
+                            @else
+                                {{-- Quantity Planned Mode Table --}}
+                                <div class="mx-n5">
+                                    <table class="table table-bordered" id="components-table">
+                                        <thead>
                                             <tr>
-                                                <td colspan="5" class="text-center text-muted">Tidak ada komponen tersedia</td>
+                                                <th>Komponen Product</th>
+                                                <th>Qty per Bundle</th>
+                                                <th>Total Required</th>
+                                                <th>Stock Available</th>
+                                                <th>Status</th>
                                             </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($production_items as $component)
+                                                <tr>
+                                                    <td>{{ $component->product_name }}</td>
+                                                    <td class="text-center">{{ number_format($component->quantity_per_bundle, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                    <td class="text-center">{{ number_format($component->quantity_required, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                    <td class="text-center">{{ number_format($component->current_stock, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                    <td class="text-center">
+                                                        @if ($component->current_stock >= $component->quantity_required)
+                                                            <span class="badge bg-label-success">Available</span>
+                                                        @else
+                                                            <span class="badge bg-label-danger">Insufficient</span>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5" class="text-center text-muted">Tidak ada komponen tersedia</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Audit Log Tab -->

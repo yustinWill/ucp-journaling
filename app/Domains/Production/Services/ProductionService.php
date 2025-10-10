@@ -145,6 +145,8 @@ class ProductionService
             'quantity_planned' => $data['quantity_planned'],
             'quantity_produced' => $data['quantity_produced'] ?? 0,
             'status' => 'COMPLETED',
+            'production_mode' => $data['production_mode_used'] ?? 'QUANTITY_PLANNED',
+            'leftover_materials' => $data['leftover_materials'] ?? null,
             'description' => $data['description'] ?? null,
             'notes' => $data['notes'] ?? null,
             'reference_number' => $data['reference_number'] ?? null,

@@ -273,6 +273,49 @@ class CreateProductionAction
         })->toArray();
     }
 
+    public function prepareItemsFromMaterialInputs(int $bundleProductId, int $quantityProduced, array $materialInputs): array
+    {
+        // Material-Based mode: Use actual material inputs provided by user
+        // This mode is used when user inputs available materials and system calculates max production
+
+        $items = [];
+
+        foreach ($materialInputs as $input) {
+            // Get product details
+            $product = DB::table('m_products')
+                ->where('id', $input['product_id'])
+                ->first();
+
+            if (!$product) {
+                continue;
+            }
+
+            // Calculate quantity consumed based on actual production
+            $qtyPerBundle = $input['qty_per_bundle'];
+            $quantityConsumed = $qtyPerBundle * $quantityProduced;
+
+            // Note: material_input might be higher than quantity_consumed
+            // The difference is the leftover (already calculated in frontend with 4 decimals)
+
+            $unitCost = $product->average_price ?? 0;
+
+            $items[] = [
+                'raw_material_product_id' => $input['product_id'],
+                'quantity_required' => $quantityConsumed, // What's needed for production
+                'quantity_consumed' => $quantityConsumed, // What's actually used
+                'unit_code' => $input['unit'],
+                'unit_cost' => $unitCost,
+                'total_cost' => $quantityConsumed * $unitCost,
+                'product_name' => $input['product_name'],
+                // Store original material input and leftover for audit trail
+                'material_input' => $input['material_input'],
+                'leftover' => $input['leftover'],
+            ];
+        }
+
+        return $items;
+    }
+
     public function prepareExpensesFromProduct(int $bundleProductId): array
     {
         $expenseService = app(ProductionExpenseService::class);

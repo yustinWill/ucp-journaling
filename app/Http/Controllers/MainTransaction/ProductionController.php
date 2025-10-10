@@ -113,13 +113,33 @@ class ProductionController extends Controller
                 ], 422);
             }
 
-            // Prepare items from bundle formula
+            // Handle production mode
+            $productionMode = $data['production_mode'] ?? 'QUANTITY_PLANNED';
+
+            // Prepare items based on production mode
             if (! empty($data['bundle_product_id']) && ! empty($data['quantity_planned'])) {
-                $data['items'] = $createAction->prepareItemsFromFormula(
-                    $data['bundle_product_id'],
-                    $data['quantity_planned']
-                );
+                if ($productionMode === 'MATERIAL_BASED') {
+                    // Material-Based mode: Use actual material inputs
+                    $materialInputs = json_decode($data['material_inputs'] ?? '[]', true);
+                    $data['items'] = $createAction->prepareItemsFromMaterialInputs(
+                        $data['bundle_product_id'],
+                        $data['quantity_planned'],
+                        $materialInputs
+                    );
+
+                    // Store leftover materials for stock opname tracking
+                    $data['leftover_materials'] = json_encode($materialInputs);
+                } else {
+                    // Quantity Planned mode: Calculate from formula
+                    $data['items'] = $createAction->prepareItemsFromFormula(
+                        $data['bundle_product_id'],
+                        $data['quantity_planned']
+                    );
+                }
             }
+
+            // Store production mode in data
+            $data['production_mode_used'] = $productionMode;
 
             // Prepare expenses from product
             if (! empty($data['bundle_product_id'])) {
@@ -134,6 +154,8 @@ class ProductionController extends Controller
                 'success' => true,
                 'message' => 'Production order created successfully',
                 'production_id' => $productionId,
+                'production_mode' => $productionMode,
+                'quantity_produced' => $data['quantity_planned'],
             ]);
         } catch (AppException $e) {
             return response()->json([

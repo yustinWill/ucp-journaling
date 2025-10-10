@@ -43,6 +43,8 @@ class ProductionItemService
                 'raw_material_product_id' => $item['raw_material_product_id'],
                 'quantity_required' => $item['quantity_required'],
                 'quantity_consumed' => $item['quantity_consumed'] ?? $item['quantity_required'],
+                'material_input' => $item['material_input'] ?? null, // For Material-Based mode
+                'leftover_amount' => $item['leftover'] ?? null, // For Material-Based mode (4 decimals)
                 'unit_code' => $item['unit_code'],
                 'unit_cost' => $item['unit_cost'] ?? 0,
                 'total_cost' => ($item['quantity_consumed'] ?? $item['quantity_required']) * ($item['unit_cost'] ?? 0),

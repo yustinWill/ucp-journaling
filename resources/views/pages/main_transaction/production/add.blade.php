@@ -95,10 +95,16 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Quantity Planned <span style="color: red;">*</span></label>
-                    <input type="number" class="form-control" id="quantity-planned" name="quantity_planned"
-                        placeholder="100" min="1" required />
-                    <small class="form-text text-muted">Jumlah bundle yang akan diproduksi</small>
+                    <label class="form-label">Mode Produksi <span style="color: red;">*</span></label>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="production-mode-toggle" />
+                        <label class="form-check-label" for="production-mode-toggle">
+                            <span id="production-mode-label">Mode: Quantity Planned (Default)</span>
+                        </label>
+                    </div>
+                    <small class="form-text text-muted" id="production-mode-description">
+                        Tentukan jumlah produksi, sistem akan hitung kebutuhan material
+                    </small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Penanggung Jawab <span style="color: red;">*</span></label>
@@ -124,6 +130,21 @@
                 </div>
             </div>
 
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Quantity Planned <span style="color: red;">*</span></label>
+                    <input type="number" class="form-control" id="quantity-planned" name="quantity_planned"
+                        placeholder="100" min="1" step="1" required />
+                    <small class="form-text text-muted" id="quantity-planned-note">Jumlah bundle yang akan diproduksi</small>
+                </div>
+                <div class="col-md-6" id="calculated-quantity-container" style="display: none;">
+                    <label class="form-label">Maximum Producible Quantity</label>
+                    <input type="text" class="form-control" id="calculated-quantity" disabled
+                        value="0" />
+                    <small class="form-text text-muted">Jumlah maksimal yang bisa diproduksi dari material yang tersedia</small>
+                </div>
+            </div>
+
             <!-- Bundle Components Section -->
             <div class="section-header mt-12">
                 <h6>Komponen Bundle</h6>
@@ -132,9 +153,11 @@
                 <i class="icon-base ti tabler-info-circle me-2"></i>
                 Silakan pilih <strong>Bundle Product</strong> terlebih dahulu untuk melihat komponen yang diperlukan.
             </div>
-            <div id="components-section" style="display: none;">
+
+            <!-- Mode 1: Quantity Planned (Preview Only) -->
+            <div id="components-section-preview" style="display: none;">
                 <div class="mx-n5">
-                    <table class="table table-bordered" id="components-table">
+                    <table class="table table-bordered" id="components-table-preview">
                         <thead>
                             <tr>
                                 <th>Komponen Product</th>
@@ -144,10 +167,36 @@
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody id="components-rows">
+                        <tbody id="components-rows-preview">
                             <!-- Rows will be populated dynamically -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Mode 2: Material-Based (Editable Input) -->
+            <div id="components-section-input" style="display: none;">
+                <div class="mx-n5">
+                    <table class="table table-bordered" id="components-table-input">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Komponen Product</th>
+                                <th style="width: 15%;">Stock Available</th>
+                                <th style="width: 18%;">Material Input <span style="color: red;">*</span></th>
+                                <th style="width: 12%;">Qty per Bundle</th>
+                                <th style="width: 15%;">Leftover Material</th>
+                                <th style="width: 15%;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="components-rows-input">
+                            <!-- Rows will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="alert alert-warning mt-3">
+                    <i class="icon-base ti tabler-info-circle me-2"></i>
+                    <strong>Catatan:</strong> Sistem akan menghitung jumlah produksi maksimal berdasarkan material yang Anda input.
+                    Sisa material akan ditampilkan dengan presisi 4 desimal untuk proses stock opname selanjutnya.
                 </div>
             </div>
 
@@ -196,6 +245,9 @@
 @section('js_script')
     <script>
         $(function() {
+            // Global state variables
+            let currentProductionMode = 'QUANTITY_PLANNED'; // QUANTITY_PLANNED or MATERIAL_BASED
+            let bundleComponents = [];
 
             // Generate number button functionality
             $('#generate-number-btn').on('click', function() {
@@ -218,6 +270,48 @@
             // Auto-generate number on page load
             $('#generate-number-btn').click();
 
+            // Production mode toggle
+            $('#production-mode-toggle').on('change', function() {
+                const isChecked = $(this).is(':checked');
+
+                if (isChecked) {
+                    // Switch to Material-Based mode
+                    currentProductionMode = 'MATERIAL_BASED';
+                    $('#production-mode-label').text('Mode: Material-Based Input');
+                    $('#production-mode-description').text('Input material yang tersedia, sistem akan hitung jumlah produksi maksimal');
+
+                    // Disable quantity planned and show calculated quantity
+                    $('#quantity-planned').prop('disabled', true).val('');
+                    $('#quantity-planned-note').html('<span style="color: #ff6b6b;">Field disabled - jumlah dihitung otomatis dari material input</span>');
+                    $('#calculated-quantity-container').show();
+
+                    // Switch component tables
+                    $('#components-section-preview').hide();
+                    $('#components-section-input').show();
+
+                } else {
+                    // Switch to Quantity Planned mode
+                    currentProductionMode = 'QUANTITY_PLANNED';
+                    $('#production-mode-label').text('Mode: Quantity Planned (Default)');
+                    $('#production-mode-description').text('Tentukan jumlah produksi, sistem akan hitung kebutuhan material');
+
+                    // Enable quantity planned and hide calculated quantity
+                    $('#quantity-planned').prop('disabled', false);
+                    $('#quantity-planned-note').text('Jumlah bundle yang akan diproduksi');
+                    $('#calculated-quantity-container').hide();
+
+                    // Switch component tables
+                    $('#components-section-preview').show();
+                    $('#components-section-input').hide();
+                }
+
+                // Reload components if bundle product already selected
+                const bundleProductId = $('#bundle-product').val();
+                if (bundleProductId) {
+                    loadBundleComponents(bundleProductId);
+                }
+            });
+
             // Bundle product selection change
             $('#bundle-product').on('change', function() {
                 const bundleProductId = $(this).val();
@@ -225,17 +319,27 @@
                 if (bundleProductId) {
                     loadBundleComponents(bundleProductId);
                     $('#components-disabled-message').hide();
-                    $('#components-section').show();
+
+                    if (currentProductionMode === 'QUANTITY_PLANNED') {
+                        $('#components-section-preview').show();
+                    } else {
+                        $('#components-section-input').show();
+                    }
                 } else {
                     $('#components-disabled-message').show();
-                    $('#components-section').hide();
-                    $('#components-rows').empty();
+                    $('#components-section-preview').hide();
+                    $('#components-section-input').hide();
+                    $('#components-rows-preview').empty();
+                    $('#components-rows-input').empty();
+                    bundleComponents = [];
                 }
             });
 
             // Quantity planned change
             $('#quantity-planned').on('input', function() {
-                updateTotalRequiredQuantities();
+                if (currentProductionMode === 'QUANTITY_PLANNED') {
+                    updateTotalRequiredQuantities();
+                }
             });
 
             function loadBundleComponents(bundleProductId) {
@@ -248,21 +352,27 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            displayComponents(response.components);
+                            bundleComponents = response.components;
+                            if (currentProductionMode === 'QUANTITY_PLANNED') {
+                                displayComponentsPreview(bundleComponents);
+                            } else {
+                                displayComponentsInput(bundleComponents);
+                            }
                         } else {
-                            displayComponents([]);
+                            bundleComponents = [];
                         }
                     },
                     error: function() {
-
+                        bundleComponents = [];
                     }
                 });
             }
 
-            function displayComponents(components) {
+            // Mode 1: Display components in preview mode (quantity planned)
+            function displayComponentsPreview(components) {
                 let componentsHtml = '';
                 components.forEach(component => {
-                    const qtyPlanned = $('#quantity-planned').val();
+                    const qtyPlanned = $('#quantity-planned').val() || 0;
                     const totalRequired = component.quantity_required * qtyPlanned;
                     const isAvailable = totalRequired <= component.stock_available;
 
@@ -273,7 +383,7 @@
                     <td class="text-center total-required" data-stock-available="${component.stock_available}" data-qty-per-bundle="${component.quantity_required}">${toIndonesianNumberFormat(totalRequired)} ${component.unit}</td>
                     <td class="text-center">${convertToIndonesianFormat(component.stock_available)} ${component.unit}</td>
                     <td class="text-center">
-                        ${isAvailable 
+                        ${isAvailable
                             ? '<span class="badge bg-label-success">Available</span>'
                             : '<span class="badge bg-label-danger">Insufficient Stock</span>'
                         }
@@ -282,13 +392,50 @@
             `;
                 });
 
-                $('#components-rows').html(componentsHtml);
+                $('#components-rows-preview').html(componentsHtml);
+            }
+
+            // Mode 2: Display components in input mode (material-based)
+            function displayComponentsInput(components) {
+                let componentsHtml = '';
+                components.forEach((component, index) => {
+                    componentsHtml += `
+                <tr data-component-index="${index}"
+                    data-product-id="${component.id}"
+                    data-qty-per-bundle="${component.quantity_required}">
+                    <td>${component.product_name}</td>
+                    <td class="text-center stock-available">${convertToIndonesianFormat(component.stock_available)} ${component.unit}</td>
+                    <td>
+                        <input type="text"
+                            class="form-control numeric-input material-input"
+                            data-index="${index}"
+                            placeholder="0"
+                            value="" />
+                    </td>
+                    <td class="text-center">${convertToIndonesianFormat(component.quantity_required)} ${component.unit}</td>
+                    <td class="text-center leftover-material">0,0000 ${component.unit}</td>
+                    <td class="text-center material-status">
+                        <span class="badge bg-label-secondary">Waiting Input</span>
+                    </td>
+                </tr>
+            `;
+                });
+
+                $('#components-rows-input').html(componentsHtml);
+
+                // Initialize Cleave.js for numeric inputs with 4 decimals
+                initCleaveCurrency($('#components-rows-input'));
+
+                // Attach event listeners to material inputs
+                $('.material-input').on('input', function() {
+                    calculateMaximumProduction();
+                });
             }
 
             function updateTotalRequiredQuantities() {
-                const qtyPlanned = $('#quantity-planned').val();
+                const qtyPlanned = $('#quantity-planned').val() || 0;
 
-                $('#components-rows .total-required').each(function() {
+                $('#components-rows-preview .total-required').each(function() {
                     const qtyPerBundle = $(this).data('qty-per-bundle');
                     const totalRequired = qtyPerBundle * qtyPlanned;
 
@@ -311,6 +458,95 @@
                 });
             }
 
+            // Calculate maximum production based on material inputs
+            function calculateMaximumProduction() {
+                let maxProduction = Infinity;
+                let allInputsFilled = true;
+                let bottleneckComponent = '';
+
+                $('#components-rows-input tr').each(function() {
+                    const $row = $(this);
+                    const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
+                    // Parse Cleave.js formatted value (handles Indonesian format: 1.234,56)
+                    const materialInputRaw = $row.find('.material-input').val();
+                    const materialInput = parseCurrency(materialInputRaw) || 0;
+                    const componentIndex = $row.data('component-index');
+                    const stockAvailable = parseFloat(bundleComponents[componentIndex].stock_available);
+                    const productName = bundleComponents[componentIndex].product_name;
+                    const unit = bundleComponents[componentIndex].unit;
+
+                    if (materialInput === 0) {
+                        allInputsFilled = false;
+                    }
+
+                    // Calculate how many bundles can be produced from this material
+                    const possibleProduction = Math.floor(materialInput / qtyPerBundle);
+
+                    // Find the minimum (bottleneck)
+                    if (possibleProduction < maxProduction) {
+                        maxProduction = possibleProduction;
+                        bottleneckComponent = productName;
+                    }
+
+                    // Calculate leftover material with 4 decimal precision
+                    // Important: Use the MINIMUM maxProduction across all materials
+                    // We'll update this in a second pass
+                    const usedMaterial = possibleProduction * qtyPerBundle;
+                    const leftover = materialInput - usedMaterial;
+
+                    // Temporarily store for second pass
+                    $row.data('temp-possible-production', possibleProduction);
+                    $row.data('temp-leftover', leftover);
+
+                    // Update status
+                    const $statusCell = $row.find('.material-status');
+                    if (materialInput === 0) {
+                        $statusCell.html('<span class="badge bg-label-secondary">Waiting Input</span>');
+                    } else if (materialInput > stockAvailable) {
+                        $statusCell.html('<span class="badge bg-label-danger">Exceeds Stock</span>');
+                    } else if (leftover > 0) {
+                        $statusCell.html('<span class="badge bg-label-warning">Has Leftover</span>');
+                    } else {
+                        $statusCell.html('<span class="badge bg-label-success">Exact Match</span>');
+                    }
+                });
+
+                // Second pass: Recalculate leftovers based on actual maxProduction
+                if (maxProduction !== Infinity && allInputsFilled) {
+                    $('#components-rows-input tr').each(function() {
+                        const $row = $(this);
+                        const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
+                        const materialInputRaw = $row.find('.material-input').val();
+                        const materialInput = parseCurrency(materialInputRaw) || 0;
+
+                        // Use the BOTTLENECK maxProduction for all components
+                        const usedMaterial = maxProduction * qtyPerBundle;
+                        const leftover = materialInput - usedMaterial;
+
+                        const unit = bundleComponents[$row.data('component-index')].unit;
+                        // Format leftover in Indonesian format with 4 decimals
+                        const leftoverFormatted = toIndonesianNumberFormat(leftover.toFixed(4));
+                        $row.find('.leftover-material').text(leftoverFormatted + ' ' + unit);
+                    });
+                }
+
+                // Update calculated quantity field
+                if (maxProduction === Infinity || !allInputsFilled) {
+                    $('#calculated-quantity').val('0');
+                    $('#quantity-planned').val('0');
+                } else {
+                    $('#calculated-quantity').val(maxProduction);
+                    $('#quantity-planned').val(maxProduction); // Sync for form submission
+
+                    // Console log for debugging
+                    console.log('✅ Material-Based Calculation:', {
+                        maxProduction: maxProduction,
+                        bottleneck: bottleneckComponent,
+                        mode: 'MATERIAL_BASED'
+                    });
+                }
+            }
+
             // Form submission
             $('#submit-btn').on('click', function(e) {
                 e.preventDefault();
@@ -318,8 +554,13 @@
                 // Validate required fields
                 let isValid = true;
                 const requiredFields = ['production-number', 'production-date', 'bundle-product',
-                    'warehouse', 'quantity-planned', 'pic-user'
+                    'warehouse', 'pic-user'
                 ];
+
+                // Add quantity-planned validation only for QUANTITY_PLANNED mode
+                if (currentProductionMode === 'QUANTITY_PLANNED') {
+                    requiredFields.push('quantity-planned');
+                }
 
                 requiredFields.forEach(function(fieldId) {
                     const field = document.getElementById(fieldId);
@@ -344,27 +585,79 @@
                     return;
                 }
 
-                // TODO: Check component availability
-                const hasInsufficientStock = $('#components-rows .badge.bg-label-danger').length > 0;
-                if (hasInsufficientStock) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Stock Tidak Cukup',
-                        text: 'Beberapa komponen memiliki stock yang tidak mencukupi. Apakah Anda yakin ingin melanjutkan?',
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, Lanjutkan',
-                        cancelButtonText: 'Batal',
-                        customClass: {
-                            confirmButton: 'btn btn-warning',
-                            cancelButton: 'btn btn-secondary'
-                        },
-                        buttonsStyling: false
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            submitForm();
-                        }
-                    });
-                    return;
+                // Validate material inputs for MATERIAL_BASED mode
+                if (currentProductionMode === 'MATERIAL_BASED') {
+                    const allMaterialInputs = $('.material-input').length;
+                    const filledInputs = $('.material-input').filter(function() {
+                        return parseCurrency($(this).val()) > 0;
+                    }).length;
+
+                    if (filledInputs === 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Material Belum Diisi',
+                            text: 'Silakan input material untuk setiap komponen.',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+
+                    const calculatedQty = parseInt($('#calculated-quantity').val());
+                    if (calculatedQty === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Tidak Bisa Produksi',
+                            text: 'Material yang diinput tidak cukup untuk memproduksi minimal 1 bundle.',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+
+                    // Check if any material exceeds stock
+                    const hasExceedingStock = $('#components-rows-input .badge.bg-label-danger').length > 0;
+                    if (hasExceedingStock) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Material Melebihi Stock',
+                            text: 'Beberapa material input melebihi stock yang tersedia.',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            },
+                            buttonsStyling: false
+                        });
+                        return;
+                    }
+                }
+
+                // Check component availability for QUANTITY_PLANNED mode
+                if (currentProductionMode === 'QUANTITY_PLANNED') {
+                    const hasInsufficientStock = $('#components-rows-preview .badge.bg-label-danger').length > 0;
+                    if (hasInsufficientStock) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Stock Tidak Cukup',
+                            text: 'Beberapa komponen memiliki stock yang tidak mencukupi. Apakah Anda yakin ingin melanjutkan?',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya, Lanjutkan',
+                            cancelButtonText: 'Batal',
+                            customClass: {
+                                confirmButton: 'btn btn-warning',
+                                cancelButton: 'btn btn-secondary'
+                            },
+                            buttonsStyling: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                submitForm();
+                            }
+                        });
+                        return;
+                    }
                 }
 
                 Swal.fire({
@@ -400,6 +693,31 @@
                 formData.append('pic_id', $('#pic-user').val());
                 formData.append('description', $('#description').val());
                 formData.append('memo', $('#production-memo').val());
+                formData.append('production_mode', currentProductionMode);
+
+                // Include material inputs and leftover data for MATERIAL_BASED mode
+                if (currentProductionMode === 'MATERIAL_BASED') {
+                    const materialData = [];
+                    $('#components-rows-input tr').each(function() {
+                        const $row = $(this);
+                        const componentIndex = $row.data('component-index');
+                        const materialInputRaw = $row.find('.material-input').val();
+                        const materialInput = parseCurrency(materialInputRaw) || 0;
+                        const leftoverText = $row.find('.leftover-material').text();
+                        // Parse Indonesian format: 1.234,5678 → 1234.5678
+                        const leftover = parseCurrency(leftoverText.split(' ')[0]);
+
+                        materialData.push({
+                            product_id: bundleComponents[componentIndex].id,
+                            product_name: bundleComponents[componentIndex].product_name,
+                            qty_per_bundle: bundleComponents[componentIndex].quantity_required,
+                            material_input: materialInput,
+                            leftover: leftover,
+                            unit: bundleComponents[componentIndex].unit
+                        });
+                    });
+                    formData.append('material_inputs', JSON.stringify(materialData));
+                }
 
                 // Handle file attachment
                 const attachmentFile = $('#attachment')[0].files[0];
