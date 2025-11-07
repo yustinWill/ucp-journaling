@@ -161,7 +161,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control currency-input text-end" id="purchase-price"
-                                    placeholder="Rp 0" />
+                                    placeholder="Rp 0" required/>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Akun Pembelian</label>
@@ -183,7 +183,7 @@
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label">Pajak Pembelian <span style="color: red;">*</span></label>
+                                <label class="form-label">Pajak Pembelian</label>
                                 <select class="global-select2 form-select flex-grow-1" id="purchase-tax"
                                     data-allow-clear="false">
                                     <option value="">Pilih Pajak</option>
@@ -219,7 +219,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Harga Satuan <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control currency-input text-end" id="sales-price"
-                                    placeholder="Rp 0" />
+                                    placeholder="Rp 0" required/>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Akun Penjualan</label>
@@ -241,7 +241,7 @@
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label">Pajak Penjualan <span style="color: red;">*</span></label>
+                                <label class="form-label">Pajak Penjualan</label>
                                 <select class="global-select2 form-select flex-grow-1" id="sales-tax"
                                     data-allow-clear="false">
                                     <option value="">Pilih Pajak</option>
@@ -279,13 +279,13 @@
                             <div class="col-md-6">
                                 <label class="form-label">Batas stok minimum <span style="color: red;">*</span></label>
                                 <input type="text" class="form-control numeric-input text-end" id="minimum-stock"
-                                    placeholder="0" />
+                                    placeholder="0" required/>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Akun Persediaan Default <span
                                         style="color: red;">*</span></label>
                                 <select class="global-select2 form-select flex-grow-1" id="inventory-account"
-                                    data-allow-clear="false">
+                                    data-allow-clear="false" required>
                                     <option value="">Pilih Akun</option>
                                     @foreach ($accounts as $account)
                                         <option value="{{ $account->code }}">{{ $account->code }} -
