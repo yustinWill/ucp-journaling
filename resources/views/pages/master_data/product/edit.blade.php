@@ -244,7 +244,7 @@
                                     value="{{ old('sales-price', $product->unit_sell_price ?? '') }}" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Akun Penjualan <span style="color: red;">*</span></label>
+                                <label class="form-label">Akun Penjualan</label>
                                 <select class="global-select2 form-select flex-grow-1" id="sales-account"
                                     name="sales-account" data-allow-clear="false">
                                     <option value="">Pilih Akun</option>

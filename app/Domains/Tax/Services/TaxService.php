@@ -120,6 +120,7 @@ class TaxService
     {
         return DB::table($this->table_name)
             ->where('company_code', session('user_company_code'))
+            ->where('status', 'ACTIVE')
             ->orderBy('name', 'asc')
             ->get();
     }

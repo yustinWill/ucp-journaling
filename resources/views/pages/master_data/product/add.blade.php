@@ -696,8 +696,6 @@
                 });
             });
 
-
-
             $('.form-repeater-component').repeater({
                 show: function() {
                     $(this).slideDown(() => {
@@ -813,6 +811,9 @@
                     '#product-code, #product-name, #product-status').val(
                     '');
                 $('#productForm select').not('#unit-select,#category-select, #product-status').val('').trigger('change');
+
+                $('#sales-tax').val('5').trigger('change');
+                $('#bundle-sales-tax').val('5').trigger('change');
             }
 
             // Conditional field toggles - Single Product

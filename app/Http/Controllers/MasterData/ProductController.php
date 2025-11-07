@@ -161,6 +161,7 @@ class ProductController extends Controller
                 'description' => 'nullable|string|max:1000',
                 'memo' => 'nullable|string|max:1000',
                 'status' => 'required|in:ACTIVE,INACTIVE',
+                'sales_account' => 'nullable|string',
                 'tags' => 'nullable|array',
                 'tags.*' => 'integer|exists:m_tags,id',
                 'type' => 'required|in:single,bundle',
@@ -216,18 +217,18 @@ class ProductController extends Controller
                         }
                     },
                 ],
-                'sales_account' => [
-                    'string',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'single' &&
-                            $req->input('sales_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The sales price field is required when type is single and sales enabled is true.');
-                        }
-                    },
-                ],
+                // 'sales_account' => [
+                //     'string',
+                //     function ($attribute, $value, $fail) use ($req) {
+                //         if (
+                //             $req->input('type') === 'single' &&
+                //             $req->input('sales_enabled') === 'true' &&
+                //             empty($value)
+                //         ) {
+                //             $fail('The sales price field is required when type is single and sales enabled is true.');
+                //         }
+                //     },
+                // ],
                 'sales_tax' => [
                     'string',
                     function ($attribute, $value, $fail) use ($req) {
@@ -685,6 +686,7 @@ class ProductController extends Controller
                 'description' => 'nullable|string|max:1000',
                 'memo' => 'nullable|string|max:1000',
                 'status' => 'required|in:ACTIVE,INACTIVE',
+                'sales_account' => 'nullable|string',
                 'tags' => 'nullable|array',
                 'tags.*' => 'integer|exists:m_tags,id',
                 'type' => 'required|in:single,bundle',
@@ -740,18 +742,18 @@ class ProductController extends Controller
                         }
                     },
                 ],
-                'sales_account' => [
-                    'string',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'single' &&
-                            $req->input('sales_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The sales price field is required when type is single and sales enabled is true.');
-                        }
-                    },
-                ],
+                // 'sales_account' => [
+                //     'string',
+                //     function ($attribute, $value, $fail) use ($req) {
+                //         if (
+                //             $req->input('type') === 'single' &&
+                //             $req->input('sales_enabled') === 'true' &&
+                //             empty($value)
+                //         ) {
+                //             $fail('The sales price field is required when type is single and sales enabled is true.');
+                //         }
+                //     },
+                // ],
                 'sales_tax' => [
                     'string',
                     function ($attribute, $value, $fail) use ($req) {
