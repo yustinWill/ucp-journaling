@@ -404,7 +404,9 @@
                 $('#invoice-items-tbody tr').each(function() {
                     const remaining = parseFloat($(this).find('input[name*="[remaining_qty_before]"]')
                         .val()) || 0;
-                    const invoiceQty = parseFloat($(this).find('input[name*="[invoice_qty]"]').val()) || 0;
+                   
+                    const invoiceQty = parseCurrency($(this).find('input[name*="[invoice_qty]"]').val()) || 0;
+                    
                     if ((remaining - invoiceQty) !== 0) {
                         allCompleted = false;
                     }
