@@ -105,7 +105,7 @@
                     <div class="row g-2">
                         <div class="col">
                             <select class="global-select2 form-select" id="purchase-order-payment-terms"
-                                name="payment_terms" data-allow-clear="false">
+                                name="payment_terms" data-allow-clear="false" required>
                                 <option value="">Pilih Payment Terms</option>
                                 @foreach ($paymentTerms as $term)
                                     <option value="{{ $term->id }}" data-days="{{ $term->days }}"
@@ -130,7 +130,7 @@
                     <div class="row g-2">
                         <div class="col">
                             <select class="global-select2 form-select" id="purchase-order-customer" name="customer_id"
-                                data-allow-clear="false">
+                                data-allow-clear="false" required>
                                 <option value="">Pilih Customer</option>
                                 @foreach ($customers as $customer)
                                     <option value="{{ $customer->id }}">{{ $customer->name }}</option>
@@ -147,7 +147,7 @@
                     <label class="form-label">Jumlah Hari <span style="color: red;">*</span></label>
                     <div class="input-group">
                         <input type="number" class="form-control" id="purchase-order-days"
-                            name="payment_term_day_count" placeholder="30" min="0" max="365" disabled>
+                            name="payment_term_day_count" placeholder="30" min="0" max="365" disabled required>
                         <span class="input-group-text">Hari</span>
                     </div>
                     <small class="form-text text-muted">Jumlah hari untuk pembayaran (0 untuk immediate/COD)</small>
