@@ -88,6 +88,13 @@
                             <i class="icon-base ti tabler-layers-linked me-2"></i>
                             <b>Batch Produk</b>
                         </a>
+                        @if($product->type === 'bundle')
+                        <a class="list-group-item list-group-item-action waves-effect" id="bundle-composition-list-item"
+                            data-bs-toggle="list" href="#horizontal-bundle-composition" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-components me-2"></i>
+                            <b>Komposisi Bundle</b>
+                        </a>
+                        @endif
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>
@@ -423,6 +430,56 @@
                                 </table>
                             </div>
                         </div>
+
+                        <!-- Bundle Composition Tab -->
+                        @if($product->type === 'bundle')
+                        <div class="tab-pane fade" id="horizontal-bundle-composition" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Komposisi Bundle</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table class="table table-bordered" id="bundle-composition-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 60%;">Nama Produk</th>
+                                            <th style="width: 20%;">Qty</th>
+                                            <th style="width: 20%;">Satuan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(isset($bundleComponents) && count($bundleComponents) > 0)
+                                            @foreach($bundleComponents as $component)
+                                                <tr>
+                                                    <td>
+                                                        <a href="{{ route('master_data.product.detail', ['id' => $component->f_product_composition_product_id]) }}"
+                                                           class="text-primary fw-semibold">
+                                                            {{ $component->product_name }}
+                                                        </a>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @php
+                                                            // Smart decimal formatting
+                                                            if ($component->qty == floor($component->qty)) {
+                                                                echo number_format($component->qty, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($component->qty, 4, ',', '.');
+                                                                echo rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                    </td>
+                                                    <td class="text-center">{{ $component->unit_name }}</td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">Tidak ada komponen bundle</td>
+                                            </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        @endif
 
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">

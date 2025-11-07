@@ -233,25 +233,32 @@
                                     <table class="table table-bordered" id="components-table">
                                         <thead>
                                             <tr>
-                                                <th>Komponen Product</th>
-                                                <th>Stock Available</th>
-                                                <th>Material Input</th>
-                                                <th>Qty per Bundle</th>
-                                                <th>Leftover Material</th>
-                                                <th>Status</th>
+                                                <th style="width: 25%;">Komponen Product</th>
+                                                <th style="width: 10%;">Satuan</th>
+                                                <th style="width: 13%;">Qty per Bundle</th>
+                                                <th style="width: 15%;">Stock Available</th>
+                                                <th style="width: 15%;">Material Input</th>
+                                                <th style="width: 12%;">Leftover Material</th>
+                                                <th style="width: 10%;">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @forelse($production_items as $component)
+                                                @php
+                                                    $formatNumber = function($num) {
+                                                        return $num == floor($num) ? number_format($num, 0, ',', '.') : rtrim(rtrim(number_format($num, 4, ',', '.'), '0'), ',');
+                                                    };
+                                                @endphp
                                                 <tr>
                                                     <td>{{ $component->product_name }}</td>
-                                                    <td class="text-center">{{ number_format($component->current_stock, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                    <td class="text-center">{{ $component->unit_code }}</td>
+                                                    <td class="text-center">{{ $formatNumber($component->quantity_per_bundle) }}</td>
+                                                    <td class="text-center">{{ $formatNumber($component->current_stock) }}</td>
                                                     <td class="text-center">
-                                                        <strong>{{ number_format($component->material_input ?? $component->quantity_consumed, 4, ',', '.') }} {{ $component->unit_code }}</strong>
+                                                        <strong>{{ $formatNumber($component->material_input ?? $component->quantity_consumed) }}</strong>
                                                     </td>
-                                                    <td class="text-center">{{ number_format($component->quantity_per_bundle, 4, ',', '.') }} {{ $component->unit_code }}</td>
                                                     <td class="text-center">
-                                                        <span class="badge bg-label-warning">{{ number_format($component->leftover_amount ?? 0, 4, ',', '.') }} {{ $component->unit_code }}</span>
+                                                        <span class="badge bg-label-warning">{{ $formatNumber($component->leftover_amount ?? 0) }}</span>
                                                     </td>
                                                     <td class="text-center">
                                                         @if (($component->leftover_amount ?? 0) > 0)
@@ -265,7 +272,7 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="6" class="text-center text-muted">Tidak ada komponen tersedia</td>
+                                                    <td colspan="7" class="text-center text-muted">Tidak ada komponen tersedia</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>
@@ -281,20 +288,27 @@
                                     <table class="table table-bordered" id="components-table">
                                         <thead>
                                             <tr>
-                                                <th>Komponen Product</th>
-                                                <th>Qty per Bundle</th>
-                                                <th>Total Required</th>
-                                                <th>Stock Available</th>
-                                                <th>Status</th>
+                                                <th style="width: 30%;">Komponen Product</th>
+                                                <th style="width: 10%;">Satuan</th>
+                                                <th style="width: 15%;">Qty per Bundle</th>
+                                                <th style="width: 15%;">Total Required</th>
+                                                <th style="width: 15%;">Stock Available</th>
+                                                <th style="width: 15%;">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @forelse($production_items as $component)
+                                                @php
+                                                    $formatNumber = function($num) {
+                                                        return $num == floor($num) ? number_format($num, 0, ',', '.') : rtrim(rtrim(number_format($num, 4, ',', '.'), '0'), ',');
+                                                    };
+                                                @endphp
                                                 <tr>
                                                     <td>{{ $component->product_name }}</td>
-                                                    <td class="text-center">{{ number_format($component->quantity_per_bundle, 4, ',', '.') }} {{ $component->unit_code }}</td>
-                                                    <td class="text-center">{{ number_format($component->quantity_required, 4, ',', '.') }} {{ $component->unit_code }}</td>
-                                                    <td class="text-center">{{ number_format($component->current_stock, 4, ',', '.') }} {{ $component->unit_code }}</td>
+                                                    <td class="text-center">{{ $component->unit_code }}</td>
+                                                    <td class="text-center">{{ $formatNumber($component->quantity_per_bundle) }}</td>
+                                                    <td class="text-center">{{ $formatNumber($component->quantity_required) }}</td>
+                                                    <td class="text-center">{{ $formatNumber($component->current_stock) }}</td>
                                                     <td class="text-center">
                                                         @if ($component->current_stock >= $component->quantity_required)
                                                             <span class="badge bg-label-success">Available</span>
@@ -305,7 +319,7 @@
                                                 </tr>
                                             @empty
                                                 <tr>
-                                                    <td colspan="5" class="text-center text-muted">Tidak ada komponen tersedia</td>
+                                                    <td colspan="6" class="text-center text-muted">Tidak ada komponen tersedia</td>
                                                 </tr>
                                             @endforelse
                                         </tbody>

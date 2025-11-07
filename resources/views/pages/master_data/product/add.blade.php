@@ -12,6 +12,8 @@
                 <hr class="mx-n6">
             </div>
 
+            <input type="hidden" id="default-tax-id" name="default_tax_id" value="{{ $defaultNoTaxId }}" />
+
             <!-- Row 1: Basic Information -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
@@ -26,7 +28,7 @@
                             <select class="global-select2 form-select" id="unit-select" data-allow-clear="false">
                                 <option value="">Pilih Unit</option>
                                 @foreach ($units as $unit)
-                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                    <option value="{{ $unit->id }}">{{ $unit->id }} - {{ $unit->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -77,7 +79,7 @@
                         required>
                         <option value="">Pilih Status</option>
                         @foreach ($statuses as $status)
-                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                            <option value="{{ $status['value'] }}">{{ $status['value'] }} - {{ $status['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -162,7 +164,7 @@
                                     placeholder="Rp 0" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Akun Pembelian <span style="color: red;">*</span></label>
+                                <label class="form-label">Akun Pembelian</label>
                                 <select class="global-select2 form-select flex-grow-1" id="purchase-account"
                                     data-allow-clear="false">
                                     <option value="">Pilih Akun</option>
@@ -186,7 +188,7 @@
                                     data-allow-clear="false">
                                     <option value="">Pilih Pajak</option>
                                     @foreach ($taxes as $tax)
-                                        <option value="{{ $tax->id }}">{{ $tax->name }}</option>
+                                        <option value="{{ $tax->id }}">{{ $tax->code }} - {{ $tax->name }}</option>
                                     @endforeach
                                 </select>
                                 {{-- @if ($canAddTaxes)
@@ -220,13 +222,13 @@
                                     placeholder="Rp 0" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Akun Penjualan <span style="color: red;">*</span></label>
+                                <label class="form-label">Akun Penjualan</label>
                                 <select class="global-select2 form-select flex-grow-1" id="sales-account"
                                     data-allow-clear="false">
                                     <option value="">Pilih Akun</option>
                                     @foreach ($accounts as $account)
-                                        <option value="{{ $account->code }}">{{ $account->code }} -
-                                            {{ $account->name }}</option>
+                                        <option value="{{ $account->code }}">
+                                            {{ $account->code }} - {{ $account->name }}</option>
                                     @endforeach
                                 </select>
                                 {{-- @if ($canAddAccounts)
@@ -244,7 +246,9 @@
                                     data-allow-clear="false">
                                     <option value="">Pilih Pajak</option>
                                     @foreach ($taxes as $tax)
-                                        <option value="{{ $tax->id }}">{{ $tax->name }}</option>
+                                        <option value="{{ $tax->id }}">
+                                            {{ $tax->code }} - {{ $tax->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                                 {{-- @if ($canAddTaxes)
@@ -361,8 +365,7 @@
                                             id="bundle-purchase-price" placeholder="Rp 0" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Akun Pembelian <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Akun Pembelian</label>
                                         <select class="global-select2 form-select" id="bundle-purchase-account"
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
@@ -375,13 +378,14 @@
                                 </div>
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">Pajak Pembelian <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Pajak Pembelian</label>
                                         <select class="global-select2 form-select" id="bundle-purchase-tax"
                                             data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
                                             @foreach ($taxes as $tax)
-                                                <option value="{{ $tax->id }}">{{ $tax->name }}</option>
+                                                <option value="{{ $tax->id }}">
+                                                    {{ $tax->code }} - {{ $tax->name }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -409,8 +413,7 @@
                                             id="bundle-sales-price" placeholder="Rp 0" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Akun Penjualan <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Akun Penjualan</label>
                                         <select class="global-select2 form-select" id="bundle-sales-account"
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
@@ -423,13 +426,14 @@
                                 </div>
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">Pajak Penjualan <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Pajak Penjualan</label>
                                         <select class="global-select2 form-select" id="bundle-sales-tax"
                                             data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
                                             @foreach ($taxes as $tax)
-                                                <option value="{{ $tax->id }}">{{ $tax->name }}</option>
+                                                <option value="{{ $tax->id }}">
+                                                    {{ $tax->code }} - {{ $tax->name }}
+                                                </option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -458,8 +462,7 @@
                                             id="bundle-minimum-stock" placeholder="0" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Akun Persediaan Default <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Akun Persediaan Default <span style="color: red;">*</span></label>
                                         <select class="global-select2 form-select" id="bundle-inventory-account"
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
@@ -514,10 +517,10 @@
                                 <table class="table table-bordered" id="bundle-components-table">
                                     <thead>
                                         <tr>
-                                            <th>Nama Produk</th>
-                                            <th>Qty</th>
-                                            <th>Unit</th>
-                                            <th>Aksi</th>
+                                            <th style="width: 45%;">Nama Produk</th>
+                                            <th style="width: 20%;">Qty</th>
+                                            <th style="width: 20%;">Unit</th>
+                                            <th style="width: 15%;">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody id="bundle-components-tbody" data-repeater-list>
@@ -539,7 +542,7 @@
                                                     id="minimum-stock" min="1" value="1" />
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control component-unit" readonly>
+                                                <input type="text" class="form-control component-unit" disabled>
                                             </td>
                                             <td>
                                                 <button class="btn btn-label-danger" data-repeater-delete type="button">
@@ -669,6 +672,7 @@
             let currentProductType = null;
             let bundleComponentCounter = 0;
             let bundleAccountCounter = 0;
+            const defaultNoTaxId = $('#default-tax-id').val()
 
             // Initialize form
             generateProductCode();
@@ -814,10 +818,12 @@
             // Conditional field toggles - Single Product
             $('#enable-purchase').change(function() {
                 $('#purchase-fields').toggle(this.checked);
+                $('#purchase-tax').val(defaultNoTaxId).trigger('change')
             });
 
             $('#enable-sales').change(function() {
                 $('#sales-fields').toggle(this.checked);
+                $('#sales-tax').val(defaultNoTaxId).trigger('change')
             });
 
             $('#enable-inventory').change(function() {
@@ -827,10 +833,12 @@
             // Conditional field toggles - Bundle Product
             $('#bundle-enable-purchase').change(function() {
                 $('#bundle-purchase-fields').toggle(this.checked);
+                $('#bundle-purchase-tax').val(defaultNoTaxId).trigger('change')
             });
 
             $('#bundle-enable-sales').change(function() {
                 $('#bundle-sales-fields').toggle(this.checked);
+                $('#bundle-sales-tax').val(defaultNoTaxId).trigger('change')
             });
 
             $('#bundle-enable-inventory').change(function() {
@@ -923,7 +931,69 @@
 
                 // Validate required fields
                 let isValid = true;
-                const requiredFields = ['product-name', 'unit-select', 'product-code'];
+                const isProductTypeEmpty = !$('input[name="product-type"]:checked').length
+                const isCurrentProductTypeSingle = currentProductType === 'single'
+                const isSingleEnablePurchase = $('#enable-purchase').is(':checked')
+                const isSingleEnableSales = $('#enable-sales').is(':checked')
+                const isSingleEnableInventory = $('#enable-inventory').is(':checked')
+                
+                const isCurrentProductTypeBundle = currentProductType === 'bundle'
+                const isBundleEnablePurchase = $('#bundle-enable-purchase').is(':checked')
+                const isBundleEnableSales = $('#bundle-enable-sales').is(':checked')
+                const isBundleEnableInventory = $('#bundle-enable-inventory').is(':checked')
+
+                const requiredFields = [
+                    'product-name', 
+                    'unit-select', 
+                    'product-code',
+                    'product-status',
+                ];
+
+                if (isCurrentProductTypeSingle) {
+                    if (isSingleEnablePurchase) {
+                        requiredFields.push(...[
+                            'purchase-price',
+                            'purchase-account',
+                            'purchase-tax',
+                        ])
+                    }
+                    if (isSingleEnableSales) {
+                        requiredFields.push(...[
+                            'sales-price',
+                            // 'sales-account',
+                            'sales-tax',
+                        ])
+                    }
+                    if (isSingleEnableInventory) {
+                        requiredFields.push(...[
+                            'minimum-stock',
+                            'inventory-account',
+                        ])
+                    }
+                }
+
+                if (isCurrentProductTypeBundle) {
+                    if (isBundleEnablePurchase) {
+                        requiredFields.push(...[
+                            'bundle-purchase-price',
+                            'bundle-purchase-account',
+                            'bundle-purchase-tax',
+                        ])
+                    }
+                    if (isBundleEnableSales) {
+                        requiredFields.push(...[
+                            'bundle-sales-price',
+                            // 'bundle-sales-account',
+                            'bundle-sales-tax',
+                        ])
+                    }
+                    if (isBundleEnableInventory) {
+                        requiredFields.push(...[
+                            'bundle-minimum-stock',
+                            'bundle-inventory-account',
+                        ])
+                    }
+                }
 
                 requiredFields.forEach(function(fieldId) {
                     const field = $('#' + fieldId);
@@ -935,8 +1005,21 @@
                     }
                 });
 
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Mohon lengkapi semua field yang wajib diisi.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
                 // Validate product type selection
-                if (!$('input[name="product-type"]:checked').length) {
+                if (isProductTypeEmpty) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Validasi Gagal',
@@ -950,7 +1033,7 @@
                 }
 
                 // Additional validation based on product type and enabled features
-                if (currentProductType === 'bundle') {
+                if (isCurrentProductTypeBundle) {
                     if ($('#bundle-components-tbody tr').length === 0) {
                         Swal.fire({
                             icon: 'error',
@@ -963,19 +1046,6 @@
                         });
                         return;
                     }
-                }
-
-                if (!isValid) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Validasi Gagal',
-                        text: 'Mohon lengkapi semua field yang wajib diisi.',
-                        customClass: {
-                            confirmButton: 'btn btn-primary'
-                        },
-                        buttonsStyling: false
-                    });
-                    return;
                 }
 
                 function getProductFormJson() {
