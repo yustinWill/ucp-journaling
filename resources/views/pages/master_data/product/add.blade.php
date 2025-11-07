@@ -220,7 +220,7 @@
                                     placeholder="Rp 0" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Akun Penjualan <span style="color: red;">*</span></label>
+                                <label class="form-label">Akun Penjualan </label>
                                 <select class="global-select2 form-select flex-grow-1" id="sales-account"
                                     data-allow-clear="false">
                                     <option value="">Pilih Akun</option>
@@ -409,8 +409,7 @@
                                             id="bundle-sales-price" placeholder="Rp 0" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Akun Penjualan <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Akun Penjualan </label>
                                         <select class="global-select2 form-select" id="bundle-sales-account"
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
@@ -429,7 +428,7 @@
                                             data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
                                             @foreach ($taxes as $tax)
-                                                <option value="{{ $tax->id }}">{{ $tax->name }}</option>
+                                                <option value="{{ $tax->id }}" @if ($tax->code == 'NOTAX') selected @endif>{{ $tax->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -692,8 +691,6 @@
                 });
             });
 
-
-
             $('.form-repeater-component').repeater({
                 show: function() {
                     $(this).slideDown(() => {
@@ -809,6 +806,9 @@
                     '#product-code, #product-name, #product-status').val(
                     '');
                 $('#productForm select').not('#unit-select,#category-select, #product-status').val('').trigger('change');
+
+                $('#sales-tax').val('5').trigger('change');
+                $('#bundle-sales-tax').val('5').trigger('change');
             }
 
             // Conditional field toggles - Single Product
