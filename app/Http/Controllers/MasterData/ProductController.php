@@ -124,6 +124,15 @@ class ProductController extends Controller
             ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
         ];
 
+        $defaultNoTaxCode = 'NOTAX';
+        $defaultNoTaxId = null;
+
+        foreach ($taxes as $tax) {
+            if($tax->code = $defaultNoTaxCode) {
+                $defaultNoTaxId = $tax->id;
+            }
+        }
+
         return view('pages.master_data.product.add', [
             'units' => $units,
             'categories' => $categories,
@@ -137,6 +146,7 @@ class ProductController extends Controller
             'canAddCategories' => $canAddCategories,
             'canAddAccounts' => $canAddAccounts,
             'canAddTaxes' => $canAddTaxes,
+            'defaultNoTaxId' => $defaultNoTaxId,
         ]);
     }
 
@@ -587,12 +597,19 @@ class ProductController extends Controller
 
         $batchData = app(\App\Services\BatchManagementService::class)->getProductBatchInfo($id, true);
 
+        // Get bundle components if product is a bundle
+        $bundleComponents = [];
+        if ($product->type === 'bundle') {
+            $bundleComponents = app(ProductCompositionService::class)->findAllBasedOnProductId($id);
+        }
+
         return view('pages.master_data.product.detail', [
             'product' => $product,
             'inventoryData' => $inventoryData,
             'auditLogs' => $auditLogs,
             'auditLogType' => AuditLogTypes::MASTER_DATA_PRODUCT->code(),
             'batchData' => $batchData,
+            'bundleComponents' => $bundleComponents,
         ]);
     }
 
@@ -627,6 +644,15 @@ class ProductController extends Controller
         $canAddTaxes = true; // Mock permission check
         $product->f_tag_codes = [23];
 
+        $defaultNoTaxCode = 'NOTAX';
+        $defaultNoTaxId = null;
+
+        foreach ($taxes as $tax) {
+            if($tax->code = $defaultNoTaxCode) {
+                $defaultNoTaxId = $tax->id;
+            }
+        }
+
         // dd($product->f_tag_codes);
         return view('pages.master_data.product.edit', [
             'units' => $units,
@@ -644,6 +670,7 @@ class ProductController extends Controller
             'product' => $product,
             'productCompositions' => $productCompositions,
             'productExpenses' => $productExpenses,
+            'defaultNoTaxId' => $defaultNoTaxId,
         ]);
     }
 

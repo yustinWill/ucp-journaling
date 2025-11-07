@@ -160,11 +160,12 @@
                     <table class="table table-bordered" id="components-table-preview">
                         <thead>
                             <tr>
-                                <th>Komponen Product</th>
-                                <th>Qty per Bundle</th>
-                                <th>Total Required</th>
-                                <th>Stock Available</th>
-                                <th>Status</th>
+                                <th style="width: 30%;">Komponen Product</th>
+                                <th style="width: 10%;">Satuan</th>
+                                <th style="width: 15%;">Qty per Bundle</th>
+                                <th style="width: 15%;">Total Required</th>
+                                <th style="width: 15%;">Stock Available</th>
+                                <th style="width: 15%;">Status</th>
                             </tr>
                         </thead>
                         <tbody id="components-rows-preview">
@@ -181,11 +182,12 @@
                         <thead>
                             <tr>
                                 <th style="width: 25%;">Komponen Product</th>
+                                <th style="width: 10%;">Satuan</th>
+                                <th style="width: 13%;">Qty per Bundle</th>
                                 <th style="width: 15%;">Stock Available</th>
-                                <th style="width: 18%;">Material Input <span style="color: red;">*</span></th>
-                                <th style="width: 12%;">Qty per Bundle</th>
-                                <th style="width: 15%;">Leftover Material</th>
-                                <th style="width: 15%;">Status</th>
+                                <th style="width: 15%;">Material Input <span style="color: red;">*</span></th>
+                                <th style="width: 12%;">Leftover Material</th>
+                                <th style="width: 10%;">Status</th>
                             </tr>
                         </thead>
                         <tbody id="components-rows-input">
@@ -368,6 +370,19 @@
                 });
             }
 
+            // Smart formatting - display natural numbers (no forced decimals)
+            function formatNumber(num) {
+                if (num % 1 === 0) {
+                    // Whole number - no decimals
+                    return toIndonesianNumberFormat(String(Math.floor(num)));
+                } else {
+                    // Has decimals - show only necessary decimals (strip trailing zeros)
+                    let formatted = num.toFixed(4); // Max 4 decimals
+                    formatted = formatted.replace(/\.?0+$/, ''); // Remove trailing zeros
+                    return toIndonesianNumberFormat(formatted);
+                }
+            }
+
             // Mode 1: Display components in preview mode (quantity planned)
             function displayComponentsPreview(components) {
                 let componentsHtml = '';
@@ -379,9 +394,10 @@
                     componentsHtml += `
                 <tr>
                     <td>${component.product_name}</td>
-                    <td class="text-center">${convertToIndonesianFormat(component.quantity_required)} ${component.unit}</td>
-                    <td class="text-center total-required" data-stock-available="${component.stock_available}" data-qty-per-bundle="${component.quantity_required}">${toIndonesianNumberFormat(totalRequired)} ${component.unit}</td>
-                    <td class="text-center">${convertToIndonesianFormat(component.stock_available)} ${component.unit}</td>
+                    <td class="text-center">${component.unit}</td>
+                    <td class="text-center">${formatNumber(component.quantity_required)}</td>
+                    <td class="text-center total-required" data-stock-available="${component.stock_available}" data-qty-per-bundle="${component.quantity_required}">${formatNumber(totalRequired)}</td>
+                    <td class="text-center">${formatNumber(component.stock_available)}</td>
                     <td class="text-center">
                         ${isAvailable
                             ? '<span class="badge bg-label-success">Available</span>'
@@ -402,9 +418,12 @@
                     componentsHtml += `
                 <tr data-component-index="${index}"
                     data-product-id="${component.id}"
-                    data-qty-per-bundle="${component.quantity_required}">
+                    data-qty-per-bundle="${component.quantity_required}"
+                    data-stock-available="${component.stock_available}">
                     <td>${component.product_name}</td>
-                    <td class="text-center stock-available">${convertToIndonesianFormat(component.stock_available)} ${component.unit}</td>
+                    <td class="text-center">${component.unit}</td>
+                    <td class="text-center">${formatNumber(component.quantity_required)}</td>
+                    <td class="text-center stock-available">${formatNumber(component.stock_available)}</td>
                     <td>
                         <input type="text"
                             class="form-control numeric-input material-input"
@@ -412,8 +431,7 @@
                             placeholder="0"
                             value="" />
                     </td>
-                    <td class="text-center">${convertToIndonesianFormat(component.quantity_required)} ${component.unit}</td>
-                    <td class="text-center leftover-material">0,0000 ${component.unit}</td>
+                    <td class="text-center leftover-material">-</td>
                     <td class="text-center material-status">
                         <span class="badge bg-label-secondary">Waiting Input</span>
                     </td>
@@ -439,16 +457,12 @@
                     const qtyPerBundle = $(this).data('qty-per-bundle');
                     const totalRequired = qtyPerBundle * qtyPlanned;
 
-                    // Extract unit from current text
-                    const currentText = $(this).text();
-                    const unit = currentText.split(' ').pop();
-
-                    $(this).text(toIndonesianNumberFormat(String(totalRequired)) + ' ' + unit);
+                    $(this).text(formatNumber(totalRequired));
 
                     // Update status based on availability
                     const row = $(this).closest('tr');
                     const stockAvailable = $(this).data('stock-available');
-                    const statusCell = row.find('td').eq(4);
+                    const statusCell = row.find('td').eq(5);
 
                     if (totalRequired <= stockAvailable) {
                         statusCell.html('<span class="badge bg-label-success">Available</span>');
@@ -464,16 +478,15 @@
                 let allInputsFilled = true;
                 let bottleneckComponent = '';
 
+                // First pass: Find bottleneck and validate inputs
                 $('#components-rows-input tr').each(function() {
                     const $row = $(this);
                     const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
-                    // Parse Cleave.js formatted value (handles Indonesian format: 1.234,56)
                     const materialInputRaw = $row.find('.material-input').val();
                     const materialInput = parseCurrency(materialInputRaw) || 0;
                     const componentIndex = $row.data('component-index');
-                    const stockAvailable = parseFloat(bundleComponents[componentIndex].stock_available);
+                    const stockAvailable = parseFloat($row.data('stock-available'));
                     const productName = bundleComponents[componentIndex].product_name;
-                    const unit = bundleComponents[componentIndex].unit;
 
                     if (materialInput === 0) {
                         allInputsFilled = false;
@@ -487,48 +500,50 @@
                         maxProduction = possibleProduction;
                         bottleneckComponent = productName;
                     }
+                });
 
-                    // Calculate leftover material with 4 decimal precision
-                    // Important: Use the MINIMUM maxProduction across all materials
-                    // We'll update this in a second pass
-                    const usedMaterial = possibleProduction * qtyPerBundle;
-                    const leftover = materialInput - usedMaterial;
-
-                    // Temporarily store for second pass
-                    $row.data('temp-possible-production', possibleProduction);
-                    $row.data('temp-leftover', leftover);
+                // Second pass: Update display and status based on bottleneck
+                $('#components-rows-input tr').each(function() {
+                    const $row = $(this);
+                    const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
+                    const materialInputRaw = $row.find('.material-input').val();
+                    const materialInput = parseCurrency(materialInputRaw) || 0;
+                    const componentIndex = $row.data('component-index');
+                    const stockAvailable = parseFloat($row.data('stock-available'));
+                    const unit = bundleComponents[componentIndex].unit;
 
                     // Update status
                     const $statusCell = $row.find('.material-status');
+
                     if (materialInput === 0) {
                         $statusCell.html('<span class="badge bg-label-secondary">Waiting Input</span>');
+                        $row.find('.leftover-material').text('-');
                     } else if (materialInput > stockAvailable) {
+                        // CRITICAL FIX: Only show error when EXCEEDS stock
                         $statusCell.html('<span class="badge bg-label-danger">Exceeds Stock</span>');
-                    } else if (leftover > 0) {
-                        $statusCell.html('<span class="badge bg-label-warning">Has Leftover</span>');
+                        $row.find('.leftover-material').text('-');
                     } else {
-                        $statusCell.html('<span class="badge bg-label-success">Exact Match</span>');
+                        // Material is valid (less than or equal to stock)
+                        if (maxProduction !== Infinity && allInputsFilled) {
+                            // Use the BOTTLENECK maxProduction for all components
+                            const usedMaterial = maxProduction * qtyPerBundle;
+                            const leftover = materialInput - usedMaterial;
+
+                            // Format leftover
+                            $row.find('.leftover-material').text(formatNumber(leftover));
+
+                            // Update status based on leftover
+                            if (leftover === 0) {
+                                $statusCell.html('<span class="badge bg-label-success">Exact Match</span>');
+                            } else if (leftover > 0) {
+                                $statusCell.html('<span class="badge bg-label-warning">Has Leftover</span>');
+                            }
+                        } else {
+                            $row.find('.leftover-material').text('-');
+                            $statusCell.html('<span class="badge bg-label-info">Calculating...</span>');
+                        }
                     }
                 });
-
-                // Second pass: Recalculate leftovers based on actual maxProduction
-                if (maxProduction !== Infinity && allInputsFilled) {
-                    $('#components-rows-input tr').each(function() {
-                        const $row = $(this);
-                        const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
-                        const materialInputRaw = $row.find('.material-input').val();
-                        const materialInput = parseCurrency(materialInputRaw) || 0;
-
-                        // Use the BOTTLENECK maxProduction for all components
-                        const usedMaterial = maxProduction * qtyPerBundle;
-                        const leftover = materialInput - usedMaterial;
-
-                        const unit = bundleComponents[$row.data('component-index')].unit;
-                        // Format leftover in Indonesian format with 4 decimals
-                        const leftoverFormatted = toIndonesianNumberFormat(leftover.toFixed(4));
-                        $row.find('.leftover-material').text(leftoverFormatted + ' ' + unit);
-                    });
-                }
 
                 // Update calculated quantity field
                 if (maxProduction === Infinity || !allInputsFilled) {
@@ -702,10 +717,17 @@
                         const $row = $(this);
                         const componentIndex = $row.data('component-index');
                         const materialInputRaw = $row.find('.material-input').val();
-                        const materialInput = parseCurrency(materialInputRaw) || 0;
+                        let materialInput = parseCurrency(materialInputRaw) || 0;
+
+                        // Validate and limit to 4 decimal places
+                        materialInput = parseFloat(materialInput.toFixed(4));
+
                         const leftoverText = $row.find('.leftover-material').text();
                         // Parse Indonesian format: 1.234,5678 → 1234.5678
-                        const leftover = parseCurrency(leftoverText.split(' ')[0]);
+                        let leftover = parseCurrency(leftoverText.split(' ')[0]) || 0;
+
+                        // Limit leftover to 4 decimal places
+                        leftover = parseFloat(leftover.toFixed(4));
 
                         materialData.push({
                             product_id: bundleComponents[componentIndex].id,

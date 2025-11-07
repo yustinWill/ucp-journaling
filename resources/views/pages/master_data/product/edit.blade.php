@@ -13,6 +13,8 @@
                 <hr class="mx-n6">
             </div>
 
+            <input type="hidden" id="default-tax-id" name="default_tax_id" value="{{ $defaultNoTaxId }}" />
+
             <!-- Row 1: Basic Information -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
@@ -395,8 +397,7 @@
                                             value="{{ old('bundle-purchase-price', $product->unit_purchase_price ?? '') }}" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Akun Pembelian <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Akun Pembelian</label>
                                         <select class="global-select2 form-select" id="bundle-purchase-account"
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
@@ -411,8 +412,7 @@
                                 </div>
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">Pajak Pembelian <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Pajak Pembelian</label>
                                         <select class="global-select2 form-select" id="bundle-purchase-tax"
                                             data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
@@ -449,7 +449,7 @@
                                             value="{{ old('bundle-sales-price', $product->unit_sell_price ?? '') }}" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Akun Penjualan </label>
+                                        <label class="form-label">Akun Penjualan</label>
                                         <select class="global-select2 form-select" id="bundle-sales-account"
                                             data-allow-clear="false">
                                             <option value="">Pilih Akun</option>
@@ -464,8 +464,7 @@
                                 </div>
                                 <div class="row g-3 mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">Pajak Penjualan <span
-                                                style="color: red;">*</span></label>
+                                        <label class="form-label">Pajak Penjualan</label>
                                         <select class="global-select2 form-select" id="bundle-sales-tax"
                                             data-allow-clear="false">
                                             <option value="">Pilih Pajak</option>
@@ -802,6 +801,8 @@
             let bundleComponentCounter = 0;
             let bundleAccountCounter = 0;
 
+            const defaultNoTaxId = $('#default-tax-id').val()
+
             $('select.select2Product').each(function() {
                 $(this).select2({
                     placeholder: "Pilih Produk",
@@ -1092,7 +1093,69 @@
 
                 // Validate required fields
                 let isValid = true;
-                const requiredFields = ['product-name', 'unit-select', 'product-code'];
+                const isProductTypeEmpty = !$('input[name="product-type"]:checked').length
+                const isCurrentProductTypeSingle = currentProductType === 'single'
+                const isSingleEnablePurchase = $('#enable-purchase').is(':checked')
+                const isSingleEnableSales = $('#enable-sales').is(':checked')
+                const isSingleEnableInventory = $('#enable-inventory').is(':checked')
+                
+                const isCurrentProductTypeBundle = currentProductType === 'bundle'
+                const isBundleEnablePurchase = $('#bundle-enable-purchase').is(':checked')
+                const isBundleEnableSales = $('#bundle-enable-sales').is(':checked')
+                const isBundleEnableInventory = $('#bundle-enable-inventory').is(':checked')
+
+                const requiredFields = [
+                    'product-name', 
+                    'unit-select', 
+                    'product-code',
+                    'product-status',
+                ];
+
+                if (isCurrentProductTypeSingle) {
+                    if (isSingleEnablePurchase) {
+                        requiredFields.push(...[
+                            'purchase-price',
+                            'purchase-account',
+                            'purchase-tax',
+                        ])
+                    }
+                    if (isSingleEnableSales) {
+                        requiredFields.push(...[
+                            'sales-price',
+                            // 'sales-account',
+                            'sales-tax',
+                        ])
+                    }
+                    if (isSingleEnableInventory) {
+                        requiredFields.push(...[
+                            'minimum-stock',
+                            'inventory-account',
+                        ])
+                    }
+                }
+
+                if (isCurrentProductTypeBundle) {
+                    if (isBundleEnablePurchase) {
+                        requiredFields.push(...[
+                            'bundle-purchase-price',
+                            'bundle-purchase-account',
+                            'bundle-purchase-tax',
+                        ])
+                    }
+                    if (isBundleEnableSales) {
+                        requiredFields.push(...[
+                            'bundle-sales-price',
+                            // 'bundle-sales-account',
+                            'bundle-sales-tax',
+                        ])
+                    }
+                    if (isBundleEnableInventory) {
+                        requiredFields.push(...[
+                            'bundle-minimum-stock',
+                            'bundle-inventory-account',
+                        ])
+                    }
+                }
 
                 requiredFields.forEach(function(fieldId) {
                     const field = $('#' + fieldId);
@@ -1103,6 +1166,19 @@
                         field.removeClass('is-invalid');
                     }
                 });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Mohon lengkapi semua field yang wajib diisi.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
 
                 // Validate product type selection
                 if (!$('input[name="product-type"]:checked').length) {
@@ -1132,19 +1208,6 @@
                         });
                         return;
                     }
-                }
-
-                if (!isValid) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Validasi Gagal',
-                        text: 'Mohon lengkapi semua field yang wajib diisi.',
-                        customClass: {
-                            confirmButton: 'btn btn-primary'
-                        },
-                        buttonsStyling: false
-                    });
-                    return;
                 }
 
                 function getProductFormJson() {

@@ -90,11 +90,18 @@ function toIndonesianNumberFormat(value) {
     let num = parseFloat(value);
     if (isNaN(num)) return '';
 
-    // Limit to max 4 decimals
-    num = num.toFixed(4);
+    // Smart formatting - only show decimals if necessary
+    let numStr;
+    if (num % 1 === 0) {
+        // Whole number - no decimals
+        numStr = Math.floor(num).toString();
+    } else {
+        // Has decimals - limit to max 4 decimals and strip trailing zeros
+        numStr = num.toFixed(4).replace(/\.?0+$/, '');
+    }
 
     // Split integer and decimals
-    let parts = num.split('.');
+    let parts = numStr.split('.');
     // Add thousand separator to integer part
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     // Join with comma as decimal separator
