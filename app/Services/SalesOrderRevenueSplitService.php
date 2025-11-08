@@ -36,7 +36,7 @@ class SalesOrderRevenueSplitService
     /**
      * Create revenue split for a single product in sales order
      */
-    private function createRevenueSplitForProduct($salesOrderId, $product, $companyCode, $userId)
+    public function createRevenueSplitForProduct($salesOrderId, $product, $companyCode, $userId)
     {
         // Get product revenue split configuration
         $config = DB::table($this->configTableName)
@@ -98,7 +98,6 @@ class SalesOrderRevenueSplitService
         $totalAmount = $unitPrice * $quantity;
         $basePrice = $config->base_price;
         $ratio = $unitPrice / $basePrice;
-
         // Calculate proportional splits
         $porsiPerusahaan = $config->porsi_perusahaan * $ratio * $quantity;
         $porsiOwner = $config->porsi_owner * $ratio * $quantity;

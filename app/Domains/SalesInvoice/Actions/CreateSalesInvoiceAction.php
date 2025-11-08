@@ -4,8 +4,9 @@ namespace App\Domains\SalesInvoice\Actions;
 
 use App\Domains\SalesInvoice\Services\SalesInvoiceAuditLogService;
 use App\Domains\SalesInvoice\Services\SalesInvoiceService;
+use App\Services\SalesOrderRevenueSplitService;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Auth;
 class CreateSalesInvoiceAction
 {
     public function execute(array $data)
@@ -73,6 +74,18 @@ class CreateSalesInvoiceAction
                 'grand_total' => $grandTotal,
                 'total_products' => count($invoiceProducts ?? []),
             ]);
+
+            foreach ($data['products'] as $product) {
+                $product['f_product_id'] = $product['product_id'];
+                $product['quantity'] = $product['invoice_qty'];
+                $product['id'] = $product['sales_order_product_id'];
+                app(SalesOrderRevenueSplitService::class)->createRevenueSplitForProduct(
+                    $data['sales_order_id'],
+                    $product,
+                    session('user_company_code'),
+                    Auth::id()
+                );
+            }
 
             return $invoiceId;
         });
