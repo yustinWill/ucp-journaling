@@ -14,6 +14,7 @@ use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\SalesPerson\Services\SalesPersonService;
 use App\Domains\Tag\Services\TagService;
+use App\Domains\Notification\Services\NotificationService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -26,6 +27,7 @@ use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Events\MessageSent;
 
 class SalesOrderController extends Controller
 {
@@ -201,7 +203,34 @@ class SalesOrderController extends Controller
                 'attachment' => 'Lampiran',
             ]);
 
-            app(CreateSalesOrderAction::class)->execute($validated);
+            $sales_order_id = app(CreateSalesOrderAction::class)->execute($validated);
+
+            $title = 'Sales Order Baru Dibuat';
+            $message = 'Sales Order dengan nomor ' . $validated['reference_no'] . ' telah dibuat.';
+            $icon_text = 'ti tabler-shopping-cart';
+            $notification_type = 'SALES_ORDER';
+            app(NotificationService::class)->create([
+                'broadcast_type' => 'PUBLIC',
+                'notification_type' => $notification_type,
+                'target_user_id' => null, // Broadcast to all users
+                'icon_text' => $icon_text,
+                'title' => $title,
+                'message' => $message,
+                'metadata' => json_encode(['type' => $notification_type, 'id' => $sales_order_id]),
+                'status' => 'ACTIVE',
+            ]);
+
+            // Sending a simple object instead of a model
+            $message = [
+                'icon' => $icon_text,
+                'title' => $title,
+                'message' => $message,
+                'timestamp_text' => date('y-m-d H:i:s'),
+                'metadata' => json_encode(['type' => $notification_type, 'id' => $sales_order_id]),
+            ];
+
+            // Fire the event
+            broadcast(new MessageSent($message));
 
             return response()->json([
                 'message' => SuccessCodes::CREATE_SALES_ORDER_SUCCESS->message(),

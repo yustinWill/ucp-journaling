@@ -31,4 +31,19 @@ class NotificationService
             ->orderBy('t.created_at', 'DESC')
             ->get();
     }
+
+    public function create(array $data)
+    {
+        return DB::table($this->table_name)->insertGetId([
+            'broadcast_type' => $data['broadcast_type'],
+            'notification_type' => $data['notification_type'],
+            'target_user_id' => $data['target_user_id'],
+            'icon_text' => $data['icon_text'],
+            'title' => $data['title'],  
+            'message' => $data['message'],
+            'metadata' => $data['metadata'],
+            'status' => $data['status'],
+            'created_at' => now(),
+        ]);
+    }
 }

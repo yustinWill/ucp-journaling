@@ -64,20 +64,26 @@
                 const notifList = document.getElementById(
                     "notification-list");
                 if (notifList) {
+                    
+                    let redirectUrl = '';
+                    let metadata = JSON.parse(event.message.metadata);
+                    if (metadata.type == "SALES_ORDER") {
+                        redirectUrl = "{{ route('main_transaction.sales_order.detail', ['id' => '__ID__']) }}".replace('__ID__', metadata.id);
+                    }
+
                     notifList.insertAdjacentHTML('afterbegin', `
-                    <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                    <li class="list-group-item list-group-item-action dropdown-notifications-item" data-redirect-to="${redirectUrl}">
                         <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                                 <div class="avatar">
                                     <span class="avatar-initial rounded-circle bg-label-success"><i
-                                            class="icon-base ti tabler-shopping-cart"></i></span>
+                                            class="icon-base ${event.message.icon}"></i></span>
                                 </div>
                             </div>
                             <div class="flex-grow-1">
-                                <h6 class="mb-1 small">Whoo! You have new order 🛒</h6>
-                                <small class="mb-1 d-block text-body">ACME Inc. made new order
-                                    $1,154</small>
-                                <small class="text-body-secondary">1 day ago</small>
+                                <h6 class="mb-1 small">${event.message.title}</h6>
+                                <small class="mb-1 d-block text-body">${event.message.message}</small>
+                                <small class="text-body-secondary">${event.message.timestamp_text}</small>
                             </div>
                             <div class="flex-shrink-0 dropdown-notifications-actions">
                                 <a href="javascript:void(0)" class="dropdown-notifications-read"><span
@@ -97,6 +103,7 @@
         document.addEventListener('click', function(e) {
             const listItem = e.target.closest('.dropdown-notifications-item');
             if (listItem) {
+
                 const badge = listItem.querySelector('.badge');
                 if (badge) {
                     badge.classList.remove('badge', 'badge-dot');
@@ -106,6 +113,11 @@
                 const bell = document.getElementById('notification-bell-important');
                 if (bell) {
                     bell.style.display = unread ? '' : 'none';
+                }
+
+                const redirectUrl = listItem.getAttribute('data-redirect-to');
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
                 }
             }
         });
@@ -140,9 +152,16 @@
 
                 const notifList = document.getElementById("notification-list");
                 if (notifList) {
+                   
                     response.forEach(function(notif) {
+                        let metadata = JSON.parse(notif.metadata);
+                        let redirectUrl = '';
+                        if (metadata.type == "SALES_ORDER") {
+                            redirectUrl = "{{ route('main_transaction.sales_order.detail', ['id' => '__ID__']) }}".replace('__ID__', metadata.id);
+                        }
+
                         notifList.insertAdjacentHTML('beforeend', `
-                        <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                        <li class="list-group-item list-group-item-action dropdown-notifications-item" data-redirect-to="${redirectUrl}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar">

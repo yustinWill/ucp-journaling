@@ -13,11 +13,12 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::get('/send-message', function () {
-    // Sending a simple object instead of a model
     $message = [
-        'user' => 'John Doe',
-        'text' => 'Hello from Laravel Reverb!',
-        'timestamp' => now()->toDateTimeString(),
+        'icon' => 'ti tabler-shopping-cart',
+        'title' => 'TITLE',
+        'message' => 'MESSAGE',
+        'metadata' => json_encode(['type' => 'SALES_ORDER', 'id' => 5]),
+        'timestamp_text' => date('y-m-d H:i:s'),
     ];
 
     // Fire the event
