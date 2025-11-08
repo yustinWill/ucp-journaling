@@ -13,10 +13,10 @@ class ProductRevenueSplitController extends Controller
 {
     private $tableName = 'm_product_revenue_split_configs';
 
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth');
+    // }
 
     /**
      * Get all product revenue split configurations
@@ -96,7 +96,7 @@ class ProductRevenueSplitController extends Controller
     public function getConfiguration($productId)
     {
         try {
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
             
             $config = DB::table($this->tableName)
                 ->where('company_code', $companyCode)
@@ -157,7 +157,7 @@ class ProductRevenueSplitController extends Controller
                 ], 422);
             }
 
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
             $userId = Auth::id();
 
             // Validate that the sum of fixed portions doesn't exceed base price

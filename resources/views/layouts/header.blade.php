@@ -7,7 +7,7 @@
 
     <meta name="description" content />
 
-     @vite(['resources/js/app.js']) {{-- Load JS --}}
+    @vite(['resources/js/app.js']) {{-- Load JS --}}
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../../custom_assets/company_logo.png" />
 
@@ -64,10 +64,11 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
 
     <script src="../../assets/js/config.js"></script>
+    
 
     <style>
-        body {
+        /* body {
             zoom: 90%;
-        }
+        } */
     </style>
 </head>

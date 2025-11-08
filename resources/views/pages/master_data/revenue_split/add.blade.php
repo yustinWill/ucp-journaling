@@ -117,7 +117,7 @@
 
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
-                <button type="button" class="btn btn-label-secondary me-3" onclick="resetForm()">Reset Form</button>
+                {{-- <button type="button" class="btn btn-label-secondary me-3" onclick="resetForm()">Reset Form</button> --}}
                 <button type="button" class="btn btn-label-danger me-3" onclick="window.history.back()">Kembali</button>
                 @if($canWrite)
                     <button type="submit" class="btn btn-success" id="submit-btn">Tambah Data</button>

@@ -2,6 +2,7 @@
 
 <html lang="en" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="ltr" data-skin="default"
     data-assets-path="../../assets/" data-template="vertical-menu-template-starter" data-bs-theme="light">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @include('layouts.header')
 
 <body>
@@ -37,6 +38,9 @@
 @yield('js_script')
 <script>
     $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
         statusCode: {
             401: function() {
                 window.location.href = '/';
