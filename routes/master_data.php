@@ -4,6 +4,7 @@ use App\Http\Controllers\MasterData\CategoryController;
 // Controllers
 use App\Http\Controllers\MasterData\CoaController;
 use App\Http\Controllers\MasterData\ContactController;
+use App\Http\Controllers\MasterData\InventoryAssetController;
 use App\Http\Controllers\MasterData\PaymentTermController;
 use App\Http\Controllers\MasterData\ProductController;
 use App\Http\Controllers\MasterData\ProductRevenueSplitController;
@@ -27,6 +28,7 @@ $coa_segment = '/coa';
 $user_segment = '/user';
 $role_segment = '/role';
 $stock_opname_segment = '/stock_opname';
+$inventory_segment = '/inventory';
 $tag_segment = '/tag';
 $tax_segment = '/tax';
 $unit_segment = '/unit';
@@ -36,7 +38,7 @@ $payment_term_segment = '/payment_term';
 $transaction_number_segment = '/transaction_number';
 $revenue_split_segment = '/revenue_split';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment, $revenue_split_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $inventory_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment, $revenue_split_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment.$contact_segment.'/index', 'index')->name('master_data.contact.index');
         Route::get($base_segment.$contact_segment.'/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table');
@@ -139,6 +141,17 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::post($base_segment.$stock_opname_segment.'/process-export', 'processExport')->name('master_data.stock_opname.process_export');
 
         Route::post($base_segment.$stock_opname_segment.'/create_adjustment/{id}', 'createAdjustment')->name('master_data.stock_opname.create_adjustment');
+    });
+
+    Route::controller(InventoryAssetController::class)->group(function () use ($base_segment, $inventory_segment) {
+        Route::get($base_segment.$inventory_segment.'/index', 'index')->name('master_data.inventory.index');
+        Route::get($base_segment.$inventory_segment.'/index_data_table', 'index_data_table')->name('master_data.inventory.index_data_table');
+        Route::get($base_segment.$inventory_segment.'/add', 'add')->name('master_data.inventory.add');
+        Route::get($base_segment.$inventory_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('master_data.inventory.generate_transaction_number');
+        Route::post($base_segment.$inventory_segment.'/save', 'save')->name('master_data.inventory.save');
+        Route::get($base_segment.$inventory_segment.'/edit/{id}', 'edit')->name('master_data.inventory.edit');
+        Route::post($base_segment.$inventory_segment.'/update', 'update')->name('master_data.inventory.update');
+        Route::get($base_segment.$inventory_segment.'/detail/{id}', 'detail')->name('master_data.inventory.detail');
     });
 
     Route::controller(TagController::class)->group(function () use ($base_segment, $tag_segment) {

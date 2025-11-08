@@ -175,10 +175,10 @@
                 <div data-i18n="Chat">Stock Opname</div>
             </a>
         </li>
-        <li class="menu-item">
-            <a href="app-ecommerce-dashboard.html" class="menu-link">
+        <li class="menu-item @if (request()->routeIs(['master_data.inventory.*'])) active @endif">
+            <a href="{{ route('master_data.inventory.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-factory"></i>
-                <div data-i18n="Chat">Asset / Inventaris - wip</div>
+                <div data-i18n="Chat">Asset / Inventaris</div>
             </a>
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">
