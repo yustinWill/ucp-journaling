@@ -19,7 +19,12 @@ class InventoryAssetController extends Controller
 {
     public function index()
     {
-        return view('pages.master_data.inventory.index');
+        // Get summary data for default tab (pending_assets)
+        $summaryData = app(InventoryAssetService::class)->getSummaryData('pending_assets');
+
+        return view('pages.master_data.inventory.index', [
+            'summaryData' => $summaryData
+        ]);
     }
 
     public function index_data_table(Request $request)
@@ -29,10 +34,14 @@ class InventoryAssetController extends Controller
         $search = $request->get('search');
         $tab = $request->get('tab', 'active_assets');
 
+        // Get summary data for the current tab
+        $summaryData = app(InventoryAssetService::class)->getSummaryData($tab);
+
         $data = app(InventoryAssetService::class)->findAllDatatable($tab, $categoryFilter, $statusFilter, $search);
 
         return response()->json([
-            'data' => $data->original['data']
+            'data' => $data->original['data'],
+            'summary' => $summaryData
         ]);
     }
 
