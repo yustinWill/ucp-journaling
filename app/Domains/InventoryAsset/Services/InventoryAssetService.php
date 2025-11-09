@@ -221,4 +221,37 @@ class InventoryAssetService
     {
         return DB::table($this->table_name)->where('id', $id)->delete();
     }
+
+    public function createSchedule($id, array $data)
+    {
+        $depreciationPeriodMonths = $data['depreciation_period_months'] ?? 0;
+
+        // Ensure depreciation_period_months is valid
+        if ($depreciationPeriodMonths <= 0) {
+            throw new \InvalidArgumentException('Depreciation period must be greater than 0.');
+        }
+
+        $startDate = isset($data['acquisition_date']) ? new \DateTime($data['acquisition_date']) : new \DateTime();
+        $schedules = [];
+        $valuePerMonth = ($data['acquisition_value'] ?? 0) / $depreciationPeriodMonths;
+
+        for ($i = 0; $i < $depreciationPeriodMonths; $i++) {
+            // Clone the start date and add $i months
+            $scheduleDate = (clone $startDate)->modify("+{$i} months");
+
+            // Get the last day of the month
+            $endOfMonth = $scheduleDate->format('Y-m-t');
+
+            $schedules[] = [
+                'asset_id' => $id,
+                'asset_depreciation_date' => $endOfMonth,
+                'asset_depreciation_value' => $valuePerMonth,
+            ];
+        }
+
+        // Insert all schedules into the database
+        DB::table("m_inventory_assets_depreciation_schedule")->insert($schedules);
+
+        return count($schedules); // Return the number of schedules created
+    }
 }
