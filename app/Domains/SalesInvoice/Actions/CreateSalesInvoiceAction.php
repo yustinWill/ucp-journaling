@@ -75,17 +75,17 @@ class CreateSalesInvoiceAction
                 'total_products' => count($invoiceProducts ?? []),
             ]);
 
-            foreach ($data['products'] as $product) {
-                $product['f_product_id'] = $product['product_id'];
-                $product['quantity'] = $product['invoice_qty'];
-                $product['id'] = $product['sales_order_product_id'];
-                app(SalesOrderRevenueSplitService::class)->createRevenueSplitForProduct(
-                    $data['sales_order_id'],
-                    $product,
-                    session('user_company_code'),
-                    Auth::id()
-                );
-            }
+            // foreach ($data['products'] as $product) {
+            //     $product['f_product_id'] = $product['product_id'];
+            //     $product['quantity'] = $product['invoice_qty'];
+            //     $product['id'] = $product['sales_order_product_id'];
+            //     app(SalesOrderRevenueSplitService::class)->createRevenueSplitForProduct(
+            //         $data['sales_order_id'],
+            //         $product,
+            //         session('user_company_code'),
+            //         Auth::id()
+            //     );
+            // }
 
             return $invoiceId;
         });

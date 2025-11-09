@@ -24,7 +24,7 @@ class ProductRevenueSplitController extends Controller
     public function getAllConfigurations()
     {
         try {
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
             
             // Get all products with their revenue split configurations
             $products = DB::table('m_products as p')
