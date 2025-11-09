@@ -17,25 +17,73 @@ class ProductionStockService
     {
         $processedItems = [];
 
-        // 1. Consume raw materials (decrease stock)
+        // OPTIMIZATION: Pre-fetch all necessary data to avoid N+1 queries
+        $productIds = array_merge(
+            array_column($items, 'raw_material_product_id'),
+            [$productionData['bundle_product_id']]
+        );
+
+        // Fetch all products with units in ONE query
+        $products = DB::table('m_products as p')
+            ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
+            ->whereIn('p.id', $productIds)
+            ->select('p.*', 'u.code as unit_code', 'u.name as unit_name')
+            ->get()
+            ->keyBy('id');
+
+        // Fetch warehouse once
+        $warehouse = DB::table('m_warehouses')->where('id', $productionData['warehouse_id'])->first();
+
+        // 1. Consume raw materials (decrease stock) - Update all stocks at once
+        $stockUpdates = [];
         foreach ($items as $item) {
-            // Update product stock first (decrease)
-            app(ProductService::class)->updateStock($item['raw_material_product_id'], '-', $item['quantity_consumed']);
+            $productId = $item['raw_material_product_id'];
+            $stockUpdates[] = "WHEN id = {$productId} THEN total_stock - {$item['quantity_consumed']}";
+        }
 
-            // Record stock movement via centralized service
-            app(StockMovementLogService::class)->recordMovement(
-                $productionData['warehouse_id'],
-                $item['raw_material_product_id'],
-                'PRODUCTION_OUT',
-                'PRODUCTION',
-                $productionData['production_number'],
-                $item['quantity_consumed'],
-                "Raw material consumed for production {$productionData['production_number']}",
-                $productionData['production_date']
-            );
+        if (! empty($stockUpdates)) {
+            DB::table('m_products')
+                ->whereIn('id', array_column($items, 'raw_material_product_id'))
+                ->update([
+                    'total_stock' => DB::raw('CASE '.implode(' ', $stockUpdates).' ELSE total_stock END'),
+                ]);
+        }
 
-            // Consume raw material batches (FIFO)
-            $batchConsumption = $this->consumeRawMaterialFIFO(
+        // 2. Process each item for FIFO and prepare stock movements
+        $stockMovements = [];
+        foreach ($items as $item) {
+            $product = $products[$item['raw_material_product_id']];
+
+            // Calculate stock before/after for movement log
+            $stockBefore = $product->total_stock;
+            $stockAfter = $stockBefore - $item['quantity_consumed'];
+
+            // Prepare stock movement data (will be bulk inserted later)
+            $stockMovements[] = [
+                'company_code' => session('user_company_code'),
+                'movement_date' => $productionData['production_date'],
+                'movement_type' => 'PRODUCTION_OUT',
+                'reference_type' => 'PRODUCTION',
+                'reference_number' => $productionData['production_number'],
+                'warehouse_id' => $productionData['warehouse_id'],
+                'warehouse_code' => $warehouse->code,
+                'warehouse_name' => $warehouse->name,
+                'product_id' => $item['raw_material_product_id'],
+                'product_code' => $product->code,
+                'product_name' => $product->name,
+                'unit' => $product->unit_code,
+                'stock_before' => $stockBefore,
+                'movement_qty' => $item['quantity_consumed'],
+                'stock_after' => $stockAfter,
+                'unit_cost' => $item['unit_cost'] ?? 0,
+                'total_value' => ($item['unit_cost'] ?? 0) * $item['quantity_consumed'],
+                'notes' => "Raw material consumed for production {$productionData['production_number']}",
+                'created_by' => Auth::id(),
+                'created_at' => now(),
+            ];
+
+            // Consume raw material batches (FIFO) - OPTIMIZED
+            $batchConsumption = $this->consumeRawMaterialFIFOOptimized(
                 $item['raw_material_product_id'],
                 $productionData['warehouse_id'],
                 $item['quantity_consumed'],
@@ -46,22 +94,40 @@ class ProductionStockService
             $processedItems[] = $item;
         }
 
-        // 2. Create bundle product (increase stock)
+        // 3. Create bundle product (increase stock)
         app(ProductService::class)->updateStock($productionData['bundle_product_id'], '+', $productionData['quantity_produced']);
 
-        // Record bundle product creation movement
-        app(StockMovementLogService::class)->recordMovement(
-            $productionData['warehouse_id'],
-            $productionData['bundle_product_id'],
-            'PRODUCTION_IN',
-            'PRODUCTION',
-            $productionData['production_number'],
-            $productionData['quantity_produced'],
-            "Bundle product created from production {$productionData['production_number']}",
-            $productionData['production_date']
-        );
+        // Prepare bundle product movement
+        $bundleProduct = $products[$productionData['bundle_product_id']];
+        $stockMovements[] = [
+            'company_code' => session('user_company_code'),
+            'movement_date' => $productionData['production_date'],
+            'movement_type' => 'PRODUCTION_IN',
+            'reference_type' => 'PRODUCTION',
+            'reference_number' => $productionData['production_number'],
+            'warehouse_id' => $productionData['warehouse_id'],
+            'warehouse_code' => $warehouse->code,
+            'warehouse_name' => $warehouse->name,
+            'product_id' => $productionData['bundle_product_id'],
+            'product_code' => $bundleProduct->code,
+            'product_name' => $bundleProduct->name,
+            'unit' => $bundleProduct->unit_code,
+            'stock_before' => $bundleProduct->total_stock,
+            'movement_qty' => $productionData['quantity_produced'],
+            'stock_after' => $bundleProduct->total_stock + $productionData['quantity_produced'],
+            'unit_cost' => 0,
+            'total_value' => 0,
+            'notes' => "Bundle product created from production {$productionData['production_number']}",
+            'created_by' => Auth::id(),
+            'created_at' => now(),
+        ];
 
-        // 3. Create new batch for bundle product
+        // OPTIMIZATION: Bulk insert all stock movements at once
+        if (! empty($stockMovements)) {
+            DB::table('t_stock_movement_logs')->insert($stockMovements);
+        }
+
+        // 4. Create new batch for bundle product
         $this->createProductionBatch(
             $productionData['bundle_product_id'],
             $productionData['warehouse_id'],
@@ -173,6 +239,74 @@ class ProductionStockService
             ];
 
             $remainingToConsume -= $consumeFromThisBatch;
+        }
+
+        return $consumedBatches;
+    }
+
+    /**
+     * OPTIMIZED: Consume batches using batch updates instead of individual queries
+     */
+    private function consumeRawMaterialFIFOOptimized(int $productId, int $warehouseId, float $quantityNeeded, int $productionId): array
+    {
+        // Fetch batches with remaining quantity in FIFO order
+        $batches = DB::table($this->batch_table)
+            ->where('f_product_id', $productId)
+            ->where('remaining_qty', '>', 0)
+            ->orderBy('created_at', 'ASC') // FIFO order
+            ->get();
+
+        if ($batches->isEmpty()) {
+            return [];
+        }
+
+        $consumedBatches = [];
+        $remainingToConsume = $quantityNeeded;
+        $batchUpdates = [];
+
+        // Calculate consumption for each batch
+        foreach ($batches as $batch) {
+            if ($remainingToConsume <= 0) {
+                break;
+            }
+
+            $consumeFromThisBatch = min($remainingToConsume, $batch->remaining_qty);
+            $newRemainingQty = $batch->remaining_qty - $consumeFromThisBatch;
+
+            // Prepare batch update
+            $batchUpdates[] = [
+                'id' => $batch->id,
+                'consume' => $consumeFromThisBatch,
+                'new_remaining' => $newRemainingQty,
+            ];
+
+            $consumedBatches[] = [
+                'batch_id' => $batch->id,
+                'batch_number' => $batch->batch_reference_code,
+                'quantity_consumed' => $consumeFromThisBatch,
+                'original_quantity' => $batch->initial_qty,
+                'remaining_after' => $newRemainingQty,
+            ];
+
+            $remainingToConsume -= $consumeFromThisBatch;
+        }
+
+        // OPTIMIZATION: Execute batch updates in a single query using CASE WHEN
+        if (! empty($batchUpdates)) {
+            $caseStatements = [];
+            $ids = [];
+
+            foreach ($batchUpdates as $update) {
+                $caseStatements[] = "WHEN id = {$update['id']} THEN {$update['new_remaining']}";
+                $ids[] = $update['id'];
+            }
+
+            DB::table($this->batch_table)
+                ->whereIn('id', $ids)
+                ->update([
+                    'remaining_qty' => DB::raw('CASE '.implode(' ', $caseStatements).' ELSE remaining_qty END'),
+                    'updated_at' => now(),
+                ]);
         }
 
         return $consumedBatches;

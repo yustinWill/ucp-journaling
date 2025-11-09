@@ -147,6 +147,7 @@ class CreateProductionAction
         // Required fields validation
         $requiredFields = [
             'production_date' => 'Production date is required',
+            'production_number' => 'Production number is required',
             'bundle_product_id' => 'Bundle product is required',
             'warehouse_id' => 'Warehouse is required',
             'pic_id' => 'PIC is required',
@@ -156,6 +157,18 @@ class CreateProductionAction
         foreach ($requiredFields as $field => $message) {
             if (empty($data[$field])) {
                 $errors[] = $message;
+            }
+        }
+
+        // CRITICAL: Validate unique production number
+        if (! empty($data['production_number'])) {
+            $existingProduction = DB::table('t_productions')
+                ->where('production_number', $data['production_number'])
+                ->where('company_code', session('user_company_code'))
+                ->first();
+
+            if ($existingProduction) {
+                $errors[] = 'Production number already exists: ' . $data['production_number'];
             }
         }
 

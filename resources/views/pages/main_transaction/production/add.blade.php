@@ -210,16 +210,16 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Deskripsi</label>
-                    <textarea class="form-control" id="description" name="description" rows="3"
-                        placeholder="Jelaskan detail dan tujuan produksi..." maxlength="1000"></textarea>
-                    <small class="form-text text-muted">Maksimal 1000 karakter</small>
-                </div>
-                <div class="col-md-6">
                     <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
                     <textarea class="form-control" id="production-memo" name="memo" rows="3"
                         placeholder="Catatan internal untuk produksi..." maxlength="500"></textarea>
                     <small class="form-text text-muted">Maksimal 500 karakter - Hanya untuk keperluan internal</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Deskripsi</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"
+                        placeholder="Jelaskan detail dan tujuan produksi..." maxlength="1000"></textarea>
+                    <small class="form-text text-muted">Maksimal 1000 karakter</small>
                 </div>
             </div>
 
@@ -372,15 +372,13 @@
 
             // Smart formatting - display natural numbers (no forced decimals)
             function formatNumber(num) {
-                if (num % 1 === 0) {
-                    // Whole number - no decimals
-                    return toIndonesianNumberFormat(String(Math.floor(num)));
-                } else {
-                    // Has decimals - show only necessary decimals (strip trailing zeros)
-                    let formatted = num.toFixed(4); // Max 4 decimals
-                    formatted = formatted.replace(/\.?0+$/, ''); // Remove trailing zeros
-                    return toIndonesianNumberFormat(formatted);
+                if (typeof num !== 'number') {
+                    num = parseFloat(num);
                 }
+                if (isNaN(num)) return '0';
+
+                // Use toIndonesianNumberFormat which already handles decimal formatting correctly
+                return toIndonesianNumberFormat(num.toString());
             }
 
             // Mode 1: Display components in preview mode (quantity planned)
