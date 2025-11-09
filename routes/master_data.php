@@ -150,8 +150,11 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment.$inventory_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('master_data.inventory.generate_transaction_number');
         Route::post($base_segment.$inventory_segment.'/save', 'save')->name('master_data.inventory.save');
         Route::get($base_segment.$inventory_segment.'/edit/{id}', 'edit')->name('master_data.inventory.edit');
+        Route::get($base_segment.$inventory_segment.'/dispose', 'dispose')->name('master_data.inventory.dispose');
+        Route::post($base_segment.$inventory_segment.'/dispose_save', 'dispose_save')->name('master_data.inventory.dispose_save');
         Route::post($base_segment.$inventory_segment.'/update', 'update')->name('master_data.inventory.update');
         Route::get($base_segment.$inventory_segment.'/detail/{id}', 'detail')->name('master_data.inventory.detail');
+        Route::get($base_segment.$inventory_segment.'/get_asset_data/{id}', 'get_asset_data')->name('master_data.inventory.get_asset_data');
     });
 
     Route::controller(TagController::class)->group(function () use ($base_segment, $tag_segment) {

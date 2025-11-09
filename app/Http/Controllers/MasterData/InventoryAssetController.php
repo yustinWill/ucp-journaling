@@ -4,7 +4,9 @@ namespace App\Http\Controllers\MasterData;
 
 use App\Domains\InventoryAsset\Actions\CreateInventoryAssetAction;
 use App\Domains\InventoryAsset\Actions\UpdateInventoryAssetAction;
+use App\Domains\InventoryAsset\Actions\SaveDisposeInventoryAssetAction;
 use App\Domains\InventoryAsset\Services\InventoryAssetAuditLogService;
+use App\domains\InventoryAsset\Services\InventoryAssetDepreciationScheduleService;
 use App\Domains\InventoryAsset\Services\InventoryAssetService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Warehouse\Services\WarehouseService;
@@ -300,7 +302,6 @@ class InventoryAssetController extends Controller
             ->select('code', 'name')
             ->orderBy('code')
             ->get();
-
         return view('pages.master_data.inventory.dispose', [
             'assets' => $assets,
             'coaAccounts' => $coaAccounts
@@ -310,53 +311,48 @@ class InventoryAssetController extends Controller
     public function get_asset_data($id)
     {
         $asset = app(InventoryAssetService::class)->findOne($id);
-        // $auditLogs = app(InventoryAssetAuditLogService::class)->findAllBasedOnId($id);
+        $depreciationLeftOver = app(InventoryAssetDepreciationScheduleService::class)->findLeftOverBasedOnId($id);
 
-        // // Get tags if exist
-        // $tags = [];
-        // if ($asset && $asset->f_tag_codes && is_array($asset->f_tag_codes)) {
-        //     $tags = DB::table('m_tags as t')
-        //         ->select([
-        //             't.code',
-        //             't.name',
-        //             DB::raw("CONCAT('bg-label-', tc.code) as preview")
-        //         ])
-        //         ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
-        //         ->whereIn('t.id', $asset->f_tag_codes)
-        //         ->get();
-        // }
-
-        // // Get COA account names
-        // $assetAccount = null;
-        // $purchaseAccount = null;
-        // $depreciationAccount = null;
-        // $accumulatedDepreciationAccount = null;
-
-        // if ($asset) {
-        //     if ($asset->f_asset_coa_code) {
-        //         $assetAccount = DB::table('m_coas')
-        //             ->where('code', $asset->f_asset_coa_code)
-        //             ->first();
-        //     }
-        //     if ($asset->f_purchase_coa_code) {
-        //         $purchaseAccount = DB::table('m_coas')
-        //             ->where('code', $asset->f_purchase_coa_code)
-        //             ->first();
-        //     }
-        //     if ($asset->f_depreciation_expense_coa_code) {
-        //         $depreciationAccount = DB::table('m_coas')
-        //             ->where('code', $asset->f_depreciation_expense_coa_code)
-        //             ->first();
-        //     }
-        //     if ($asset->f_accumulated_depreciation_coa_code) {
-        //         $accumulatedDepreciationAccount = DB::table('m_coas')
-        //             ->where('code', $asset->f_accumulated_depreciation_coa_code)
-        //             ->first();
-        //     }
-        // }
+        // Get tags if exist
+        $tags = [];
+        if ($asset && $asset->f_tag_codes && is_array($asset->f_tag_codes)) {
+            $tags = DB::table('m_tags as t')
+                ->select([
+                    't.code',
+                    't.name',
+                    DB::raw("CONCAT('bg-label-', tc.code) as preview")
+                ])
+                ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+                ->whereIn('t.id', $asset->f_tag_codes)
+                ->get();
+        }
+        $asset->tags = $tags;
+        $asset->depreciation_left_over = $depreciationLeftOver;
         return response()->json([
             'success' => true,
             'data' => $asset,
+        ]);
+    }
+
+    public function dispose_save(Request $request)
+    {
+        $validated = $request->validate([
+            'asset_id' => 'required|exists:m_inventory_assets,id',
+            'disposal_code' => 'required|string|max:255',
+            'disposal_date' => 'required|date',
+            'disposal_value' => 'required|numeric',
+            'f_sales_coa_code' => 'required|string',
+            'f_difference_coa_code' => 'required|string',
+        ]);
+
+        $data = $request->all();
+        $data['status'] = 'DISPOSED';
+
+        app(SaveDisposeInventoryAssetAction::class)->execute($request->asset_id, $data);
+
+        return response()->json([
+            'message' => 'Asset/Inventory updated successfully',
+            'success' => true
         ]);
     }
 }

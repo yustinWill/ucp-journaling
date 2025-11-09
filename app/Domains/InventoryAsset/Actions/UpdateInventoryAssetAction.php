@@ -19,7 +19,7 @@ class UpdateInventoryAssetAction
             // Create audit log
             app(InventoryAssetAuditLogService::class)->create(
                 $id,
-                ActionTypes::UPDATE->code(),
+                ActionTypes::UPDATE,
                 'Inventory/Asset updated',
                 ['before' => $before, 'after' => $data]
             );

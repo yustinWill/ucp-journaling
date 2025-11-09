@@ -217,6 +217,20 @@ class InventoryAssetService
         ]);
     }
 
+    public function updateDispose($id, array $data)
+    {
+        return DB::table($this->table_name)->where('id', $id)->update([
+            'f_sales_coa_code' => $data['f_sales_coa_code'],
+            'f_difference_coa_code' => $data['f_difference_coa_code'],
+            'disposal_code' => $data['disposal_code'],
+            'disposal_date' => $data['disposal_date'],
+            'disposal_value' => $data['disposal_value'],
+            'status' => $data['status'] ?? 'DISPOSED',
+            'updated_by' => Auth::id(),
+            'updated_at' => now(),
+        ]);
+    }
+
     public function delete($id)
     {
         return DB::table($this->table_name)->where('id', $id)->delete();
