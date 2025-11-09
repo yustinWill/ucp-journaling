@@ -21,6 +21,12 @@ class StockMovementLogsService
                     CASE 
                         WHEN t_stock_movement_logs.movement_type = "PURCHASE_IN" THEN t_stock_movement_logs.movement_qty
                         WHEN t_stock_movement_logs.movement_type = "SALES_OUT" THEN -t_stock_movement_logs.movement_qty
+
+                         WHEN t_stock_movement_logs.movement_type = "ADJUSTMENT_IN" THEN t_stock_movement_logs.movement_qty
+                        WHEN t_stock_movement_logs.movement_type = "ADJUSTMENT_OUT" THEN -t_stock_movement_logs.movement_qty
+
+                          WHEN t_stock_movement_logs.movement_type = "PRODUCTION_IN" THEN t_stock_movement_logs.movement_qty
+                        WHEN t_stock_movement_logs.movement_type = "PRODUCTION_OUT" THEN -t_stock_movement_logs.movement_qty
                         ELSE 0
                     END
                 ) as system_stock')

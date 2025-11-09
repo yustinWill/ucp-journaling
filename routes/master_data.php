@@ -67,6 +67,8 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment.$warehouse_segment.'/detail_batch_data_table', 'detail_batch_data_table')->name('master_data.warehouse.detail_batch_data_table');
         Route::get($base_segment.$warehouse_segment.'/export', 'export')->name('master_data.warehouse.export');
         Route::get($base_segment.$warehouse_segment.'/import', 'import')->name('master_data.warehouse.import');
+        Route::get($base_segment.$warehouse_segment.'/stock_transfer', 'stock_transfer')->name('master_data.warehouse.stock_transfer');
+        Route::post($base_segment.$warehouse_segment.'/stock_transfer/save', 'stock_transfer_save')->name('master_data.warehouse.stock_transfer_save');
     });
 
     Route::controller(ProductController::class)->group(function () use ($base_segment, $product_segment) {
