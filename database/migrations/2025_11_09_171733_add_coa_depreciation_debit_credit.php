@@ -28,8 +28,8 @@ return new class extends Migration
     {
         Schema::table('m_inventory_assets', function (Blueprint $table) {
             $table->dropColumn([
-                'coa_depreciation_debit',
-                'coa_depreciation_credit',
+                'f_coa_depreciation_debit',
+                'f_coa_depreciation_credit',
                 'f_sales_coa_code',
                 'f_difference_coa_code',
                 'disposal_code'
