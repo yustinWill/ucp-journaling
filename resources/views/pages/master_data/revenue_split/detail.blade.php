@@ -9,7 +9,8 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard.index') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('master_data.revenue_split.index') }}">Keuntungan Penjualan</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('master_data.revenue_split.index') }}">Keuntungan
+                            Penjualan</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Detail {{ $revenueSplt->cycle_name }}</li>
                 </ol>
             </nav>
@@ -38,7 +39,9 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
-                    <input type="text" class="form-control" value="{{ $revenueSplt->status === 'ACTIVE' ? 'Sedang Berjalan' : ($revenueSplt->status === 'SELESAI' ? 'Selesai' : 'Draft') }}" readonly>
+                    <input type="text" class="form-control"
+                        value="{{ $revenueSplt->status === 'ACTIVE' ? 'Sedang Berjalan' : ($revenueSplt->status === 'SELESAI' ? 'Selesai' : 'Draft') }}"
+                        readonly>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Mulai</label>
@@ -48,23 +51,20 @@
                     <label class="form-label">Tanggal Selesai</label>
                     <input type="date" class="form-control" value="{{ $revenueSplt->end_date }}" readonly>
                 </div>
-                @if($revenueSplt->description)
-                <div class="col-md-12">
-                    <label class="form-label">Deskripsi</label>
-                    <textarea class="form-control" rows="2" readonly>{{ $revenueSplt->description }}</textarea>
-                </div>
+                @if ($revenueSplt->description)
+                    <div class="col-md-12">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea class="form-control" rows="2" readonly>{{ $revenueSplt->description }}</textarea>
+                    </div>
                 @endif
             </div>
-        </div>
 
-            <hr class="my-6 mx-n6" />
-
-            <!-- Tabs Section -->
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-4">
                     <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
-                        <a class="list-group-item list-group-item-action waves-effect active" id="informasi-detail-list-item"
-                            data-bs-toggle="list" href="#horizontal-informasi-detail" aria-selected="true" role="tab">
+                        <a class="list-group-item list-group-item-action waves-effect active"
+                            id="informasi-detail-list-item" data-bs-toggle="list" href="#horizontal-informasi-detail"
+                            aria-selected="true" role="tab">
                             <i class="icon-base ti tabler-info-circle me-2"></i>
                             <b>Informasi Detail</b>
                         </a>
@@ -74,7 +74,8 @@
                             <b>Sales Orders</b>
                         </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="product-revenue-split-list-item"
-                            data-bs-toggle="list" href="#horizontal-product-revenue-split" aria-selected="false" role="tab">
+                            data-bs-toggle="list" href="#horizontal-product-revenue-split" aria-selected="false"
+                            role="tab">
                             <i class="icon-base ti tabler-percentage me-2"></i>
                             <b>Product Revenue Split</b>
                         </a>
@@ -87,454 +88,568 @@
                     <div class="tab-content px-0 mt-0">
                         <!-- Informasi Detail Tab -->
                         <div class="tab-pane fade show active" id="horizontal-informasi-detail" role="tabpanel">
-                    
-                    <!-- Expected Revenue Progress -->
-                    <div class="col-12 mb-6">
-                        <h5 class="mb-4">Expected Revenue Progress</h5>
-                        <p class="text-muted mb-4"><small>Perhitungan berdasarkan semua Sales Order dalam periode cycle (yang sudah dibayar + belum dibayar + belum ada invoice). Revenue didistribusikan sesuai proporsi target masing-masing kategori.</small></p>
-                        
-                        @php
-                            $expectedPabrikRevenue = ($expectedRevenue ?? 0) * ($revenueSplt->target_pabrik / $revenueSplt->total_target);
-                            $expectedOwnerRevenue = ($expectedRevenue ?? 0) * ($revenueSplt->target_owner / $revenueSplt->total_target);
-                            $expectedPerusahaanRevenue = ($expectedRevenue ?? 0) * ($revenueSplt->target_perusahaan / $revenueSplt->total_target);
-                            
-                            $expectedPabrikAchievement = $revenueSplt->target_pabrik > 0 ? ($expectedPabrikRevenue / $revenueSplt->target_pabrik) * 100 : 0;
-                            $expectedOwnerAchievement = $revenueSplt->target_owner > 0 ? ($expectedOwnerRevenue / $revenueSplt->target_owner) * 100 : 0;
-                            $expectedPerusahaanAchievement = $revenueSplt->target_perusahaan > 0 ? ($expectedPerusahaanRevenue / $revenueSplt->target_perusahaan) * 100 : 0;
-                            $expectedTotalAchievement = $revenueSplt->total_target > 0 ? (($expectedRevenue ?? 0) / $revenueSplt->total_target) * 100 : 0;
-                        @endphp
-                        
-                        <!-- Expected Progress Bars -->
-                        <div class="row g-4 mb-4">
-                            <!-- Expected Pabrik Progress -->
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="avatar me-3">
-                                        <span class="avatar-initial rounded bg-label-primary">
-                                            <i class="icon-base ti tabler-building-factory icon-24px"></i>
-                                        </span>
+
+                            <!-- Expected Revenue Progress -->
+                            <div class="col-12 mb-6">
+                                <h5 class="mb-4">Expected Revenue Progress</h5>
+                                <p class="text-muted mb-4"><small>Perhitungan berdasarkan semua Sales Order dalam periode
+                                        cycle
+                                        (yang sudah dibayar + belum dibayar + belum ada invoice). Revenue didistribusikan
+                                        sesuai
+                                        proporsi target masing-masing kategori.</small></p>
+
+                                @php
+                                    $expectedPabrikRevenue = $expected_keuntungan_parbrik;
+                                    $expectedOwnerRevenue = $expected_keuntungan_owner;
+                                    $expectedPerusahaanRevenue = $expected_keuntungan_perusahaan;
+                                    $expectedRevenue = $expectedPabrikRevenue + $expectedOwnerRevenue + $expectedPerusahaanRevenue;
+
+                                    $actualPabrikRevenue = $actual_keuntungan_parbrik;
+                                    $actualOwnerRevenue = $actual_keuntungan_owner;
+                                    $actualPerusahaanRevenue = $actual_keuntungan_perusahaan;
+                                    $actualRevenue = $actualPabrikRevenue + $actualOwnerRevenue + $actualPerusahaanRevenue;
+
+
+                                    $expectedPabrikAchievement =
+                                        $revenueSplt->target_pabrik > 0
+                                            ? ($expectedPabrikRevenue / $revenueSplt->target_pabrik) * 100
+                                            : 0;
+                                    $expectedOwnerAchievement =
+                                        $revenueSplt->target_owner > 0
+                                            ? ($expectedOwnerRevenue / $revenueSplt->target_owner) * 100
+                                            : 0;
+                                    $expectedPerusahaanAchievement =
+                                        $revenueSplt->target_perusahaan > 0
+                                            ? ($expectedPerusahaanRevenue / $revenueSplt->target_perusahaan) * 100
+                                            : 0;
+                                    $expectedTotalAchievement =
+                                        $revenueSplt->total_target > 0
+                                            ? (($expectedRevenue ?? 0) / $revenueSplt->total_target) * 100
+                                            : 0;
+
+                                    $actualPabrikAchievement =
+                                        $revenueSplt->target_pabrik > 0
+                                            ? ($actualPabrikRevenue / $revenueSplt->target_pabrik) * 100
+                                            : 0;
+                                    $actualOwnerAchievement =
+                                        $revenueSplt->target_owner > 0
+                                            ? ($actualOwnerRevenue / $revenueSplt->target_owner) * 100
+                                            : 0;
+                                    $actualPerusahaanAchievement =
+                                        $revenueSplt->target_perusahaan > 0
+                                            ? ($actualPerusahaanRevenue / $revenueSplt->target_perusahaan) * 100
+                                            : 0;
+                                    $actualTotalAchievement =
+                                        $revenueSplt->total_target > 0
+                                            ? (($actualRevenue ?? 0) / $revenueSplt->total_target) * 100
+                                            : 0;
+                                @endphp
+
+                                <!-- Expected Progress Bars -->
+                                <div class="row g-4 mb-4">
+                                    <!-- Expected Pabrik Progress -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded bg-label-primary">
+                                                    <i class="icon-base ti tabler-building-factory icon-24px"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Expected Keuntungan Pabrik</h6>
+                                                <small class="text-muted">Rp
+                                                    {{ number_format($expectedPabrikRevenue, 0, ',', '.') }} / Rp
+                                                    {{ number_format($revenueSplt->target_pabrik, 0, ',', '.') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge bg-label-primary">{{ number_format($expectedPabrikAchievement, 1) }}%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-primary"
+                                                style="width: {{ min($expectedPabrikAchievement, 100) }}%;"></div>
+                                        </div>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Expected Keuntungan Pabrik</h6>
-                                        <small class="text-muted">Rp {{ number_format($expectedPabrikRevenue, 0, ',', '.') }} / Rp {{ number_format($revenueSplt->target_pabrik, 0, ',', '.') }}</small>
+
+                                    <!-- Expected Owner Progress -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded bg-label-warning">
+                                                    <i class="icon-base ti tabler-user-star icon-24px"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Expected Keuntungan Owner</h6>
+                                                <small class="text-muted">Rp
+                                                    {{ number_format($expectedOwnerRevenue, 0, ',', '.') }} / Rp
+                                                    {{ number_format($revenueSplt->target_owner, 0, ',', '.') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge bg-label-warning">{{ number_format($expectedOwnerAchievement, 1) }}%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-warning"
+                                                style="width: {{ min($expectedOwnerAchievement, 100) }}%;"></div>
+                                        </div>
                                     </div>
-                                    <span class="badge bg-label-primary">{{ number_format($expectedPabrikAchievement, 1) }}%</span>
-                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-primary" style="width: {{ min($expectedPabrikAchievement, 100) }}%;"></div>
+
+                                    <!-- Expected Perusahaan Progress -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded bg-label-success">
+                                                    <i class="icon-base ti tabler-building icon-24px"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Expected Keuntungan Perusahaan</h6>
+                                                <small class="text-muted">Rp
+                                                    {{ number_format($expectedPerusahaanRevenue, 0, ',', '.') }} / Rp
+                                                    {{ number_format($revenueSplt->target_perusahaan, 0, ',', '.') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge bg-label-success">{{ number_format($expectedPerusahaanAchievement, 1) }}%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-success"
+                                                style="width: {{ min($expectedPerusahaanAchievement, 100) }}%;"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Expected Total Progress -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded bg-label-info">
+                                                    <i class="icon-base ti tabler-target icon-24px"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Expected Total Achievement</h6>
+                                                <small class="text-muted">Rp
+                                                    {{ number_format($expected_total_achievement, 0, ',', '.') }} / Rp
+                                                    {{ number_format($revenueSplt->total_target, 0, ',', '.') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge bg-label-info">{{ number_format($expectedTotalAchievement, 1) }}%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-info"
+                                                style="width: {{ min($expectedTotalAchievement, 100) }}%;"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Expected Owner Progress -->
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="avatar me-3">
-                                        <span class="avatar-initial rounded bg-label-warning">
-                                            <i class="icon-base ti tabler-user-star icon-24px"></i>
-                                        </span>
+                            <!-- Actual Revenue Progress -->
+                            <div class="col-12 mb-6">
+                                <h5 class="mb-4">Actual Revenue Progress</h5>
+                                <p class="text-muted mb-4"><small>Perhitungan berdasarkan Sales Order yang sudah terbayar
+                                        saja.
+                                        Revenue didistribusikan sesuai proporsi target masing-masing kategori untuk
+                                        mencerminkan
+                                        pencapaian riil.</small></p>
+
+                                <!-- Actual Progress Bars -->
+                                <div class="row g-4 mb-4">
+                                    <!-- Actual Pabrik Progress -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded bg-label-primary">
+                                                    <i class="icon-base ti tabler-building-factory icon-24px"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Actual Keuntungan Pabrik</h6>
+                                                <small class="text-muted">Rp
+                                                    {{ number_format($actualPabrikRevenue ?? 0, 0, ',', '.') }} / Rp
+                                                    {{ number_format($revenueSplt->target_pabrik, 0, ',', '.') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge bg-label-primary">{{ number_format($actualPabrikAchievement ?? 0, 1) }}%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-primary"
+                                                style="width: {{ min($actualPabrikAchievement ?? 0, 100) }}%;"></div>
+                                        </div>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Expected Keuntungan Owner</h6>
-                                        <small class="text-muted">Rp {{ number_format($expectedOwnerRevenue, 0, ',', '.') }} / Rp {{ number_format($revenueSplt->target_owner, 0, ',', '.') }}</small>
+
+                                    <!-- Actual Owner Progress -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded bg-label-warning">
+                                                    <i class="icon-base ti tabler-user-star icon-24px"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Actual Keuntungan Owner</h6>
+                                                <small class="text-muted">Rp
+                                                    {{ number_format($actualOwnerRevenue ?? 0, 0, ',', '.') }} / Rp
+                                                    {{ number_format($revenueSplt->target_owner, 0, ',', '.') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge bg-label-warning">{{ number_format($actualOwnerAchievement ?? 0, 1) }}%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-warning"
+                                                style="width: {{ min($actualOwnerAchievement ?? 0, 100) }}%;"></div>
+                                        </div>
                                     </div>
-                                    <span class="badge bg-label-warning">{{ number_format($expectedOwnerAchievement, 1) }}%</span>
-                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-warning" style="width: {{ min($expectedOwnerAchievement, 100) }}%;"></div>
+
+                                    <!-- Actual Perusahaan Progress -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded bg-label-success">
+                                                    <i class="icon-base ti tabler-building icon-24px"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Actual Keuntungan Perusahaan</h6>
+                                                <small class="text-muted">Rp
+                                                    {{ number_format($actualPerusahaanRevenue ?? 0, 0, ',', '.') }} / Rp
+                                                    {{ number_format($revenueSplt->target_perusahaan, 0, ',', '.') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge bg-label-success">{{ number_format($actualPerusahaanAchievement ?? 0, 1) }}%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-success"
+                                                style="width: {{ min($actualPerusahaanAchievement ?? 0, 100) }}%;"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actual Total Progress -->
+                                    <div class="col-md-6">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="avatar me-3">
+                                                <span class="avatar-initial rounded bg-label-info">
+                                                    <i class="icon-base ti tabler-target icon-24px"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">Actual Total Achievement</h6>
+                                                <small class="text-muted">Rp
+                                                    {{ number_format($actualRevenue ?? 0, 0, ',', '.') }} / Rp
+                                                    {{ number_format($revenueSplt->total_target, 0, ',', '.') }}</small>
+                                            </div>
+                                            <span
+                                                class="badge bg-label-info">{{ number_format($actualTotalAchievement ?? 0, 1) }}%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar bg-info"
+                                                style="width: {{ min($actualTotalAchievement ?? 0, 100) }}%;"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Expected Perusahaan Progress -->
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="avatar me-3">
-                                        <span class="avatar-initial rounded bg-label-success">
-                                            <i class="icon-base ti tabler-building icon-24px"></i>
-                                        </span>
+                            <!-- Summary Statistics Section -->
+                            <div class="col-12">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Total Sales Orders</label>
+                                        <input type="text" class="form-control"
+                                            value="{{ $total_so ?? 0 }} SO" readonly>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Expected Keuntungan Perusahaan</h6>
-                                        <small class="text-muted">Rp {{ number_format($expectedPerusahaanRevenue, 0, ',', '.') }} / Rp {{ number_format($revenueSplt->target_perusahaan, 0, ',', '.') }}</small>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Sales Orders Terbayar</label>
+                                        <input type="text" class="form-control"
+                                            value="{{ $total_so_paid ?? 0 }} SO" readonly>
                                     </div>
-                                    <span class="badge bg-label-success">{{ number_format($expectedPerusahaanAchievement, 1) }}%</span>
-                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-success" style="width: {{ min($expectedPerusahaanAchievement, 100) }}%;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Expected Total Progress -->
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="avatar me-3">
-                                        <span class="avatar-initial rounded bg-label-info">
-                                            <i class="icon-base ti tabler-target icon-24px"></i>
-                                        </span>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Expected Revenue</label>
+                                        <input type="text" class="form-control"
+                                            value="Rp {{ number_format($expectedRevenue ?? 0, 0, ',', '.') }}" readonly>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Expected Total Achievement</h6>
-                                        <small class="text-muted">Rp {{ number_format($expectedRevenue ?? 0, 0, ',', '.') }} / Rp {{ number_format($revenueSplt->total_target, 0, ',', '.') }}</small>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Actual Revenue</label>
+                                        <input type="text" class="form-control"
+                                            value="Rp {{ number_format($actualRevenue ?? 0, 0, ',', '.') }}" readonly>
                                     </div>
-                                    <span class="badge bg-label-info">{{ number_format($expectedTotalAchievement, 1) }}%</span>
-                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-info" style="width: {{ min($expectedTotalAchievement, 100) }}%;"></div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Actual Revenue Progress -->
-                    <div class="col-12 mb-6">
-                        <h5 class="mb-4">Actual Revenue Progress</h5>
-                        <p class="text-muted mb-4"><small>Perhitungan berdasarkan Sales Order yang sudah terbayar saja. Revenue didistribusikan sesuai proporsi target masing-masing kategori untuk mencerminkan pencapaian riil.</small></p>
-                        
-                        <!-- Actual Progress Bars -->
-                        <div class="row g-4 mb-4">
-                            <!-- Actual Pabrik Progress -->
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="avatar me-3">
-                                        <span class="avatar-initial rounded bg-label-primary">
-                                            <i class="icon-base ti tabler-building-factory icon-24px"></i>
-                                        </span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Actual Keuntungan Pabrik</h6>
-                                        <small class="text-muted">Rp {{ number_format($actualPabrikRevenue ?? 0, 0, ',', '.') }} / Rp {{ number_format($revenueSplt->target_pabrik, 0, ',', '.') }}</small>
-                                    </div>
-                                    <span class="badge bg-label-primary">{{ number_format($pabrikAchievement ?? 0, 1) }}%</span>
-                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-primary" style="width: {{ min($pabrikAchievement ?? 0, 100) }}%;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Actual Owner Progress -->
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="avatar me-3">
-                                        <span class="avatar-initial rounded bg-label-warning">
-                                            <i class="icon-base ti tabler-user-star icon-24px"></i>
-                                        </span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Actual Keuntungan Owner</h6>
-                                        <small class="text-muted">Rp {{ number_format($actualOwnerRevenue ?? 0, 0, ',', '.') }} / Rp {{ number_format($revenueSplt->target_owner, 0, ',', '.') }}</small>
-                                    </div>
-                                    <span class="badge bg-label-warning">{{ number_format($ownerAchievement ?? 0, 1) }}%</span>
-                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-warning" style="width: {{ min($ownerAchievement ?? 0, 100) }}%;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Actual Perusahaan Progress -->
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="avatar me-3">
-                                        <span class="avatar-initial rounded bg-label-success">
-                                            <i class="icon-base ti tabler-building icon-24px"></i>
-                                        </span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Actual Keuntungan Perusahaan</h6>
-                                        <small class="text-muted">Rp {{ number_format($actualPerusahaanRevenue ?? 0, 0, ',', '.') }} / Rp {{ number_format($revenueSplt->target_perusahaan, 0, ',', '.') }}</small>
-                                    </div>
-                                    <span class="badge bg-label-success">{{ number_format($perusahaanAchievement ?? 0, 1) }}%</span>
-                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-success" style="width: {{ min($perusahaanAchievement ?? 0, 100) }}%;"></div>
-                                </div>
-                            </div>
-
-                            <!-- Actual Total Progress -->
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="avatar me-3">
-                                        <span class="avatar-initial rounded bg-label-info">
-                                            <i class="icon-base ti tabler-target icon-24px"></i>
-                                        </span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0">Actual Total Achievement</h6>
-                                        <small class="text-muted">Rp {{ number_format($actualRevenue ?? 0, 0, ',', '.') }} / Rp {{ number_format($revenueSplt->total_target, 0, ',', '.') }}</small>
-                                    </div>
-                                    <span class="badge bg-label-info">{{ number_format($totalAchievement ?? 0, 1) }}%</span>
-                                </div>
-                                <div class="progress mb-2" style="height: 8px;">
-                                    <div class="progress-bar bg-info" style="width: {{ min($totalAchievement ?? 0, 100) }}%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Summary Statistics Section -->
-                    <div class="col-12">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Total Sales Orders</label>
-                                <input type="text" class="form-control" value="{{ $totalSalesOrders ?? 0 }} SO" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Sales Orders Terbayar</label>
-                                <input type="text" class="form-control" value="{{ $paidSalesOrders ?? 0 }} SO" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Expected Revenue</label>
-                                <input type="text" class="form-control" value="Rp {{ number_format($expectedRevenue ?? 0, 0, ',', '.') }}" readonly>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Actual Revenue</label>
-                                <input type="text" class="form-control" value="Rp {{ number_format($actualRevenue ?? 0, 0, ',', '.') }}" readonly>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                         <!-- Sales Orders Tab -->
                         <div class="tab-pane fade" id="horizontal-sales-orders" role="tabpanel">
-                    <!-- Filter Controls -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-4">
-                            <label class="form-label">Cari Sales Order</label>
-                            <input type="text" class="form-control" id="searchSalesOrder" placeholder="Cari berdasarkan nomor SO atau customer...">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Filter Status Revenue</label>
-                            <select class="form-select" id="revenueStatusFilter">
-                                <option value="">Semua Revenue Status</option>
-                                <option value="paid">Sudah Dibayar</option>
-                                <option value="unpaid">Belum Dibayar</option>
-                                <option value="no_invoice">Belum Ada Invoice</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Filter Status SO</label>
-                            <select class="form-select" id="statusFilter">
-                                <option value="">Semua Status SO</option>
-                                <option value="PENDING">PENDING</option>
-                                <option value="CONFIRMED">CONFIRMED</option>
-                                <option value="DELIVERED">DELIVERED</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Sales Orders Table -->
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-0" id="sales-orders-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>NO. SALES ORDER</th>
-                                    <th>TANGGAL</th>
-                                    <th>CUSTOMER</th>
-                                    <th>PRODUK</th>
-                                    <th class="text-end">TOTAL PENJUALAN</th>
-                                    <th class="text-end">KEUNTUNGAN</th>
-                                    <th>STATUS SO</th>
-                                    <th>STATUS REVENUE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if(!empty($salesOrders) && count($salesOrders) > 0)
-                                    @foreach($salesOrders as $so)
-                                        @php
-                                            // Determine revenue status
-                                            $revenueStatus = 'no_invoice';
-                                            $revenueStatusLabel = 'Belum Ada Invoice';
-                                            $revenueStatusClass = 'bg-label-secondary';
-                                            
-                                            if (isset($so['invoice_status'])) {
-                                                if ($so['invoice_status'] === 'PAID') {
-                                                    $revenueStatus = 'paid';
-                                                    $revenueStatusLabel = 'Sudah Dibayar';
-                                                    $revenueStatusClass = 'bg-label-success';
-                                                } else {
-                                                    $revenueStatus = 'unpaid';
-                                                    $revenueStatusLabel = 'Belum Dibayar';
-                                                    $revenueStatusClass = 'bg-label-warning';
-                                                }
-                                            }
-                                        @endphp
-                                        <tr data-revenue-status="{{ $revenueStatus }}">
-                                            <td>
-                                                <strong>{{ $so['so_number'] }}</strong>
-                                                <br><small class="text-muted">{{ $so['reference_no'] ?: 'N/A' }}</small>
-                                            </td>
-                                            <td>{{ date('d/m/Y', strtotime($so['transaction_date'])) }}</td>
-                                            <td>
-                                                <div>
-                                                    <h6 class="mb-0">{{ $so['customer_name'] }}</h6>
-                                                    <small class="text-muted">{{ $so['customer_type'] }}</small>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <small class="text-muted">{{ $so['product_count'] }} produk</small>
-                                                <br><small class="text-muted">{{ number_format($so['total_quantity'], 0, ',', '.') }} unit</small>
-                                            </td>
-                                            <td class="text-end">
-                                                <strong>Rp {{ number_format($so['total_amount'], 0, ',', '.') }}</strong>
-                                            </td>
-                                            <td class="text-end">
-                                                <strong>Rp {{ number_format($so['profit_amount'], 0, ',', '.') }}</strong>
-                                                <br><small class="text-muted">{{ number_format($so['profit_margin'], 1) }}%</small>
-                                            </td>
-                                            <td>
-                                                @php
-                                                    $badgeClass = $so['status'] === 'DELIVERED' ? 'bg-label-success' : 
-                                                                ($so['status'] === 'CONFIRMED' ? 'bg-label-warning' : 'bg-label-secondary');
-                                                @endphp
-                                                <span class="badge {{ $badgeClass }}">{{ $so['status'] }}</span>
-                                            </td>
-                                            <td>
-                                                <span class="badge {{ $revenueStatusClass }}">{{ $revenueStatusLabel }}</span>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @else
-                                    <tr>
-                                        <td colspan="8" class="text-center py-4">
-                                            <div class="text-muted">
-                                                <i class="icon-base ti tabler-shopping-cart-off icon-48px mb-3"></i>
-                                                <h6>Tidak Ada Sales Order</h6>
-                                                <p class="mb-0">Belum ada sales order dalam periode cycle ini.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    @if(!empty($salesOrders) && count($salesOrders) > 0)
-                        <div class="mt-4">
-                            <div class="row align-items-center">
-                                <div class="col-md-12">
-                                    <p class="mb-0 text-muted">
-                                        <strong>Ringkasan Sales Orders</strong><br>
-                                        Total {{ count($salesOrders) }} sales order berkontribusi dalam cycle ini<br>
-                                        Expected Revenue: <strong>Rp {{ number_format($expectedRevenue ?? 0, 0, ',', '.') }}</strong> | 
-                                        Actual Revenue: <strong>Rp {{ number_format($actualRevenue ?? 0, 0, ',', '.') }}</strong>
-                                    </p>
+                            <!-- Filter Controls -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <label class="form-label">Cari Sales Order</label>
+                                    <input type="text" class="form-control" id="searchSalesOrder"
+                                        placeholder="Cari berdasarkan nomor SO atau customer...">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Filter Status Revenue</label>
+                                    <select class="form-select" id="revenueStatusFilter">
+                                        <option value="">Semua Revenue Status</option>
+                                        <option value="paid">Sudah Dibayar</option>
+                                        <option value="unpaid">Belum Dibayar</option>
+                                        <option value="no_invoice">Belum Ada Invoice</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Filter Status SO</label>
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">Semua Status SO</option>
+                                        <option value="PENDING">PENDING</option>
+                                        <option value="CONFIRMED">CONFIRMED</option>
+                                        <option value="DELIVERED">DELIVERED</option>
+                                    </select>
                                 </div>
                             </div>
+
+                            <!-- Sales Orders Table -->
+                            <div class="table-responsive">
+                                <table class="table table-striped mb-0" id="sales-orders-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>NO. SALES ORDER</th>
+                                            <th>TANGGAL</th>
+                                            <th>CUSTOMER</th>
+                                            <th>PRODUK</th>
+                                            <th class="text-end">TOTAL PENJUALAN</th>
+                                            {{-- <th class="text-end">KEUNTUNGAN</th> --}}
+                                            <th>STATUS SO</th>
+                                            <th>STATUS REVENUE</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!empty($salesOrdersTable) && count($salesOrdersTable) > 0)
+                                            @foreach ($salesOrdersTable as $so)
+                                                @php
+                                                    // Determine revenue status
+                                                    $revenueStatus = 'no_invoice';
+                                                    $revenueStatusLabel = 'Belum Ada Invoice';
+                                                    $revenueStatusClass = 'bg-label-secondary';
+
+                                                    if (isset($so['invoice_status'])) {
+                                                        if ($so['invoice_status'] === 'PAID') {
+                                                            $revenueStatus = 'paid';
+                                                            $revenueStatusLabel = 'Sudah Dibayar';
+                                                            $revenueStatusClass = 'bg-label-success';
+                                                        } else {
+                                                            $revenueStatus = 'unpaid';
+                                                            $revenueStatusLabel = 'Belum Dibayar';
+                                                            $revenueStatusClass = 'bg-label-warning';
+                                                        }
+                                                    }
+                                                @endphp
+                                                <tr data-revenue-status="{{ $revenueStatus }}">
+                                                    <td>
+                                                        <strong>{{ $so['so_number'] }}</strong>
+                                                        <br><small
+                                                            class="text-muted">{{ $so['reference_no'] ?: 'N/A' }}</small>
+                                                    </td>
+                                                    <td>{{ date('d/m/Y', strtotime($so['transaction_date'])) }}</td>
+                                                    <td>
+                                                        <div>
+                                                            <h6 class="mb-0">{{ $so['customer_name'] }}</h6>
+                                                            <small class="text-muted">{{ $so['customer_type'] }}</small>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <small class="text-muted">{{ $so['product_count'] }}
+                                                            produk</small>
+                                                        <br><small
+                                                            class="text-muted">{{ number_format($so['total_quantity'], 0, ',', '.') }}
+                                                            unit</small>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <strong>Rp
+                                                            {{ number_format($so['total_amount'], 0, ',', '.') }}</strong>
+                                                    </td>
+                                                    {{-- <td class="text-end">
+                                                        <strong>Rp
+                                                            {{ number_format($so['profit_amount'], 0, ',', '.') }}</strong>
+                                                        <br><small
+                                                            class="text-muted">{{ number_format($so['profit_margin'], 1) }}%</small>
+                                                    </td> --}}
+                                                    <td>
+                                                        @php
+                                                            $badgeClass =
+                                                                $so['status'] === 'DELIVERED'
+                                                                    ? 'bg-label-success'
+                                                                    : ($so['status'] === 'CONFIRMED'
+                                                                        ? 'bg-label-warning'
+                                                                        : 'bg-label-secondary');
+                                                        @endphp
+                                                        <span
+                                                            class="badge {{ $badgeClass }}">{{ $so['status'] }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span
+                                                            class="badge {{ $revenueStatusClass }}">{{ $revenueStatusLabel }}</span>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td colspan="8" class="text-center py-4">
+                                                    <div class="text-muted">
+                                                        <i
+                                                            class="icon-base ti tabler-shopping-cart-off icon-48px mb-3"></i>
+                                                        <h6>Tidak Ada Sales Order</h6>
+                                                        <p class="mb-0">Belum ada sales order dalam periode cycle ini.
+                                                        </p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @if (!empty($salesOrders) && count($salesOrders) > 0)
+                                <div class="mt-4">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-12">
+                                            <p class="mb-0 text-muted">
+                                                <strong>Ringkasan Sales Orders</strong><br>
+                                                Total {{ count($salesOrders) }} sales order berkontribusi dalam cycle
+                                                ini<br>
+                                                Expected Revenue: <strong>Rp
+                                                    {{ number_format($expectedRevenue ?? 0, 0, ',', '.') }}</strong> |
+                                                Actual Revenue: <strong>Rp
+                                                    {{ number_format($actualRevenue ?? 0, 0, ',', '.') }}</strong>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
-                    @endif
-                </div>
 
                         <!-- Product Revenue Split Tab -->
                         <div class="tab-pane fade" id="horizontal-product-revenue-split" role="tabpanel">
-                    <!-- Product Revenue Split Configuration Section -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Cari Produk</label>
-                            <input type="text" class="form-control" id="searchProduct" placeholder="Cari berdasarkan nama atau kode produk...">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Filter Status Konfigurasi</label>
-                            <select class="form-select" id="configStatusFilter">
-                                <option value="">Semua Status</option>
-                                <option value="configured">Sudah Dikonfigurasi</option>
-                                <option value="not_configured">Belum Dikonfigurasi</option>
-                            </select>
-                        </div>
-                    </div>
+                            <!-- Product Revenue Split Configuration Section -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Cari Produk</label>
+                                    <input type="text" class="form-control" id="searchProduct"
+                                        placeholder="Cari berdasarkan nama atau kode produk...">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Filter Status Konfigurasi</label>
+                                    <select class="form-select" id="configStatusFilter">
+                                        <option value="">Semua Status</option>
+                                        <option value="configured">Sudah Dikonfigurasi</option>
+                                        <option value="not_configured">Belum Dikonfigurasi</option>
+                                    </select>
+                                </div>
+                            </div>
 
-                    <!-- Product Revenue Split Table -->
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-0" id="product-revenue-split-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>PRODUK</th>
-                                    <th class="text-end">BASE PRICE</th>
-                                    <th class="text-end">PORSI PABRIK</th>
-                                    <th class="text-end">PORSI OWNER</th>
-                                    <th class="text-end">PORSI PERUSAHAAN</th>
-                                    <th>REMAINING ALLOCATION</th>
-                                    <th>STATUS</th>
-                                    <th class="text-center">AKSI</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- This will be populated via AJAX -->
-                                <tr>
-                                    <td colspan="8" class="text-center py-4">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                        <p class="mt-2 mb-0">Memuat konfigurasi product revenue split...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                            <!-- Product Revenue Split Table -->
+                            <div class="table-responsive">
+                                <table class="table table-striped mb-0" id="product-revenue-split-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>PRODUK</th>
+                                            <th class="text-end">BASE PRICE</th>
+                                            <th class="text-end">PORSI PABRIK</th>
+                                            <th class="text-end">PORSI OWNER</th>
+                                            <th class="text-end">PORSI PERUSAHAAN</th>
+                                            <th>REMAINING ALLOCATION</th>
+                                            <th>STATUS</th>
+                                            <th class="text-center">AKSI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- This will be populated via AJAX -->
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <p class="mt-2 mb-0">Memuat konfigurasi product revenue split...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
 
-                    <!-- Summary Information -->
-                    <div class="mt-4">
-                        <div class="row align-items-center">
-                            <div class="col-md-12">
-                                <p class="mb-0 text-muted">
-                                    <strong>Informasi Konfigurasi Product Revenue Split</strong><br>
-                                    Konfigurasi ini akan digunakan sebagai dasar perhitungan revenue split pada setiap sales order.<br>
-                                    Produk yang belum dikonfigurasi akan menggunakan split default (100% ke perusahaan).
-                                </p>
+                            <!-- Summary Information -->
+                            <div class="mt-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-12">
+                                        <p class="mb-0 text-muted">
+                                            <strong>Informasi Konfigurasi Product Revenue Split</strong><br>
+                                            Konfigurasi ini akan digunakan sebagai dasar perhitungan revenue split pada
+                                            setiap
+                                            sales order.<br>
+                                            Produk yang belum dikonfigurasi akan menggunakan split default (100% ke
+                                            perusahaan).
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>TANGGAL</th>
-                                    <th>USER</th>
-                                    <th>AKSI</th>
-                                    <th>DESKRIPSI</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if(!empty($auditLogs) && count($auditLogs) > 0)
-                                    @foreach($auditLogs as $log)
+                            <div class="table-responsive">
+                                <table class="table table-striped mb-0">
+                                    <thead class="table-light">
                                         <tr>
-                                            <td>{{ date('d/m/Y H:i', strtotime($log->created_at)) }}</td>
-                                            <td>
-                                                <div>
-                                                    <h6 class="mb-0">{{ $log->creator_name ?? 'System' }}</h6>
-                                                    <small class="text-muted">{{ $log->creator_email ?? 'system@riyo.com' }}</small>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                @php
-                                                    $actionBadge = $log->action_type === 'CREATE' ? 'bg-label-success' : 
-                                                                  ($log->action_type === 'UPDATE' ? 'bg-label-warning' : 'bg-label-danger');
-                                                @endphp
-                                                <span class="badge {{ $actionBadge }}">{{ $log->action_type }}</span>
-                                            </td>
-                                            <td>{{ $log->description }}</td>
+                                            <th>TANGGAL</th>
+                                            <th>USER</th>
+                                            <th>AKSI</th>
+                                            <th>DESKRIPSI</th>
                                         </tr>
-                                    @endforeach
-                                @else
-                                    <tr>
-                                        <td colspan="4" class="text-center py-4">
-                                            <div class="text-muted">
-                                                <i class="icon-base ti tabler-file-text icon-48px mb-3"></i>
-                                                <h6>Tidak Ada Audit Log</h6>
-                                                <p class="mb-0">Belum ada aktivitas yang tercatat untuk cycle ini.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
+                                    </thead>
+                                    <tbody>
+                                        @if (!empty($auditLogs) && count($auditLogs) > 0)
+                                            @foreach ($auditLogs as $log)
+                                                <tr>
+                                                    <td>{{ date('d/m/Y H:i', strtotime($log->created_at)) }}</td>
+                                                    <td>
+                                                        <div>
+                                                            <h6 class="mb-0">{{ $log->creator_name ?? 'System' }}</h6>
+                                                            <small
+                                                                class="text-muted">{{ $log->creator_email ?? 'system@riyo.com' }}</small>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $actionBadge =
+                                                                $log->action_type === 'CREATE'
+                                                                    ? 'bg-label-success'
+                                                                    : ($log->action_type === 'UPDATE'
+                                                                        ? 'bg-label-warning'
+                                                                        : 'bg-label-danger');
+                                                        @endphp
+                                                        <span
+                                                            class="badge {{ $actionBadge }}">{{ $log->action_type }}</span>
+                                                    </td>
+                                                    <td>{{ $log->description }}</td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4">
+                                                    <div class="text-muted">
+                                                        <i class="icon-base ti tabler-file-text icon-48px mb-3"></i>
+                                                        <h6>Tidak Ada Audit Log</h6>
+                                                        <p class="mb-0">Belum ada aktivitas yang tercatat untuk cycle
+                                                            ini.
+                                                        </p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Tabs Section -->
+
     </div>
 @stop
 
@@ -553,29 +668,30 @@
 
                 $('#sales-orders-table tbody tr').each(function() {
                     if ($(this).find('td[colspan]').length > 0) return; // Skip empty state row
-                    
+
                     const soNumber = $(this).find('td:nth-child(1) strong').text().toLowerCase();
                     const customerName = $(this).find('td:nth-child(3) h6').text().toLowerCase();
                     const soStatus = $(this).find('td:nth-child(7) .badge').text();
                     const revenueStatus = $(this).data('revenue-status');
-                    
+
                     let showRow = true;
-                    
+
                     // Search filter
-                    if (searchTerm && !soNumber.includes(searchTerm) && !customerName.includes(searchTerm)) {
+                    if (searchTerm && !soNumber.includes(searchTerm) && !customerName.includes(
+                            searchTerm)) {
                         showRow = false;
                     }
-                    
+
                     // SO Status filter
                     if (statusFilter && soStatus !== statusFilter) {
                         showRow = false;
                     }
-                    
+
                     // Revenue Status filter
                     if (revenueStatusFilter && revenueStatus !== revenueStatusFilter) {
                         showRow = false;
                     }
-                    
+
                     $(this).toggle(showRow);
                 });
             }
@@ -591,22 +707,22 @@
 
                 $('#product-revenue-split-table tbody tr').each(function() {
                     if ($(this).find('td[colspan]').length > 0) return; // Skip loading/empty state row
-                    
+
                     const productName = $(this).find('td:nth-child(1)').text().toLowerCase();
                     const configStatus = $(this).data('config-status');
-                    
+
                     let showRow = true;
-                    
+
                     // Search filter
                     if (searchTerm && !productName.includes(searchTerm)) {
                         showRow = false;
                     }
-                    
+
                     // Configuration Status filter
                     if (statusFilter && configStatus !== statusFilter) {
                         showRow = false;
                     }
-                    
+
                     $(this).toggle(showRow);
                 });
             }
@@ -614,7 +730,7 @@
             // Load product revenue split configurations
             function loadProductRevenueSplitConfigurations() {
                 const tableBody = $('#product-revenue-split-table tbody');
-                
+
                 $.ajax({
                     url: '/master_data/product_revenue_split/configurations',
                     method: 'GET',
@@ -622,19 +738,24 @@
                     success: function(response) {
                         if (response.success) {
                             tableBody.empty();
-                            
+
                             if (response.data && response.data.length > 0) {
                                 response.data.forEach(function(config) {
-                                    const configStatus = config.is_configured ? 'configured' : 'not_configured';
-                                    const statusBadge = config.is_configured ? 
-                                        '<span class="badge bg-label-success">Dikonfigurasi</span>' : 
+                                    const configStatus = config.is_configured ? 'configured' :
+                                        'not_configured';
+                                    const statusBadge = config.is_configured ?
+                                        '<span class="badge bg-label-success">Dikonfigurasi</span>' :
                                         '<span class="badge bg-label-warning">Default</span>';
-                                    
-                                    const remainingBadge = config.remaining_allocation === 'perusahaan' ? 'bg-label-primary' :
-                                                         (config.remaining_allocation === 'owner' ? 'bg-label-info' : 'bg-label-success');
-                                    const remainingText = config.remaining_allocation === 'perusahaan' ? 'Perusahaan' :
-                                                        (config.remaining_allocation === 'owner' ? 'Owner' : 'Pabrik');
-                                    
+
+                                    const remainingBadge = config.remaining_allocation ===
+                                        'perusahaan' ? 'bg-label-primary' :
+                                        (config.remaining_allocation === 'owner' ?
+                                            'bg-label-info' : 'bg-label-success');
+                                    const remainingText = config.remaining_allocation ===
+                                        'perusahaan' ? 'Perusahaan' :
+                                        (config.remaining_allocation === 'owner' ? 'Owner' :
+                                            'Pabrik');
+
                                     const row = `
                                         <tr data-config-status="${configStatus}" data-product-id="${config.product_id}">
                                             <td>
@@ -707,14 +828,16 @@
             window.openRevenueSplitModal = function(productId, productName) {
                 // This will trigger the modal from the product detail page
                 // For now, show an alert since we need to integrate with the existing modal
-                alert(`Opening revenue split configuration for: ${productName}\nProduct ID: ${productId}\n\nThis will open the configuration modal where you can set the revenue split percentages.`);
-                
+                alert(
+                    `Opening revenue split configuration for: ${productName}\nProduct ID: ${productId}\n\nThis will open the configuration modal where you can set the revenue split percentages.`
+                    );
+
                 // TODO: Integrate with existing revenue split modal from product detail page
                 // or create a dedicated modal for this page
             };
 
             // Tab functionality - updated for list-group pattern
-            $('a[data-bs-toggle="list"]').on('shown.bs.tab', function (e) {
+            $('a[data-bs-toggle="list"]').on('shown.bs.tab', function(e) {
                 const target = $(e.target).attr('href');
                 if (target === '#horizontal-sales-orders') {
                     // Refresh sales order filters when tab is shown

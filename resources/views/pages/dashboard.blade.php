@@ -222,7 +222,7 @@
                         <!-- Current Cycle Information -->
                         <div class="row g-4 mb-4">
                             <div class="col-md-8">
-                                <h6 class="text-primary mb-2">Cycle Q1 2025</h6>
+                                {{-- <h6 class="text-primary mb-2">Cycle Q1 2025</h6> --}}
                                 <h4 class="mb-1">{{ $current_cycle->cycle_name }}</h4>
                                 <p class="text-muted mb-3">{{ $current_cycle->description }}</p>
                                 
