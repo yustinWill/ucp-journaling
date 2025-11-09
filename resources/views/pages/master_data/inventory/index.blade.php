@@ -153,9 +153,9 @@
                                     <a href="{{ route('master_data.inventory.add') }}" class="btn btn-md btn-primary waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-shopping-cart me-2"></span> Pembelian Aset
                                     </a>
-                                    <button type="button" class="btn btn-md btn-danger waves-effect waves-light">
+                                    <a href="{{ route('master_data.inventory.dispose') }}" class="btn btn-md btn-danger waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-trash me-2"></span> Pelepasan Aset
-                                    </button>
+                                    </a>
                                     <button type="button" class="btn btn-md btn-success waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-cash me-2"></span> Pembayaran Aset
                                     </button>
@@ -361,12 +361,9 @@
                         <div class="mt-4 mb-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-md btn-success waves-effect waves-light">
-                                        <span class="icon-xs icon-base ti tabler-calculator me-2"></span> Calculate Depreciation
-                                    </button>
-                                    <button type="button" class="btn btn-md btn-primary waves-effect waves-light">
-                                        <span class="icon-xs icon-base ti tabler-book me-2"></span> Post to GL
-                                    </button>
+                                    <a href="{{ route('master_data.inventory.depreciation') }}"  class="btn btn-md btn-success waves-effect waves-light">
+                                        <span class="icon-xs icon-base ti tabler-calculator me-2"></span> Penyusutan Bulanan
+                                    </a>
                                 </div>
                             </div>
                         </div>

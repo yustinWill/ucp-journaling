@@ -155,6 +155,8 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::post($base_segment.$inventory_segment.'/update', 'update')->name('master_data.inventory.update');
         Route::get($base_segment.$inventory_segment.'/detail/{id}', 'detail')->name('master_data.inventory.detail');
         Route::get($base_segment.$inventory_segment.'/get_asset_data/{id}', 'get_asset_data')->name('master_data.inventory.get_asset_data');
+        Route::get($base_segment.$inventory_segment.'/depreciation', 'depreciation')->name('master_data.inventory.depreciation');
+        Route::get($base_segment.$inventory_segment.'/depreciation_data_table', 'depreciation_data_table')->name('master_data.inventory.depreciation_data_table');
     });
 
     Route::controller(TagController::class)->group(function () use ($base_segment, $tag_segment) {
