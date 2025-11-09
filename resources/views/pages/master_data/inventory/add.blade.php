@@ -232,7 +232,7 @@
 </div>
 @stop
 
-@section('page_js')
+@section('js_script')
 <script>
 $(function() {
     // Initialize Select2
@@ -341,6 +341,7 @@ $(function() {
             $('#total_depreciation, #book_value').val('');
         }
     });
+    
 
     // Calculate depreciation when price or rate changes
     function calculateDepreciation() {

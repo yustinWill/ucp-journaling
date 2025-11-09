@@ -113,7 +113,7 @@ class InventoryAssetService
             if ($row->f_tag_codes) {
                 $tagCodes = json_decode($row->f_tag_codes, true);
                 $tags = DB::table('m_tags')
-                    ->select('code', 'name', DB::raw("CONCAT('bg-label-', m_tag_colors.code) as preview"))
+                    ->select('m_tags.code', 'm_tags.name', DB::raw("CONCAT('bg-label-', m_tag_colors.code) as preview"))
                     ->join('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
                     ->whereIn('m_tags.id', $tagCodes)
                     ->get();

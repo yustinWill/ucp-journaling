@@ -279,4 +279,84 @@ class InventoryAssetController extends Controller
             'success' => true
         ]);
     }
+
+    public function dispose()
+    {
+        // Get assets
+        $assets = DB::table('m_inventory_assets')
+            ->select([
+                'id',
+                'code',
+                'name',
+            ])
+            ->where('status', 'ACTIVE')
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
+        // Get COA accounts for asset and purchase
+        $coaAccounts = DB::table('m_coas')
+            ->where('company_code', session('user_company_code'))
+            ->where('status', 'ACTIVE')
+            ->select('code', 'name')
+            ->orderBy('code')
+            ->get();
+
+        return view('pages.master_data.inventory.dispose', [
+            'assets' => $assets,
+            'coaAccounts' => $coaAccounts
+        ]);
+    }
+
+    public function get_asset_data($id)
+    {
+        $asset = app(InventoryAssetService::class)->findOne($id);
+        // $auditLogs = app(InventoryAssetAuditLogService::class)->findAllBasedOnId($id);
+
+        // // Get tags if exist
+        // $tags = [];
+        // if ($asset && $asset->f_tag_codes && is_array($asset->f_tag_codes)) {
+        //     $tags = DB::table('m_tags as t')
+        //         ->select([
+        //             't.code',
+        //             't.name',
+        //             DB::raw("CONCAT('bg-label-', tc.code) as preview")
+        //         ])
+        //         ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+        //         ->whereIn('t.id', $asset->f_tag_codes)
+        //         ->get();
+        // }
+
+        // // Get COA account names
+        // $assetAccount = null;
+        // $purchaseAccount = null;
+        // $depreciationAccount = null;
+        // $accumulatedDepreciationAccount = null;
+
+        // if ($asset) {
+        //     if ($asset->f_asset_coa_code) {
+        //         $assetAccount = DB::table('m_coas')
+        //             ->where('code', $asset->f_asset_coa_code)
+        //             ->first();
+        //     }
+        //     if ($asset->f_purchase_coa_code) {
+        //         $purchaseAccount = DB::table('m_coas')
+        //             ->where('code', $asset->f_purchase_coa_code)
+        //             ->first();
+        //     }
+        //     if ($asset->f_depreciation_expense_coa_code) {
+        //         $depreciationAccount = DB::table('m_coas')
+        //             ->where('code', $asset->f_depreciation_expense_coa_code)
+        //             ->first();
+        //     }
+        //     if ($asset->f_accumulated_depreciation_coa_code) {
+        //         $accumulatedDepreciationAccount = DB::table('m_coas')
+        //             ->where('code', $asset->f_accumulated_depreciation_coa_code)
+        //             ->first();
+        //     }
+        // }
+        return response()->json([
+            'success' => true,
+            'data' => $asset,
+        ]);
+    }
 }
