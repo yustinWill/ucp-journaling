@@ -553,7 +553,7 @@
                                             <th class="text-end">PORSI PERUSAHAAN</th>
                                             <th>REMAINING ALLOCATION</th>
                                             <th>STATUS</th>
-                                            <th class="text-center">AKSI</th>
+                                            {{-- <th class="text-center">AKSI</th> --}}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -770,12 +770,6 @@
                                             <td class="text-end">Rp ${formatCurrency(config.porsi_perusahaan || 0)}</td>
                                             <td><span class="badge ${remainingBadge}">${remainingText}</span></td>
                                             <td>${statusBadge}</td>
-                                            <td class="text-center">
-                                                <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                        onclick="openRevenueSplitModal(${config.product_id}, '${config.product_name}')">
-                                                    <i class="icon-base ti tabler-settings"></i>
-                                                </button>
-                                            </td>
                                         </tr>
                                     `;
                                     tableBody.append(row);
