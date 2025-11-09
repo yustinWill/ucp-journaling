@@ -13,11 +13,11 @@ class CreateInventoryAssetAction
     {
         return DB::transaction(function () use ($data) {
             $inventoryAssetId = app(InventoryAssetService::class)->create($data);
-
+            $inventorySchedule = app(InventoryAssetService::class)->createSchedule($inventoryAssetId, $data);
             // Create audit log
             app(InventoryAssetAuditLogService::class)->create(
                 $inventoryAssetId,
-                ActionTypes::CREATE->code(),
+                ActionTypes::CREATE,
                 'Inventory/Asset created',
                 ['data' => $data]
             );
