@@ -233,7 +233,7 @@ class ProductionController extends Controller
         $components = [];
         foreach ($data as $row) {
             $components[] = [
-                'id' => $row->id,
+                'id' => $row->f_product_composition_product_id,
                 'product_name' => $row->product_name,
                 'quantity_required' => $row->qty,
                 'stock_available' => $row->total_stock ?? 0,

@@ -129,22 +129,26 @@ class ProductionItemService
             $product = DB::table('m_products')
                 ->where('id', $item['raw_material_product_id'])
                 ->first();
-
             // dd($product->total_stock);
             // Check total stock
             $isAvailable = $product && $product->total_stock >= $item['quantity_required'];
             // Get available batches for this product in the warehouse
-            $availableBatches = DB::table('t_product_stock_batches')
-                ->where('f_product_id', $item['raw_material_product_id'])
+            // $availableBatches = DB::table('t_product_stock_batches')
+            //     ->where('f_product_id', $item['raw_material_product_id'])
+            //     // warehouse tidak ada
+            //     // ->where('warehouse_id', $warehouseId)
+            //     ->where('remaining_qty', '>', 0)
+            //     ->where('status', 'ACTIVE')
+            //     ->orderBy('created_at', 'ASC') // FIFO order
+            //     ->get();
+            $availableBatches = DB::table('t_stock_movement_logs')
+                ->where('product_id', $item['raw_material_product_id'])
                 // warehouse tidak ada
-                // ->where('warehouse_id', $warehouseId)
-                ->where('remaining_qty', '>', 0)
-                ->where('status', 'ACTIVE')
+                ->where('warehouse_id', $warehouseId)
+                ->where('stock_after', '>', 0)
                 ->orderBy('created_at', 'ASC') // FIFO order
                 ->get();
-
-            $totalAvailableInBatches = $availableBatches->sum('remaining_qty');
-
+            $totalAvailableInBatches = $availableBatches->sum('stock_after');
             $validation[] = [
                 'raw_material_product_id' => $item['raw_material_product_id'],
                 'product_name' => $product->name ?? 'Unknown',
