@@ -165,7 +165,14 @@ class CreateStockTransferAction
                 $adjustmentQty = abs($rawAdjustmentQty);
 
                 $movementType = $rawAdjustmentQty > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
-
+                if ($movementType === 'ADJUSTMENT_IN') {
+                    $stockBefore = db::table('t_stock_movement_logs')
+                        ->where('product_id', $product['product_id'])
+                        ->where('warehouse_id', $mainData['warehouse_id'])
+                        ->orderBy('created_at', 'desc')
+                        ->value('stock_after') ?? 0;
+                    $product['stock_before'] = $stockBefore;
+                }
                 $movements[] = [
                     'movement_date' => $mainData['adjustment_date'],
                     'movement_type' => $movementType,
