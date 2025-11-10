@@ -104,7 +104,6 @@ class ProductionController extends Controller
             // Validate input data
             $createAction = app(CreateProductionAction::class);
             $validation = $createAction->validateProductionData($data);
-
             if (! $validation['is_valid']) {
                 return response()->json([
                     'success' => false,
@@ -126,7 +125,6 @@ class ProductionController extends Controller
                         $data['quantity_planned'],
                         $materialInputs
                     );
-
                     // Store leftover materials for stock opname tracking
                     $data['leftover_materials'] = json_encode($materialInputs);
                 } else {
@@ -228,8 +226,9 @@ class ProductionController extends Controller
     public function getBundleComponents(Request $request)
     {
         $bundleProductId = $request->get('bundle_product_id');
+        $warehouseId = $request->get('warehouse_id');
 
-        $data = app(ProductCompositionService::class)->findAllBasedOnProductId($bundleProductId);
+        $data = app(ProductCompositionService::class)->findAllBasedOnProductId($bundleProductId,$warehouseId);
 
         $components = [];
         foreach ($data as $row) {

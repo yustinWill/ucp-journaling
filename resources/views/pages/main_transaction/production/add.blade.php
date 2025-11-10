@@ -309,17 +309,19 @@
 
                 // Reload components if bundle product already selected
                 const bundleProductId = $('#bundle-product').val();
-                if (bundleProductId) {
-                    loadBundleComponents(bundleProductId);
+                const warehouseId = $('#warehouse').val();
+                if (bundleProductId && warehouseId) {
+                    loadBundleComponents(bundleProductId, warehouseId);
                 }
             });
 
             // Bundle product selection change
-            $('#bundle-product').on('change', function() {
-                const bundleProductId = $(this).val();
-
-                if (bundleProductId) {
-                    loadBundleComponents(bundleProductId);
+            $('#bundle-product, #warehouse').on('change', function() {
+                const bundleProductId = $('#bundle-product').val();
+                const warehouseId = $('#warehouse').val();
+                
+                if (bundleProductId && warehouseId) {
+                    loadBundleComponents(bundleProductId,warehouseId);
                     $('#components-disabled-message').hide();
 
                     if (currentProductionMode === 'QUANTITY_PLANNED') {
@@ -344,13 +346,14 @@
                 }
             });
 
-            function loadBundleComponents(bundleProductId) {
+            function loadBundleComponents(bundleProductId, warehouseId) {
                 // Load bundle components via AJAX
                 $.ajax({
                     url: "{{ route('main_transaction.production.get_bundle_components') }}",
                     type: 'GET',
                     data: {
-                        bundle_product_id: bundleProductId
+                        bundle_product_id: bundleProductId,
+                        warehouse_id: warehouseId
                     },
                     success: function(response) {
                         if (response.success) {
