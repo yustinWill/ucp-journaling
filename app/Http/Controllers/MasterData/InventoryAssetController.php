@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\MasterData;
 
 use App\Domains\InventoryAsset\Actions\CreateInventoryAssetAction;
+use App\Domains\InventoryAsset\Actions\CreateInventoryAssetDepreciationAction;
+use App\Domains\InventoryAsset\Actions\CreateInventoryAssetJournalAction;
 use App\Domains\InventoryAsset\Actions\UpdateInventoryAssetAction;
 use App\Domains\InventoryAsset\Actions\SaveDisposeInventoryAssetAction;
 use App\Domains\InventoryAsset\Services\InventoryAssetAuditLogService;
@@ -376,5 +378,25 @@ class InventoryAssetController extends Controller
         $data = app(InventoryAssetService::class)->findAllDepreciation($month, $year);
         
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
+    }
+
+    public function depreciation_save(Request $request)
+    {
+        $validated = $request->validate([
+            'month_filter' => 'required',
+            'year_filter' => 'required',
+        ]);
+
+        // Prepare data for creation
+        $data = app(InventoryAssetService::class)->findAllDepreciation($request->month_filter, $request->year_filter);
+        
+
+        $test = app(CreateInventoryAssetDepreciationAction::class)->execute($data);
+
+        return response()->json([
+            'message' => 'Asset berhasil didepresiasi',
+            'success' => true,
+            'test' => json_encode($test)
+        ]);
     }
 }

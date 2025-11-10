@@ -20,4 +20,16 @@ class InventoryAssetDepreciationScheduleService
             ->where('asset_id', $inventoryAssetId)
             ->first();
     }
+
+    public function update(array $data)
+    {
+        foreach ($data as $update) {
+            DB::table('m_inventory_assets_depreciation_schedule')
+                ->where('id', $update['id'])
+                ->update([
+                    'asset_is_depreciation' => 1,
+                ]);
+        }
+        return true;
+    }
 }

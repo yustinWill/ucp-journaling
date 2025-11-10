@@ -66,7 +66,7 @@ class InventoryAssetService
         ];
     }
 
-    public function findAllDatatable($tab = 'active_assets', $categoryFilter = null, $statusFilter = null, $search = null)
+    public function findAllDatatable($tab = 'active_assets', $categoryFilter = null, $statusFilter = null, $search = null,$month = null, $year = null)
     {
         $query = DB::table($this->table_name.' as ia')
             ->select([
@@ -87,13 +87,23 @@ class InventoryAssetService
         if ($statusFilter) {
             $query->where('ia.status', $statusFilter);
         }
+        if ($tab === 'depreciation') {
+            $query->where('ia.type', 'FIXED_ASSET')
+                ->where('ia.depreciation_method', '!=', 'NONE')
+                ->where('ia.status', 'ACTIVE');
 
+            // Filter by month and year if provided
+            if ($month && $year) {
+                $query->whereMonth('ia.acquisition_date', $month)
+                    ->whereYear('ia.acquisition_date', $year);
+            }
+        }
         // Apply search filter
         if ($search) {
             $query->where(function($q) use ($search) {
                 $q->where('ia.name', 'like', '%' . $search . '%')
-                  ->orWhere('ia.code', 'like', '%' . $search . '%')
-                  ->orWhere('ia.category', 'like', '%' . $search . '%');
+                ->orWhere('ia.code', 'like', '%' . $search . '%')
+                ->orWhere('ia.category', 'like', '%' . $search . '%');
             });
         }
 
@@ -179,6 +189,8 @@ class InventoryAssetService
             'net_book_value' => $data['net_book_value'] ?? 0,
             'f_depreciation_expense_coa_code' => $data['f_depreciation_expense_coa_code'] ?? null,
             'f_accumulated_depreciation_coa_code' => $data['f_accumulated_depreciation_coa_code'] ?? null,
+            'f_coa_depreciation_debit' => $data['f_coa_depreciation_debit'] ?? null,
+            'f_coa_depreciation_credit' => $data['f_coa_depreciation_credit'] ?? null,
             'quantity' => $data['quantity'] ?? 0,
             'f_unit_id' => $data['unit_id'] ?? null,
             'unit_cost' => $data['unit_cost'] ?? 0,
@@ -267,5 +279,59 @@ class InventoryAssetService
         DB::table("m_inventory_assets_depreciation_schedule")->insert($schedules);
 
         return count($schedules); // Return the number of schedules created
+    }
+
+    public function findAllDepreciation($month = null, $year = null)
+    {
+        $query = DB::table($this->table_name . ' as ia')
+            ->select([
+                'ia.*',
+                'ias.depreciation_id',
+                'ias.depreciation_value',
+                'ias.depreciation_month_year',
+                'units.name as unit_name',
+                'users.name as created_by_name',
+                'ias.total_depreciation_value',
+            ])
+            ->JoinSub(
+                DB::table('m_inventory_assets_depreciation_schedule as ias')
+                    ->select([
+                        DB::raw('MAX(ias.id) as depreciation_id'), // Aggregate non-grouped column
+                        'ias.asset_id',
+                        DB::raw('MAX(ias.asset_depreciation_value) as depreciation_value'), // Aggregate non-grouped column
+                        DB::raw('DATE_FORMAT(MAX(ias.asset_depreciation_date), "%M %Y") as depreciation_month_year'), // Aggregate date
+                        DB::raw('MAX(ias.asset_is_depreciation) as asset_is_depreciation'), // Aggregate asset_is_depreciation
+                        DB::raw('SUM(CASE WHEN ias.asset_is_depreciation IS NOT NULL THEN ias.asset_depreciation_value ELSE 0 END) AS total_depreciation_value'),
+                    ])
+                    ->whereNotNull('ias.asset_is_depreciation') // Add condition for asset_is_depreciation
+                    ->whereMonth('ias.asset_depreciation_date', $month)
+                    ->whereYear('ias.asset_depreciation_date', $year)
+                    ->groupBy('ias.asset_id') // Group by asset_id
+                    ->orderBy('ias.asset_id', 'asc'), // Order by asset_id
+                'ias',
+                'ias.asset_id',
+                '=',
+                'ia.id'
+            )
+            ->leftJoin('m_units as units', 'ia.f_unit_id', '=', 'units.id')
+            ->leftJoin('users', 'ia.created_by', '=', 'users.id')
+            ->where('ia.company_code', session('user_company_code'))
+            ->where('ia.type', 'FIXED_ASSET')
+            ->where('ia.depreciation_method', '!=', 'NONE')
+            ->where('ia.status', 'ACTIVE');
+
+        $draw = (int) request()->input('draw', 1);
+        $recordsTotal = DB::table($this->table_name)->count();
+        $filteredQuery = clone $query;
+
+        $recordsFiltered = $filteredQuery->get()->count();
+        $data = $query->orderBy('ia.created_at', 'desc')->get();
+
+        return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ];
     }
 }
