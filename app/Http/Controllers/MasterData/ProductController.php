@@ -25,6 +25,7 @@ use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\VarDumper\VarDumper;
 
 class ProductController extends Controller
 {
@@ -132,7 +133,7 @@ class ProductController extends Controller
                 $defaultNoTaxId = $tax->id;
             }
         }
-
+        $coaList = app(CoaService::class)->findAll();
         return view('pages.master_data.product.add', [
             'units' => $units,
             'categories' => $categories,
@@ -147,6 +148,7 @@ class ProductController extends Controller
             'canAddAccounts' => $canAddAccounts,
             'canAddTaxes' => $canAddTaxes,
             'defaultNoTaxId' => $defaultNoTaxId,
+            'coaList' => $coaList,
         ]);
     }
 
@@ -416,6 +418,12 @@ class ProductController extends Controller
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
+                'bundle_components.*.price' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
+
+                //cost components
+                'cost' => 'required_if:type,"bundle"|array',
+                'cost.*.coa' => 'required_if:type,"bundle"|required_with:cost|integer',
+                'cost.*.value' => 'required_if:type,"bundle"|required_with:cost|numeric',
                 // Bundle accounts
                 'bundle_accounts' => [
                     function ($attribute, $value, $fail) use ($req) {
@@ -491,6 +499,9 @@ class ProductController extends Controller
                 'bundle_components' => 'Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',
                 'bundle_components.*.qty' => 'Qty Komponen Bundle',
+                'bundle_components.*.price' => 'Harga Komponen Bundle',
+                'cost.*.coa' => 'Akun Komponen Bundle',
+                'cost.*.value' => 'Harga Biaya Bundle',
                 'bundle_accounts' => 'Akun Bundle',
                 'bundle_accounts.*.account' => 'Akun Bundle',
                 'bundle_accounts.*.cost' => 'Biaya Bundle',
@@ -600,7 +611,7 @@ class ProductController extends Controller
         // Get bundle components if product is a bundle
         $bundleComponents = [];
         if ($product->type === 'bundle') {
-            $bundleComponents = app(ProductCompositionService::class)->findAllBasedOnProductId($id);
+            $bundleComponents = app(ProductCompositionService::class)->findAllBasedOnProductIdOld($id);
         }
 
         return view('pages.master_data.product.detail', [
@@ -621,7 +632,7 @@ class ProductController extends Controller
             abort(404);
         }
 
-        $productCompositions = app(ProductCompositionService::class)->findAllBasedOnProductId($id);
+        $productCompositions = app(ProductCompositionService::class)->findAllBasedOnProductIdOld($id);
         $productExpenses = app(ProductExpenseService::class)->findAllBasedOnProductId($id);
 
         $categories = app(CategoryService::class)->findAll();
