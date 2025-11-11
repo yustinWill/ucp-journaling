@@ -221,6 +221,7 @@
                     <table class="table table-bordered" id="product-table">
                         <thead>
                             <tr>
+                                <th style="width: 8%;">Is Discount</th>
                                 <th style="width: 25%;">Produk</th>
                                 <th style="width: 12%;">Kuantitas</th>
                                 <th style="width: 10%;">Satuan</th>
@@ -232,6 +233,12 @@
                         </thead>
                         <tbody id="products-tbody" data-repeater-list>
                             <tr data-repeater-item class="product-row">
+                                <td>
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input discount-checkbox" type="checkbox"
+                                            name="products[0][is_discount]" value="1" disabled>
+                                    </div>
+                                </td>
                                 <td>
                                     <div class="position-relative">
                                         <select class="select2Product form-select product-select"
@@ -419,6 +426,37 @@
                 generateTransactionNumber();
             });
 
+            // Handle discount checkbox change
+            $(document).on('change', '.discount-checkbox', function() {
+                const row = $(this).closest('tr');
+                const unitPriceInput = row.find('.unit-price-input')[0];
+                const isDiscounted = $(this).is(':checked');
+
+                if (isDiscounted) {
+                    // Set unit price to 0 when discount is checked
+                    $(unitPriceInput).val('0');
+                    if (unitPriceInput && unitPriceInput.cleave) {
+                        unitPriceInput.cleave.setRawValue(0);
+                    }
+                    // Disable unit price input when discount is applied
+                    $(unitPriceInput).prop('disabled', true);
+                } else {
+                    // Re-enable unit price input when discount is unchecked
+                    $(unitPriceInput).prop('disabled', false);
+                    // Optionally restore original price from product selection
+                    const selectedOption = row.find('.product-select option:selected');
+                    const originalPrice = selectedOption.data('price');
+                    if (originalPrice) {
+                        $(unitPriceInput).val(originalPrice);
+                        if (unitPriceInput && unitPriceInput.cleave) {
+                            unitPriceInput.cleave.setRawValue(originalPrice);
+                        }
+                    }
+                }
+
+                calculateTotals();
+            });
+
             // Customer selection change
             $('#sales-order-customer').on('change', function() {
                 const customerId = $(this).val();
@@ -503,6 +541,7 @@
                     formData.append(`products[${idx}][quantity]`, line.quantity);
                     formData.append(`products[${idx}][unit_price]`, line.unit_price);
                     formData.append(`products[${idx}][total]`, line.line_total);
+                    formData.append(`products[${idx}][is_discount]`, line.is_discount);
                 });
 
                 Swal.fire({
@@ -735,13 +774,15 @@
                     const quantity = parseCurrency($(this).find('.quantity-input').val()) || 0;
                     const unitPrice = parseCurrency($(this).find('.unit-price').val()) || 0;
                     const lineTotal = parseCurrency($(this).find('input[name*="[total]"]').val()) || 0;
+                    const isDiscount = $(this).find('.discount-checkbox').is(':checked') ? 1 : 0;
 
-                    if (productId && quantity > 0 && unitPrice > 0) {
+                    if (productId && quantity > 0 && unitPrice >= 0) {
                         productLines.push({
                             product_id: productId,
                             quantity: quantity,
                             unit_price: unitPrice,
-                            line_total: lineTotal
+                            line_total: lineTotal,
+                            is_discount: isDiscount
                         });
                     }
                 });

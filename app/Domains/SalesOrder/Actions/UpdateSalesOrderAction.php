@@ -58,6 +58,7 @@ class UpdateSalesOrderAction
                         'unit_price' => $this->parsePrice($product['unit_price']),
                         // 'f_tax_id' => $product['tax_id'] ?? null,
                         'line_total' => $this->parsePrice($product['total']),
+                        'is_discount' => $product['is_discount'] ?? 0,
                         'updated_at' => now(),
                     ]);
                 $submittedIds[] = $product['id'];
@@ -72,6 +73,7 @@ class UpdateSalesOrderAction
                     'unit_price' => $this->parsePrice($product['unit_price']),
                     // 'f_tax_id' => $product['tax_id'] ?? null,
                     'line_total' => $this->parsePrice($product['total']),
+                    'is_discount' => $product['is_discount'] ?? 0,
                     'created_at' => now(),
                 ]);
                 $submittedIds[] = $newId;

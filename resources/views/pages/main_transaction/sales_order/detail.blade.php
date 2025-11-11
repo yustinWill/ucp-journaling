@@ -78,10 +78,10 @@
                             <b>Sales Delivery & Invoice</b>
                         </a>
                         <!-- <a class="list-group-item list-group-item-action waves-effect" id="revenue-split-list-item"
-                            data-bs-toggle="list" href="#horizontal-revenue-split" aria-selected="false" role="tab">
-                            <i class="icon-base ti tabler-percentage me-2"></i>
-                            <b>Revenue Split</b>
-                        </a> -->
+                                data-bs-toggle="list" href="#horizontal-revenue-split" aria-selected="false" role="tab">
+                                <i class="icon-base ti tabler-percentage me-2"></i>
+                                <b>Revenue Split</b>
+                            </a> -->
                         <a class="list-group-item list-group-item-action waves-effect" id="return-history-list-item"
                             data-bs-toggle="list" href="#horizontal-return-history" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-arrow-back-up me-2"></i>
@@ -196,6 +196,7 @@
                                     <table class="table table-bordered" id="product-table">
                                         <thead>
                                             <tr>
+                                                <th style="width: 8%;">Is Discount</th>
                                                 <th style="width: 30%;">Produk</th>
                                                 <th style="width: 15%;">Kuantitas</th>
                                                 <th style="width: 15%;">Satuan</th>
@@ -207,6 +208,14 @@
                                             @if (isset($salesOrder['product_lines']) && count($salesOrder['product_lines']) > 0)
                                                 @foreach ($salesOrder['product_lines'] as $line)
                                                     <tr>
+                                                        <td>
+                                                            <div class="form-check d-flex justify-content-center">
+                                                                <input class="form-check-input "
+                                                                    type="checkbox" @if ($line['is_discount'] == 1)
+                                                                        checked
+                                                                    @endif disabled>
+                                                            </div>
+                                                        </td>
                                                         <td>
                                                             <input type="text" class="form-control"
                                                                 value="{{ $line['product_code'] }} - {{ $line['product_name'] }}"
@@ -347,10 +356,13 @@
                                             @foreach ($salesOrder['product_lines'] as $line)
                                                 <tr>
                                                     <td>{{ $line['product_code'] }} - {{ $line['product_name'] }}</td>
-                                                    <td class="text-end">{{ number_format($line['quantity'], 4, ',', '.') }}</td>
-                                                    <td class="text-end">{{ number_format($line['delivered_qty'], 4, ',', '.') }}
+                                                    <td class="text-end">
+                                                        {{ number_format($line['quantity'], 4, ',', '.') }}</td>
+                                                    <td class="text-end">
+                                                        {{ number_format($line['delivered_qty'], 4, ',', '.') }}
                                                     </td>
-                                                    <td class="text-end">{{ number_format($line['remaining_qty'], 4, ',', '.') }}
+                                                    <td class="text-end">
+                                                        {{ number_format($line['remaining_qty'], 4, ',', '.') }}
                                                     </td>
                                                     <td>{{ $line['unit_name'] }}</td>
                                                 </tr>
@@ -471,24 +483,25 @@
                                             </tr>
                                         @endforeach
                                         @if (count($salesInvoices) == 0)
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted py-4">
-                                                <div class="d-flex flex-column align-items-center">
-                                                    <i class="icon-base ti tabler-file-invoice mb-2 text-muted"
-                                                        style="font-size: 2rem;"></i>
-                                                    <span class="mb-2">Belum ada Sales Invoice yang dibuat</span>
-                                                    @if ($canCreateSalesInvoice && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
-                                                        <a href="{{ route('main_transaction.sales_invoice.add', ['so_id' => $salesOrder['id']]) }}"
-                                                            class="btn btn-info btn-sm">
-                                                            <i class="icon-base ti tabler-file-invoice me-1"></i>Buat Sales
-                                                            Invoice
-                                                        </a>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted py-4">
+                                                    <div class="d-flex flex-column align-items-center">
+                                                        <i class="icon-base ti tabler-file-invoice mb-2 text-muted"
+                                                            style="font-size: 2rem;"></i>
+                                                        <span class="mb-2">Belum ada Sales Invoice yang dibuat</span>
+                                                        @if ($canCreateSalesInvoice && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
+                                                            <a href="{{ route('main_transaction.sales_invoice.add', ['so_id' => $salesOrder['id']]) }}"
+                                                                class="btn btn-info btn-sm">
+                                                                <i class="icon-base ti tabler-file-invoice me-1"></i>Buat
+                                                                Sales
+                                                                Invoice
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
                                         @endif
-                                        
+
                                     </tbody>
                                 </table>
                             </div>
@@ -499,7 +512,7 @@
                             <div class="section-header mt-12">
                                 <h6>Revenue Split Breakdown</h6>
                             </div>
-                            
+
                             <div id="revenue-split-content">
                                 <div class="text-center py-4">
                                     <div class="spinner-border text-primary" role="status">
@@ -675,7 +688,7 @@
         // Load Revenue Split Function
         function loadRevenueSplit() {
             const salesOrderId = {{ $salesOrder['id'] }};
-            
+
             $.ajax({
                 url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/breakdown`,
                 type: 'GET',
@@ -683,7 +696,7 @@
                     if (response.success) {
                         $('#revenue-split-content').html(response.html);
                         revenueSplitLoaded = true;
-                        
+
                         // Initialize currency formatting for revenue split inputs
                         initializeCurrencyFormatting();
                     } else {
@@ -700,7 +713,7 @@
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage = xhr.responseJSON.message;
                     }
-                    
+
                     $('#revenue-split-content').html(`
                         <div class="alert alert-danger">
                             <i class="icon-base ti tabler-alert-circle me-2"></i>
@@ -732,30 +745,31 @@
             $('#editProductName').text(productName);
             $('#editProductTotal').val(splitData.product_total_amount);
             $('#editTotalDisplay').text('Rp ' + formatNumber(splitData.product_total_amount));
-            
+
             // Set split amounts
             $('#editPorsiPabrik').val(formatNumber(splitData.porsi_pabrik));
-            $('#editPorsiOwner').val(formatNumber(splitData.porsi_owner)); 
+            $('#editPorsiOwner').val(formatNumber(splitData.porsi_owner));
             $('#editPorsiPerusahaan').val(formatNumber(splitData.porsi_perusahaan));
-            
+
             // Set remaining allocation radio
             $(`input[name="edit_remaining_allocation"][value="${splitData.remaining_allocation}"]`).prop('checked', true);
-            
+
             // Set notes
             $('#editSplitNotes').val(splitData.split_notes || '');
-            
+
             // Calculate totals
             calculateEditSplitTotals();
-            
+
             // Show modal
             $('#editRevenueSplitModal').modal('show');
         }
 
         // Reset Revenue Split Function
         function resetRevenueSplit(productId, productName) {
-            if (confirm(`Apakah Anda yakin ingin reset revenue split untuk produk "${productName}" ke konfigurasi default?`)) {
+            if (confirm(
+                `Apakah Anda yakin ingin reset revenue split untuk produk "${productName}" ke konfigurasi default?`)) {
                 const salesOrderId = {{ $salesOrder['id'] }};
-                
+
                 $.ajax({
                     url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/product/${productId}/reset`,
                     type: 'POST',
@@ -803,13 +817,13 @@
             const owner = parseNumber($('#editPorsiOwner').val()) || 0;
             const perusahaan = parseNumber($('#editPorsiPerusahaan').val()) || 0;
             const productTotal = parseNumber($('#editProductTotal').val()) || 0;
-            
+
             const totalSplit = pabrik + owner + perusahaan;
             const difference = totalSplit - productTotal;
-            
+
             $('#editTotalSplit').val(formatNumber(totalSplit));
             $('#editDifference').val(formatNumber(Math.abs(difference)));
-            
+
             // Update difference styling
             if (Math.abs(difference) > 0.01) {
                 $('#editDifference').removeClass('text-success').addClass('text-danger');
@@ -822,7 +836,7 @@
         function saveRevenueSplit() {
             const productId = $('#editProductId').val();
             const salesOrderId = {{ $salesOrder['id'] }};
-            
+
             const formData = {
                 porsi_pabrik: parseNumber($('#editPorsiPabrik').val()),
                 porsi_owner: parseNumber($('#editPorsiOwner').val()),
@@ -831,14 +845,14 @@
                 product_total_amount: parseNumber($('#editProductTotal').val()),
                 split_notes: $('#editSplitNotes').val()
             };
-            
+
             // Validate totals match
             const totalSplit = formData.porsi_pabrik + formData.porsi_owner + formData.porsi_perusahaan;
             if (Math.abs(totalSplit - formData.product_total_amount) > 0.01) {
                 toastr.error('Total porsi harus sama dengan total produk');
                 return;
             }
-            
+
             $.ajax({
                 url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/product/${productId}`,
                 type: 'PUT',

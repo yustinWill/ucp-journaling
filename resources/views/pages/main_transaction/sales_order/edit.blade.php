@@ -164,6 +164,7 @@
                     <table class="table table-bordered" id="product-table">
                         <thead>
                             <tr>
+                                <th style="width: 8%;">Diskon</th>
                                 <th style="width: 25%;">Produk</th>
                                 <th style="width: 12%;">Kuantitas</th>
                                 <th style="width: 10%;">Satuan</th>
@@ -179,6 +180,13 @@
                                     <tr class="product-row existing-entry">
                                         <input type="hidden" name="products[{{ $index }}][id]"
                                             value="{{ $line['id'] }}" class="product-id" />
+                                        <td>
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input discount-checkbox" type="checkbox"
+                                                    name="products[0][is_discount]" value="1"
+                                                    @if ($line['is_discount'] == '1') checked @endif>
+                                            </div>
+                                        </td>
                                         <td>
                                             <div class="position-relative">
                                                 <select class="select2Product form-select product-select"
@@ -198,7 +206,8 @@
                                         <td>
                                             <input type="text"
                                                 class="form-control currency-input unit-price unit-price-input"
-                                                name="products[0][unit_price]" value="{{ $line['unit_price'] }}" />
+                                                name="products[0][unit_price]" value="{{ $line['unit_price'] }}"
+                                                @if ($line['is_discount'] == '1') disabled @endif />
                                         </td>
                                         <td><input type="text" class="form-control currency-input"
                                                 name="products[0][total]" value="{{ $line['line_total'] }}" disabled />
@@ -215,6 +224,12 @@
                             @endif
                             <tr data-repeater-item class="product-row" style="display:none">
                                 <td>
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input discount-checkbox" type="checkbox"
+                                            name="products[0][is_discount]" value="1">
+                                    </div>
+                                </td>
+                                <td>
                                     <div class="position-relative">
                                         <select class="select2Product form-select product-select"
                                             name="products[0][product_id]" data-allow-clear="true">
@@ -222,6 +237,7 @@
                                         </select>
                                     </div>
                                 </td>
+
                                 <td><input type="number" class="form-control quantity-input"
                                         name="products[0][quantity]" min="1" step="1" value="1" />
                                 </td>
@@ -372,6 +388,36 @@
             });
             initCleaveCurrency(document);
 
+            // Handle discount checkbox change
+            $(document).on('change', '.discount-checkbox', function() {
+                const row = $(this).closest('tr');
+                const unitPriceInput = row.find('.unit-price-input')[0];
+                const isDiscounted = $(this).is(':checked');
+
+                if (isDiscounted) {
+                    // Set unit price to 0 when discount is checked
+                    $(unitPriceInput).val('0');
+                    if (unitPriceInput && unitPriceInput.cleave) {
+                        unitPriceInput.cleave.setRawValue(0);
+                    }
+                    // Disable unit price input when discount is applied
+                    $(unitPriceInput).prop('disabled', true);
+                } else {
+                    // Re-enable unit price input when discount is unchecked
+                    $(unitPriceInput).prop('disabled', false);
+                    // Optionally restore original price from product selection
+                    const selectedOption = row.find('.product-select option:selected');
+                    const originalPrice = selectedOption.data('price');
+                    if (originalPrice) {
+                        $(unitPriceInput).val(originalPrice);
+                        if (unitPriceInput && unitPriceInput.cleave) {
+                            unitPriceInput.cleave.setRawValue(originalPrice);
+                        }
+                    }
+                }
+
+                calculateTotals();
+            });
             // Load existing product lines
             loadProductsForRow();
 
@@ -496,6 +542,7 @@
                     formData.append(`products[${idx}][quantity]`, line.quantity);
                     formData.append(`products[${idx}][unit_price]`, line.unit_price);
                     formData.append(`products[${idx}][total]`, line.line_total);
+                    formData.append(`products[${idx}][is_discount]`, line.is_discount);
                 });
 
                 Swal.fire({
@@ -627,11 +674,12 @@
 
                 if (perPrice) {
                     const unitPriceInput = row.find('.unit-price')[0];
-                    $(unitPriceInput).val(perPrice);
 
                     // If Cleave is already initialized, use setRawValue
-                    if (unitPriceInput && unitPriceInput.cleave) {
-                        unitPriceInput.cleave.setRawValue(perPrice);
+                    if ($(unitPriceInput).val() == "Rp ") {
+                        if (unitPriceInput && unitPriceInput.cleave) {
+                            unitPriceInput.cleave.setRawValue(perPrice);
+                        }
                     }
                 }
 
@@ -672,13 +720,15 @@
                     const quantity = parseCurrency($(this).find('.quantity-input').val()) || 0;
                     const unitPrice = parseCurrency($(this).find('.unit-price').val()) || 0;
                     const lineTotal = parseCurrency($(this).find('input[name*="[total]"]').val()) || 0;
-                    if (productId && quantity > 0 && unitPrice > 0) {
+                    const isDiscount = $(this).find('.discount-checkbox').is(':checked') ? 1 : 0;
+                    if (productId && quantity > 0 && unitPrice >= 0) {
                         productLines.push({
                             id: productRowId || null,
                             product_id: productId,
                             quantity: quantity,
                             unit_price: unitPrice,
-                            line_total: lineTotal
+                            line_total: lineTotal,
+                            is_discount: isDiscount
                         });
                     }
                 });
