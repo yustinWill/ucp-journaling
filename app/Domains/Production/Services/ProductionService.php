@@ -55,7 +55,8 @@ class ProductionService
                 'bp.code as bundle_product_code',
                 'w.name as warehouse_name',
                 'w.code as warehouse_code',
-                'u.name as pic_name'
+                'u.name as pic_name',
+                DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = p.id LIMIT 1) as unit_code')
             )
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')

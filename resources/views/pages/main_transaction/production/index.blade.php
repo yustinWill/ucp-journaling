@@ -129,13 +129,12 @@
                     <thead>
                         <tr>
                             <th style="width: 100px;">Tanggal</th>
-                            <th style="width: 140px;">No Produksi</th>
-                            <th>Bundle Product</th>
-                            <th style="width: 180px;">Warehouse</th>
-                            <th style="width: 100px;">Qty Planned</th>
-                            <th style="width: 100px;">Qty Produced</th>
-                            <th style="width: 120px;">Total Cost</th>
-                            <th style="width: 100px;">Status</th>
+                            <th style="width: 140px;">No Transaksi</th>
+                            <th>Nama Produk</th>
+                            <th style="width: 180px;">Kode Produk</th>
+                            <th style="width: 100px;">Jumlah Produksi</th>
+                            <th style="width: 120px;">Unit</th>
+                            <th style="width: 100px;">HPP</th>
                             <th style="width: 100px;">Aksi</th>
                         </tr>
                     </thead>
@@ -191,17 +190,7 @@
                             data: 'bundle_product_name'
                         },
                         {
-                            data: 'warehouse_name',
-                        },
-                        {
-                            data: 'quantity_planned',
-                            className: 'text-end',
-                            render: function(data, type, row) {
-                                return new Intl.NumberFormat('id-ID', {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 2
-                                }).format(data || 0);
-                            }
+                            data: 'bundle_product_code',
                         },
                         {
                             data: 'quantity_produced',
@@ -214,37 +203,14 @@
                             }
                         },
                         {
+                            data: 'unit_code',
+                            className: 'text-center',
+                        },
+                        {
                             data: 'total_production_cost',
                             className: 'text-end',
                             render: function(data, type, row) {
                                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);
-                            }
-                        },
-                        {
-                            data: 'status',
-                            className: 'text-center',
-                            render: function(data, type, row) {
-                                let badgeClass = '';
-                                switch (data) {
-                                    case 'DRAFT':
-                                        badgeClass = 'bg-label-secondary';
-                                        break;
-                                    case 'PLANNED':
-                                        badgeClass = 'bg-label-info';
-                                        break;
-                                    case 'IN_PROGRESS':
-                                        badgeClass = 'bg-label-warning';
-                                        break;
-                                    case 'COMPLETED':
-                                        badgeClass = 'bg-label-success';
-                                        break;
-                                    case 'CANCELLED':
-                                        badgeClass = 'bg-label-danger';
-                                        break;
-                                    default:
-                                        badgeClass = 'bg-label-secondary';
-                                }
-                                return `<span class="badge ${badgeClass}">${data}</span>`;
                             }
                         },
                         {
