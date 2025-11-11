@@ -9,6 +9,8 @@ use App\Domains\SalesInvoice\Actions\UpdateSalesInvoiceAction;
 use App\Domains\SalesInvoice\Services\SalesInvoiceAuditLogService;
 use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
+use App\Services\TransactionNumberService;
+use App\Domains\Coa\Services\CoaService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Tax\Services\TaxService;
 use App\Enums\ErrorCodes;
@@ -18,6 +20,7 @@ use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SalesInvoiceController extends Controller
 {
@@ -213,7 +216,62 @@ class SalesInvoiceController extends Controller
             'canViewReturnManagement' => $canViewReturnManagement,
         ]);
     }
+    public function payment_recipient(request $request)
+    {
+        $source_invoice_id = $request->query('source_invoice_id');
 
+        // Check read permission
+        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
+        }
+
+        $invoice_data = app(SalesInvoiceService::class)->findOne($source_invoice_id); 
+        if (! $invoice_data) {
+            abort(404, 'Invoice tidak ditemukan.');
+        }
+
+        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $coa_accounts = app(CoaService::class)->findAll();
+
+        // Get tags with color preview
+        $tags = DB::table('m_tags as t')
+            ->select([
+                't.id',
+                't.name',
+                't.code',
+                DB::raw("CONCAT('bg-label-', tc.code) as preview")
+            ])
+            ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+            ->where('t.company_code', session('user_company_code'))
+            ->where('t.status', 'ACTIVE')
+            ->orderBy('t.code', 'ASC')
+            ->get();
+        return view('pages.main_transaction.sales_invoice.payment_recipient', [
+            'customers' => $customers,
+            'coa_accounts' => $coa_accounts,
+            'availableTags' => $tags, // Pass $tags as $availableTags
+            'invoice_data' => $invoice_data,
+        ]);
+        
+    }
+    public function generateTransactionNumber()
+    {
+        try {
+            $transactionNumber = app(TransactionNumberService::class)->generateNumber('asset_purchase'); 
+            // sementara ntar module nya ganti
+
+            return response()->json([
+                'success' => true,
+                'transaction_number' => $transactionNumber,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
     public function auditLogDataTable($id)
     {
         // Check read permission

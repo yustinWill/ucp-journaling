@@ -201,6 +201,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::post($base_segment.$sales_invoice_segment.'/process_import', 'processImport')->name('main_transaction.sales_invoice.process_import');
         Route::get($base_segment.$sales_invoice_segment.'/export', 'export')->name('main_transaction.sales_invoice.export');
         Route::post($base_segment.$sales_invoice_segment.'/process_export', 'processExport')->name('main_transaction.sales_invoice.process_export');
+        Route::get($base_segment.$sales_invoice_segment.'/payment_recipient', 'payment_recipient')->name('main_transaction.sales_invoice.payment_recipient');
+        
+        Route::get($base_segment.$sales_invoice_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('master_transaction.sales_invoice.generate_transaction_number');
 
         // API routes for Sales Invoice functionality
         Route::get($base_segment.$sales_invoice_segment.'/get_available_sales_orders', 'get_available_sales_orders')->name('main_transaction.sales_invoice.get_available_sales_orders');

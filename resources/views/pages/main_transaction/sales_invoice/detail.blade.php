@@ -14,12 +14,12 @@
                     <!-- Show buttons directly -->
                     <div class="d-flex gap-2 justify-content-end">
                         {{-- Future: Invoice Settlement Button - will redirect to settlement page for payment processing --}}
-                        @if (in_array($invoice_data->status, ['DRAFT', 'PENDING', 'APPROVED']))
-                            <button type="button" class="btn btn-info btn-md waves-effect waves-light"
-                                onclick="alert('Feature coming soon: Invoice Settlement')">
+                        @if ( ! in_array($invoice_data->status, ['DRAFT']))
+                            <a href="{{ route('main_transaction.sales_invoice.payment_recipient') }}?source_invoice_id={{ $invoice_data->id }}" class="btn btn-info btn-md waves-effect waves-light"
+                                >
                                 <i class="icon-base ti tabler-credit-card me-2"></i>
                                 Settle Invoice
-                            </button>
+                            </a>
                         @endif
 
                         {{-- <button type="button" class="btn btn-primary btn-md waves-effect waves-light" onclick="window.print()">
