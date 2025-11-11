@@ -4,6 +4,7 @@ namespace App\Domains\Product\Actions;
 
 use App\Domains\Product\Services\ProductAuditLogService;
 use App\Domains\Product\Services\ProductCompositionService;
+use App\Domains\Product\Services\ProductCostCompositionService;
 use App\Domains\Product\Services\ProductExpenseService;
 use App\Domains\Product\Services\ProductService;
 use App\Enums\ActionTypes;
@@ -18,7 +19,6 @@ class CreateProductAction
                 $path = $data['image']->store('products', 'public');
                 $data['image'] = $path;
             }
-
             $product_id = app(ProductService::class)->create($data);
 
             if (isset($data['bundle_components'])) {
@@ -29,10 +29,23 @@ class CreateProductAction
                         'f_product_id' => $product_id,
                         'f_product_composition_product_id' => $row['product_id'],
                         'qty' => $row['qty'],
+                        'price' => $row['price'],
                         'f_unit_id' => $product_data->f_unit_id,
                     ];
                 }
                 app(ProductCompositionService::class)->create($bundle_components);
+            }
+
+            if (isset($data['cost'])) {
+                $cost_components = [];
+                foreach ($data['cost'] as $row) {
+                    $cost_components[] = [
+                        'f_product_id' => $product_id,
+                        'account_code' => $row['coa'],
+                        'cost_value' => $row['value'],
+                    ];
+                }
+                app(ProductCostCompositionService::class)->create($cost_components);
             }
 
             if (isset($data['bundle_accounts'])) {
