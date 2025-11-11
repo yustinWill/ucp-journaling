@@ -545,7 +545,7 @@
                                                 <input type="text" class="form-control component-unit" disabled>
                                             </td>
                                             <td>
-                                                <input type="text" class="form-control numeric-input component-price"
+                                                <input type="text" class="form-control currency-input component-price"
                                                     id="price-product" />
                                             </td>
                                             <td>
@@ -598,7 +598,7 @@
                                             </td>
                                             <td>
                                                 <div class="input-group">
-                                                    <input type="text" class="form-control numeric-input cost-value" id="target-owner" name="target_owner" 
+                                                    <input type="text" class="form-control currency-input cost-value" id="target-owner" name="target_owner" 
                                                         placeholder="500000000" required />
                                                 </div>
                                             </td>
@@ -839,7 +839,7 @@
             //     });
             // });
             
-            $('.form-repeater-cost-component').repeater({
+            $('.form-repeater-cost-components').repeater({
                 show: function() {
                     $(this).slideDown(() => {
                         // Remove any existing Select2 container and reinitialize Select2
@@ -858,6 +858,7 @@
                             });
                         });
 
+                        initCleaveCurrency($(this));
                         // Initialize Cleave for dynamically added "Harga" input boxes
                         
                     });

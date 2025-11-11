@@ -422,7 +422,7 @@ class ProductController extends Controller
 
                 //cost components
                 'cost' => 'required_if:type,"bundle"|array',
-                'cost.*.coa' => 'required_if:type,"bundle"|required_with:cost|integer',
+                'cost.*.coa' => 'required_if:type,"bundle"|required_with:cost',
                 'cost.*.value' => 'required_if:type,"bundle"|required_with:cost|numeric',
                 // Bundle accounts
                 'bundle_accounts' => [
