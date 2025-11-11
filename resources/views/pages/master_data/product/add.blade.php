@@ -1285,7 +1285,7 @@
                             if (productId && productId !== "null" && qty && qty !== "null") {
                                 data.bundle_components.push({
                                     product_id: productId,
-                                    qty: qty
+                                    qty: qty,
                                     price: price
                                 });
                             }
