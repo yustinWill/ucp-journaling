@@ -73,7 +73,7 @@ class SalesOrderController extends Controller
         // Load customers for filter dropdown
         $customers = DB::table('m_contacts')
             ->where('company_code', session('user_company_code'))
-            ->where('type', 'CUSTOMER')
+            ->where('is_customer', true)
             ->where('status', 'ACTIVE')
             ->select('id', 'name')
             ->orderBy('name')
@@ -97,7 +97,7 @@ class SalesOrderController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
 
-        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $customers = app(ContactService::class)->findAllByFlag('customer');
         $salesPersons = app(SalesPersonService::class)->findAll();
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
@@ -333,7 +333,7 @@ class SalesOrderController extends Controller
         }
 
         // Load form data
-        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $customers = app(ContactService::class)->findAllByFlag('customer');
         $salesPersons = app(SalesPersonService::class)->findAll();
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
@@ -555,7 +555,7 @@ class SalesOrderController extends Controller
             ->leftJoin('users as u', 't.f_sales_pic_id', '=', 'u.id')
             ->where('t.id', $customerId)
             ->where('t.company_code', session('user_company_code'))
-            ->where('t.type', 'CUSTOMER')
+            ->where('t.is_customer', true)
             ->first();
 
         if (! $customer) {

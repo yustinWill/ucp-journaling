@@ -14,7 +14,6 @@ use App\Domains\Contact\Services\ContactBankService;
 use App\Domains\Contact\Services\ContactProductService;
 // Services
 use App\Domains\Contact\Services\ContactService;
-use App\Domains\Contact\Services\ContactTypeService;
 use App\Domains\IdentityTypes\Services\IdentityTypesService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
 use App\Domains\Product\Services\ProductService;
@@ -36,11 +35,7 @@ class ContactController extends Controller
 {
     public function index()
     {
-        $contact_types = app(ContactTypeService::class)->findAll();
-
-        return view('pages.master_data.contact.index', [
-            'contact_types' => $contact_types,
-        ]);
+        return view('pages.master_data.contact.index');
     }
 
     public function index_data_table()
@@ -53,7 +48,6 @@ class ContactController extends Controller
     public function add()
     {
         $identity_types = app(IdentityTypesService::class)->findAll();
-        $contact_types = app(ContactTypeService::class)->findAll();
         $coa_accounts = app(CoaService::class)->findAll();
         $banks = app(BankService::class)->findAll();
         $payment_terms = app(PaymentTermService::class)->findAll();
@@ -68,7 +62,6 @@ class ContactController extends Controller
             'receivable_accounts' => $coa_accounts,
             'payment_terms' => $payment_terms,
             'banks' => $banks,
-            'contact_types' => $contact_types,
             'products' => $products,
             'tags' => $tags,
             'canAddTags' => true, // Mock permission check
@@ -83,13 +76,16 @@ class ContactController extends Controller
             $validated = $request->validate([
                 'contact_name' => 'required|string|max:255',
                 'group_name' => 'nullable|string|max:255',
-                'contact_type' => 'required|in:CUSTOMER,SUPPLIER,EMPLOYEE,OTHERS',
+                'is_customer' => 'nullable|boolean',
+                'is_supplier' => 'nullable|boolean',
+                'is_employee' => 'nullable|boolean',
+                'is_other' => 'nullable|boolean',
                 'contact_status' => 'required|in:ACTIVE,INACTIVE',
                 'identity_type' => 'nullable|string|exists:m_identity_types,code',
                 'identity_number' => 'nullable|string|max:16',
                 'email' => 'nullable|email|max:64',
-                'phone' => 'nullable|string|max:20',
-                'sales_user' => 'required_if:contact_type,CUSTOMER|max:64',
+                'phone' => 'required|string|max:20',
+                'sales_user' => 'nullable|max:64',
                 'company_name' => 'nullable|string|max:255',
                 'npwp' => 'nullable|string|max:16',
                 'company_phone' => 'nullable|string|max:20',
@@ -110,8 +106,8 @@ class ContactController extends Controller
                 'shipping_postal_code' => 'nullable|string|max:5',
                 'shipping_area' => 'nullable|string|max:255',
                 'shipping_maps_url' => 'nullable|string|max:1000',
-                'payable_account' => 'required|exists:m_coas,code',
-                'receivable_account' => 'required|exists:m_coas,code',
+                'payable_account' => 'nullable|exists:m_coas,code',
+                'receivable_account' => 'nullable|exists:m_coas,code',
                 'payment_term' => 'nullable|exists:m_payment_terms,code',
                 'tags' => 'nullable|array',
                 'tags.*' => 'nullable|exists:m_tags,id',
@@ -130,7 +126,10 @@ class ContactController extends Controller
             ], [], [
                 'contact_name' => 'Nama Kontak',
                 'group_name' => 'Grup Kontak',
-                'contact_type' => 'Tipe Kontak',
+                'is_customer' => 'Customer',
+                'is_supplier' => 'Supplier',
+                'is_employee' => 'Karyawan',
+                'is_other' => 'Lainnya',
                 'contact_status' => 'Status Kontak',
                 'identity_type' => 'Jenis Identitas',
                 'identity_number' => 'Nomor Identitas',
@@ -213,7 +212,6 @@ class ContactController extends Controller
         $shipping_contact_address = app(ContactAddressService::class)->findOneBasedOnContactIdAndType($id, ContactAddressTypes::SHIPPING);
 
         $identity_types = app(IdentityTypesService::class)->findAll();
-        $contact_types = app(ContactTypeService::class)->findAll();
         $coa_accounts = app(CoaService::class)->findAll();
         $banks = app(BankService::class)->findAll();
         $payment_terms = app(PaymentTermService::class)->findAll();
@@ -228,7 +226,6 @@ class ContactController extends Controller
             'billing_contact_address' => $billing_contact_address,
             'shipping_contact_address' => $shipping_contact_address,
             'identity_types' => $identity_types,
-            'contact_types' => $contact_types,
             'coa_accounts' => $coa_accounts,
             'banks' => $banks,
             'payment_terms' => $payment_terms,
@@ -248,13 +245,16 @@ class ContactController extends Controller
                 'contact_id' => 'required|exists:m_contacts,id',
                 'contact_name' => 'required|string|max:255',
                 'group_name' => 'nullable|string|max:255',
-                'contact_type' => 'required|in:CUSTOMER,SUPPLIER,EMPLOYEE,OTHERS',
+                'is_customer' => 'nullable|boolean',
+                'is_supplier' => 'nullable|boolean',
+                'is_employee' => 'nullable|boolean',
+                'is_other' => 'nullable|boolean',
                 'contact_status' => 'required|in:ACTIVE,INACTIVE',
                 'identity_type' => 'nullable|string|exists:m_identity_types,code',
                 'identity_number' => 'nullable|string|max:16',
                 'email' => 'nullable|email|max:64',
-                'phone' => 'nullable|string|max:20',
-                'sales_user' => 'required_if:contact_type,CUSTOMER|max:64',
+                'phone' => 'required|string|max:20',
+                'sales_user' => 'nullable|max:64',
                 'company_name' => 'nullable|string|max:255',
                 'npwp' => 'nullable|string|max:16',
                 'company_phone' => 'nullable|string|max:20',
@@ -275,8 +275,8 @@ class ContactController extends Controller
                 'shipping_postal_code' => 'nullable|string|max:5',
                 'shipping_area' => 'nullable|string|max:255',
                 'shipping_maps_url' => 'nullable|string|max:1000',
-                'payable_account' => 'required|exists:m_coas,code',
-                'receivable_account' => 'required|exists:m_coas,code',
+                'payable_account' => 'nullable|exists:m_coas,code',
+                'receivable_account' => 'nullable|exists:m_coas,code',
                 'payment_term' => 'nullable|exists:m_payment_terms,code',
                 'tags' => 'nullable|array',
                 'tags.*' => 'nullable|exists:m_tags,id',
@@ -298,7 +298,10 @@ class ContactController extends Controller
                 'contact_id' => 'ID Kontak',
                 'contact_name' => 'Nama Kontak',
                 'group_name' => 'Grup Kontak',
-                'contact_type' => 'Tipe Kontak',
+                'is_customer' => 'Customer',
+                'is_supplier' => 'Supplier',
+                'is_employee' => 'Karyawan',
+                'is_other' => 'Lainnya',
                 'contact_status' => 'Status Kontak',
                 'identity_type' => 'Jenis Identitas',
                 'identity_number' => 'Nomor Identitas',

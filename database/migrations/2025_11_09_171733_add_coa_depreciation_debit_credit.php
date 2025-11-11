@@ -11,13 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::table('m_inventory_assets', function (Blueprint $table) {
-            // Add purchase-related fields
-            $table->decimal('coa_depreciation_debit',15,2)->default(0)->after('status');
-            $table->decimal('coa_depreciation_credit',15,2)->default(0)->after('coa_depreciation_debit');
-            $table->string('f_sales_coa_code')->nullable()->after('coa_depreciation_credit');
-            $table->string('disposal_code')->nullable()->after('disposal_date');
-            $table->string('f_difference_coa_code')->nullable->after('disposal_code');
+        Schema::table('m_inventory_assets', function (Blueprint $table) {
+            // Check if columns exist before adding
+            if (! Schema::hasColumn('m_inventory_assets', 'coa_depreciation_debit')) {
+                $table->decimal('coa_depreciation_debit', 15, 2)->default(0)->after('status');
+            }
+            if (! Schema::hasColumn('m_inventory_assets', 'coa_depreciation_credit')) {
+                $table->decimal('coa_depreciation_credit', 15, 2)->default(0)->after('coa_depreciation_debit');
+            }
+            if (! Schema::hasColumn('m_inventory_assets', 'f_sales_coa_code')) {
+                $table->string('f_sales_coa_code')->nullable()->after('coa_depreciation_credit');
+            }
+            if (! Schema::hasColumn('m_inventory_assets', 'disposal_code')) {
+                $table->string('disposal_code')->nullable()->after('disposal_date');
+            }
+            if (! Schema::hasColumn('m_inventory_assets', 'f_difference_coa_code')) {
+                $table->string('f_difference_coa_code')->nullable()->after('disposal_code');
+            }
         });
     }
 

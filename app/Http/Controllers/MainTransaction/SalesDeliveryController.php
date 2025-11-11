@@ -29,11 +29,11 @@ class SalesDeliveryController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk melihat data.');
         }
 
-        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $customers = app(ContactService::class)->findAllByFlag('customer');
         $warehouses = app(WarehouseService::class)->findAll();
 
         if (PermissionHelper::hasPermission('master_data_contact', 'read')) {
-            $customers = app(\App\Domains\Contact\Services\ContactService::class)->findAllByType('CUSTOMER');
+            $customers = app(\App\Domains\Contact\Services\ContactService::class)->findAllByFlag('customer');
         }
 
         if (PermissionHelper::hasPermission('master_data_warehouse', 'read')) {
@@ -68,7 +68,7 @@ class SalesDeliveryController extends Controller
 
         $salesOrderList = app(SalesOrderService::class)->findAllPending();
 
-        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $customers = app(ContactService::class)->findAllByFlag('customer');
         $warehouses = app(WarehouseService::class)->findAll();
         $products = [];
         $tags = app(TagService::class)->findAll();

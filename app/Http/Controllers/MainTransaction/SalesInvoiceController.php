@@ -34,7 +34,7 @@ class SalesInvoiceController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_invoice');
 
-        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $customers = app(ContactService::class)->findAllByFlag('customer');
 
         $statuses = [
             ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],
@@ -230,7 +230,7 @@ class SalesInvoiceController extends Controller
             abort(404, 'Invoice tidak ditemukan.');
         }
 
-        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $customers = app(ContactService::class)->findAllByFlag('customer');
         $coa_accounts = app(CoaService::class)->findAll();
 
         // Get tags with color preview
@@ -361,7 +361,7 @@ class SalesInvoiceController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
         }
 
-        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $customers = app(ContactService::class)->findAllByFlag('customer');
 
         return view('pages.main_transaction.sales_invoice.import', [
             'customers' => $customers,
@@ -375,7 +375,7 @@ class SalesInvoiceController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
         }
 
-        $customers = app(ContactService::class)->findAllByType('CUSTOMER');
+        $customers = app(ContactService::class)->findAllByFlag('customer');
 
         return view('pages.main_transaction.sales_invoice.export', [
             'customers' => $customers,

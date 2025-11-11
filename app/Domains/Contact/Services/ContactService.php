@@ -20,7 +20,10 @@ class ContactService
                 'c.email as email',
                 'c.phone AS phone',
                 'c.group_contact_name AS group_name',
-                'c.type AS type',
+                'c.is_customer',
+                'c.is_supplier',
+                'c.is_employee',
+                'c.is_other',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
             ])->leftJoin(DB::raw("JSON_TABLE(c.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
@@ -50,8 +53,22 @@ class ContactService
             $query->where('c.group_contact_name', 'LIKE', "%{$groupName}%");
         }
 
+        // Filter by contact type flags
         if ($type = request()->input('type')) {
-            $query->where('c.type', 'LIKE', "%{$type}%");
+            $query->where(function ($q) use ($type) {
+                if (strpos($type, 'CUSTOMER') !== false) {
+                    $q->orWhere('c.is_customer', true);
+                }
+                if (strpos($type, 'SUPPLIER') !== false) {
+                    $q->orWhere('c.is_supplier', true);
+                }
+                if (strpos($type, 'EMPLOYEE') !== false) {
+                    $q->orWhere('c.is_employee', true);
+                }
+                if (strpos($type, 'OTHERS') !== false) {
+                    $q->orWhere('c.is_other', true);
+                }
+            });
         }
 
         $query->groupBy('c.id');
@@ -83,7 +100,10 @@ class ContactService
                 't.id',
                 't.name',
                 't.group_contact_name',
-                't.type',
+                't.is_customer',
+                't.is_supplier',
+                't.is_employee',
+                't.is_other',
                 't.status',
                 't.f_identity_type_code',
                 't.identity_number',
@@ -117,6 +137,10 @@ class ContactService
             ->get();
     }
 
+    /**
+     * Find contacts by type (legacy method - uses old 'type' column)
+     * @deprecated Use findAllByFlag() instead
+     */
     public function findAllByType($type)
     {
         return DB::table($this->table_name.' AS t')
@@ -132,24 +156,47 @@ class ContactService
             ->get();
     }
 
+    /**
+     * Find contacts by boolean flag (e.g., 'customer', 'supplier', 'employee', 'other')
+     */
+    public function findAllByFlag(string $flag)
+    {
+        $flagColumn = 'is_'.strtolower($flag);
+
+        return DB::table($this->table_name.' AS t')
+            ->select(['t.id', 't.name', 't.email', 'ca.address AS billing_address'])
+            ->leftJoin('m_contact_addresses AS ca', function ($join) {
+                $join->on('ca.f_contact_id', '=', 't.id')
+                    ->where('ca.type', '=', 'BILLING');
+            })
+            ->where($flagColumn, true)
+            ->where('t.status', GeneralStatuses::ACTIVE)
+            ->where('t.company_code', session('user_company_code'))
+            ->orderBy('t.name')
+            ->get();
+    }
+
     public function create(array $data)
     {
         return DB::table($this->table_name)->insertGetId([
             'name' => $data['contact_name'],
             'group_contact_name' => $data['group_name'] ?? null,
-            'type' => $data['contact_type'],
+            'is_customer' => isset($data['is_customer']) && $data['is_customer'] ? true : false,
+            'is_supplier' => isset($data['is_supplier']) && $data['is_supplier'] ? true : false,
+            'is_employee' => isset($data['is_employee']) && $data['is_employee'] ? true : false,
+            'is_other' => isset($data['is_other']) && $data['is_other'] ? true : false,
             'status' => $data['contact_status'],
-            'f_identity_type_code' => $data['identity_type'],
-            'identity_number' => $data['identity_number'],
+            'f_identity_type_code' => $data['identity_type'] ?? null,
+            'identity_number' => $data['identity_number'] ?? null,
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
-            'f_sales_pic_id' => $data['sales_user'],
-            'company_name' => $data['company_name'],
+            'f_sales_pic_id' => $data['sales_user'] ?? null,
+            'company_name' => $data['company_name'] ?? null,
             'company_npwp' => $data['npwp'] ?? null,
             'company_phone' => $data['company_phone'] ?? null,
             'company_fax_no' => $data['company_fax'] ?? null,
-            'f_coa_account_payable' => $data['payable_account'],
-            'f_coa_account_receivable' => $data['receivable_account'],
+            'f_coa_account_payable' => $data['payable_account'] ?? null,
+            'f_coa_account_receivable' => $data['receivable_account'] ?? null,
             // 'f_payment_terms_id' => $data['payment_term'],
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'created_at' => now(),
@@ -163,19 +210,22 @@ class ContactService
         return DB::table($this->table_name)->where('id', $id)->update([
             'name' => $data['contact_name'],
             'group_contact_name' => $data['group_name'] ?? null,
-            'type' => $data['contact_type'],
+            'is_customer' => isset($data['is_customer']) && $data['is_customer'] ? true : false,
+            'is_supplier' => isset($data['is_supplier']) && $data['is_supplier'] ? true : false,
+            'is_employee' => isset($data['is_employee']) && $data['is_employee'] ? true : false,
+            'is_other' => isset($data['is_other']) && $data['is_other'] ? true : false,
             'status' => $data['contact_status'],
-            'f_identity_type_code' => $data['identity_type'],
-            'identity_number' => $data['identity_number'],
+            'f_identity_type_code' => $data['identity_type'] ?? null,
+            'identity_number' => $data['identity_number'] ?? null,
             'email' => $data['email'] ?? null,
             'phone' => $data['phone'] ?? null,
-            'f_sales_pic_id' => $data['sales_user'],
-            'company_name' => $data['company_name'],
+            'f_sales_pic_id' => $data['sales_user'] ?? null,
+            'company_name' => $data['company_name'] ?? null,
             'company_npwp' => $data['npwp'] ?? null,
             'company_phone' => $data['company_phone'] ?? null,
             'company_fax_no' => $data['company_fax'] ?? null,
-            'f_coa_account_payable' => $data['payable_account'],
-            'f_coa_account_receivable' => $data['receivable_account'],
+            'f_coa_account_payable' => $data['payable_account'] ?? null,
+            'f_coa_account_receivable' => $data['receivable_account'] ?? null,
             // 'f_payment_terms_id' => $data['payment_term'],
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'updated_at' => now(),

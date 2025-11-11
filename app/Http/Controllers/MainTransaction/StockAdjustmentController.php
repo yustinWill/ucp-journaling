@@ -141,7 +141,7 @@ class StockAdjustmentController extends Controller
         }
 
         // Get employees from contact service
-        $contactsData = app(ContactService::class)->findAllByType('EMPLOYEE');
+        $contactsData = app(ContactService::class)->findAllByFlag('employee');
         $picOptions = [];
         foreach ($contactsData as $contact) {
             $picOptions[] = [
@@ -296,7 +296,7 @@ class StockAdjustmentController extends Controller
         }
 
         // Get employees from contact service
-        $contactsData = app(ContactService::class)->findAllByType('EMPLOYEE');
+        $contactsData = app(ContactService::class)->findAllByFlag('employee');
         $picOptions = [];
         foreach ($contactsData as $contact) {
             $picOptions[] = [

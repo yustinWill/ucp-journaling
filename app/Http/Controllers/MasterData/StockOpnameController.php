@@ -79,7 +79,7 @@ class StockOpnameController extends Controller
         $warehouses = app(WarehouseService::class)->findAll();
 
         // PIC options
-        $picUsers = app(ContactService::class)->findAllByType('EMPLOYEE');
+        $picUsers = app(ContactService::class)->findAllByFlag('employee');
 
         // Product categories for filtering
         $categories = app(CategoryService::class)->findAll();

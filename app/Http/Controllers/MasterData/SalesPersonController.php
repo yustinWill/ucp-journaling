@@ -59,7 +59,7 @@ class SalesPersonController extends Controller
         }
 
         $statuses = $this->statuses;
-        $employees = app(ContactService::class)->findAllByType('EMPLOYEE');
+        $employees = app(ContactService::class)->findAllByFlag('employee');
         $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
 
         return view('pages.master_data.sales_person.add', array_merge([
@@ -140,7 +140,7 @@ class SalesPersonController extends Controller
         }
 
         $statuses = $this->statuses;
-        $employees = app(ContactService::class)->findAllByType('EMPLOYEE');
+        $employees = app(ContactService::class)->findAllByFlag('employee');
         $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
 
         return view('pages.master_data.sales_person.edit', array_merge([

@@ -34,7 +34,7 @@ class PurchaseInvoiceController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_invoice');
 
-        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
+        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
 
         $statuses = [
             // ['value' => 'DRAFT', 'label' => 'DRAFT - Draft'],

@@ -42,7 +42,23 @@
             <div class="row g-6">
                 <div class="col-md-6">
                     <label class="form-label">Tipe Kontak</label>
-                    <input type="text" class="form-control" value="{{ $contact->type }}" disabled />
+                    <div class="mt-2">
+                        @if($contact->is_customer)
+                            <span class="badge bg-label-primary me-1">Customer</span>
+                        @endif
+                        @if($contact->is_supplier)
+                            <span class="badge bg-label-success me-1">Supplier</span>
+                        @endif
+                        @if($contact->is_employee)
+                            <span class="badge bg-label-info me-1">Karyawan</span>
+                        @endif
+                        @if($contact->is_other)
+                            <span class="badge bg-label-secondary me-1">Lainnya</span>
+                        @endif
+                        @if(!$contact->is_customer && !$contact->is_supplier && !$contact->is_employee && !$contact->is_other)
+                            <span class="badge bg-label-warning">Tidak ada tipe</span>
+                        @endif
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Grup Kontak</label>

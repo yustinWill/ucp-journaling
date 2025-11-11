@@ -108,7 +108,7 @@ class PurchaseOrderController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
 
-        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
+        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
 
         // Map permissions to view variables
         $canAddPurchaseOrder = PermissionHelper::canWrite('main_transaction_purchase_order');
@@ -148,8 +148,8 @@ class PurchaseOrderController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk menambah data.');
         }
 
-        $customers = app(ContactService::class)->findAllByType('EMPLOYEE');
-        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
+        $customers = app(ContactService::class)->findAllByFlag('employee');
+        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
         $products = app(ProductService::class)->findAllAllowPurchase();
@@ -507,7 +507,7 @@ class PurchaseOrderController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
 
-        $customers = app(ContactService::class)->findAllByType('EMPLOYEE');
+        $customers = app(ContactService::class)->findAllByFlag('employee');
         $po_data = app(PurchaseOrderService::class)->findOne($id);
         $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
         $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
@@ -582,7 +582,7 @@ class PurchaseOrderController extends Controller
             ];
         }
 
-        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
+        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $warehouses = app(WarehouseService::class)->findAll();
         $products = app(ProductService::class)->findAll();

@@ -88,9 +88,10 @@
                                 <label class="form-label">Tipe:</label>
                                 <select class="global-select2 form-select" id="contact-type" data-allow-clear="true">
                                     <option value="">Semua Tipe</option>
-                                    @foreach ($contact_types as $type)
-                                        <option value="{{ $type->code }}">{{ $type->name }}</option>
-                                    @endforeach
+                                    <option value="CUSTOMER">Customer</option>
+                                    <option value="SUPPLIER">Supplier</option>
+                                    <option value="EMPLOYEE">Karyawan</option>
+                                    <option value="OTHERS">Lainnya</option>
                                 </select>
                             </div>
                         </div>
@@ -200,8 +201,24 @@
                             }
                         },
                         {
-                            data: 'type',
-                            responsivePriority: 9
+                            data: null,
+                            responsivePriority: 9,
+                            render: function(data, type, row) {
+                                let badges = [];
+                                if (row.is_customer) {
+                                    badges.push('<span class="badge bg-label-primary me-1">Customer</span>');
+                                }
+                                if (row.is_supplier) {
+                                    badges.push('<span class="badge bg-label-success me-1">Supplier</span>');
+                                }
+                                if (row.is_employee) {
+                                    badges.push('<span class="badge bg-label-info me-1">Karyawan</span>');
+                                }
+                                if (row.is_other) {
+                                    badges.push('<span class="badge bg-label-secondary me-1">Lainnya</span>');
+                                }
+                                return badges.length > 0 ? badges.join('') : '<span class="badge bg-label-warning">Tidak ada tipe</span>';
+                            }
                         },
                         {
                             data: null,
@@ -209,13 +226,7 @@
                             width: '120px'
                         }
                     ],
-                    columnDefs: [{
-                            orderable: false,
-                            targets: 6, // Type column (updated index due to added tag column)
-                            render: function(data, type, full, meta) {
-                                return data; // Plain text for type
-                            }
-                        },
+                    columnDefs: [
                         {
                             targets: -1,
                             orderable: false,

@@ -56,7 +56,7 @@ class PurchaseDeliveryTestDataSeeder extends Seeder
         }
 
         // Use existing supplier or create
-        $supplier = DB::table('m_contacts')->where('type', 'SUPPLIER')->first();
+        $supplier = DB::table('m_contacts')->where('is_supplier', true)->first();
         if ($supplier) {
             $this->supplierId = $supplier->id;
             echo "Using existing supplier: {$supplier->name}\n";
@@ -64,7 +64,10 @@ class PurchaseDeliveryTestDataSeeder extends Seeder
             $this->supplierId = DB::table('m_contacts')->insertGetId([
                 'company_code' => $this->companyCode,
                 'name' => 'PT Supplier Air Mineral',
-                'type' => 'SUPPLIER',
+                'is_customer' => false,
+                'is_supplier' => true,
+                'is_employee' => false,
+                'is_other' => false,
                 'email' => 'purchase@supplierairmineral.com',
                 'phone' => '021-98765432',
                 'status' => 'ACTIVE',

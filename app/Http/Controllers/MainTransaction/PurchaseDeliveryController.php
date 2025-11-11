@@ -33,7 +33,7 @@ class PurchaseDeliveryController extends Controller
         // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_delivery');
 
-        $suppliers = app(ContactService::class)->findAllByType('SUPPLIER');
+        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
 
         // Map permissions to view variables
         $canAddPurchaseDelivery = PermissionHelper::canWrite('main_transaction_purchase_delivery');

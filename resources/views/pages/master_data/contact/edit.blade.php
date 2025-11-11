@@ -20,16 +20,28 @@
                         value="{{ $contact->group_contact_name }}" maxlength="255" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Tipe Kontak <span style="color: red;">*</span></label>
+                    <label class="form-label">Tipe Kontak</label>
                     <div class="col mt-2">
-                        @foreach ($contact_types as $item)
-                            <div class="form-check form-check-inline">
-                                <input name="contact_type" class="form-check-input" type="radio"
-                                    value="{{ $item->code }}" id="type{{ $item->code }}"
-                                    {{ $item->code === $contact->type ? 'checked' : '' }}>
-                                <label class="form-check-label" for="type{{ $item->code }}">{{ $item->name }}</label>
-                            </div>
-                        @endforeach
+                        <div class="form-check form-check-inline">
+                            <input name="is_customer" class="form-check-input contact-type-checkbox" type="checkbox"
+                                value="1" id="typeCustomer" {{ $contact->is_customer ? 'checked' : '' }}>
+                            <label class="form-check-label" for="typeCustomer">Customer</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="is_supplier" class="form-check-input contact-type-checkbox" type="checkbox"
+                                value="1" id="typeSupplier" {{ $contact->is_supplier ? 'checked' : '' }}>
+                            <label class="form-check-label" for="typeSupplier">Supplier</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="is_employee" class="form-check-input contact-type-checkbox" type="checkbox"
+                                value="1" id="typeEmployee" {{ $contact->is_employee ? 'checked' : '' }}>
+                            <label class="form-check-label" for="typeEmployee">Karyawan</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="is_other" class="form-check-input contact-type-checkbox" type="checkbox"
+                                value="1" id="typeOther" {{ $contact->is_other ? 'checked' : '' }}>
+                            <label class="form-check-label" for="typeOther">Lainnya</label>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -76,12 +88,12 @@
                         value="{{ $contact->email }}" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">No Telepon</label>
+                    <label class="form-label">No Telepon <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" id="phone" placeholder="Masukkan No Telepon"
                         maxlength="20" value="{{ $contact->phone }}" />
                 </div>
-                <div class="col-md-6 pelanggan-additional-form">
-                    <label class="form-label">Sales Penanggung Jawab <span style="color: red;">*</span></label>
+                <div class="col-md-6">
+                    <label class="form-label">Sales Penanggung Jawab</label>
                     <select class="global-select2 form-select" id="sales_user" data-allow-clear="false">
                         <option value="">Pilih Sales</option>
                         @foreach ($sales_users as $sales_user)
@@ -221,7 +233,7 @@
             <h6>6. Pemetaan Akun</h6>
             <div class="row g-6">
                 <div class="col-md-6">
-                    <label class="form-label">Akun Hutang <span style="color: red;">*</span></label>
+                    <label class="form-label">Akun Hutang</label>
                     <select class="global-select2 form-select" id="payable_account" data-allow-clear="false">
                         <option value="">Pilih Akun Hutang</option>
                         @foreach ($payable_accounts as $account)
@@ -232,7 +244,7 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Akun Piutang <span style="color: red;">*</span></label>
+                    <label class="form-label">Akun Piutang</label>
                     <select class="global-select2 form-select" id="receivable_account" data-allow-clear="false">
                         <option value="">Pilih Akun Piutang</option>
                         @foreach ($receivable_accounts as $account)
@@ -790,8 +802,10 @@
                                     contact_id: $('#contact_id').val(),
                                     contact_name: $('#contact_name').val(),
                                     group_name: $('#group_name').val(),
-                                    contact_type: $(
-                                        'input[name="contact_type"]:checked').val(),
+                                    is_customer: $('#typeCustomer').is(':checked') ? 1 : 0,
+                                    is_supplier: $('#typeSupplier').is(':checked') ? 1 : 0,
+                                    is_employee: $('#typeEmployee').is(':checked') ? 1 : 0,
+                                    is_other: $('#typeOther').is(':checked') ? 1 : 0,
                                     contact_status: $('#status_contact').is(
                                         ':checked') ? 'ACTIVE' : 'INACTIVE',
                                     identity_type: $('#identity_type').val(),
@@ -908,19 +922,6 @@
                 })
             });
 
-            // Show/hide pelanggan-additional-form
-            function togglePelangganForm() {
-                let selected = $('input[name="contact_type"]:checked').next('label').text().trim();
-                if (selected === 'Pelanggan') {
-                    $('.pelanggan-additional-form').show();
-                } else {
-                    $('.pelanggan-additional-form').hide();
-                }
-            }
-            togglePelangganForm();
-            $('input[name="contact_type"]').on('change', function() {
-                togglePelangganForm();
-            });
         });
     </script>
 @endsection
