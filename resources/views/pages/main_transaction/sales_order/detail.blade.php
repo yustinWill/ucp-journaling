@@ -196,7 +196,7 @@
                                     <table class="table table-bordered" id="product-table">
                                         <thead>
                                             <tr>
-                                                <th style="width: 8%;">Is Discount</th>
+                                                <th style="width: 8%;">Is Bonus</th>
                                                 <th style="width: 30%;">Produk</th>
                                                 <th style="width: 15%;">Kuantitas</th>
                                                 <th style="width: 15%;">Satuan</th>
@@ -211,7 +211,7 @@
                                                         <td>
                                                             <div class="form-check d-flex justify-content-center">
                                                                 <input class="form-check-input "
-                                                                    type="checkbox" @if ($line['is_discount'] == 1)
+                                                                    type="checkbox" @if ($line['is_bonus'] == 1)
                                                                         checked
                                                                     @endif disabled>
                                                             </div>

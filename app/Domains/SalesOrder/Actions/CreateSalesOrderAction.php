@@ -90,7 +90,7 @@ class CreateSalesOrderAction
                 'delivered_qty' => 0,
                 'remaining_qty' => $product['quantity'],
                 'unit_price' => $this->parsePrice($product['unit_price']),
-                'is_discount' => $product['is_discount'] ?? false,
+                'is_bonus' => $product['is_bonus'] ?? false,
                 // Tax fields removed - handled at invoice level
                 'line_total' => $this->parsePrice($product['total']),
                 'description' => $product['description'] ?? null,

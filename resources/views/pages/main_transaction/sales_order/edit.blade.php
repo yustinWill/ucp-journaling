@@ -164,7 +164,7 @@
                     <table class="table table-bordered" id="product-table">
                         <thead>
                             <tr>
-                                <th style="width: 8%;">Diskon</th>
+                                <th style="width: 8%;">Is Bonus</th>
                                 <th style="width: 25%;">Produk</th>
                                 <th style="width: 12%;">Kuantitas</th>
                                 <th style="width: 10%;">Satuan</th>
@@ -183,8 +183,8 @@
                                         <td>
                                             <div class="form-check d-flex justify-content-center">
                                                 <input class="form-check-input discount-checkbox" type="checkbox"
-                                                    name="products[0][is_discount]" value="1"
-                                                    @if ($line['is_discount'] == '1') checked @endif>
+                                                    name="products[0][is_bonus]" value="1"
+                                                    @if ($line['is_bonus'] == '1') checked @endif>
                                             </div>
                                         </td>
                                         <td>
@@ -207,7 +207,7 @@
                                             <input type="text"
                                                 class="form-control currency-input unit-price unit-price-input"
                                                 name="products[0][unit_price]" value="{{ $line['unit_price'] }}"
-                                                @if ($line['is_discount'] == '1') disabled @endif />
+                                                @if ($line['is_bonus'] == '1') disabled @endif />
                                         </td>
                                         <td><input type="text" class="form-control currency-input"
                                                 name="products[0][total]" value="{{ $line['line_total'] }}" disabled />
@@ -226,7 +226,7 @@
                                 <td>
                                     <div class="form-check d-flex justify-content-center">
                                         <input class="form-check-input discount-checkbox" type="checkbox"
-                                            name="products[0][is_discount]" value="1">
+                                            name="products[0][is_bonus]" value="1">
                                     </div>
                                 </td>
                                 <td>
@@ -542,7 +542,7 @@
                     formData.append(`products[${idx}][quantity]`, line.quantity);
                     formData.append(`products[${idx}][unit_price]`, line.unit_price);
                     formData.append(`products[${idx}][total]`, line.line_total);
-                    formData.append(`products[${idx}][is_discount]`, line.is_discount);
+                    formData.append(`products[${idx}][is_bonus]`, line.is_bonus);
                 });
 
                 Swal.fire({
@@ -720,7 +720,7 @@
                     const quantity = parseCurrency($(this).find('.quantity-input').val()) || 0;
                     const unitPrice = parseCurrency($(this).find('.unit-price').val()) || 0;
                     const lineTotal = parseCurrency($(this).find('input[name*="[total]"]').val()) || 0;
-                    const isDiscount = $(this).find('.discount-checkbox').is(':checked') ? 1 : 0;
+                    const isBonus = $(this).find('.discount-checkbox').is(':checked') ? 1 : 0;
                     if (productId && quantity > 0 && unitPrice >= 0) {
                         productLines.push({
                             id: productRowId || null,
@@ -728,7 +728,7 @@
                             quantity: quantity,
                             unit_price: unitPrice,
                             line_total: lineTotal,
-                            is_discount: isDiscount
+                            is_bonus: isBonus
                         });
                     }
                 });

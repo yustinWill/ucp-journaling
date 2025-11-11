@@ -179,7 +179,7 @@ class SalesOrderController extends Controller
                 'products.*.unit_price' => 'required|string',
                 // 'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
                 'products.*.total' => 'required|string',
-                'products.*.is_discount' => 'nullable|boolean',
+                'products.*.is_bonus' => 'nullable|boolean',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
             ], [], [
                 'reference_no' => 'Nomor Referensi',
@@ -201,7 +201,7 @@ class SalesOrderController extends Controller
                 'products.*.quantity' => 'Qty Produk',
                 'products.*.unit_price' => 'Harga Satuan Produk',
                 'products.*.total' => 'Total Produk',
-                'products.*.is_discount' => 'Apakah Diskon',
+                'products.*.is_bonus' => 'Apakah Bonus',
                 'attachment' => 'Lampiran',
             ]);
 
@@ -403,7 +403,7 @@ class SalesOrderController extends Controller
                 'products.*.unit_price' => 'required|string',
                 // 'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
                 'products.*.total' => 'required|string',
-                'products.*.is_discount' => 'nullable|boolean',
+                'products.*.is_bonus' => 'nullable|boolean',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
             ], [], [
                 'id' => 'ID Sales Order',
@@ -426,7 +426,7 @@ class SalesOrderController extends Controller
                 'products.*.quantity' => 'Qty Produk',
                 'products.*.unit_price' => 'Harga Satuan Produk',
                 'products.*.total' => 'Total Produk',
-                'products.*.is_discount' => 'Apakah Diskon',
+                'products.*.is_bonus' => 'Apakah Bonus',
                 'attachment' => 'Lampiran',
             ]);
 
