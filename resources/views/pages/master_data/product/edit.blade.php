@@ -564,6 +564,7 @@
                                             <th>Nama Produk</th>
                                             <th>Qty</th>
                                             <th>Unit</th>
+                                            <th>Biaya</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>

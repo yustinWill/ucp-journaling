@@ -453,7 +453,8 @@
                                     <table class="table table-bordered" id="bundle-composition-table">
                                         <thead>
                                             <tr>
-                                                <th style="width: 60%;">Nama Produk</th>
+                                                <th style="width: 40%;">Nama Produk</th>
+                                                <th style="width: 20%;">Biaya</th>
                                                 <th style="width: 20%;">Qty</th>
                                                 <th style="width: 20%;">Satuan</th>
                                             </tr>
@@ -468,6 +469,7 @@
                                                                 {{ $component->product_name }}
                                                             </a>
                                                         </td>
+                                                        <td class="text-center">Rp {{ number_format($component->price, 0, ',', '.') }}</td>
                                                         <td class="text-center">
                                                             @php
                                                                 // Smart decimal formatting
@@ -485,6 +487,35 @@
                                                             @endphp
                                                         </td>
                                                         <td class="text-center">{{ $component->unit_name }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            @else
+                                                <tr>
+                                                    <td colspan="3" class="text-center text-muted">Tidak ada komponen
+                                                        bundle</td>
+                                                </tr>
+                                            @endif
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <br>
+                                <div class="section-header mt-6">
+                                    <h6>Biaya Bundle</h6>
+                                </div>
+                                <div class="mx-n6">
+                                    <table class="table table-bordered" id="bundle-cost-composition-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 40%;">Nomor Akun Produk</th>
+                                                <th style="width: 20%;">Biaya</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (isset($productCompositionCost) && count($productCompositionCost) > 0)
+                                                @foreach ($productCompositionCost as $cost)
+                                                    <tr>
+                                                        <td class="text-left">{{ $cost->account_code }}</td>
+                                                        <td class="text-right">Rp {{ number_format($cost->cost_value, 0, ',', '.') }}</td>
                                                     </tr>
                                                 @endforeach
                                             @else

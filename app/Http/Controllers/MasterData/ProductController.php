@@ -570,40 +570,7 @@ class ProductController extends Controller
 
         $inventoryData = app(StockMovementLogsService::class)->findAllLatestStockPerProduct($id);
 
-        // dd($inventoryData);
-        // Inventory data per warehouse from controller
-        // $inventoryData = [
-        //     [
-        //         'warehouse_id' => 1,
-        //         'warehouse_code' => 'GDG-001',
-        //         'warehouse_name' => 'Gudang Utama Produksi',
-        //         'available_stock' => 2500,
-        //         'reserved_stock' => 150,
-        //         'total_stock' => 2650,
-        //         'average_price' => 'Rp 2,750',
-        //         'inventory_value' => 'Rp 7,287,500',
-        //     ],
-        //     [
-        //         'warehouse_id' => 2,
-        //         'warehouse_code' => 'GDG-002',
-        //         'warehouse_name' => 'Gudang Raw Material',
-        //         'available_stock' => 800,
-        //         'reserved_stock' => 50,
-        //         'total_stock' => 850,
-        //         'average_price' => 'Rp 2,700',
-        //         'inventory_value' => 'Rp 2,295,000',
-        //     ],
-        //     [
-        //         'warehouse_id' => 3,
-        //         'warehouse_code' => 'GDG-003',
-        //         'warehouse_name' => 'Gudang Produk Jadi',
-        //         'available_stock' => 1200,
-        //         'reserved_stock' => 80,
-        //         'total_stock' => 1280,
-        //         'average_price' => 'Rp 2,750',
-        //         'inventory_value' => 'Rp 3,520,000',
-        //     ],
-        // ];
+        $productCompositionCost = app(ProductCostCompositionService::class)->findAllBasedOnProductId($id);
 
         $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
 
@@ -614,7 +581,6 @@ class ProductController extends Controller
         if ($product->type === 'bundle') {
             $bundleComponents = app(ProductCompositionService::class)->findAllBasedOnProductIdOld($id);
         }
-
         return view('pages.master_data.product.detail', [
             'product' => $product,
             'inventoryData' => $inventoryData,
@@ -622,6 +588,7 @@ class ProductController extends Controller
             'auditLogType' => AuditLogTypes::MASTER_DATA_PRODUCT->code(),
             'batchData' => $batchData,
             'bundleComponents' => $bundleComponents,
+            'productCompositionCost' => $productCompositionCost,
         ]);
     }
 
