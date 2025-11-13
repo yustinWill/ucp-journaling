@@ -5,6 +5,7 @@ namespace App\Domains\Product\Actions;
 use App\Domains\Category\Services\CategoryService;
 use App\Domains\Product\Services\ProductAuditLogService;
 use App\Domains\Product\Services\ProductCompositionService;
+use App\Domains\Product\Services\ProductCostCompositionService;
 use App\Domains\Product\Services\ProductExpenseService;
 use App\Domains\Product\Services\ProductService;
 use App\Domains\Unit\Services\UnitService;
@@ -30,7 +31,7 @@ class UpdateProductAction
 
             app(ProductService::class)->update($product_id, $data);
 
-            $current_composition = app(ProductCompositionService::class)->findAllBasedOnProductId($product_id);
+            $current_composition = app(ProductCompositionService::class)->findAllBasedOnProductIdOld($product_id);
 
             $current_composition_ids = [];
             foreach ($current_composition as $row) {
@@ -47,6 +48,7 @@ class UpdateProductAction
                             'f_product_composition_product_id' => $composition['product_id'],
                             'qty' => $composition['qty'],
                             'f_unit_id' => $product_data->f_unit_id,
+                            'price' => $composition['price'],
                         ]);
 
                         $submitted_composition_ids[] = $composition['composition_id'];
@@ -57,6 +59,7 @@ class UpdateProductAction
                                 'f_product_composition_product_id' => $composition['product_id'],
                                 'qty' => $composition['qty'],
                                 'f_unit_id' => $product_data->f_unit_id,
+                                'price' => $composition['price'],
                             ],
                         ]);
                     }
@@ -68,6 +71,41 @@ class UpdateProductAction
                 }
             }
 
+            $current_cost_composition = app(ProductCostCompositionService::class)->findAllBasedOnProductId($product_id);
+
+            $current_cost_composition_ids = [];
+            foreach ($current_cost_composition as $row) {
+                $current_cost_composition_ids[] = $row->id;
+            }
+
+            if (isset($data['cost'])) {
+                $submitted_composition_ids = [];
+                foreach ($data['cost'] as $row) {
+                    $product_data = app(ProductService::class)->findOne($product_id);
+                    if (isset($row['id'])) {
+
+                        app(ProductCostCompositionService::class)->update($row['id'], [
+                            'account_code' => $row['coa'],
+                            'cost_value' => $row['value'],
+                        ]);
+
+                        $submitted_cost_composition_ids[] = $row['id'];
+                    } else {
+                        app(ProductCostCompositionService::class)->create([
+                            [
+                                'f_product_id' => $product_id,
+                                'account_code' => $row['coa'],
+                                'cost_value' => $row['value'],
+                            ],
+                        ]);
+                    }
+                }
+
+                $cost_composition_ids_to_delete = array_diff($current_cost_composition_ids, $submitted_composition_ids);
+                foreach ($cost_composition_ids_to_delete as $delete_id) {
+                    app(ProductCostCompositionService::class)->delete($product_id, $delete_id);
+                }
+            }
             $current_account = app(ProductExpenseService::class)->findAllBasedOnProductId($product_id);
 
             $current_account_ids = [];

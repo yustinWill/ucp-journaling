@@ -557,7 +557,6 @@
                                     <span class="align-middle">Tambah Komponen</span>
                                 </button> --}}
                             </div>
-
                             <div class="mx-n5 form-repeater-component">
                                 <table class="table table-bordered" id="bundle-components-table">
                                     <thead>
@@ -623,6 +622,11 @@
                                                 <td>
                                                     <input type="text" class="form-control component-unit" readonly>
                                                 </td>
+
+                                                <td>
+                                                    <input type="text" class="form-control currency-input component-price" value="{{ $row->price }}"
+                                                        id="price-product" />
+                                                </td>
                                                 <td>
                                                     <button class="btn btn-label-danger" data-repeater-delete
                                                         type="button">
@@ -638,6 +642,85 @@
                                     <button class="btn btn-primary" data-repeater-create type="button">
                                         <i class="icon-base ti tabler-plus me-1"></i>
                                         <span class="align-middle">Tambah Komponen</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6>Biaya Bundle</h6>
+                            </div>
+                            <div class="mx-n5 form-repeater-cost-components">
+                                <table class="table table-bordered" id="bundle-components-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50%;">Akun Biaya</th>
+                                            <th style="width: 35%;">Harga</th>
+                                            <th style="width: 15%;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cost-components-tbody" data-repeater-list>
+                                        @if ($productCompositionCost->isEmpty())
+                                            <tr data-repeater-item class="cost-component-row">
+                                                <td>
+                                                    <div class="position-relative">
+                                                        <select class="select2CoaCost form-select cost-account">
+                                                            <option value="">Pilih Akun</option>
+                                                            @foreach ($coaList as $coa)
+                                                                <option value="{{ $coa->code }}">{{ $coa->code }} -
+                                                                    {{ $coa->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <input type="text"
+                                                        class="form-control currency-input text-end cost-price"
+                                                        placeholder="Rp 0">
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-label-danger" data-repeater-delete
+                                                        type="button">
+                                                        <i class="icon-base ti tabler-x me-1"></i>
+                                                        <span class="align-middle">Hapus</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                        @foreach ($productCompositionCost as $row)
+                                            <tr data-repeater-item class="cost-component-row">
+                                                <input type="hidden" class="form-control cost-id"
+                                                    value="{{ $row->id }}" />
+                                                <td>
+                                                    <div class="position-relative">
+                                                        <select class="select2CoaCost form-select cost-coa">
+                                                            <option value="">Pilih Akun</option>
+                                                            @foreach($coaList as $coa)
+                                                                <option 
+                                                                value="{{ $coa->code }}" {{ $row->account_code == $coa->code ? 'selected' : '' }}>{{ $coa->code }} - {{ $coa->name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control currency-input cost-value" id="target-owner" name="target_owner" 
+                                                            placeholder="500000000" value={{$row->cost_value; }} required />
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-label-danger" data-repeater-delete type="button">
+                                                        <i class="icon-base ti tabler-x me-1"></i>
+                                                        <span class="align-middle">Hapus</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="mb-0">
+                                    <button class="btn btn-primary" data-repeater-create type="button">
+                                        <i class="icon-base ti tabler-plus me-1"></i>
+                                        <span class="align-middle">Tambah Biaya</span>
                                     </button>
                                 </div>
                             </div>
@@ -821,6 +904,15 @@
                 });
             });
 
+            $('select.select2CoaCost').each(function() {
+                $(this).select2({
+                    placeholder: "Pilih Akun",
+                    allowClear: true,
+                    dropdownParent: $(this).parent(),
+                    width: '100%'
+                });
+            });
+
             $('.form-repeater-component').repeater({
                 show: function() {
                     $(this).slideDown(() => {
@@ -866,6 +958,35 @@
                             });
                         });
                         initCleaveCurrency(document);
+                    });
+                },
+                hide: function(remove) {
+                    $(this).slideUp(remove);
+                }
+            });
+
+            $('.form-repeater-cost-components').repeater({
+                show: function() {
+                    $(this).slideDown(() => {
+                        // Remove any existing Select2 container and reinitialize Select2
+                        $(this).find('.select2-container').remove();
+                        $(this).find('.select2CoaCost').removeClass('select2-hidden-accessible').removeAttr(
+                            'data-select2-id tabindex aria-hidden');
+                        $(this).find('.select2CoaCost').each(function() {
+                            if ($.fn.select2 && $(this).data('select2')) {
+                                $(this).select2('destroy');
+                            }
+                            $(this).select2({
+                                placeholder: "Pilih Akun",
+                                allowClear: true,
+                                dropdownParent: $(this).parent(),
+                                width: '100%'
+                            });
+                        });
+
+                        initCleaveCurrency($(this));
+                        // Initialize Cleave for dynamically added "Harga" input boxes
+                        
                     });
                 },
                 hide: function(remove) {
@@ -1291,12 +1412,29 @@
                             const productId = $(this).find('.component-product').val();
                             const compositionId = $(this).find('.composition_id').val();
                             const qty = parseCurrency($(this).find('.component-qty').val());
+                            const price = parseCurrency($(this).find('.component-price').val());
                             
                             if (productId && productId !== "null" && qty && qty !== "null") {
                                 data.bundle_components.push({
                                     product_id: productId,
                                     composition_id: compositionId,
-                                    qty: qty
+                                    qty: qty,
+                                    price: price
+                                });
+                            }
+                        });
+                        
+                        data.cost = [];
+                        $('#cost-components-tbody tr.cost-component-row').each(function() {
+                            const cost_id = $(this).find('.cost-id').val();
+                            const coa = $(this).find('.cost-coa').val();
+                            const value = parseCurrency($(this).find('.cost-value').val());
+                            console.log(coa, value);
+                            if (coa && coa !== "null" && value && value !== "null") {
+                                data.cost.push({
+                                    cost_id: cost_id,
+                                    coa: coa,
+                                    value: value
                                 });
                             }
                         });
@@ -1442,7 +1580,6 @@
                         mutation.addedNodes.forEach(function(node) {
                             if (node.nodeType === 1 && node.matches(
                                     '[data-repeater-item]')) {
-
                                 $(node).find('.select2-container').remove();
                                 // Remove select2 classes and attributes from select
                                 $(node).find('select.select2Product')
@@ -1467,6 +1604,7 @@
                                 });
                                 $(node).find('.component-qty').val('0');
                                 $(node).find('.component-unit').val('');
+                                $(node).find('.component-price').val('');
                                 $(node).find('.composition_id').val(null);
                             }
                         });
@@ -1479,7 +1617,7 @@
 
             const repeaterListAccounts = document.querySelector('.form-repeater-accounts [data-repeater-list]');
             if (repeaterListAccounts) {
-                const observer = new MutationObserver(function(mutations) {
+                const observercost = new MutationObserver(function(mutations) {
                     mutations.forEach(function(mutation) {
                         mutation.addedNodes.forEach(function(node) {
                             if (node.nodeType === 1 && node.matches(
@@ -1512,10 +1650,54 @@
                             }
                         });
                     });
+                    
+                    observer.observe(repeaterListAccounts, {
+                        childList: true
+                    });
                 });
-                observer.observe(repeaterListAccounts, {
-                    childList: true
-                });
+
+                const repeaterListCost = document.querySelector('.form-repeater-cost-components [data-repeater-list]');
+                if (repeaterListCost) {
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            mutation.addedNodes.forEach(function(node) {
+                                if (node.nodeType === 1 && node.matches(
+                                        '[data-repeater-item]')) {
+                                    
+                                    $(node).find('.select2-container').remove();
+                                    // Remove select2 classes and attributes from select
+                                    
+                                    $(node).find('select.select2CoaCost')
+                                    .removeClass('select2-hidden-accessible')
+                                    .removeAttr('data-select2-id tabindex aria-hidden');
+                                    // Remove selected attribute from all options in new item
+                                    $(node).find('select.select2CoaCost option').removeAttr(
+                                        'selected');
+                                    $(node).find('select.select2CoaCost').val('').trigger(
+                                        'change');
+                                    // Destroy and re-init Select2
+                                    $(node).find('select.select2CoaCost').each(function() {
+                                        if ($(this).data('select2')) {
+                                            $(this).select2('destroy');
+                                        }
+                                        $(this).select2({
+                                            placeholder: "Select value",
+                                            allowClear: true,
+                                            dropdownParent: $(this).parent(),
+                                            width: '100%'
+                                        });
+                                    });
+                                    $(node).find('.cost-value').val('');
+                                    $(node).find('.cost-id').val(null);
+                                }
+                            });
+                        });
+                    });
+                    observer.observe(repeaterListCost, {
+                        childList: true
+                    });
+                }
+                
             }
         });
     </script>

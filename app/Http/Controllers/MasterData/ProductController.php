@@ -8,6 +8,7 @@ use App\Domains\Product\Actions\CreateProductAction;
 use App\Domains\Product\Actions\UpdateProductAction;
 use App\Domains\Product\Services\ProductAuditLogService;
 use App\Domains\Product\Services\ProductCompositionService;
+use App\Domains\Product\Services\ProductCostCompositionService;
 use App\Domains\Product\Services\ProductExpenseService;
 use App\Domains\Product\Services\ProductService;
 use App\Domains\StockStatus\Services\StockStatusService;
@@ -633,6 +634,7 @@ class ProductController extends Controller
         }
 
         $productCompositions = app(ProductCompositionService::class)->findAllBasedOnProductIdOld($id);
+        $productCompositionCost = app(ProductCostCompositionService::class)->findAllBasedOnProductId($id);
         $productExpenses = app(ProductExpenseService::class)->findAllBasedOnProductId($id);
 
         $categories = app(CategoryService::class)->findAll();
@@ -663,7 +665,7 @@ class ProductController extends Controller
                 $defaultNoTaxId = $tax->id;
             }
         }
-
+        $coaList = app(CoaService::class)->findAll();
         // dd($product->f_tag_codes);
         return view('pages.master_data.product.edit', [
             'units' => $units,
@@ -680,8 +682,10 @@ class ProductController extends Controller
             'canAddTaxes' => $canAddTaxes,
             'product' => $product,
             'productCompositions' => $productCompositions,
+            'productCompositionCost' => $productCompositionCost,
             'productExpenses' => $productExpenses,
             'defaultNoTaxId' => $defaultNoTaxId,
+            'coaList' => $coaList,
         ]);
     }
 
@@ -963,6 +967,20 @@ class ProductController extends Controller
                 ],
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
+                'bundle_components.*.price' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
+                'cost.*.id' => [
+                    'nullable',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            empty($value)
+                        ) {
+                            $fail('The bundle account component composition id field is required when type is bundle and inventory enabled is true.');
+                        }
+                    },
+                ],
+                'cost.*.coa' => 'required_if:type,"bundle"|required_with:bundle_components',
+                'cost.*.value' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
                 // Bundle accounts
                 'bundle_accounts' => [
                     function ($attribute, $value, $fail) use ($req) {
@@ -1052,12 +1070,15 @@ class ProductController extends Controller
                 'bundle_components.*.composition_id' => 'ID Komposisi Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',
                 'bundle_components.*.qty' => 'Qty Komponen Bundle',
+                'bundle_components.*.price' => 'Price Komponen Bundle',
+                'cost.*.id' => 'ID Biaya Komponen Bundle',
+                'cost.*.coa' => 'Akun Biaya Bundle',
+                'cost.*.value' => 'Value Biaya Bundle',
                 'bundle_accounts' => 'Akun Bundle',
                 'bundle_accounts.*.expense_id' => 'ID Biaya Bundle',
                 'bundle_accounts.*.account' => 'Akun Bundle',
                 'bundle_accounts.*.cost' => 'Biaya Bundle',
             ]);
-
             app(UpdateProductAction::class)->execute($validated);
 
             return response()->json([

@@ -22,5 +22,24 @@ class ProductCostCompositionService
 
         return DB::table($this->table_name)->insert($insert_data);
     }
+    
+    public function update($id, array $data)
+    {
+        return DB::table($this->table_name)->where('id', $id)->update([
+            'account_code' => $data['account_code'],
+            'cost_value' => $data['cost_value']
+        ]);
+    }
+    public function delete($product_id, $id)
+    {
+        return DB::table($this->table_name)->where('id', $id)->where('f_product_id', $product_id)->delete();
+    }
+    public function findAllBasedOnProductId($product_id)
+    {
+        return DB::table($this->table_name.' as t')
+            ->select('t.*')
+            ->where('t.f_product_id', $product_id)
+            ->get();
+    }
 
 }
