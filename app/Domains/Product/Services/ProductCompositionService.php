@@ -42,13 +42,29 @@ class ProductCompositionService
         return DB::table($this->table_name.' as t')
             ->select('t.*', 'tsml.stock_after as total_stock', 'prd.name as product_name', 'unt.name as unit_name')
             ->join('m_products as prd', 'prd.id', '=', 't.f_product_composition_product_id')
-            ->join('t_stock_movement_logs as tsml', function($join) use ($warehouseId) {
-                $join->on('tsml.product_id','=','t.f_product_composition_product_id')
-                    ->where('tsml.warehouse_id', '=', $warehouseId);
-            })
+            // ->join('t_stock_movement_logs as tsml', function($join) use ($warehouseId) {
+            //     $join->on('tsml.product_id','=','t.f_product_composition_product_id')
+            //         ->where('tsml.warehouse_id', '=', $warehouseId);
+            // })
+            ->joinSub(
+                DB::table('t_stock_movement_logs as s1')
+                    ->select('s1.product_id', 's1.warehouse_id', 's1.stock_after')
+                    ->where('s1.warehouse_id', 7)
+                    ->whereRaw("
+                        s1.created_at = (
+                            select max(s2.created_at)
+                            from t_stock_movement_logs as s2
+                            where s2.product_id = s1.product_id
+                            and s2.warehouse_id = 7
+                        )
+                    "),
+                'tsml',
+                'tsml.product_id',
+                '=',
+                't.f_product_composition_product_id'
+            )
             ->join('m_units as unt', 'unt.id', '=', 't.f_unit_id')
             ->where('t.f_product_id', $product_id)
-            ->orderBy('tsml.created_at', 'desc')
             ->get();
     }
 
