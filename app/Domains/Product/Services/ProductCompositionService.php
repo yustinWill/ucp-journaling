@@ -39,33 +39,66 @@ class ProductCompositionService
 
     public function findAllBasedOnProductId($product_id,$warehouseId)
     {
-        return DB::table($this->table_name.' as t')
-            ->select('t.*', 'tsml.stock_after as total_stock', 'prd.name as product_name', 'unt.name as unit_name')
-            ->join('m_products as prd', 'prd.id', '=', 't.f_product_composition_product_id')
-            // ->join('t_stock_movement_logs as tsml', function($join) use ($warehouseId) {
-            //     $join->on('tsml.product_id','=','t.f_product_composition_product_id')
-            //         ->where('tsml.warehouse_id', '=', $warehouseId);
-            // })
-            ->joinSub(
-                DB::table('t_stock_movement_logs as s1')
-                    ->select('s1.product_id', 's1.warehouse_id', 's1.stock_after')
-                    ->where('s1.warehouse_id', 7)
-                    ->whereRaw("
-                        s1.created_at = (
-                            select max(s2.created_at)
-                            from t_stock_movement_logs as s2
-                            where s2.product_id = s1.product_id
-                            and s2.warehouse_id = 7
-                        )
-                    "),
-                'tsml',
-                'tsml.product_id',
-                '=',
-                't.f_product_composition_product_id'
+        $stockSub = DB::table('t_stock_movement_logs')
+            ->select(
+                'product_id',
+                DB::raw('SUM(
+                    CASE 
+                        WHEN movement_type = "PURCHASE_IN" THEN movement_qty
+                        WHEN movement_type = "SALES_OUT" THEN -movement_qty
+                        WHEN movement_type = "ADJUSTMENT_IN" THEN movement_qty
+                        WHEN movement_type = "ADJUSTMENT_OUT" THEN -movement_qty
+                        WHEN movement_type = "PRODUCTION_IN" THEN movement_qty
+                        WHEN movement_type = "PRODUCTION_OUT" THEN -movement_qty
+                        ELSE 0
+                    END
+                ) as total_stock')
             )
+            ->groupBy('product_id');
+
+        $data = DB::table('m_product_compositions as t')
+            ->select(
+                't.*',
+                DB::raw('COALESCE(stock.total_stock, 0) as total_stock'),
+                'prd.name as product_name',
+                'unt.name as unit_name'
+            )
+            ->join('m_products as prd', 'prd.id', '=', 't.f_product_composition_product_id')
             ->join('m_units as unt', 'unt.id', '=', 't.f_unit_id')
-            ->where('t.f_product_id', $product_id)
+            ->leftJoinSub($stockSub, 'stock', function ($join) {
+                $join->on('stock.product_id', '=', 't.f_product_composition_product_id');
+            })
+            ->where('t.f_product_id', 117)
             ->get();
+        return $data;
+
+        // return DB::table($this->table_name.' as t')
+        //     ->select('t.*', DB::raw('SUM(
+        //             CASE 
+        //                 WHEN tsml.movement_type = "PURCHASE_IN" THEN tsml.movement_qty
+        //                 WHEN tsml.movement_type = "SALES_OUT" THEN -tsml.movement_qty
+        //                 WHEN tsml.movement_type = "ADJUSTMENT_IN" THEN tsml.movement_qty
+        //                 WHEN tsml.movement_type = "ADJUSTMENT_OUT" THEN -tsml.movement_qty
+        //                 WHEN tsml.movement_type = "PRODUCTION_IN" THEN tsml.movement_qty
+        //                 WHEN tsml.movement_type = "PRODUCTION_OUT" THEN -tsml.movement_qty
+        //                 ELSE 0
+        //             END
+        //         ) as total_stock'), 'prd.name as product_name', 'unt.name as unit_name')
+        //     ->join('m_products as prd', 'prd.id', '=', 't.f_product_composition_product_id')
+        //     // ->join('t_stock_movement_logs as tsml', function($join) use ($warehouseId) {
+        //     //     $join->on('tsml.product_id','=','t.f_product_composition_product_id')
+        //     //         ->where('tsml.warehouse_id', '=', $warehouseId);
+        //     // })
+        //     ->join('t_stock_movement_logs as tsml',
+        //         'tsml.product_id',
+        //         '=',
+        //         't.f_product_composition_product_id'
+        //     )
+        //     ->join('m_units as unt', 'unt.id', '=', 't.f_unit_id')
+        //     ->where('t.f_product_id', $product_id)
+            
+        //     ->groupBy('prd.id', 'prd.code', 'prd.name')
+        //     ->get();
     }
 
     public function findAllBasedOnProductIdOld($product_id)
