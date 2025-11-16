@@ -79,7 +79,9 @@
                         required>
                         <option value="">Pilih Status</option>
                         @foreach ($statuses as $status)
-                            <option value="{{ $status['value'] }}">{{ $status['value'] }} - {{ $status['label'] }}</option>
+                            <option value="{{ $status['value'] }}" @if ($status['value'] == 'ACTIVE') selected
+                                
+                            @endif>{{ $status['value'] }} - {{ $status['label'] }}</option>
                         @endforeach
                     </select>
                 </div>
