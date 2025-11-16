@@ -233,6 +233,11 @@ class SalesInvoiceController extends Controller
         $customers = app(ContactService::class)->findAllByFlag('customer');
         $coa_accounts = app(CoaService::class)->findAll();
 
+        $payment_method = [
+            ['value' => 'CASH', 'label' => 'Kas atau Tunai'],
+            ['value' => 'BANK', 'label' => 'Transfer Bank'],
+            ['value' => 'Other', 'label' => 'Dll']
+        ];
         // Get tags with color preview
         $tags = DB::table('m_tags as t')
             ->select([
@@ -251,6 +256,7 @@ class SalesInvoiceController extends Controller
             'coa_accounts' => $coa_accounts,
             'availableTags' => $tags, // Pass $tags as $availableTags
             'invoice_data' => $invoice_data,
+            'payment_method'=>$payment_method
         ]);
         
     }

@@ -17,15 +17,8 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Pelanggan</label>
-                    <select class="global-select2 form-select" id="sales-order-customer" name="customer_id"
-                        data-allow-clear="false" required>
-                        <option value="">Pilih Customer</option>
-                        @foreach ($customers as $customer)
-                            <option value="{{ $customer->id }}" data-email="{{ $customer->email }}"
-                                data-billing-address="{{ $customer->billing_address }}">{{ $customer->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="text" class="form-control" hidden id="sales-order-customer" name="customer_id" value="{{ $invoice_data->customer_id }}"  />
+                    <input type="text" class="form-control"  name="customer_name" value="{{ $invoice_data->customer_name }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Setor Ke</label>
@@ -45,9 +38,10 @@
                     <label class="form-label">Cara Pembayaran</label>
                     <select class="global-select2 form-select" id="sales-order-payment_method" name="payment_method"
                         data-allow-clear="false" required>
-                        <option value="">Kas atau Tunai</option>
-                        <option value="">Transfer Bank</option>
-                        <option value="">Dll</option>
+                        <option value="">Pilih Cara Pembayaran</option>
+                        @foreach ($payment_method as $row)
+                            <option value="{{ $row["value"]; }}">{{ $row["label"]; }}</option>
+                        @endforeach
                         
                     </select>
                 </div>
