@@ -29,7 +29,6 @@ class CreateProductAction
                         'f_product_id' => $product_id,
                         'f_product_composition_product_id' => $row['product_id'],
                         'qty' => $row['qty'],
-                        'price' => $row['price'],
                         'f_unit_id' => $product_data->f_unit_id,
                     ];
                 }

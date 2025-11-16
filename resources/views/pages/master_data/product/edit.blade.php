@@ -564,7 +564,6 @@
                                             <th>Nama Produk</th>
                                             <th>Qty</th>
                                             <th>Unit</th>
-                                            <th>Biaya</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -622,11 +621,6 @@
                                                 </td>
                                                 <td>
                                                     <input type="text" class="form-control component-unit" readonly>
-                                                </td>
-
-                                                <td>
-                                                    <input type="text" class="form-control currency-input component-price" value="{{ $row->price }}"
-                                                        id="price-product" />
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-label-danger" data-repeater-delete
@@ -1413,14 +1407,12 @@
                             const productId = $(this).find('.component-product').val();
                             const compositionId = $(this).find('.composition_id').val();
                             const qty = parseCurrency($(this).find('.component-qty').val());
-                            const price = parseCurrency($(this).find('.component-price').val());
                             
                             if (productId && productId !== "null" && qty && qty !== "null") {
                                 data.bundle_components.push({
                                     product_id: productId,
                                     composition_id: compositionId,
                                     qty: qty,
-                                    price: price
                                 });
                             }
                         });
@@ -1605,7 +1597,6 @@
                                 });
                                 $(node).find('.component-qty').val('0');
                                 $(node).find('.component-unit').val('');
-                                $(node).find('.component-price').val('');
                                 $(node).find('.composition_id').val(null);
                             }
                         });

@@ -517,9 +517,9 @@
                                 <table class="table table-bordered" id="bundle-components-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 30%;">Nama Produk</th>
+                                            <th style="width: 45%;">Nama Produk</th>
                                             <th style="width: 20%;">Qty</th>
-                                            <th style="width: 20%;">Unit</th><th style="width: 15%;">Harga</th>
+                                            <th style="width: 20%;">Unit</th>
                                             <th style="width: 15%;">Aksi</th>
                                         </tr>
                                     </thead>
@@ -543,10 +543,6 @@
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control component-unit" disabled>
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control currency-input component-price"
-                                                    id="price-product" />
                                             </td>
                                             <td>
                                                 <button class="btn btn-label-danger" data-repeater-delete type="button">
@@ -1282,12 +1278,10 @@
                             // const qtyRaw = $(this).find('.component-qty').val();
                             // const qty = qtyRaw ? qtyRaw.replace(/[^0-9]/g, '') : null;
                             const qty = parseCurrency($(this).find('.component-qty').val());
-                            const price = parseCurrency($(this).find('.component-price').val());
                             if (productId && productId !== "null" && qty && qty !== "null") {
                                 data.bundle_components.push({
                                     product_id: productId,
                                     qty: qty,
-                                    price: price
                                 });
                             }
                         });
