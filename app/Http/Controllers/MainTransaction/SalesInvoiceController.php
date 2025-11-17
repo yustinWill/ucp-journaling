@@ -5,9 +5,11 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\SalesInvoice\Actions\CreateSalesInvoiceAction;
+use App\Domains\SalesInvoice\Actions\PaymentSalesInvoiceAction;
 use App\Domains\SalesInvoice\Actions\UpdateSalesInvoiceAction;
 use App\Domains\SalesInvoice\Services\SalesInvoiceAuditLogService;
 use App\Domains\SalesInvoice\Services\SalesInvoiceService;
+use App\Domains\SalesInvoice\Services\SalesInvoicePaymentService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Services\TransactionNumberService;
 use App\Domains\Coa\Services\CoaService;
@@ -21,6 +23,7 @@ use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class SalesInvoiceController extends Controller
 {
@@ -226,6 +229,8 @@ class SalesInvoiceController extends Controller
         }
 
         $invoice_data = app(SalesInvoiceService::class)->findOne($source_invoice_id); 
+        $remaining_payment = app(SalesInvoicePaymentService::class)->getRemainingPayment($source_invoice_id); 
+        $invoice_data->remaining_payment = $invoice_data->subtotal - $remaining_payment;
         if (! $invoice_data) {
             abort(404, 'Invoice tidak ditemukan.');
         }
@@ -513,6 +518,73 @@ class SalesInvoiceController extends Controller
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengambil data Sales Order.',
             ], 500);
+        }
+    }
+    
+    public function payment_save(Request $request)
+    {
+        // Check write permission
+        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $validator = Validator::make($request->all(), [
+                'customer_id' => 'required|exists:m_contacts,id',
+                'account_code' => 'required|string|max:20',
+                'payment_method' => 'required|string|max:20',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+                'memo' => 'nullable|string|max:255',
+                'reference_number' => 'required|string|unique:t_sales_invoice_payment,reference_number',
+                'sales_invoice_id' => 'required|integer|exists:t_sales_invoices,id',
+                'payment_value' => 'required|numeric|min:0',
+                'payment_date' => 'required|date',
+                'deduction_value' => 'nullable|numeric|min:0',
+                'deduction_account_code' => 'required|string|max:20',
+            ], [], [
+                'customer_id' => 'Pelanggan',
+                'account_code' => 'Akun Setor',
+                'payment_method' => 'Cara Pembayaran',
+                'memo' => 'Memo',
+                'tags' => 'Tag',
+                'tags.*' => 'Tag',
+                'sales_invoice_id' => 'Sales Invoice Id',
+                'payment_value' => 'Payment Amount',
+                'payment_date' => 'Tanggal Pembayaran',
+                'reference_number' => 'Nomor Transaksi',
+                'deduction_value' => 'Nilai Potongan',
+                'deduction_account_code' => 'Akun Potongan',
+            ]);
+            $validator->after(function ($validator) use ($request) {
+                $remaining = floatval($request->input('remaining_payment'));
+                $payment  = floatval($request->input('payment_value'));
+
+                if ($payment > $remaining) {
+                    $validator->errors()->add('payment_value', 'Payment value cannot be more than remaining payment.');
+                }
+            });
+
+            $validated = $validator->validate();
+
+            app(PaymentSalesInvoiceAction::class)->execute($request->all());
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_SALES_INVOICE_PAYMENT_SUCCESS->message(),
+            ], SuccessCodes::CREATE_SALES_INVOICE_PAYMENT_SUCCESS->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Exception $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
 }
