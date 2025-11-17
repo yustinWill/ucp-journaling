@@ -419,7 +419,6 @@ class ProductController extends Controller
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
-                'bundle_components.*.price' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
 
                 //cost components
                 'cost' => 'required_if:type,"bundle"|array',
@@ -500,7 +499,6 @@ class ProductController extends Controller
                 'bundle_components' => 'Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',
                 'bundle_components.*.qty' => 'Qty Komponen Bundle',
-                'bundle_components.*.price' => 'Harga Komponen Bundle',
                 'cost.*.coa' => 'Akun Komponen Bundle',
                 'cost.*.value' => 'Harga Biaya Bundle',
                 'bundle_accounts' => 'Akun Bundle',
@@ -934,7 +932,6 @@ class ProductController extends Controller
                 ],
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
-                'bundle_components.*.price' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
                 'cost.*.id' => [
                     'nullable',
                     function ($attribute, $value, $fail) use ($req) {
@@ -1037,7 +1034,6 @@ class ProductController extends Controller
                 'bundle_components.*.composition_id' => 'ID Komposisi Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',
                 'bundle_components.*.qty' => 'Qty Komponen Bundle',
-                'bundle_components.*.price' => 'Price Komponen Bundle',
                 'cost.*.id' => 'ID Biaya Komponen Bundle',
                 'cost.*.coa' => 'Akun Biaya Bundle',
                 'cost.*.value' => 'Value Biaya Bundle',

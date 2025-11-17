@@ -454,7 +454,6 @@
                                         <thead>
                                             <tr>
                                                 <th style="width: 40%;">Nama Produk</th>
-                                                <th style="width: 20%;">Biaya</th>
                                                 <th style="width: 20%;">Qty</th>
                                                 <th style="width: 20%;">Satuan</th>
                                             </tr>
@@ -469,7 +468,6 @@
                                                                 {{ $component->product_name }}
                                                             </a>
                                                         </td>
-                                                        <td class="text-center">Rp {{ number_format($component->price, 0, ',', '.') }}</td>
                                                         <td class="text-center">
                                                             @php
                                                                 // Smart decimal formatting

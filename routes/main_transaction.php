@@ -209,6 +209,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_invoice_segment.'/get_available_sales_orders', 'get_available_sales_orders')->name('main_transaction.sales_invoice.get_available_sales_orders');
         Route::get($base_segment.$sales_invoice_segment.'/get_so_products_for_invoice', 'get_so_products_for_invoice')->name('main_transaction.sales_invoice.get_so_products_for_invoice');
         Route::get($base_segment.$sales_invoice_segment.'/audit_log/{id}', 'auditLogDataTable')->name('main_transaction.sales_invoice.auditLogDataTable');
+        Route::post($base_segment.$sales_invoice_segment.'/payment_save', 'payment_save')->name('main_transaction.sales_invoice.payment_save');
     });
 
     Route::controller(CreditMemoController::class)->group(function () use ($base_segment, $credit_memo_segment) {

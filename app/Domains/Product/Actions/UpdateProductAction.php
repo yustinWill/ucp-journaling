@@ -48,7 +48,6 @@ class UpdateProductAction
                             'f_product_composition_product_id' => $composition['product_id'],
                             'qty' => $composition['qty'],
                             'f_unit_id' => $product_data->f_unit_id,
-                            'price' => $composition['price'],
                         ]);
 
                         $submitted_composition_ids[] = $composition['composition_id'];
@@ -59,7 +58,6 @@ class UpdateProductAction
                                 'f_product_composition_product_id' => $composition['product_id'],
                                 'qty' => $composition['qty'],
                                 'f_unit_id' => $product_data->f_unit_id,
-                                'price' => $composition['price'],
                             ],
                         ]);
                     }

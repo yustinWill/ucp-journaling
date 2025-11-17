@@ -75,6 +75,11 @@
                             <i class="icon-base ti tabler-history me-2"></i>
                             <b>Audit Log</b>
                         </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="stock-movement-log-list-item"
+                            data-bs-toggle="list" href="#horizontal-stock-movement-log" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Stock Movement Log</b>
+                        </a>
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <div class="tab-pane fade show active" id="horizontal-warehouse-info" role="tabpanel">
@@ -192,16 +197,33 @@
                                             <th>Kode Produk</th>
                                             <th>Nama Produk</th>
                                             <th>Kategori Produk</th>
-                                            <th>Total Stok</th>
                                             <th>Qty Tersedia</th>
                                             <th>Batas Minimum</th>
                                             <th>Unit</th>
-                                            <th>Harga Rata-Rata</th>
                                             <th>Harga Beli Terakhir</th>
                                             <th>Harga Beli</th>
                                             <th>Harga Jual</th>
                                         </tr>
                                     </thead>
+                                    <tbody>
+                                        @forelse($productWareHouseStocks as $product)
+                                            <tr>
+                                                <td>{{ $product->code }}</td>
+                                                <td>{{ $product->name }}</td>
+                                                <td>{{ $product->category_name }}</td>
+                                                <td class="text-end">{{ number_format($product->system_stock ?? 0, 0, ',', '.') }}</td>
+                                                <td class="text-end">{{ number_format($product->minimum_stock ?? 0, 0, ',', '.') }}</td>
+                                                <td>{{ $product->unit }}</td>
+                                                <td class="text-end">Rp {{ number_format($product->latest_purchase_price ?? 0, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($product->unit_purchase_price ?? 0, 0, ',', '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($product->unit_sell_price ?? 0, 0, ',', '.') }}</td>
+                                            </tr>
+                                            @empty
+                                            <tr>
+                                                <td colspan="9" class="text-center">Tidak ada Stok yang tersedia</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -248,6 +270,45 @@
                                 </table>
                             </div>
                         </div>
+                        
+                        <!-- Stock Movement Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-stock-movement-log" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Log Stock Movement Warehouse</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table id="stock-movement-log-table" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Produk</th>
+                                            <th>Qty</th>
+                                            <th>Stok Sebelum</th>
+                                            <th>Stok Setelah</th>
+                                            <th>Dari Gudang</th>
+                                            <th>Ke Gudang</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($StockMovementLogs as $stock)
+                                            <tr>
+                                                <td>{{ $stock->movement_date; }}</td>
+                                                <td><a href="{{ route('master_data.product.detail', ['id' => $stock->product_id]) }}" class="text-primary fw-semibold">{{ $stock->product_code; }}</a></td>
+                                                <td class="text-end">{{ number_format($stock->qty ?? 0, 0, ',', '.'); }}</td>
+                                                <td class="text-end">{{ number_format($stock->stock_before ?? 0, 0, ',', '.'); }}</td>
+                                                <td class="text-end">{{ number_format($stock->stock_after ?? 0, 0, ',', '.'); }}</td>
+                                                <td><a href="{{ route('master_data.warehouse.detail', ['id' => $stock->warehouse_id_from]) }}" class="text-primary fw-semibold">{{ $stock->warehouse_from; }} </a> </td>
+                                                <td><a href="{{ route('master_data.warehouse.detail', ['id' => $stock->warehouse_id_to]) }}" class="text-primary fw-semibold">{{ $stock->warehouse_to; }}</a></td>    
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center">Tidak ada log audit yang tersedia</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -258,60 +319,60 @@
     <script>
         $(function() {
             //DataTable for inventory
-            const product_table = document.querySelector('#product-table');
+            // const product_table = document.querySelector('#product-table');
 
-            if (product_table) {
-                let dt_adv_filter = new DataTable(product_table, {
-                    ajax: `{{ route('master_data.warehouse.detail_product_data_table') }}`,
-                    columns: [{
-                            data: 'product_code'
-                        },
-                        {
-                            data: 'product_name'
-                        },
-                        {
-                            data: 'category'
-                        },
-                        {
-                            data: 'total_stock'
-                        },
-                        {
-                            data: 'available_qty'
-                        },
-                        {
-                            data: 'minimum'
-                        },
-                        {
-                            data: 'unit'
-                        },
-                        {
-                            data: 'average_price'
-                        },
-                        {
-                            data: 'last_purchase_price'
-                        },
-                        {
-                            data: 'purchase_price'
-                        },
-                        {
-                            data: 'selling_price'
-                        }
-                    ],
-                    columnDefs: [{
-                        targets: [-1, -2, -3, -4, -6, -7, -8],
-                        className: 'text-end',
-                        render: function(data, type, row) {
-                            if (type === 'display' && data != null && !isNaN(data)) {
-                                return parseFloat(data).toLocaleString('id-ID');
-                            }
-                            return data ?? '';
-                        }
-                    }],
-                    // scrollX: true,
-                    responsive: true,
-                    orderCellsTop: true
-                });
-            }
+            // if (product_table) {
+            //     let dt_adv_filter = new DataTable(product_table, {
+            //         ajax: `{{ route('master_data.warehouse.detail_product_data_table') }}`,
+            //         columns: [{
+            //                 data: 'product_code'
+            //             },
+            //             {
+            //                 data: 'product_name'
+            //             },
+            //             {
+            //                 data: 'category'
+            //             },
+            //             {
+            //                 data: 'total_stock'
+            //             },
+            //             {
+            //                 data: 'available_qty'
+            //             },
+            //             {
+            //                 data: 'minimum'
+            //             },
+            //             {
+            //                 data: 'unit'
+            //             },
+            //             {
+            //                 data: 'average_price'
+            //             },
+            //             {
+            //                 data: 'last_purchase_price'
+            //             },
+            //             {
+            //                 data: 'purchase_price'
+            //             },
+            //             {
+            //                 data: 'selling_price'
+            //             }
+            //         ],
+            //         columnDefs: [{
+            //             targets: [-1, -2, -3, -4, -6, -7, -8],
+            //             className: 'text-end',
+            //             render: function(data, type, row) {
+            //                 if (type === 'display' && data != null && !isNaN(data)) {
+            //                     return parseFloat(data).toLocaleString('id-ID');
+            //                 }
+            //                 return data ?? '';
+            //             }
+            //         }],
+            //         // scrollX: true,
+            //         responsive: true,
+            //         orderCellsTop: true
+            //     });
+            // }
             
             // Initialize DataTable for audit log
             $('#audit-log-table').DataTable({

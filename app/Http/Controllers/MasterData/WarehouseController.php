@@ -18,6 +18,7 @@ use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use App\Helpers\PermissionHelper;
 use App\Domains\Category\Services\CategoryService;
+use App\Domains\StockMovement\Services\StockMovementLogsService;
 // Enums
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -391,8 +392,9 @@ class WarehouseController extends Controller
     {
         $warehouse = app(WarehouseService::class)->findOne($id);
         $auditLogs = app(WarehouseAuditLogService::class)->findAllBasedOnId($id);
-
-        return view('pages.master_data.warehouse.detail', compact('warehouse', 'auditLogs'));
+        $productWareHouseStocks = app(StockMovementLogsService::class)->findAllLatestStockPerWarehouse($id);
+        $StockMovementLogs = app(StockMovementLogsService::class)->findAllLogBasedOnWarehouseId($id);
+        return view('pages.master_data.warehouse.detail', compact('warehouse', 'auditLogs', 'productWareHouseStocks','StockMovementLogs'));
     }
 
     public function detail_product_data_table()

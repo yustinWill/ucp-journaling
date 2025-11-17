@@ -151,6 +151,7 @@ class SalesInvoiceService
 
                 'so.transaction_code as so_reference',
                 'so.id as so_id',
+                'so.f_customer_id as customer_id',
                 'c.name AS customer_name',
                 'so.customer_email as customer_email',
                 'so.customer_address as customer_address',
@@ -300,4 +301,5 @@ class SalesInvoiceService
             ->orderBy('si.invoice_date', 'ASC')
             ->get();
     }
+    
 }
