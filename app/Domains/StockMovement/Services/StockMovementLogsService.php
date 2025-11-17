@@ -148,4 +148,48 @@ class StockMovementLogsService
 
         return $query->first();
     }
+
+    public function findAllLogBasedOnWarehouseId($warehouseId)
+    {
+        return DB::table('t_stock_movement_logs as inlog')
+            ->join('t_stock_movement_logs as outlog', function ($join) {
+                $join->on('outlog.company_code', '=', 'inlog.company_code')
+                    ->on('outlog.reference_number', '=', 'inlog.reference_number')
+                    ->on('outlog.product_id', '=', 'inlog.product_id')
+                    ->whereColumn('outlog.id', '<>', 'inlog.id')
+                    ->whereColumn('outlog.stock_after', '<', 'outlog.stock_before'); // OUT
+            })
+            ->whereColumn('inlog.stock_after', '>', 'inlog.stock_before')            // IN
+            ->where(function ($q) use ($warehouseId) {
+                $q->where('inlog.warehouse_id', $warehouseId)
+                ->orWhere('outlog.warehouse_id', $warehouseId);
+            })
+            ->orderBy('inlog.movement_date')
+            ->orderBy('inlog.id')
+            ->select([
+                'inlog.movement_date as movement_date',
+                'inlog.product_id as product_id',
+                'inlog.product_code as product_code',
+                'inlog.movement_qty as qty',
+                DB::raw("
+                    CASE
+                        WHEN inlog.warehouse_id = $warehouseId
+                            THEN inlog.stock_before
+                        ELSE outlog.stock_before
+                    END as stock_before
+                "),
+                DB::raw("
+                    CASE
+                        WHEN inlog.warehouse_id = $warehouseId
+                            THEN inlog.stock_after
+                        ELSE outlog.stock_after
+                    END as stock_after
+                "),
+                'outlog.warehouse_id as warehouse_id_from',
+                'outlog.warehouse_name as warehouse_from',
+                'inlog.warehouse_id as warehouse_id_to',
+                'inlog.warehouse_name as warehouse_to',
+            ])
+            ->get();
+    }
 }

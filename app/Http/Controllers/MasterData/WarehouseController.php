@@ -393,7 +393,8 @@ class WarehouseController extends Controller
         $warehouse = app(WarehouseService::class)->findOne($id);
         $auditLogs = app(WarehouseAuditLogService::class)->findAllBasedOnId($id);
         $productWareHouseStocks = app(StockMovementLogsService::class)->findAllLatestStockPerWarehouse($id);
-        return view('pages.master_data.warehouse.detail', compact('warehouse', 'auditLogs', 'productWareHouseStocks'));
+        $StockMovementLogs = app(StockMovementLogsService::class)->findAllLogBasedOnWarehouseId($id);
+        return view('pages.master_data.warehouse.detail', compact('warehouse', 'auditLogs', 'productWareHouseStocks','StockMovementLogs'));
     }
 
     public function detail_product_data_table()

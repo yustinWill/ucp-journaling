@@ -75,6 +75,11 @@
                             <i class="icon-base ti tabler-history me-2"></i>
                             <b>Audit Log</b>
                         </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="stock-movement-log-list-item"
+                            data-bs-toggle="list" href="#horizontal-stock-movement-log" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-history me-2"></i>
+                            <b>Stock Movement Log</b>
+                        </a>
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <div class="tab-pane fade show active" id="horizontal-warehouse-info" role="tabpanel">
@@ -255,6 +260,45 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $log->description }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="text-center">Tidak ada log audit yang tersedia</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Stock Movement Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-stock-movement-log" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Log Stock Movement Warehouse</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table id="stock-movement-log-table" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>Produk</th>
+                                            <th>Qty</th>
+                                            <th>Stok Sebelum</th>
+                                            <th>Stok Setelah</th>
+                                            <th>Dari Gudang</th>
+                                            <th>Ke Gudang</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($StockMovementLogs as $stock)
+                                            <tr>
+                                                <td>{{ $stock->movement_date; }}</td>
+                                                <td><a href="{{ route('master_data.product.detail', ['id' => $stock->product_id]) }}" class="text-primary fw-semibold">{{ $stock->product_code; }}</a></td>
+                                                <td class="text-end">{{ number_format($stock->qty ?? 0, 0, ',', '.'); }}</td>
+                                                <td class="text-end">{{ number_format($stock->stock_before ?? 0, 0, ',', '.'); }}</td>
+                                                <td class="text-end">{{ number_format($stock->stock_after ?? 0, 0, ',', '.'); }}</td>
+                                                <td><a href="{{ route('master_data.warehouse.detail', ['id' => $stock->warehouse_id_from]) }}" class="text-primary fw-semibold">{{ $stock->warehouse_from; }} </a> </td>
+                                                <td><a href="{{ route('master_data.warehouse.detail', ['id' => $stock->warehouse_id_to]) }}" class="text-primary fw-semibold">{{ $stock->warehouse_to; }}</a></td>    
                                             </tr>
                                         @empty
                                             <tr>
