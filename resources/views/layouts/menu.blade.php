@@ -105,14 +105,14 @@
                 <div data-i18n="Chat">Jurnal</div>
             </a>
         </li>
-        @if (session('CLIENT_CODE') == '001')
+        {{-- @if (session('CLIENT_CODE') == '001') --}}
             <li class="menu-item @if (request()->routeIs(['main_transaction.expense.*'])) active @endif">
                 <a href="{{ route('main_transaction.expense.index') }}" class="menu-link">
                     <i class="menu-icon icon-base ti tabler-credit-card"></i>
                     <div data-i18n="Chat">Pengeluaran</div>
                 </a>
             </li>
-        @endif
+        {{-- @endif --}}
 
         <li class="menu-item @if (request()->routeIs(['main_transaction.stock_adjustment.*'])) active @endif">
             <a href="{{ route('main_transaction.stock_adjustment.index') }}" class="menu-link">

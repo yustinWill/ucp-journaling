@@ -2,9 +2,22 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
+use App\Domains\Expense\Actions\CreateExpenseAction;
+use App\Domains\Coa\Services\CoaService;
+use App\Domains\Contact\Services\ContactService;
+use App\Domains\PaymentMethod\Services\PaymentMethodService;
+use App\Domains\PaymentTerm\Services\PaymentTermService;
+use App\Domains\Tag\Services\TagService;
+use App\Domains\Tax\Services\TaxService;
 use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Enums\ErrorCodes;
+use App\Enums\SuccessCodes;
+use App\Exceptions\AppException;
+use App\Helpers\DiscordNotifier;
+use App\Helpers\ValidationHelper;
+use Illuminate\Validation\ValidationException;
 
 class ExpenseController extends Controller
 {
@@ -174,20 +187,24 @@ class ExpenseController extends Controller
         $canAddContacts = PermissionHelper::hasPermission('master_data_contact', 'write');
         $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_payment_term', 'write');
 
-        // Static options that don't change frequently
-        $paymentMethods = [
-            ['value' => 'cash', 'label' => 'Cash'],
-            ['value' => 'bank_transfer', 'label' => 'Bank Transfer'],
-            ['value' => 'credit_card', 'label' => 'Credit Card'],
-            ['value' => 'check', 'label' => 'Check'],
-            ['value' => 'e_wallet', 'label' => 'E-wallet'],
-        ];
+        $taxOptions = app(TaxService::class)->findAll();
+        $availableTags = app(TagService::class)->findAll();
+        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
+        $paymentTerms = app(PaymentTermService::class)->findAll();
+        $paymentMethods = app(PaymentMethodService::class)->findAll();
+        $coa_accounts = app(CoaService::class)->findAll();
 
         return view('pages.main_transaction.expense.add', [
             'canAddTags' => $canAddTags,
             'canAddContacts' => $canAddContacts,
             'canAddPaymentTerms' => $canAddPaymentTerms,
+            'taxOptions' => $taxOptions,
+            'availableTags' => $availableTags,
+            'suppliers' => $suppliers,
+            'paymentTerms' => $paymentTerms,
             'paymentMethods' => $paymentMethods,
+            'coa_accounts' => $coa_accounts,
+
         ]);
     }
 
@@ -352,6 +369,121 @@ class ExpenseController extends Controller
         ]);
     }
 
+    
+    public function save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                // Basic transaction fields
+                'payment_method' => 'required|string|in:CASH,BANK_TRANSFER,CREDIT_CARD,DEBIT_CARD,E_WALLET,CHECK',
+                'pay_later' => 'required|boolean',
+                'transaction_number' => 'required|string|max:50|unique:t_expenses,transaction_no',
+                'recipient_id' => 'nullable|integer|exists:m_contacts,id',
+                'transaction_date' => 'required|date|before_or_equal:today',
+                
+                // Payment terms (required if pay_later is true)
+                'payment_terms' => 'nullable|integer|exists:m_payment_terms,id',
+                'due_date' => 'nullable|date|after:transaction_date',
+                
+                // Additional information
+                'billing_address' => 'nullable|string|max:500',
+                'description' => 'nullable|string|max:1000',
+                'memo' => 'nullable|string|max:1000',
+                
+                // Financial fields
+                'discount_amount' => 'nullable|numeric|min:0',
+                'subtotal' => 'required|numeric|min:0.01',
+                'tax_amount' => 'required|numeric|min:0',
+                'total_before_discount' => 'required|numeric|min:0.01',
+                'final_total' => 'required|numeric|min:0.01',
+                
+                // Expense lines validation
+                'expense_lines' => 'required|array|min:1',
+                'expense_lines.*.expense_account' => 'required|string|exists:m_coas,code',
+                'expense_lines.*.tax_id' => 'nullable|string|exists:m_taxes,id',
+                'expense_lines.*.tax_rate' => 'nullable|numeric|min:0|max:100',
+                'expense_lines.*.amount' => 'required|numeric|min:0.01',
+                
+                // Optional fields
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+                'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB max
+            ], [
+                // Custom error messages
+                'payment_method.required' => 'Metode pembayaran wajib dipilih.',
+                'payment_method.in' => 'Metode pembayaran tidak valid.',
+                'transaction_number.required' => 'Nomor transaksi wajib diisi.',
+                'transaction_number.unique' => 'Nomor transaksi sudah digunakan.',
+                'recipient_id.exists' => 'Penerima tidak valid.',
+                'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
+                'transaction_date.before_or_equal' => 'Tanggal transaksi tidak boleh lebih dari hari ini.',
+                'payment_terms.exists' => 'Term pembayaran tidak valid.',
+                'due_date.after' => 'Tanggal jatuh tempo harus setelah tanggal transaksi.',
+                'subtotal.required' => 'Subtotal wajib diisi.',
+                'subtotal.min' => 'Subtotal harus lebih dari 0.',
+                'final_total.required' => 'Total akhir wajib diisi.',
+                'final_total.min' => 'Total akhir harus lebih dari 0.',
+                'expense_lines.required' => 'Minimal harus ada satu baris pengeluaran.',
+                'expense_lines.min' => 'Minimal harus ada satu baris pengeluaran.',
+                'expense_lines.*.expense_account.required' => 'Akun pengeluaran wajib dipilih.',
+                'expense_lines.*.expense_account.exists' => 'Akun pengeluaran tidak valid.',
+                'expense_lines.*.tax_id.exists' => 'Kode pajak tidak valid.',
+                'expense_lines.*.tax_rate.min' => 'Rate pajak tidak boleh kurang dari 0.',
+                'expense_lines.*.tax_rate.max' => 'Rate pajak tidak boleh lebih dari 100.',
+                'expense_lines.*.amount.required' => 'Jumlah pengeluaran wajib diisi.',
+                'expense_lines.*.amount.min' => 'Jumlah pengeluaran harus lebih dari 0.',
+                'tags.*.exists' => 'Tag tidak valid.',
+                'attachment.mimes' => 'File lampiran harus berformat PDF, JPG, JPEG, atau PNG.',
+                'attachment.max' => 'Ukuran file lampiran maksimal 5MB.',
+            ]);
+            app(CreateExpenseAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_EXPENSE_SUCCESS->message(),
+            ], SuccessCodes::CREATE_EXPENSE_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+
+        // if (! PermissionHelper::hasPermission('main_transaction_expense', 'write')) {
+        //     abort(403, 'Anda tidak memiliki akses untuk mengupdate data pengeluaran.');
+        // }
+
+        // // Validation rules (implement as needed)
+        // $validated = $request->validate([
+        //     'transaction_number' => 'required|string|max:255',
+        //     'payment_method' => 'required|string',
+        //     'recipient' => 'required|string|max:255',
+        //     'transaction_date' => 'required|date',
+        //     'billing_address' => 'nullable|string',
+        //     'description' => 'nullable|string',
+        //     'memo' => 'nullable|string',
+        //     'tags' => 'nullable|array',
+        //     'expense_lines' => 'required|array',
+        // ]);
+
+        // // Update logic would go here
+        // // For now, just redirect back with success message
+        // return redirect()->route('main_transaction.expense.detail', $id)
+        //     ->with('success', 'Data pengeluaran berhasil diupdate.');
+    }
+
     public function update(Request $request, $id)
     {
         if (! PermissionHelper::hasPermission('main_transaction_expense', 'write')) {
@@ -375,218 +507,5 @@ class ExpenseController extends Controller
         // For now, just redirect back with success message
         return redirect()->route('main_transaction.expense.detail', $id)
             ->with('success', 'Data pengeluaran berhasil diupdate.');
-    }
-
-    public function categories(Request $request)
-    {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $search = $request->get('search', '');
-
-        $categories = [
-            ['value' => 'Operasional', 'label' => 'Operasional'],
-            ['value' => 'Marketing', 'label' => 'Marketing'],
-            ['value' => 'Administrasi', 'label' => 'Administrasi'],
-            ['value' => 'IT', 'label' => 'IT & Technology'],
-            ['value' => 'HRD', 'label' => 'Human Resources'],
-            ['value' => 'Legal', 'label' => 'Legal & Compliance'],
-            ['value' => 'Finance', 'label' => 'Finance & Accounting'],
-        ];
-
-        if ($search) {
-            $categories = array_filter($categories, function ($category) use ($search) {
-                return stripos($category['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($categories));
-    }
-
-    public function statuses(Request $request)
-    {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $search = $request->get('search', '');
-
-        $statuses = [
-            ['value' => 'Draft', 'label' => 'Draft'],
-            ['value' => 'Diajukan', 'label' => 'Diajukan'],
-            ['value' => 'Disetujui', 'label' => 'Disetujui'],
-            ['value' => 'Dibayar', 'label' => 'Dibayar'],
-            ['value' => 'Ditolak', 'label' => 'Ditolak'],
-            ['value' => 'Dibatalkan', 'label' => 'Dibatalkan'],
-        ];
-
-        if ($search) {
-            $statuses = array_filter($statuses, function ($status) use ($search) {
-                return stripos($status['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($statuses));
-    }
-
-    public function recipients(Request $request)
-    {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $search = $request->get('search', '');
-
-        $recipients = [
-            ['value' => 'PT. Supplier Utama', 'label' => 'PT. Supplier Utama'],
-            ['value' => 'CV. Mitra Jaya', 'label' => 'CV. Mitra Jaya'],
-            ['value' => 'PT. Teknologi Maju', 'label' => 'PT. Teknologi Maju'],
-            ['value' => 'UD. Berkah Sejahtera', 'label' => 'UD. Berkah Sejahtera'],
-            ['value' => 'PT. Global Solutions', 'label' => 'PT. Global Solutions'],
-            ['value' => 'CV. Prima Service', 'label' => 'CV. Prima Service'],
-            ['value' => 'PT. Mandiri Elektronik', 'label' => 'PT. Mandiri Elektronik'],
-            ['value' => 'Toko Alat Kantor', 'label' => 'Toko Alat Kantor'],
-        ];
-
-        if ($search) {
-            $recipients = array_filter($recipients, function ($recipient) use ($search) {
-                return stripos($recipient['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($recipients));
-    }
-
-    public function accounts(Request $request)
-    {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $search = $request->get('search', '');
-
-        $accounts = [
-            ['value' => '5101', 'label' => '5101 - Biaya Operasional'],
-            ['value' => '5201', 'label' => '5201 - Biaya Marketing'],
-            ['value' => '5301', 'label' => '5301 - Biaya Administrasi'],
-            ['value' => '5401', 'label' => '5401 - Biaya IT & Teknologi'],
-            ['value' => '5501', 'label' => '5501 - Biaya SDM'],
-            ['value' => '5601', 'label' => '5601 - Biaya Legal & Compliance'],
-            ['value' => '5701', 'label' => '5701 - Biaya Keuangan'],
-            ['value' => '5801', 'label' => '5801 - Biaya Perjalanan Dinas'],
-            ['value' => '5901', 'label' => '5901 - Biaya Konsumsi'],
-            ['value' => '6001', 'label' => '6001 - Biaya Utilitas'],
-            ['value' => '6101', 'label' => '6101 - Biaya Pemeliharaan'],
-            ['value' => '6201', 'label' => '6201 - Biaya Sewa'],
-        ];
-
-        if ($search) {
-            $accounts = array_filter($accounts, function ($account) use ($search) {
-                return stripos($account['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($accounts));
-    }
-
-    public function paymentMethods(Request $request)
-    {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $search = $request->get('search', '');
-
-        $paymentMethods = [
-            ['value' => 'cash', 'label' => 'Cash'],
-            ['value' => 'bank_transfer', 'label' => 'Bank Transfer'],
-            ['value' => 'credit_card', 'label' => 'Credit Card'],
-            ['value' => 'check', 'label' => 'Check'],
-            ['value' => 'e_wallet', 'label' => 'E-wallet'],
-        ];
-
-        if ($search) {
-            $paymentMethods = array_filter($paymentMethods, function ($method) use ($search) {
-                return stripos($method['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($paymentMethods));
-    }
-
-    public function paymentTerms(Request $request)
-    {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $search = $request->get('search', '');
-
-        $paymentTerms = [
-            ['value' => 'net_15', 'label' => 'Net 15'],
-            ['value' => 'net_30', 'label' => 'Net 30'],
-            ['value' => 'net_45', 'label' => 'Net 45'],
-            ['value' => 'net_60', 'label' => 'Net 60'],
-            ['value' => 'custom', 'label' => 'Custom'],
-        ];
-
-        if ($search) {
-            $paymentTerms = array_filter($paymentTerms, function ($term) use ($search) {
-                return stripos($term['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($paymentTerms));
-    }
-
-    public function taxes(Request $request)
-    {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $search = $request->get('search', '');
-
-        $taxes = [
-            ['value' => 'PPN01', 'label' => 'PPN01 - PPN 11%'],
-            ['value' => 'PPN02', 'label' => 'PPN02 - PPN 1%'],
-            ['value' => 'PPH21', 'label' => 'PPH21 - PPh Pasal 21'],
-            ['value' => 'PPH23', 'label' => 'PPH23 - PPh Pasal 23'],
-            ['value' => 'PPH4A2', 'label' => 'PPH4A2 - PPh Final Pasal 4 Ayat 2'],
-        ];
-
-        if ($search) {
-            $taxes = array_filter($taxes, function ($tax) use ($search) {
-                return stripos($tax['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($taxes));
-    }
-
-    public function tags(Request $request)
-    {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $search = $request->get('search', '');
-
-        $tags = [
-            ['code' => 'EXP001', 'label' => 'EXP001 - Operasional', 'preview' => 'bg-label-primary'],
-            ['code' => 'EXP002', 'label' => 'EXP002 - Marketing', 'preview' => 'bg-label-success'],
-            ['code' => 'EXP003', 'label' => 'EXP003 - Administrasi', 'preview' => 'bg-label-info'],
-            ['code' => 'EXP004', 'label' => 'EXP004 - IT', 'preview' => 'bg-label-warning'],
-            ['code' => 'EXP005', 'label' => 'EXP005 - SDM', 'preview' => 'bg-label-dark'],
-        ];
-
-        if ($search) {
-            $tags = array_filter($tags, function ($tag) use ($search) {
-                return stripos($tag['label'], $search) !== false;
-            });
-        }
-
-        return response()->json(array_values($tags));
     }
 }

@@ -224,6 +224,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$expense_segment.'/index', 'index')->name('main_transaction.expense.index');
         Route::get($base_segment.$expense_segment.'/index_data_table', 'index_data_table')->name('main_transaction.expense.index_data_table');
         Route::get($base_segment.$expense_segment.'/add', 'add')->name('main_transaction.expense.add');
+        Route::post($base_segment.$expense_segment.'/save', 'save')->name('main_transaction.expense.save');
         Route::get($base_segment.$expense_segment.'/edit/{id}', 'edit')->name('main_transaction.expense.edit');
         Route::get($base_segment.$expense_segment.'/detail/{id}', 'detail')->name('main_transaction.expense.detail');
         Route::get($base_segment.$expense_segment.'/categories', 'categories')->name('main_transaction.expense.categories');
