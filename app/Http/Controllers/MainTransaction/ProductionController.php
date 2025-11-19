@@ -8,6 +8,7 @@ use App\Domains\Production\Actions\CreateProductionAction;
 use App\Domains\Production\Actions\ReversalProductionAction;
 use App\Domains\Production\Services\ProductionAuditLogService;
 use App\Domains\Production\Services\ProductionExpenseService;
+use App\Domains\product\Services\ProductCostCompositionService;
 use App\Domains\Production\Services\ProductionItemService;
 use App\Domains\Production\Services\ProductionService;
 use App\Domains\User\Services\UserService;
@@ -59,6 +60,94 @@ class ProductionController extends Controller
         $data = app(ProductionService::class)->findAllDatatable();
 
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
+    }
+
+    public function calculateFifoPrices(Request $request)
+    {
+        try {
+            $bundleProductId = $request->input('bundle_product_id');
+            $quantityPlanned = $request->input('quantity_planned');
+            
+            // Parse JSON string to array
+            $productRequirements = json_decode($request->input('product_requirements', '[]'), true);
+            
+            
+            $prices = [];
+            
+            foreach ($productRequirements as $requirement) {
+                $productId = $requirement['product_id'];
+                $quantityRequired = $requirement['quantity_required'];
+                
+                // Get batches ordered by FIFO (oldest first)
+                $batches = DB::table('t_product_stock_batches')
+                    ->where('f_product_id', $productId)
+                    ->where('status', 'ACTIVE')
+                    ->where('remaining_qty', '>', 0)
+                    ->orderBy('batch_date', 'ASC')
+                    ->orderBy('id', 'ASC')
+                    ->get();
+                $totalCost = 0;
+                $remainingNeed = $quantityRequired;
+                
+                foreach ($batches as $batch) {
+                    if ($remainingNeed <= 0) {
+                        break;
+                    }
+                    
+                    // Take what we can from this batch
+                    $qtyToTake = min($batch->remaining_qty, $remainingNeed);
+                    
+                    // Calculate cost from this batch
+                    $batchCost = $qtyToTake * $batch->purchase_price;
+                    $totalCost += $batchCost;
+                    
+                    // Reduce remaining need
+                    $remainingNeed -= $qtyToTake;
+                }
+                
+                // Calculate price per piece
+                $pricePerPcs = $quantityPlanned > 0 ? ($totalCost / $quantityPlanned) : 0;
+                
+                $prices[] = [
+                    'product_id' => $productId,
+                    'quantity_required' => $quantityRequired,
+                    'total_cost' => round($totalCost, 2),
+                    'price_per_pcs' => round($pricePerPcs, 2),
+                    'batches_used' => $batches->count()
+                ];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'prices' => $prices,
+                'quantity_planned' => $quantityPlanned
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to calculate FIFO prices: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getBundlePrice(Request $request)
+    {
+        try {
+            $bundleProductId = $request->input('bundle_product_id');
+            $productionItems = app(ProductCostCompositionService::class)->getSumBasedOnProductId($bundleProductId);
+            
+            return response()->json([
+                'success' => true,
+                'bundle_price' => $productionItems
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get bundle cost: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function add()
@@ -238,6 +327,7 @@ class ProductionController extends Controller
                 'quantity_required' => $row->qty,
                 'stock_available' => $row->total_stock ?? 0,
                 'unit' => $row->unit_name,
+                'purchase_price' => $row->purchase_price,
             ];
         }
 

@@ -41,5 +41,12 @@ class ProductCostCompositionService
             ->where('t.f_product_id', $product_id)
             ->get();
     }
+    
+    public function getSumBasedOnProductId($product_id)
+    {
+        return DB::table($this->table_name.' as t')
+            ->where('t.f_product_id', $product_id)
+            ->sum('cost_value');
+    }
 
 }

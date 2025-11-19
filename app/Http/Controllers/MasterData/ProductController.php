@@ -448,15 +448,7 @@ class ProductController extends Controller
                     },
                 ],
                 'bundle_accounts.*.cost' => [
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'bundle' &&
-                            $req->input('bundle_inventory_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The bundle account cost field is required when type is bundle and inventory enabled is true.');
-                        }
-                    },
+                    'nullable'
                 ],
             ], [], [
                 'name' => 'Nama Produk',
@@ -567,7 +559,7 @@ class ProductController extends Controller
         $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
 
         $inventoryData = app(StockMovementLogsService::class)->findAllLatestStockPerProduct($id);
-
+        
         $productCompositionCost = app(ProductCostCompositionService::class)->findAllBasedOnProductId($id);
 
         $auditLogs = app(ProductAuditLogService::class)->findAllBasedOnId($id);
@@ -934,17 +926,10 @@ class ProductController extends Controller
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
                 'cost.*.id' => [
                     'nullable',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'bundle' &&
-                            empty($value)
-                        ) {
-                            $fail('The bundle account component composition id field is required when type is bundle and inventory enabled is true.');
-                        }
-                    },
+                    
                 ],
-                'cost.*.coa' => 'required_if:type,"bundle"|required_with:bundle_components',
-                'cost.*.value' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
+                'cost.*.coa' => 'nullable',
+                'cost.*.value' => 'nullable|numeric',
                 // Bundle accounts
                 'bundle_accounts' => [
                     function ($attribute, $value, $fail) use ($req) {
@@ -981,15 +966,7 @@ class ProductController extends Controller
                     },
                 ],
                 'bundle_accounts.*.cost' => [
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'bundle' &&
-                            $req->input('bundle_inventory_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The bundle account cost field is required when type is bundle and inventory enabled is true.');
-                        }
-                    },
+                    'nullable'
                 ],
             ], [], [
                 'id' => 'ID Produk',

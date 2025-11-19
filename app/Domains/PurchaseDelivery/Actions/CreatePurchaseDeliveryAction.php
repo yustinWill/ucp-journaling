@@ -75,7 +75,6 @@ class CreatePurchaseDeliveryAction
                 foreach ($data['products'] as $product) {
                     app(PurchaseOrderProductService::class)->updateDeliveredQuantities($data['purchase_order_id'], $product['product_order_product_id'], $product['delivery_qty']);
 
-                    app(ProductService::class)->updateStock($product['product_id'], '+', $product['delivery_qty']);
 
                     // Record stock movement
                     app(StockMovementLogService::class)->recordMovement(
@@ -88,6 +87,8 @@ class CreatePurchaseDeliveryAction
                         'Purchase Delivery: '.($data['reference_no']),
                         $data['delivery_date'] ?? now()
                     );
+                    
+                    app(ProductService::class)->updateStock($product['product_id'], '+', $product['delivery_qty']);
                 }
             }
 

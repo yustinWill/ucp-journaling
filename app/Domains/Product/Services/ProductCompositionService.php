@@ -44,16 +44,13 @@ class ProductCompositionService
                 'product_id',
                 DB::raw('SUM(
                     CASE 
-                        WHEN movement_type = "PURCHASE_IN" THEN movement_qty
-                        WHEN movement_type = "SALES_OUT" THEN -movement_qty
-                        WHEN movement_type = "ADJUSTMENT_IN" THEN movement_qty
-                        WHEN movement_type = "ADJUSTMENT_OUT" THEN -movement_qty
-                        WHEN movement_type = "PRODUCTION_IN" THEN movement_qty
-                        WHEN movement_type = "PRODUCTION_OUT" THEN -movement_qty
+                        WHEN movement_type LIKE "%_IN" THEN movement_qty
+                        WHEN movement_type LIKE "%_OUT" THEN -movement_qty
                         ELSE 0
                     END
                 ) as total_stock')
             )
+            ->where('warehouse_id', $warehouseId)
             ->groupBy('product_id');
 
         $data = DB::table('m_product_compositions as t')
@@ -61,7 +58,38 @@ class ProductCompositionService
                 't.*',
                 DB::raw('COALESCE(stock.total_stock, 0) as total_stock'),
                 'prd.name as product_name',
-                'unt.name as unit_name'
+                'unt.name as unit_name',
+                DB::raw('(
+                    select
+                        CASE
+                            WHEN COUNT(*) = 0 THEN 0
+                            WHEN COUNT(*) = 1 THEN MAX(purchase_price)
+                            ELSE SUM(purchase_price * use_qty) / SUM(use_qty)
+                        END
+                    from (
+                        select
+                            purchase_price,
+                            LEAST(remaining_qty, GREATEST(0, COALESCE(stock.total_stock, 0) - 
+                                COALESCE((
+                                    select SUM(remaining_qty)
+                                    from t_product_stock_batches psb2
+                                    where psb2.f_product_id = psb.f_product_id
+                                        and psb2.status = "ACTIVE"
+                                        and psb2.remaining_qty > 0
+                                        and psb2.company_code = psb.company_code
+                                        and (psb2.batch_date < psb.batch_date 
+                                            OR (psb2.batch_date = psb.batch_date AND psb2.id < psb.id))
+                                ), 0)
+                            )) as use_qty
+                        from t_product_stock_batches psb
+                        where psb.f_product_id = `t`.`f_product_composition_product_id`
+                            and psb.status = "ACTIVE"
+                            and psb.remaining_qty > 0
+                        order by psb.batch_date ASC, psb.id ASC
+                        limit 2
+                    ) fifo_batches
+                    where use_qty > 0
+                ) as purchase_price')
             )
             ->join('m_products as prd', 'prd.id', '=', 't.f_product_composition_product_id')
             ->join('m_units as unt', 'unt.id', '=', 't.f_unit_id')

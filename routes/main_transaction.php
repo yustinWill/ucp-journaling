@@ -276,6 +276,8 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$production_segment.'/get_bundle_products', 'getBundleProducts')->name('main_transaction.production.get_bundle_products');
         Route::get($base_segment.$production_segment.'/get_pic_users', 'getPicUsers')->name('main_transaction.production.get_pic_users');
         Route::get($base_segment.$production_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.production.generate_transaction_number');
+        Route::get($base_segment.$production_segment.'/calculate_fifo_prices', 'calculateFifoPrices')->name('main_transaction.production.calculate_fifo_prices');
+        Route::get($base_segment.$production_segment.'/get_bundle_price', 'getBundlePrice')->name('main_transaction.production.get_bundle_price');
 
         // AJAX endpoints for form data
         Route::get($base_segment.$production_segment.'/get-formula/{bundleProductId}', 'getFormula')->name('main_transaction.production.get_formula');

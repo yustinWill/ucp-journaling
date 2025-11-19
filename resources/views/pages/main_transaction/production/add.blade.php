@@ -165,6 +165,7 @@
                                 <th style="width: 15%;">Qty per Bundle</th>
                                 <th style="width: 15%;">Total Required</th>
                                 <th style="width: 15%;">Stock Available</th>
+                                <th style="width: 15%;">Harga Satuan</th>
                                 <th style="width: 15%;">Status</th>
                             </tr>
                         </thead>
@@ -181,10 +182,11 @@
                     <table class="table table-bordered" id="components-table-input">
                         <thead>
                             <tr>
-                                <th style="width: 25%;">Komponen Product</th>
+                                <th style="width: 20%;">Komponen Product</th>
                                 <th style="width: 10%;">Satuan</th>
                                 <th style="width: 13%;">Qty per Bundle</th>
                                 <th style="width: 15%;">Stock Available</th>
+                                <th style="width: 5%;">Harga Satuan</th>
                                 <th style="width: 15%;">Material Input <span style="color: red;">*</span></th>
                                 <th style="width: 12%;">Leftover Material</th>
                                 <th style="width: 10%;">Status</th>
@@ -199,6 +201,34 @@
                     <i class="icon-base ti tabler-info-circle me-2"></i>
                     <strong>Catatan:</strong> Sistem akan menghitung jumlah produksi maksimal berdasarkan material yang Anda input.
                     Sisa material akan ditampilkan dengan presisi 4 desimal untuk proses stock opname selanjutnya.
+                </div>
+            </div>
+
+            <!-- Biaya Produk Section -->
+            <div class="section-header mt-12">
+                <h6>Biaya Produksi</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Biaya Bundle</label>
+                    <input type="text" class="form-control currency-input text-end" id="bundle-price" name="bundle_price" disabled placeholder="Rp 0" required/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Biaya Perunit</label>
+                    <input type="text" class="form-control currency-input text-end" id="bundle-price-unit" name="bundle_price_unit" disabled
+                        value="0" />
+                </div>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Total Biaya Komponen Perunit</label>
+                    <input type="text" class="form-control currency-input text-end" id="total-component-cost-unit" name="total_component_cost_unit" disabled value="0" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">HPP Sementara</label>
+                    <input type="text" class="form-control currency-input text-end" id="hpp-production"  disabled value="0" />
                 </div>
             </div>
 
@@ -250,7 +280,132 @@
             // Global state variables
             let currentProductionMode = 'QUANTITY_PLANNED'; // QUANTITY_PLANNED or MATERIAL_BASED
             let bundleComponents = [];
+            $('.currency-input').each(function() {
+                new Cleave(this, {
+                    numeral: true,
+                    numeralThousandsGroupStyle: 'thousand',
+                    prefix: 'Rp ',
+                    noImmediatePrefix: false,
+                    rawValueTrimPrefix: true
+                });
+            });
+            function getBundleCost() {
+                const bundleProductId = $('#bundle-product').val();
+                let totalComponentPrice = 0;
+                $.ajax({
+                    url: "{{ route('main_transaction.production.get_bundle_price') }}",
+                    type: 'GET',
+                    data: {
+                        bundle_product_id: bundleProductId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#bundle-price').val('Rp ' + formatNumber(response.bundle_price));
+                            
+                            const bundleUnitPrice = response.bundle_price / parseFloat($('#quantity-planned').val());
+                            $('#bundle-price-unit').val('Rp ' + formatNumber(bundleUnitPrice));
+                            $('.purchase-price').each(function() {
+                                totalComponentPrice += parseCurrency($(this).text()) || 0;
+                            });
+                            $('#total-component-cost-unit').val('Rp ' + formatNumber(totalComponentPrice));
+                            $('#hpp-production').val('Rp ' + formatNumber(bundleUnitPrice + totalComponentPrice));
+                            // Recalculate production costs after updating prices
+                            calculateProductionCosts();
+                            
+                            console.log('✅ bundle cost Updated:', response.prices);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to calculate bundle cost:', xhr);
+                    }
+                });
+            }
+            function updateFIFOPrices() {
+                const quantityPlanned = parseFloat($('#quantity-planned').val()) || 0;
+                const bundleProductId = $('#bundle-product').val();
+                
+                if (quantityPlanned <= 0 || !bundleProductId) {
+                    return;
+                }
 
+                // Collect all product IDs and their required quantities
+                const productRequirements = [];
+                
+                if (currentProductionMode === 'QUANTITY_PLANNED') {
+                    $('#components-rows-preview tr').each(function() {
+                        const $row = $(this);
+                        const productId = $row.find('td:first').data('product-id');
+                        const qtyPerBundle = parseFloat($row.find('.total-required').data('qty-per-bundle'));
+                        const totalRequired = qtyPerBundle * quantityPlanned;
+                        
+                        productRequirements.push({
+                            product_id: productId,
+                            quantity_required: totalRequired
+                        });
+                    });
+                } else {
+                    $('#components-rows-input tr').each(function() {
+                        const $row = $(this);
+                        const productId = $row.data('product-id');
+                        const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
+                        const totalRequired = qtyPerBundle * quantityPlanned;
+                        
+                        productRequirements.push({
+                            product_id: productId,
+                            quantity_required: totalRequired
+                        });
+                    });
+                }
+
+                // Make AJAX call to get FIFO prices (changed to GET)
+                $.ajax({
+                    url: "{{ route('main_transaction.production.calculate_fifo_prices') }}",
+                    type: 'GET',
+                    data: {
+                        bundle_product_id: bundleProductId,
+                        quantity_planned: quantityPlanned,
+                        product_requirements: JSON.stringify(productRequirements)
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update prices in the preview table
+                            if (currentProductionMode === 'QUANTITY_PLANNED') {
+                                $('#components-rows-preview tr').each(function() {
+                                    const $row = $(this);
+                                    const productId = $row.find('td:first').data('product-id');
+                                    const priceData = response.prices.find(p => p.product_id == productId);
+                                    
+                                    if (priceData) {
+                                        const $priceCell = $row.find('.purchase-price');
+                                        $priceCell.data('price-per-unit', priceData.price_per_pcs);
+                                        $priceCell.text('Rp. ' + formatNumber(priceData.price_per_pcs));
+                                    }
+                                });
+                            } else {
+                                // Update prices in the input table
+                                $('#components-rows-input tr').each(function() {
+                                    const $row = $(this);
+                                    const productId = $row.data('product-id');
+                                    const priceData = response.prices.find(p => p.product_id == productId);
+                                    
+                                    if (priceData) {
+                                        $row.data('price-per-unit', priceData.price_per_pcs);
+                                        $row.find('.purchase-price').text('Rp. ' + formatNumber(priceData.price_per_pcs));
+                                    }
+                                });
+                            }
+                            
+                            // Recalculate production costs after updating prices
+                            calculateProductionCosts();
+                            
+                            console.log('✅ FIFO Prices Updated:', response.prices);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to calculate FIFO prices:', xhr);
+                    }
+                });
+            }
             // Generate number button functionality
             $('#generate-number-btn').on('click', function() {
                 $.ajax({
@@ -319,7 +474,7 @@
             $('#bundle-product, #warehouse').on('change', function() {
                 const bundleProductId = $('#bundle-product').val();
                 const warehouseId = $('#warehouse').val();
-                
+                getBundleCost();
                 if (bundleProductId && warehouseId) {
                     loadBundleComponents(bundleProductId,warehouseId);
                     $('#components-disabled-message').hide();
@@ -344,6 +499,11 @@
                 if (currentProductionMode === 'QUANTITY_PLANNED') {
                     updateTotalRequiredQuantities();
                 }
+                // Update FIFO prices when quantity changes
+                updateFIFOPrices();
+                getBundleCost();
+                // Calculate production costs
+                calculateProductionCosts();
             });
 
             function loadBundleComponents(bundleProductId, warehouseId) {
@@ -363,6 +523,7 @@
                             } else {
                                 displayComponentsInput(bundleComponents);
                             }
+                            updateFIFOPrices();
                         } else {
                             bundleComponents = [];
                         }
@@ -394,11 +555,12 @@
 
                     componentsHtml += `
                 <tr>
-                    <td>${component.product_name}</td>
+                    <td data-product-id="${component.id}">${component.product_name}</td>
                     <td class="text-center">${component.unit}</td>
                     <td class="text-center">${formatNumber(component.quantity_required)}</td>
                     <td class="text-center total-required" data-stock-available="${component.stock_available}" data-qty-per-bundle="${component.quantity_required}">${formatNumber(totalRequired)}</td>
                     <td class="text-center">${formatNumber(component.stock_available)}</td>
+                    <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}"></td>
                     <td class="text-center">
                         ${isAvailable
                             ? '<span class="badge bg-label-success">Available</span>'
@@ -420,11 +582,13 @@
                 <tr data-component-index="${index}"
                     data-product-id="${component.id}"
                     data-qty-per-bundle="${component.quantity_required}"
-                    data-stock-available="${component.stock_available}">
+                    data-stock-available="${component.stock_available}"
+                    data-price-per-unit="${component.purchase_price}">
                     <td>${component.product_name}</td>
                     <td class="text-center">${component.unit}</td>
-                    <td class="text-center">${formatNumber(component.quantity_required)}</td>
-                    <td class="text-center stock-available">${formatNumber(component.stock_available)}</td>
+                    <td class="text-center" >${formatNumber(component.quantity_required)}</td>
+                    <td class="text-center stock-available" >${formatNumber(component.stock_available)}</td>
+                    <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}"></td>
                     <td>
                         <input type="text"
                             class="form-control numeric-input material-input"
@@ -463,7 +627,7 @@
                     // Update status based on availability
                     const row = $(this).closest('tr');
                     const stockAvailable = $(this).data('stock-available');
-                    const statusCell = row.find('td').eq(5);
+                    const statusCell = row.find('td').eq(6);
 
                     if (totalRequired <= stockAvailable) {
                         statusCell.html('<span class="badge bg-label-success">Available</span>');
@@ -709,6 +873,10 @@
                 formData.append('pic_id', $('#pic-user').val());
                 formData.append('description', $('#description').val());
                 formData.append('memo', $('#production-memo').val());
+                formData.append('bundle_price', $('#bundle-price').val());
+                formData.append('bundle_price_unit', $('#bundle-price-unit').val());
+                formData.append('total_component_cost_unit', $('#total-component-cost-unit').val());
+                formData.append('hpp_production', $('#hpp-production').val());
                 formData.append('production_mode', currentProductionMode);
 
                 // Include material inputs and leftover data for MATERIAL_BASED mode
