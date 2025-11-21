@@ -421,9 +421,9 @@ class ProductController extends Controller
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
 
                 //cost components
-                'cost' => 'required_if:type,"bundle"|array',
-                'cost.*.coa' => 'required_if:type,"bundle"|required_with:cost',
-                'cost.*.value' => 'required_if:type,"bundle"|required_with:cost|numeric',
+                'cost' => 'array',
+                'cost.*.coa' => 'required_with:cost',
+                'cost.*.value' => 'required_with:cost|numeric',
                 // Bundle accounts
                 'bundle_accounts' => [
                     function ($attribute, $value, $fail) use ($req) {
