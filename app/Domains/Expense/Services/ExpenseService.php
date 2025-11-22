@@ -131,30 +131,10 @@ class ExpenseService
             ->groupBy('t.id')
             ->first();
 
-        // dd($data);
         if ($data && $data->tags) {
             $data->tags = json_decode($data->tags); // Returns objects for view compatibility
         }
-        // // Process tags
-        // if (! empty($data->f_tag_codes)) {
-        //     $tagIds = json_decode($data->f_tag_codes, true);
 
-        //     if (is_array($tagIds) && ! empty($tagIds)) {
-        //         $tags = DB::table('m_tags')
-        //             ->whereIn('id', $tagIds)
-        //             ->pluck('name')
-        //             ->toArray();
-        //         $data->tags = $tags;
-        //            dd($tags);
-        //         $data->selected_tags = $tagIds;
-        //     } else {
-        //         $data->tags = [];
-        //         $data->selected_tags = [];
-        //     }
-        // } else {
-        //     $data->tags = [];
-        //     $data->selected_tags = [];
-        // }
         $data_detail = DB::table('t_expense_coa_details as d')
             ->select([
                 'd.id',
