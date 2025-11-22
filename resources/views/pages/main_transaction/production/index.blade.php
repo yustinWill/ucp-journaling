@@ -207,7 +207,7 @@
                             className: 'text-center',
                         },
                         {
-                            data: 'total_production_cost',
+                            data: 'hpp_production',
                             className: 'text-end',
                             render: function(data, type, row) {
                                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);

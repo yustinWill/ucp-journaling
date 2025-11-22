@@ -70,7 +70,6 @@ class CreateProductionAction
         if (empty($data['items'])) {
             return;
         }
-
         $itemService = app(ProductionItemService::class);
         $validationResult = $itemService->validateStockAvailability(
             $data['items'],
@@ -80,7 +79,6 @@ class CreateProductionAction
         $insufficientItems = array_filter($validationResult, function ($item) {
             return ! $item['is_available'];
         });
-
         if (! empty($insufficientItems)) {
             $itemNames = array_column($insufficientItems, 'product_name');
             throw new AppException(
@@ -312,16 +310,20 @@ class CreateProductionAction
 
             $unitCost = $product->average_price ?? 0;
 
+            // In Material-Based mode, we validate against material_input (what user inputs)
+            // But we only consume quantityConsumed (what's needed for production)
+            $materialInput = $input['material_input'];
+
             $items[] = [
                 'raw_material_product_id' => $input['product_id'],
-                'quantity_required' => $quantityConsumed, // What's needed for production
-                'quantity_consumed' => $quantityConsumed, // What's actually used
+                'quantity_required' => $materialInput, // For stock validation - what user is providing
+                'quantity_consumed' => $quantityConsumed, // What's actually used in production
                 'unit_code' => $input['unit'],
                 'unit_cost' => $unitCost,
                 'total_cost' => $quantityConsumed * $unitCost,
                 'product_name' => $input['product_name'],
                 // Store original material input and leftover for audit trail
-                'material_input' => $input['material_input'],
+                'material_input' => $materialInput,
                 'leftover' => $input['leftover'],
             ];
         }

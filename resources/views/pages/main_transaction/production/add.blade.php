@@ -52,7 +52,7 @@
                                 data-allow-clear="false" required>
                                 <option value="">Pilih Bundle Product</option>
                                 @foreach ($bundleProducts as $product)
-                                    <option value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
+                                    <option data-bundle-batch-qty="{{$product->bundle_batch_qty}}" value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -97,13 +97,13 @@
                 <div class="col-md-6">
                     <label class="form-label">Mode Produksi <span style="color: red;">*</span></label>
                     <div class="form-check form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" id="production-mode-toggle" />
+                        <input class="form-check-input" type="checkbox" id="production-mode-toggle" checked />
                         <label class="form-check-label" for="production-mode-toggle">
-                            <span id="production-mode-label">Mode: Quantity Planned (Default)</span>
+                            <span id="production-mode-label">Mode: Material-Based</span>
                         </label>
                     </div>
                     <small class="form-text text-muted" id="production-mode-description">
-                        Tentukan jumlah produksi, sistem akan hitung kebutuhan material
+                        Input material yang tersedia, sistem akan hitung maksimal produksi
                     </small>
                 </div>
                 <div class="col-md-6">
@@ -130,18 +130,30 @@
                 </div>
             </div>
 
-            <div class="row g-3 mb-4">
+            <!-- Batch Bundle Qty + Max Producible (Material-Based Mode Only) -->
+            <div class="row g-3 mb-4" id="material-based-container">
                 <div class="col-md-6">
-                    <label class="form-label">Quantity Planned <span style="color: red;">*</span></label>
-                    <input type="number" class="form-control" id="quantity-planned" name="quantity_planned"
-                        placeholder="100" min="1" step="1" required />
-                    <small class="form-text text-muted" id="quantity-planned-note">Jumlah bundle yang akan diproduksi</small>
+                    <label class="form-label">Batch Bundle Qty <span style="color: red;">*</span></label>
+                    <input type="number" class="form-control" id="batch-bundle-qty"
+                        placeholder="0" value="1" min="0" step="0.0001" disabled />
+                    <small class="form-text text-muted">Berapa batch yang akan diproduksi (bisa desimal)</small>
                 </div>
-                <div class="col-md-6" id="calculated-quantity-container" style="display: none;">
+
+                <div class="col-md-6">
                     <label class="form-label">Maximum Producible Quantity</label>
                     <input type="text" class="form-control" id="calculated-quantity" disabled
                         value="0" />
                     <small class="form-text text-muted">Jumlah maksimal yang bisa diproduksi dari material yang tersedia</small>
+                </div>
+            </div>
+
+            <!-- Quantity Planned (Always Visible) -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Quantity Planned <span style="color: red;">*</span></label>
+                    <input type="number" class="form-control" id="quantity-planned" name="quantity_planned"
+                        placeholder="0" min="1" step="1" required disabled />
+                    <small class="form-text text-muted" id="quantity-planned-note"><span style="color: #ff6b6b;">Dihitung otomatis dari material input</span></small>
                 </div>
             </div>
 
@@ -278,8 +290,9 @@
     <script>
         $(function() {
             // Global state variables
-            let currentProductionMode = 'QUANTITY_PLANNED'; // QUANTITY_PLANNED or MATERIAL_BASED
+            let currentProductionMode = 'MATERIAL_BASED'; // QUANTITY_PLANNED or MATERIAL_BASED
             let bundleComponents = [];
+            let productBundleBatchQty = 0; // Store the product's default bundle_batch_qty
             $('.currency-input').each(function() {
                 new Cleave(this, {
                     numeral: true,
@@ -291,7 +304,8 @@
             });
             function getBundleCost() {
                 const bundleProductId = $('#bundle-product').val();
-                let totalComponentPrice = 0;
+                const quantityPlanned = parseFloat($('#quantity-planned').val()) || 1;
+
                 $.ajax({
                     url: "{{ route('main_transaction.production.get_bundle_price') }}",
                     type: 'GET',
@@ -301,18 +315,18 @@
                     success: function(response) {
                         if (response.success) {
                             $('#bundle-price').val('Rp ' + formatNumber(response.bundle_price));
-                            
-                            const bundleUnitPrice = response.bundle_price / parseFloat($('#quantity-planned').val());
+
+                            const bundleUnitPrice = response.bundle_price / quantityPlanned;
                             $('#bundle-price-unit').val('Rp ' + formatNumber(bundleUnitPrice));
-                            $('.purchase-price').each(function() {
-                                totalComponentPrice += parseCurrency($(this).text()) || 0;
-                            });
-                            $('#total-component-cost-unit').val('Rp ' + formatNumber(totalComponentPrice));
-                            $('#hpp-production').val('Rp ' + formatNumber(bundleUnitPrice + totalComponentPrice));
-                            // Recalculate production costs after updating prices
+
+                            // Recalculate production costs after updating bundle price
                             calculateProductionCosts();
-                            
-                            console.log('✅ bundle cost Updated:', response.prices);
+
+                            console.log('✅ Bundle cost updated:', {
+                                bundlePrice: response.bundle_price,
+                                bundleUnitPrice: bundleUnitPrice,
+                                quantityPlanned: quantityPlanned
+                            });
                         }
                     },
                     error: function(xhr) {
@@ -406,6 +420,60 @@
                     }
                 });
             }
+
+            // Calculate production costs based on component prices
+            function calculateProductionCosts() {
+                const quantityPlanned = parseFloat($('#quantity-planned').val()) || 0;
+
+                if (quantityPlanned <= 0) {
+                    $('#total-component-cost-unit').val('Rp 0');
+                    $('#hpp-production').val('Rp 0');
+                    return;
+                }
+
+                let totalComponentCost = 0;
+
+                // Sum up all purchase prices from the visible component table
+                $('.purchase-price').each(function() {
+                    const pricePerUnit = parseFloat($(this).data('price-per-unit')) || 0;
+                    const $row = $(this).closest('tr');
+
+                    if (currentProductionMode === 'QUANTITY_PLANNED') {
+                        // In preview mode, use total required quantity
+                        const qtyPerBundle = parseFloat($row.find('.total-required').data('qty-per-bundle')) || 0;
+                        const totalRequired = qtyPerBundle * quantityPlanned;
+                        totalComponentCost += pricePerUnit * totalRequired;
+                    } else {
+                        // In material-based mode, use actual material input
+                        const materialInput = parseCurrency($row.find('.material-input').val()) || 0;
+                        totalComponentCost += pricePerUnit * materialInput;
+                    }
+                });
+
+                // Calculate per-unit costs
+                const totalComponentCostPerUnit = totalComponentCost / quantityPlanned;
+
+                // Get bundle production cost (additional costs like labor, overhead, etc.)
+                const bundlePriceText = $('#bundle-price').val() || 'Rp 0';
+                const bundlePrice = parseCurrency(bundlePriceText);
+                const bundlePricePerUnit = bundlePrice / quantityPlanned;
+
+                // HPP = Component costs per unit + Bundle production cost per unit
+                const hppPerUnit = totalComponentCostPerUnit + bundlePricePerUnit;
+
+                // Update the fields
+                $('#total-component-cost-unit').val('Rp ' + formatNumber(totalComponentCostPerUnit));
+                $('#hpp-production').val('Rp ' + formatNumber(hppPerUnit));
+
+                console.log('💰 Production Costs Calculated:', {
+                    totalComponentCost: totalComponentCost,
+                    totalComponentCostPerUnit: totalComponentCostPerUnit,
+                    bundlePricePerUnit: bundlePricePerUnit,
+                    hppPerUnit: hppPerUnit,
+                    quantityPlanned: quantityPlanned
+                });
+            }
+
             // Generate number button functionality
             $('#generate-number-btn').on('click', function() {
                 $.ajax({
@@ -437,10 +505,12 @@
                     $('#production-mode-label').text('Mode: Material-Based Input');
                     $('#production-mode-description').text('Input material yang tersedia, sistem akan hitung jumlah produksi maksimal');
 
-                    // Disable quantity planned and show calculated quantity
+                    // Show Material-Based container
+                    $('#material-based-container').show();
+
+                    // Disable quantity planned and update note
                     $('#quantity-planned').prop('disabled', true).val('');
-                    $('#quantity-planned-note').html('<span style="color: #ff6b6b;">Field disabled - jumlah dihitung otomatis dari material input</span>');
-                    $('#calculated-quantity-container').show();
+                    $('#quantity-planned-note').html('<span style="color: #ff6b6b;">Dihitung otomatis dari material input</span>');
 
                     // Switch component tables
                     $('#components-section-preview').hide();
@@ -452,10 +522,12 @@
                     $('#production-mode-label').text('Mode: Quantity Planned (Default)');
                     $('#production-mode-description').text('Tentukan jumlah produksi, sistem akan hitung kebutuhan material');
 
-                    // Enable quantity planned and hide calculated quantity
+                    // Hide Material-Based container
+                    $('#material-based-container').hide();
+
+                    // Enable quantity planned and update note
                     $('#quantity-planned').prop('disabled', false);
-                    $('#quantity-planned-note').text('Jumlah bundle yang akan diproduksi');
-                    $('#calculated-quantity-container').hide();
+                    $('#quantity-planned-note').text('Masukkan jumlah yang direncanakan untuk diproduksi');
 
                     // Switch component tables
                     $('#components-section-preview').show();
@@ -470,13 +542,25 @@
                 }
             });
 
-            // Bundle product selection change
-            $('#bundle-product, #warehouse').on('change', function() {
+            // Bundle product change - populate batch qty and update calculated quantity
+            $('#bundle-product').on('change', function() {
                 const bundleProductId = $('#bundle-product').val();
                 const warehouseId = $('#warehouse').val();
+
+                // Get batch-bundle-qty from selected option's data attribute
+                const selectedOption = $(this).find('option:selected');
+                productBundleBatchQty = parseFloat(selectedOption.data('bundle-batch-qty')) || 0;
+                console.log(productBundleBatchQty);
+
+                // Reset batch-multiplier field to 1 (for Quantity Planned mode)
+                $('#batch-multiplier').val(1);
+
+                // Update quantity-planned with default value (1 * productBundleBatchQty)
+                $('#quantity-planned').val(productBundleBatchQty);
                 getBundleCost();
+
                 if (bundleProductId && warehouseId) {
-                    loadBundleComponents(bundleProductId,warehouseId);
+                    loadBundleComponents(bundleProductId, warehouseId);
                     $('#components-disabled-message').hide();
 
                     if (currentProductionMode === 'QUANTITY_PLANNED') {
@@ -491,6 +575,63 @@
                     $('#components-rows-preview').empty();
                     $('#components-rows-input').empty();
                     bundleComponents = [];
+                }
+            });
+
+            // Warehouse change - only load components
+            $('#warehouse').on('change', function() {
+                const bundleProductId = $('#bundle-product').val();
+                const warehouseId = $('#warehouse').val();
+
+                if (bundleProductId && warehouseId) {
+                    loadBundleComponents(bundleProductId, warehouseId);
+                    $('#components-disabled-message').hide();
+
+                    if (currentProductionMode === 'QUANTITY_PLANNED') {
+                        $('#components-section-preview').show();
+                    } else {
+                        $('#components-section-input').show();
+                    }
+                } else {
+                    $('#components-disabled-message').show();
+                    $('#components-section-preview').hide();
+                    $('#components-section-input').hide();
+                    $('#components-rows-preview').empty();
+                    $('#components-rows-input').empty();
+                    bundleComponents = [];
+                }
+            });
+
+            // Batch multiplier change - multiply by product default and update quantity planned
+            $('#batch-multiplier').on('change input', function() {
+                const batchMultiplier = parseFloat($(this).val()) || 0;
+
+                // Calculate quantity planned: batch multiplier * product's default bundle_batch_qty
+                const calculatedQtyPlanned = batchMultiplier * productBundleBatchQty;
+
+                $('#quantity-planned').val(calculatedQtyPlanned);
+
+                // Trigger quantity planned updates
+                if (currentProductionMode === 'QUANTITY_PLANNED') {
+                    updateTotalRequiredQuantities();
+                }
+                updateFIFOPrices();
+                getBundleCost();
+                calculateProductionCosts();
+            });
+
+            // Batch bundle qty change (Material-Based mode) - update quantity planned
+            $('#batch-bundle-qty').on('change input', function() {
+                if (currentProductionMode === 'MATERIAL_BASED') {
+                    const batchBundleQty = parseFloat($(this).val()) || 0;
+
+                    // Calculate quantity planned: batch_bundle_qty * productBundleBatchQty
+                    const quantityPlanned = batchBundleQty * productBundleBatchQty;
+
+                    $('#quantity-planned').val(Math.round(quantityPlanned));
+
+                    // Recalculate material requirements display
+                    calculateMaterialRequirements();
                 }
             });
 
@@ -543,6 +684,26 @@
 
                 // Use toIndonesianNumberFormat which already handles decimal formatting correctly
                 return toIndonesianNumberFormat(num.toString());
+            }
+
+            // Format batch bundle qty - remove trailing zeros and unnecessary decimals
+            function formatBatchBundleQty(num) {
+                if (typeof num !== 'number') {
+                    num = parseFloat(num);
+                }
+                if (isNaN(num)) return '0';
+
+                // Check if it's an integer
+                if (Number.isInteger(num)) {
+                    return num.toString();
+                }
+
+                // For decimals, format with up to 4 decimal places, removing trailing zeros
+                let formatted = num.toFixed(4);
+                // Remove trailing zeros
+                formatted = formatted.replace(/\.?0+$/, '');
+
+                return formatted;
             }
 
             // Mode 1: Display components in preview mode (quantity planned)
@@ -612,6 +773,7 @@
                 // Attach event listeners to material inputs
                 $('.material-input').on('input', function() {
                     calculateMaximumProduction();
+                    calculateProductionCosts();
                 });
             }
 
@@ -637,13 +799,68 @@
                 });
             }
 
+            // Calculate material requirements and validate against inputs (Material-Based mode)
+            function calculateMaterialRequirements() {
+                if (currentProductionMode !== 'MATERIAL_BASED') return;
+
+                const batchBundleQty = parseFloat($('#batch-bundle-qty').val()) || 0;
+                let maxProducible = Infinity;
+
+                // Calculate required materials and check if inputs are sufficient
+                $('#components-rows-input tr').each(function() {
+                    const $row = $(this);
+                    const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
+                    const materialInputRaw = $row.find('.material-input').val();
+                    const materialInput = parseCurrency(materialInputRaw) || 0;
+                    const stockAvailable = parseFloat($row.data('stock-available'));
+
+                    // Calculate required material for the planned batch qty
+                    const requiredMaterial = batchBundleQty * qtyPerBundle;
+                    const componentIndex = $row.data('component-index');
+
+                    // Calculate how much can actually be produced from available input
+                    const possibleBatches = qtyPerBundle > 0 ? (materialInput / qtyPerBundle) : 0;
+                    if (possibleBatches < maxProducible) {
+                        maxProducible = possibleBatches;
+                    }
+
+                    // Update status based on input vs requirement
+                    const $statusCell = $row.find('.material-status');
+
+                    if (materialInput === 0) {
+                        $statusCell.html('<span class="badge bg-label-secondary">Waiting Input</span>');
+                        $row.find('.leftover-material').text('-');
+                    } else if (materialInput > stockAvailable) {
+                        $statusCell.html('<span class="badge bg-label-danger">Exceeds Stock</span>');
+                        $row.find('.leftover-material').text('-');
+                    } else if (materialInput < requiredMaterial) {
+                        $statusCell.html('<span class="badge bg-label-warning">Insufficient for Plan</span>');
+                        const leftover = 0; // All will be used but still not enough
+                        $row.find('.leftover-material').text(formatNumber(leftover));
+                    } else {
+                        // Sufficient material
+                        const leftover = materialInput - requiredMaterial;
+                        $row.find('.leftover-material').text(formatNumber(leftover));
+
+                        if (Math.abs(leftover) < 0.0001) {
+                            $statusCell.html('<span class="badge bg-label-success">Exact Match</span>');
+                        } else {
+                            $statusCell.html('<span class="badge bg-label-success">Sufficient</span>');
+                        }
+                    }
+                });
+
+                // Update max producible quantity
+                $('#calculated-quantity').val(maxProducible !== Infinity ? (maxProducible * productBundleBatchQty).toFixed(0) : '0');
+            }
+
             // Calculate maximum production based on material inputs
             function calculateMaximumProduction() {
-                let maxProduction = Infinity;
+                let minBatchRatio = Infinity;
                 let allInputsFilled = true;
                 let bottleneckComponent = '';
 
-                // First pass: Find bottleneck and validate inputs
+                // First pass: Find bottleneck batch ratio
                 $('#components-rows-input tr').each(function() {
                     const $row = $(this);
                     const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
@@ -657,17 +874,18 @@
                         allInputsFilled = false;
                     }
 
-                    // Calculate how many bundles can be produced from this material
-                    const possibleProduction = Math.floor(materialInput / qtyPerBundle);
+                    // Calculate batch ratio: material_input / qty_per_bundle
+                    // This tells us how many "batches worth" of this component we have
+                    const batchRatio = qtyPerBundle > 0 ? (materialInput / qtyPerBundle) : 0;
 
-                    // Find the minimum (bottleneck)
-                    if (possibleProduction < maxProduction) {
-                        maxProduction = possibleProduction;
+                    // Find the minimum batch ratio (bottleneck)
+                    if (batchRatio < minBatchRatio && materialInput > 0) {
+                        minBatchRatio = batchRatio;
                         bottleneckComponent = productName;
                     }
                 });
 
-                // Second pass: Update display and status based on bottleneck
+                // Second pass: Update display and status based on bottleneck batch ratio
                 $('#components-rows-input tr').each(function() {
                     const $row = $(this);
                     const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
@@ -675,7 +893,6 @@
                     const materialInput = parseCurrency(materialInputRaw) || 0;
                     const componentIndex = $row.data('component-index');
                     const stockAvailable = parseFloat($row.data('stock-available'));
-                    const unit = bundleComponents[componentIndex].unit;
 
                     // Update status
                     const $statusCell = $row.find('.material-status');
@@ -684,21 +901,20 @@
                         $statusCell.html('<span class="badge bg-label-secondary">Waiting Input</span>');
                         $row.find('.leftover-material').text('-');
                     } else if (materialInput > stockAvailable) {
-                        // CRITICAL FIX: Only show error when EXCEEDS stock
                         $statusCell.html('<span class="badge bg-label-danger">Exceeds Stock</span>');
                         $row.find('.leftover-material').text('-');
                     } else {
                         // Material is valid (less than or equal to stock)
-                        if (maxProduction !== Infinity && allInputsFilled) {
-                            // Use the BOTTLENECK maxProduction for all components
-                            const usedMaterial = maxProduction * qtyPerBundle;
+                        if (minBatchRatio !== Infinity && allInputsFilled) {
+                            // Calculate used material based on bottleneck batch ratio
+                            const usedMaterial = minBatchRatio * qtyPerBundle;
                             const leftover = materialInput - usedMaterial;
 
-                            // Format leftover
+                            // Format leftover with 4 decimals
                             $row.find('.leftover-material').text(formatNumber(leftover));
 
                             // Update status based on leftover
-                            if (leftover === 0) {
+                            if (Math.abs(leftover) < 0.0001) { // Account for floating point precision
                                 $statusCell.html('<span class="badge bg-label-success">Exact Match</span>');
                             } else if (leftover > 0) {
                                 $statusCell.html('<span class="badge bg-label-warning">Has Leftover</span>');
@@ -710,17 +926,25 @@
                     }
                 });
 
-                // Update calculated quantity field
-                if (maxProduction === Infinity || !allInputsFilled) {
+                // Update fields based on batch ratio
+                if (minBatchRatio === Infinity || !allInputsFilled) {
+                    $('#batch-bundle-qty').val('0');
                     $('#calculated-quantity').val('0');
                     $('#quantity-planned').val('0');
                 } else {
-                    $('#calculated-quantity').val(maxProduction);
-                    $('#quantity-planned').val(maxProduction); // Sync for form submission
+                    // batch-bundle-qty is the bottleneck batch ratio
+                    $('#batch-bundle-qty').val(formatBatchBundleQty(minBatchRatio));
+
+                    // quantity_planned = batch_ratio × productBundleBatchQty
+                    const quantityPlanned = minBatchRatio * productBundleBatchQty;
+                    $('#quantity-planned').val(Math.round(quantityPlanned));
+                    $('#calculated-quantity').val(Math.round(quantityPlanned));
 
                     // Console log for debugging
                     console.log('✅ Material-Based Calculation:', {
-                        maxProduction: maxProduction,
+                        batchBundleQty: minBatchRatio,
+                        quantityPlanned: quantityPlanned,
+                        productBundleBatchQty: productBundleBatchQty,
                         bottleneck: bottleneckComponent,
                         mode: 'MATERIAL_BASED'
                     });
@@ -873,10 +1097,12 @@
                 formData.append('pic_id', $('#pic-user').val());
                 formData.append('description', $('#description').val());
                 formData.append('memo', $('#production-memo').val());
-                formData.append('bundle_price', $('#bundle-price').val());
-                formData.append('bundle_price_unit', $('#bundle-price-unit').val());
-                formData.append('total_component_cost_unit', $('#total-component-cost-unit').val());
-                formData.append('hpp_production', $('#hpp-production').val());
+
+                // Parse currency values to remove formatting (Rp and thousand separators)
+                formData.append('bundle_price', parseCurrency($('#bundle-price').val()) || 0);
+                formData.append('bundle_price_unit', parseCurrency($('#bundle-price-unit').val()) || 0);
+                formData.append('total_component_cost_unit', parseCurrency($('#total-component-cost-unit').val()) || 0);
+                formData.append('hpp_production', parseCurrency($('#hpp-production').val()) || 0);
                 formData.append('production_mode', currentProductionMode);
 
                 // Include material inputs and leftover data for MATERIAL_BASED mode
