@@ -318,7 +318,7 @@ class ProductionController extends Controller
         $warehouseId = $request->get('warehouse_id');
 
         $data = app(ProductCompositionService::class)->findAllBasedOnProductId($bundleProductId,$warehouseId);
-
+        
         $components = [];
         foreach ($data as $row) {
             $components[] = [

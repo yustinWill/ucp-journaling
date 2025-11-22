@@ -270,6 +270,16 @@
                                         </div>
                                     </div>
 
+                                    @if($product->type === 'bundle')
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Qty Batch Bundle</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ $product->bundle_batch_qty ?? 0 }}" disabled />
+                                        </div>
+                                    </div>
+                                    @endif
+
                                     <div class="mt-3">
                                         <label class="form-label">Pelacakan Persediaan</label>
                                         <div class="row">
