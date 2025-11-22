@@ -2,8 +2,8 @@
 
 namespace App\Domains\Expense\Services;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ExpenseService
 {
@@ -27,13 +27,75 @@ class ExpenseService
             'attachment' => $data['attachment'] ?? null,
             'subtotal' => $data['subtotal'],
             'total_tax' => $data['tax_amount'],
-            
             'total_before_discount' => $data['total_before_discount'],
             'total_discount' => $data['discount_amount'],
             'total_amount' => $data['final_total'],
             'created_at' => now(),
             'created_by' => Auth::id(),
         ]);
+    }
 
+    public function findAllDatatable()
+    {
+        $query = DB::table($this->table_name.' as t')
+            ->select([
+                't.id',
+                't.transaction_date',
+                't.transaction_no',
+                't.description',
+                's.id AS supplier_id',
+                's.name AS supplier_name',
+                't.total_amount',
+                'usr.id AS created_by_id',
+                'usr.name AS created_by_name',
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
+            ])
+            ->leftJoin('m_contacts as s', 't.f_receiver_customer_id', '=', 's.id')
+            ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
+            ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id');
+
+        $query->where('t.company_code', session('user_company_code'));
+
+        if ($date = request()->input('date_range_filter')) {
+            if (strpos($date, ' - ') !== false) {
+                [$dateFrom, $dateTo] = explode(' - ', $date);
+                $query->whereBetween('t.transaction_date', [$dateFrom, $dateTo]);
+            } else {
+                // Single date filter
+                $query->where('t.transaction_date', $date);
+            }
+        }
+
+        if ($supplier_filter = request()->input('supplier_filter')) {
+            $query->where('t.f_receiver_customer_id', $supplier_filter);
+        }
+
+        if ($transaction_no = request()->input('transaction_no')) {
+            $query->where('t.transaction_no', 'like', "%{$transaction_no}%");
+        }
+        $query->groupBy('t.id');
+
+        $draw = (int) request()->input('draw', 1);
+        $recordsTotal = DB::table($this->table_name)->count();
+        $filteredQuery = clone $query;
+
+        // Pagination
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
+        $query->skip($start)->take($length);
+        $recordsFiltered = $filteredQuery->get()->count();
+        $query->orderBy('t.id', 'ASC');
+        $data = $query->get();
+
+        return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ];
     }
 }

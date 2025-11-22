@@ -751,7 +751,7 @@
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Berhasil!',
-                                        text: 'Jurnal berhasil ditambahkan.',
+                                        text: 'Data Pengeluaran berhasil ditambahkan.',
                                         customClass: {
                                             confirmButton: 'btn btn-success'
                                         },
