@@ -416,6 +416,17 @@ class ProductController extends Controller
                         }
                     },
                 ],
+                'bundle_batch_qty' => [
+                    'numeric',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            empty($value)
+                        ) {
+                            $fail('The batch bundle qty field is required when type is bundle.');
+                        }
+                    },
+                ],
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
@@ -488,6 +499,7 @@ class ProductController extends Controller
                 'bundle_inventory_account' => 'Akun Persediaan Bundle',
                 'bundle_track_quantity' => 'Lacak Kuantitas Bundle',
                 'bundle_track_batch' => 'Lacak Batch Bundle',
+                'bundle_batch_qty' => 'Qty Batch Bundle',
                 'bundle_components' => 'Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',
                 'bundle_components.*.qty' => 'Qty Komponen Bundle',
@@ -910,6 +922,17 @@ class ProductController extends Controller
                         }
                     },
                 ],
+                'bundle_batch_qty' => [
+                    'numeric',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            empty($value)
+                        ) {
+                            $fail('The batch bundle qty field is required when type is bundle.');
+                        }
+                    },
+                ],
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.composition_id' => [
                     'nullable',
@@ -1007,6 +1030,7 @@ class ProductController extends Controller
                 'bundle_inventory_account' => 'Akun Persediaan Bundle',
                 'bundle_track_quantity' => 'Lacak Kuantitas Bundle',
                 'bundle_track_batch' => 'Lacak Batch Bundle',
+                'bundle_batch_qty' => 'Qty Batch Bundle',
                 'bundle_components' => 'Komponen Bundle',
                 'bundle_components.*.composition_id' => 'ID Komposisi Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',

@@ -550,6 +550,18 @@
                     <!-- Bundle Configuration Tab -->
                     <div class="tab-pane fade mx-n6" id="bundle-config-tab" role="tabpanel">
                         <div class="mb-4">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Qty Batch Bundle <span style="color: red;">*</span></label>
+                                    <input type="text" class="form-control numeric-input text-end"
+                                        id="bundle-batch-qty" placeholder="0"
+                                        value="{{ old('bundle-batch-qty', $product->bundle_batch_qty ?? '') }}" />
+                                    <small class="form-text text-muted">Jumlah item per batch untuk bundle ini</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h6>Komposisi Bundle</h6>
                                 {{-- <button type="button" class="btn btn-primary" id="add-bundle-component">
@@ -1271,6 +1283,9 @@
                             'bundle-inventory-account',
                         ])
                     }
+
+                    // bundle_batch_qty is always required for bundle
+                    requiredFields.push('bundle-batch-qty');
                 }
 
                 requiredFields.forEach(function(fieldId) {
@@ -1383,6 +1398,7 @@
                         data.bundle_purchase_enabled = $('#bundle-enable-purchase').is(':checked');
                         data.bundle_sales_enabled = $('#bundle-enable-sales').is(':checked');
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');
+                        data.bundle_batch_qty = parseCurrency($('#bundle-batch-qty').val());
 
                         if (data.bundle_purchase_enabled) {
                             data.bundle_purchase_price = parseCurrency($('#bundle-purchase-price').val());

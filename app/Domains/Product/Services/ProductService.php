@@ -33,7 +33,7 @@ class ProductService
     public function findAllBundle()
     {
         return DB::table($this->table_name.' as m_products')
-            ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name')
+            ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name','m_products.bundle_batch_qty')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
             ->where('m_products.type', '=', 'BUNDLE')
             ->orderBy('m_products.name', 'asc')
@@ -113,7 +113,7 @@ class ProductService
             'monitor_stock' => $this->getValueWithBundlePrefix($data, 'inventory_enabled') === 'true' ? true : false,
             'minimum_stock' => $this->getValueWithBundlePrefix($data, 'minimum_stock'),
             'f_inventory_coa_code' => $this->getValueWithBundlePrefix($data, 'inventory_account'),
-
+            'bundle_batch_qty' => $data['type'] === 'bundle' ? ($data['bundle_batch_qty'] ?? null) : null,
             'track_qty_only' => isset($data['track_quantity']) && $data['track_quantity'] === 'true' ? true : false,
             'track_batch' => isset($data['track_batch']) && $data['track_batch'] === 'true' ? true : false,
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
@@ -145,7 +145,7 @@ class ProductService
             'unit_sell_price' => $this->getValueWithBundlePrefix($data, 'sales_price'),
             'f_sell_coa_code' => $this->getValueWithBundlePrefix($data, 'sales_account'),
             'f_sell_tax_id' => $this->getValueWithBundlePrefix($data, 'sales_tax'),
-
+            'bundle_batch_qty' => $data['type'] === 'bundle' ? ($data['bundle_batch_qty'] ?? null) : null,
             'monitor_stock' => $this->getValueWithBundlePrefix($data, 'inventory_enabled') === 'true' ? true : false,
             'minimum_stock' => $this->getValueWithBundlePrefix($data, 'minimum_stock'),
             'f_inventory_coa_code' => $this->getValueWithBundlePrefix($data, 'inventory_account'),

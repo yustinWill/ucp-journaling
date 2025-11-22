@@ -96,7 +96,7 @@ class ProductCompositionService
             ->leftJoinSub($stockSub, 'stock', function ($join) {
                 $join->on('stock.product_id', '=', 't.f_product_composition_product_id');
             })
-            ->where('t.f_product_id', 117)
+            ->where('t.f_product_id', $product_id)
             ->get();
         return $data;
 
