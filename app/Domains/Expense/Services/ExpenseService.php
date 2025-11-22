@@ -39,6 +39,8 @@ class ExpenseService
             'total_before_discount' => $data['total_before_discount'],
             'total_discount' => $data['discount_amount'],
             'total_amount' => $data['final_total'],
+            'total_remaining_amount' => $data['final_total'],
+            'total_paid_amount' => 0,
             'created_at' => now(),
             'created_by' => Auth::id(),
         ];
@@ -71,6 +73,8 @@ class ExpenseService
             'total_before_discount' => $data['total_before_discount'],
             'total_discount' => $data['discount_amount'],
             'total_amount' => $data['final_total'],
+            'total_remaining_amount' => $data['final_total'],
+            'total_paid_amount' => 0,
             'updated_at' => now(),
             'updated_by' => Auth::id(),
         ];
@@ -83,6 +87,19 @@ class ExpenseService
             ->where('id', $id)
             ->where('company_code', session('user_company_code'))
             ->update($update_data);
+    }
+
+    public function updateHeaderAmount($id, $total_amount)
+    {
+        DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->decrement('total_remaining_amount', $total_amount);
+
+        DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->increment('total_paid_amount', $total_amount);
     }
 
     public function findOne($id)
@@ -109,6 +126,8 @@ class ExpenseService
                 't.total_before_discount',
                 't.total_discount',
                 't.total_amount',
+                't.total_remaining_amount',
+                't.total_paid_amount',
                 't.created_at',
                 't.updated_at',
                 't.created_by',
@@ -150,8 +169,17 @@ class ExpenseService
             ->where('d.f_expense_id', $id)
             ->get();
 
-        $data->expense_lines = $data_detail;
+        $data_payment = DB::table('t_expense_payments as ter')
+            ->select([
+                '*',
+            ])
+            ->where('ter.f_expense_id', $id)
+            ->get();
 
+        $data->expense_lines = $data_detail;
+        $data->payments = $data_payment;
+
+        // dd($data->payments);
         return $data;
     }
 

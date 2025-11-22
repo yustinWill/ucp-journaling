@@ -202,7 +202,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_invoice_segment.'/export', 'export')->name('main_transaction.sales_invoice.export');
         Route::post($base_segment.$sales_invoice_segment.'/process_export', 'processExport')->name('main_transaction.sales_invoice.process_export');
         Route::get($base_segment.$sales_invoice_segment.'/payment_recipient', 'payment_recipient')->name('main_transaction.sales_invoice.payment_recipient');
-        
+
         Route::get($base_segment.$sales_invoice_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('master_transaction.sales_invoice.generate_transaction_number');
 
         // API routes for Sales Invoice functionality
@@ -228,6 +228,9 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::post($base_segment.$expense_segment.'/save', 'save')->name('main_transaction.expense.save');
         Route::get($base_segment.$expense_segment.'/edit/{id}', 'edit')->name('main_transaction.expense.edit');
         Route::post($base_segment.$expense_segment.'/update', 'update')->name('main_transaction.expense.update');
+        Route::get($base_segment.$expense_segment.'/payment/{id}', 'payment')->name('main_transaction.expense.payment');
+        Route::post($base_segment.$expense_segment.'/payment/submit', 'payment_save')->name('main_transaction.expense.payment.save');
+        Route::get($base_segment.$expense_segment.'/payment_detail/{id}', 'payment_detail')->name('main_transaction.expense.payment_detail');
         Route::get($base_segment.$expense_segment.'/detail/{id}', 'detail')->name('main_transaction.expense.detail');
         Route::get($base_segment.$expense_segment.'/categories', 'categories')->name('main_transaction.expense.categories');
         Route::get($base_segment.$expense_segment.'/statuses', 'statuses')->name('main_transaction.expense.statuses');
@@ -303,7 +306,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$return_management_segment.'/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.return_management.audit_log_data_table');
         Route::get($base_segment.$return_management_segment.'/edit/{id}', 'edit')->name('main_transaction.return_management.edit');
         Route::post($base_segment.$return_management_segment.'/update', 'update')->name('main_transaction.return_management.update');
-        
+
         // API endpoints
         Route::get($base_segment.$return_management_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.return_management.generate_transaction_number');
         Route::get($base_segment.$return_management_segment.'/get_invoice_products', 'getInvoiceProducts')->name('main_transaction.return_management.get_invoice_products');
