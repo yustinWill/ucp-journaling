@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Domains\Coa\Services\CoaService;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\Expense\Actions\CreateExpenseAction;
+use App\Domains\Expense\Services\ExpenseAuditLogService;
 use App\Domains\Expense\Services\ExpenseService;
 use App\Domains\PaymentMethod\Services\PaymentMethodService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
@@ -186,55 +187,18 @@ class ExpenseController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk melihat detail pengeluaran.');
         }
 
+        $expense = app(ExpenseService::class)->findOne($id);
+
+        // Get audit logs
+        $auditLogs = app(ExpenseAuditLogService::class)->findAllBasedOnExpenseId($id);
+
         // Permission checks for action buttons
         $canEdit = PermissionHelper::hasPermission('main_transaction_expense', 'write');
-
-        // Mocked expense data (in real implementation, this would come from database)
-        $expense = (object) [
-            'id' => $id,
-            'transaction_number' => 'EXP-2025-001',
-            'payment_method' => 'Cash',
-            'pay_later' => false,
-            'recipient' => 'PT. Supplier Utama',
-            'transaction_date' => '2025-07-26',
-            'payment_terms' => '-',
-            'due_date' => '-',
-            'billing_address' => 'Jl. Industri No. 123, Jakarta Barat 11530',
-            'description' => 'Keterangan tambahan untuk pembelian bahan baku plastik',
-            'memo' => 'Pembelian bahan baku untuk produksi bulan ini. Supplier memberikan diskon 5% untuk pembelian dalam jumlah besar.',
-            'attachment' => 'invoice_supplier.pdf',
-            'subtotal' => 25000000,
-            'tax_amount' => 2200000,
-            'total_before_discount' => 27200000,
-            'discount_amount' => 1200000,
-            'final_total' => 26000000,
-            'status' => 'Dibayar',
-            'created_by' => 'Ahmad Rizki',
-            'created_at' => '2025-07-26 09:30',
-            'updated_at' => '2025-07-26 10:15',
-            'tags' => [
-                (object) ['name' => 'Operasional', 'preview' => 'bg-label-primary'],
-                (object) ['name' => 'Urgent', 'preview' => 'bg-label-success'],
-            ],
-            'expense_lines' => [
-                (object) [
-                    'account_name' => '5101 - Biaya Operasional',
-                    'description' => 'Pembelian bahan baku plastik untuk kemasan',
-                    'tax_name' => 'PPN 11%',
-                    'amount' => 20000000,
-                ],
-                (object) [
-                    'account_name' => '5201 - Biaya Marketing',
-                    'description' => 'Biaya promosi produk',
-                    'tax_name' => '-',
-                    'amount' => 5000000,
-                ],
-            ],
-        ];
 
         return view('pages.main_transaction.expense.detail', [
             'expense' => $expense,
             'canEdit' => $canEdit,
+            'audit_logs' => $auditLogs,
         ]);
     }
 

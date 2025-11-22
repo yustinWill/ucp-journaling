@@ -22,21 +22,21 @@ class ExpenseAuditLogService
         ]);
     }
 
-    public function findAllBasedOnContactId($id)
+    public function findAllBasedOnExpenseId($id)
     {
         return DB::table($this->table_name.' as t')
             ->select([
                 't.id',
                 't.f_expense_id',
-                't.action_type',
+                't.action_type as action',
                 't.description',
                 't.metadata',
-                't.created_at',
+                't.created_at AS date',
                 't.created_by AS user_id',
                 'usr.name AS user_name',
             ])
             ->leftJoin('users as usr', 'usr.id', '=', 't.created_by')
-            ->where('t.f_contact_id', $id)
+            ->where('t.f_expense_id', $id)
             ->where('t.company_code', session('user_company_code'))
             ->orderBy('t.created_at', 'DESC')
             ->get();

@@ -35,6 +35,82 @@ class ExpenseService
         ]);
     }
 
+    public function findOne($id)
+    {
+        $data = DB::table($this->table_name.' as t')
+            ->select([
+                't.id',
+                't.type',
+                't.transaction_no',
+                't.transaction_date',
+                't.to_be_paid_later',
+                't.f_payment_term_id',
+                'pt.name AS payment_term_name',
+                't.due_date',
+                't.f_receiver_customer_id AS supplier_id',
+                's.name AS supplier_name',
+                't.billing_address',
+                't.description',
+                't.memo',
+                't.f_tag_codes',
+                't.attachment',
+                't.subtotal',
+                't.total_tax',
+                't.total_before_discount',
+                't.total_discount',
+                't.total_amount',
+                't.created_at',
+                't.updated_at',
+                't.created_by',
+                't.updated_by',
+                't.company_code',
+                't.f_payment_method_id',
+                'pm.name AS payment_method_name',
+
+            ])
+            ->leftJoin('m_contacts as s', 't.f_receiver_customer_id', '=', 's.id')
+            ->leftJoin('m_payment_methods as pm', 't.f_payment_method_id', '=', 'pm.id')
+            ->leftJoin('m_payment_terms as pt', 't.f_payment_term_id', '=', 'pt.id')
+            ->where('t.id', $id)
+            ->where('t.company_code', session('user_company_code'))
+            ->first();
+
+        // Process tags
+        if (! empty($data->f_tag_codes)) {
+            $tagIds = json_decode($data->f_tag_codes, true);
+            if (is_array($tagIds) && ! empty($tagIds)) {
+                $tags = DB::table('m_tags')
+                    ->whereIn('id', $tagIds)
+                    ->pluck('name')
+                    ->toArray();
+                $data->tags = $tags;
+                $data->selected_tags = $tagIds;
+            } else {
+                $data->tags = [];
+                $data->selected_tags = [];
+            }
+        } else {
+            $data->tags = [];
+            $data->selected_tags = [];
+        }
+        $data_detail = DB::table('t_expense_coa_details as d')
+            ->select([
+                'd.id',
+                'a.code as coa_code',
+                'a.name as coa_name',
+                'd.amount',
+                'mt.name as tax_name',
+            ])
+            ->leftJoin('m_coas as a', 'd.f_coa_code', '=', 'a.code')
+            ->leftJoin('m_taxes as mt', 'd.f_tax_id', '=', 'mt.id')
+            ->where('d.f_expense_id', $id)
+            ->get();
+
+        $data->expense_lines = $data_detail;
+
+        return $data;
+    }
+
     public function findAllDatatable()
     {
         $query = DB::table($this->table_name.' as t')
