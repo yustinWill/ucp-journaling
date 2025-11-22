@@ -5,8 +5,10 @@ namespace App\Http\Controllers\MainTransaction;
 use App\Domains\Coa\Services\CoaService;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\Expense\Actions\CreateExpenseAction;
+use App\Domains\Expense\Actions\PaymentExpenseAction;
 use App\Domains\Expense\Actions\UpdateExpenseAction;
 use App\Domains\Expense\Services\ExpenseAuditLogService;
+use App\Domains\Expense\Services\ExpensePaymentService;
 use App\Domains\Expense\Services\ExpenseService;
 use App\Domains\PaymentMethod\Services\PaymentMethodService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
@@ -144,6 +146,53 @@ class ExpenseController extends Controller
         ]);
     }
 
+    public function payment($id)
+    {
+        if (! PermissionHelper::hasPermission('main_transaction_expense', 'write')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit data pengeluaran.');
+        }
+
+        // Check permissions for adding related data
+        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
+        $canAddContacts = PermissionHelper::hasPermission('master_data_contact', 'write');
+        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_payment_term', 'write');
+
+        $taxOptions = app(TaxService::class)->findAll();
+        $availableTags = app(TagService::class)->findAll();
+        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
+        $paymentTerms = app(PaymentTermService::class)->findAll();
+        $paymentMethods = app(PaymentMethodService::class)->findAll();
+        $coa_accounts = app(CoaService::class)->findAll();
+
+        $expense = app(ExpenseService::class)->findOne($id);
+
+        return view('pages.main_transaction.expense.payment', [
+            'expense' => $expense,
+            'canAddTags' => $canAddTags,
+            'canAddContacts' => $canAddContacts,
+            'canAddPaymentTerms' => $canAddPaymentTerms,
+            'paymentMethods' => $paymentMethods,
+            'paymentTerms' => $paymentTerms,
+            'suppliers' => $suppliers,
+            'availableTags' => $availableTags,
+            'taxOptions' => $taxOptions,
+            'coa_accounts' => $coa_accounts,
+        ]);
+    }
+
+    public function payment_detail($id)
+    {
+        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
+            abort(403, 'Anda tidak memiliki akses untuk melihat detail pengeluaran.');
+        }
+
+        $payment = app(ExpensePaymentService::class)->findOneById($id);
+
+        return view('pages.main_transaction.expense.payment_detail', [
+            'payment' => $payment,
+        ]);
+    }
+
     public function detail($id)
     {
         if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
@@ -236,6 +285,69 @@ class ExpenseController extends Controller
             return response()->json([
                 'message' => SuccessCodes::CREATE_EXPENSE_SUCCESS->message(),
             ], SuccessCodes::CREATE_EXPENSE_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
+    public function payment_save(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'expense_id' => 'required|integer|exists:t_expenses,id',
+                'transaction_number' => 'required|string|max:50|unique:t_expenses,transaction_no',
+                'recipient_id' => 'nullable|integer|exists:m_contacts,id',
+                'transaction_date' => 'required|date|before_or_equal:today',
+                'payment_coa' => 'nullable|string|exists:m_coas,code',
+
+                // Additional information
+                'description' => 'nullable|string|max:1000',
+                'memo' => 'nullable|string|max:1000',
+
+                // Financial fields
+                'remaining_amount' => 'required|numeric|min:0.01',
+                'payment_amount' => 'required|numeric|min:0.01',
+
+                // Optional fields
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
+                'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB max
+            ], [
+                'transaction_number.required' => 'Nomor transaksi wajib diisi.',
+                'transaction_number.unique' => 'Nomor transaksi sudah digunakan.',
+                'recipient_id.exists' => 'Penerima tidak valid.',
+                'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
+                'transaction_date.before_or_equal' => 'Tanggal transaksi tidak boleh lebih dari hari ini.',
+                
+                'remaining_amount.required' => 'Subtotal wajib diisi.',
+                'remaining_amount.min' => 'Subtotal harus lebih dari 0.',
+                'payment_amount.required' => 'Total akhir wajib diisi.',
+                'payment_amount.min' => 'Total akhir harus lebih dari 0.',
+                'tags.*.exists' => 'Tag tidak valid.',
+                'attachment.mimes' => 'File lampiran harus berformat PDF, JPG, JPEG, atau PNG.',
+                'attachment.max' => 'Ukuran file lampiran maksimal 5MB.',
+            ]);
+            app(PaymentExpenseAction::class)->execute($validated);
+
+            return response()->json([
+                'message' => SuccessCodes::CREATE_EXPENSE_PAYMENT_SUCCESS->message(),
+            ], SuccessCodes::CREATE_EXPENSE_PAYMENT_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => ValidationHelper::formatErrors($e->errors()),

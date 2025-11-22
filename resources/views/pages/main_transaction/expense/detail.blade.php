@@ -28,6 +28,10 @@
                                     onclick="window.print()">
                                     <i class="icon-base ti tabler-printer me-2"></i>Print
                                 </button> --}}
+                                <a href="{{ route('main_transaction.expense.payment', $expense->id) }}"
+                                    class="btn btn-primary btn-md waves-effect waves-light">
+                                    <i class="icon-base ti tabler-credit-card-pay me-2"></i>Bayar Tagihan
+                                </a>
                                 @if ($canEdit)
                                     <a href="{{ route('main_transaction.expense.edit', $expense->id) }}"
                                         class="btn btn-success btn-md waves-effect waves-light">
@@ -84,6 +88,11 @@
                             data-bs-toggle="list" href="#horizontal-expense-info" aria-selected="true" role="tab">
                             <i class="icon-base ti tabler-info-circle me-2"></i>
                             <b>Informasi Detail</b>
+                        </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="expense-payment-list-item"
+                            data-bs-toggle="list" href="#horizontal-payment-info" aria-selected="true" role="tab">
+                            <i class="icon-base ti tabler-info-circle me-2"></i>
+                            <b>Informasi Pembayaran</b>
                         </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
@@ -205,10 +214,11 @@
                                     <div class="col-md-6 mb-4">
                                         <div class="mb-3">
                                             <label class="form-label">Tag</label>
-                                             @if(isset($expense->tags) && is_array($expense->tags) && count($expense->tags) > 0)
+                                            @if (isset($expense->tags) && is_array($expense->tags) && count($expense->tags) > 0)
                                                 <div class="d-flex flex-wrap gap-1">
-                                                    @foreach($expense->tags as $tag)
-                                                        <span class="badge {{ $tag->preview }}">{{ $tag->name }}</span>
+                                                    @foreach ($expense->tags as $tag)
+                                                        <span
+                                                            class="badge {{ $tag->preview }}">{{ $tag->name }}</span>
                                                     @endforeach
                                                 </div>
                                             @else
@@ -283,7 +293,44 @@
                                 </div>
                             </div>
                         </div>
-
+                        <!-- Audit Log Tab -->
+                        <div class="tab-pane fade" id="horizontal-payment-info" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Riwayat Pembayaran</h6>
+                            </div>
+                            <div class="mx-n6">
+                                <table class="table table-bordered" id="audit-log-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th>No Transaksi</th>
+                                            <th>Deskripsi</th>
+                                            <th>Nominal Pembayaran</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (isset($expense->payments) && count($expense->payments) > 0)
+                                            @foreach ($expense->payments as $payment)
+                                                <tr>
+                                                    <td>{{ $payment->transaction_date }}</td>
+                                                    <td>{{ $payment->transaction_no }}</td>
+                                                    <td>{{ $payment->description }}</td>
+                                                    <td>{{ number_format($payment->payment_amount, 0, ',', '.') }}</td>
+                                                    <td>
+                                                        <a href="{{ route('main_transaction.expense.payment_detail', $payment->id) }}"
+                                                            class="btn btn-sm btn-primary waves-effect waves-light"
+                                                            title="Detail">
+                                                            <i class="icon-xs icon-base ti tabler-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
                             <div class="section-header mt-6">

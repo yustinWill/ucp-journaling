@@ -49,6 +49,7 @@ enum SuccessCodes: string
     case UPDATE_SALES_INVOICE_SUCCESS = 'UPDATE_SALES_INVOICE_SUCCESS';
     case CREATE_STOCK_TRANSFER_SUCCESS = 'CREATE_STOCK_TRANSFER_SUCCESS';
     case CREATE_EXPENSE_SUCCESS = 'CREATE_EXPENSE_SUCCESS';
+    case CREATE_EXPENSE_PAYMENT_SUCCESS = 'CREATE_EXPENSE_PAYMENT_SUCCESS';
     case CREATE_SALES_INVOICE_PAYMENT_SUCCESS = 'CREATE_SALES_INVOICE_PAYMENT_SUCCESS';
 
     public function message(): string
@@ -97,6 +98,7 @@ enum SuccessCodes: string
             self::UPDATE_SALES_INVOICE_SUCCESS => 'Sales Invoice berhasil diperbarui.',
             self::CREATE_STOCK_TRANSFER_SUCCESS => 'Stock Transfer berhasil dibuat.',
             self::CREATE_EXPENSE_SUCCESS => 'Expense berhasil dibuat.',
+            self::CREATE_EXPENSE_PAYMENT_SUCCESS => 'Payment pengeluaran berhasil diterima.',
             self::CREATE_SALES_INVOICE_PAYMENT_SUCCESS => 'Payment berhasil diterima.',
         };
     }
@@ -147,6 +149,7 @@ enum SuccessCodes: string
             self::UPDATE_SALES_INVOICE_SUCCESS => self::OK,
             self::CREATE_STOCK_TRANSFER_SUCCESS => self::OK,
             self::CREATE_EXPENSE_SUCCESS => self::OK,
+            self::CREATE_EXPENSE_PAYMENT_SUCCESS => self::OK,
             self::CREATE_SALES_INVOICE_PAYMENT_SUCCESS => self::OK,
         };
     }

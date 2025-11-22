@@ -7,6 +7,7 @@ use App\Enums\ActionTypes;
 use App\Domains\Expense\Services\ExpenseService;
 use App\Domains\Expense\Services\ExpenseCoaDetailService;
 use App\Domains\Expense\Services\ExpenseAuditLogService;
+use App\Domains\Expense\Actions\PaymentExpenseAction;
 
 
 class CreateExpenseAction
@@ -32,6 +33,21 @@ class CreateExpenseAction
             }
             app(ExpenseCoaDetailService::class)->create($expense_coa_details);
 
+            if ($data['pay_later'] == false) {
+                app(PaymentExpenseAction::class)->execute([
+                    'expense_id' => $expense_id,
+                    'transaction_number' => $data['transaction_number'],
+                    'transaction_date' => $data['transaction_date'],
+                    'recipient_id' => $data['recipient_id'],
+                    'payment_coa' => null,
+                    'description' => $data['description'] ?? null,
+                    'memo' => $data['memo'] ?? null,
+                    'tags' => $data['tags'] ?? [],
+                    'attachment' => $data['attachment'] ?? null,
+                    'remaining_amount' => $data['final_total'],
+                    'payment_amount' => $data['final_total'],
+                ]);
+            }
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
                 'description' => 'Pembentukan Biaya',
