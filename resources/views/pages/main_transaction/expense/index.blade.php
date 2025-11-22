@@ -65,12 +65,12 @@
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-3">
                                     <label class="form-label">No Transaksi:</label>
-                                    <input type="text" class="form-control dt-input" data-column="2"
-                                        placeholder="Cari Berdasarkan No Transaksi" data-column-index="1" />
+                                    <input type="text" class="form-control dt-input" id="transaction-no-filter"
+                                        data-column="2" placeholder="Cari Berdasarkan No Transaksi" data-column-index="1" />
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-3">
                                     <label class="form-label">Supplier:</label>
-                                    <select class="global-select2 form-select" id="category-filter"
+                                    <select class="global-select2 form-select" id="supplier-filter"
                                         data-allow-clear="false">
                                         <option value="">Semua Supplier</option>
                                         @foreach ($suppliers as $supplier)
@@ -127,14 +127,14 @@
                 <table id="main-table" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th style="width: 100px;">Tanggal</th>
-                            <th style="width: 140px;">No Referensi</th>
+                            <th>Tanggal</th>
+                            <th>No Referensi</th>
                             <th>Keterangan</th>
-                            <th style="width: 180px;">Supplier/Vendor</th>
-                            <th style="width: 120px;">Amount</th>
-                            <th style="width: 120px;">Diinput Oleh</th>
-                            <th style="width: 120px;">Tag</th>
-                            <th style="width: 80px;">Aksi</th>
+                            <th>Supplier/Vendor</th>
+                            <th>Amount</th>
+                            <th>Diinput Oleh</th>
+                            <th>Tag</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -157,9 +157,15 @@
             const main_table = document.querySelector('#main-table');
             let dt_adv_filter;
 
-            if (main_table) {
-                dt_adv_filter = new DataTable(main_table, {
-                    ajax: `{{ route('main_transaction.expense.index_data_table') }}`,
+            dt_adv_filter = new DataTable(main_table, {
+                    ajax: {
+                        url: '{{ route('main_transaction.expense.index_data_table') }}',
+                        data: function(d) {
+                            d.date_range_filter = $('#date-range-picker').val()
+                            d.transaction_no = $('#transaction-no-filter').val()
+                            d.supplier_filter = $('#supplier-filter').val()
+                        }
+                    },
                     columns: [{
                             data: 'transaction_date'
                         },
@@ -212,10 +218,10 @@
                             render: function(data, type, row) {
                                 let tags = JSON.parse(data);
                                 return tags.map(tag => {
-                                    if (tag.code == null) {
+                                    if (tag.name == null) {
                                         return ``;
                                     }
-                                    return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
+                                    return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
                                 }).join('');
                             }
                         },
@@ -275,13 +281,25 @@
                     orderCellsTop: true,
                     ordering: false
                 });
-            }
 
             // Tag column toggle functionality
             $('#toggleTagColumn').on('change', function() {
                 const column = dt_adv_filter.column(6); // Tag column is index 7
                 column.visible(this.checked);
             });
+
+            let searchTimeout;
+            $('#date-range-picker, #transaction-no-filter, #supplier-filter').on(
+                'keyup change',
+                function() {
+                    clearTimeout(searchTimeout);
+                    const input = this;
+                    searchTimeout = setTimeout(function() {
+                        if (dt_adv_filter) {
+                            dt_adv_filter.search(input.value).draw();
+                        }
+                    }, 400); // 400ms delay
+                });
 
         });
     </script>

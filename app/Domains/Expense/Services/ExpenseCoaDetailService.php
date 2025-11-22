@@ -12,4 +12,11 @@ class ExpenseCoaDetailService
     {
         return DB::table($this->table_name)->insert($data);
     }
+    
+    public function deleteByExpenseId($expense_id)
+    {
+        return DB::table($this->table_name)
+            ->where('f_expense_id', $expense_id)
+            ->delete();
+    }
 }

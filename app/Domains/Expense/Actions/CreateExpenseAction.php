@@ -26,7 +26,7 @@ class CreateExpenseAction
                 $expense_coa_details[] = [
                     'f_expense_id' => $expense_id,
                     'f_coa_code' => $line['expense_account'],
-                    'f_tax_id' => $line['tax_id'] ?? null,
+                    'f_tax_id' => $line['tax_id'],
                     'amount' => $line['amount'],
                 ];
             }

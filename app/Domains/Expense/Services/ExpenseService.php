@@ -11,13 +11,22 @@ class ExpenseService
 
     public function create($data)
     {
-        return DB::table($this->table_name)->insertGetId([
+        if ($data['pay_later'] == false) {
+            $data['due_date'] = null;
+            $data['payment_terms'] = null;
+            $data['payment_method'] = $data['payment_method'];
+        } else {
+            $data['payment_method'] = null;
+        }
+
+        $insert_data = [
             'company_code' => session('user_company_code'),
             'type' => 'AA',
             'transaction_no' => $data['transaction_number'],
             'transaction_date' => $data['transaction_date'],
             'to_be_paid_later' => $data['pay_later'],
             'f_payment_term_id' => $data['payment_terms'],
+            'f_payment_method_id' => $data['payment_method'],
             'due_date' => $data['due_date'],
             'f_receiver_customer_id' => $data['recipient_id'],
             'billing_address' => $data['billing_address'],
@@ -32,7 +41,48 @@ class ExpenseService
             'total_amount' => $data['final_total'],
             'created_at' => now(),
             'created_by' => Auth::id(),
-        ]);
+        ];
+
+        return DB::table($this->table_name)->insertGetId($insert_data);
+    }
+
+    public function update($data, $id)
+    {
+        if ($data['pay_later'] == false) {
+            $data['due_date'] = null;
+            $data['payment_terms'] = null;
+            $data['payment_method'] = $data['payment_method'];
+        } else {
+            $data['payment_method'] = null;
+        }
+        $update_data = [
+            'transaction_date' => $data['transaction_date'],
+            'to_be_paid_later' => $data['pay_later'],
+            'f_payment_term_id' => $data['payment_terms'],
+            'f_payment_method_id' => $data['payment_method'],
+            'due_date' => $data['due_date'],
+            'f_receiver_customer_id' => $data['recipient_id'],
+            'billing_address' => $data['billing_address'],
+            'description' => $data['description'] ?? null,
+            'memo' => $data['memo'] ?? null,
+            'f_tag_codes' => json_encode($data['tags'] ?? []),
+            'subtotal' => $data['subtotal'],
+            'total_tax' => $data['tax_amount'],
+            'total_before_discount' => $data['total_before_discount'],
+            'total_discount' => $data['discount_amount'],
+            'total_amount' => $data['final_total'],
+            'updated_at' => now(),
+            'updated_by' => Auth::id(),
+        ];
+
+        if (isset($data['attachment']) && $data['attachment'] != null && $data['attachment'] != '') {
+            $update_data['attachment'] = $data['attachment'];
+        }
+
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->update($update_data);
     }
 
     public function findOne($id)
@@ -66,39 +116,53 @@ class ExpenseService
                 't.company_code',
                 't.f_payment_method_id',
                 'pm.name AS payment_method_name',
-
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin('m_contacts as s', 't.f_receiver_customer_id', '=', 's.id')
             ->leftJoin('m_payment_methods as pm', 't.f_payment_method_id', '=', 'pm.id')
             ->leftJoin('m_payment_terms as pt', 't.f_payment_term_id', '=', 'pt.id')
+            ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            })
+            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
+            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
             ->where('t.id', $id)
             ->where('t.company_code', session('user_company_code'))
+            ->groupBy('t.id')
             ->first();
 
-        // Process tags
-        if (! empty($data->f_tag_codes)) {
-            $tagIds = json_decode($data->f_tag_codes, true);
-            if (is_array($tagIds) && ! empty($tagIds)) {
-                $tags = DB::table('m_tags')
-                    ->whereIn('id', $tagIds)
-                    ->pluck('name')
-                    ->toArray();
-                $data->tags = $tags;
-                $data->selected_tags = $tagIds;
-            } else {
-                $data->tags = [];
-                $data->selected_tags = [];
-            }
-        } else {
-            $data->tags = [];
-            $data->selected_tags = [];
+        // dd($data);
+        if ($data && $data->tags) {
+            $data->tags = json_decode($data->tags); // Returns objects for view compatibility
         }
+        // // Process tags
+        // if (! empty($data->f_tag_codes)) {
+        //     $tagIds = json_decode($data->f_tag_codes, true);
+
+        //     if (is_array($tagIds) && ! empty($tagIds)) {
+        //         $tags = DB::table('m_tags')
+        //             ->whereIn('id', $tagIds)
+        //             ->pluck('name')
+        //             ->toArray();
+        //         $data->tags = $tags;
+        //            dd($tags);
+        //         $data->selected_tags = $tagIds;
+        //     } else {
+        //         $data->tags = [];
+        //         $data->selected_tags = [];
+        //     }
+        // } else {
+        //     $data->tags = [];
+        //     $data->selected_tags = [];
+        // }
         $data_detail = DB::table('t_expense_coa_details as d')
             ->select([
                 'd.id',
                 'a.code as coa_code',
                 'a.name as coa_name',
                 'd.amount',
+                'mt.id as tax_id',
+                'mt.code as tax_code',
                 'mt.name as tax_name',
             ])
             ->leftJoin('m_coas as a', 'd.f_coa_code', '=', 'a.code')

@@ -5,237 +5,282 @@
 @section('content')
     <!-- Main Content Card -->
     <div class="card mb-6">
-        <h4 class="card-header">Edit Biaya Pengeluaran #{{ $expense->transaction_number }}</h4>
+        <h4 class="card-header">Edit Biaya Pengeluaran #{{ $expense->transaction_no }}</h4>
         <form class="card-body" id="expense-form" method="POST" enctype="multipart/form-data" autocomplete="off">
             <input type="hidden" id="expense-id" value="{{ $expense->id }}">
             @csrf
-                
-                <!-- Section 1: Transaction Information -->
-                <div class="section-header mt-12">
-                    <h6>Informasi Transaksi</h6>
-                    <hr class="mx-n6">
+
+            <!-- Section 1: Transaction Information -->
+            <div class="section-header mt-12">
+                <h6>Informasi Transaksi</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <!-- Row 1: Payment Method, Pay Later, Transaction Number -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
+                    <select id="payment-method" name="payment_method" class="global-select2 form-select"
+                        data-allow-clear="false" required>
+                        <option value="">Pilih Metode Pembayaran</option>
+                        @foreach ($paymentMethods as $method)
+                            <option value="{{ $method->id }}"
+                                {{ $expense->f_payment_method_id == $method->id ? 'selected' : '' }}>{{ $method->code }} -
+                                {{ $method->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
-                
-                <!-- Row 1: Payment Method, Pay Later, Transaction Number -->
-                <div class="row g-3 mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
-                        <select id="payment-method" name="payment_method" class="global-select2 form-select" data-allow-clear="false" required>
-                            <option value="">Pilih Metode Pembayaran</option>
-                            @foreach($paymentMethods as $method)
-                                <option value="{{ $method['value'] }}" {{ $expense->payment_method == $method['value'] ? 'selected' : '' }}>{{ $method['label'] }}</option>
-                            @endforeach
-                        </select>
+                <div class="col-md-2 d-flex align-items-center">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="pay-later" name="pay_later" value="1"
+                            {{ $expense->to_be_paid_later ? 'checked' : '' }}>
+                        <label class="form-check-label" for="pay-later">
+                            Bayar Nanti
+                        </label>
                     </div>
-                    <div class="col-md-2 d-flex align-items-center">
-                        <div class="form-check mt-4">
-                            <input class="form-check-input" type="checkbox" id="pay-later" name="pay_later" value="1" {{ $expense->pay_later ? 'checked' : '' }}>
-                            <label class="form-check-label" for="pay-later">
-                                Bayar Nanti
-                            </label>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nomor Transaksi <span class="text-danger">*</span></label>
+                    <div class="row g-2">
+                        <div class="col">
+                            <input type="text" id="transaction-number" name="transaction_no" class="form-control"
+                                value="{{ $expense->transaction_no }}" placeholder="Auto-generated but editable" required
+                                disabled>
                         </div>
+                        {{-- <div class="col-auto">
+                            <button type="button" class="btn btn-outline-primary d-flex align-items-center"
+                                id="generate-number-btn" title="Generate New Number">
+                                <i class="icon-base ti tabler-refresh"></i>
+                            </button>
+                        </div> --}}
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Nomor Transaksi <span class="text-danger">*</span></label>
-                        <div class="row g-2">
-                            <div class="col">
-                                <input type="text" id="transaction-number" name="transaction_number" class="form-control" 
-                                       value="{{ $expense->transaction_number }}" placeholder="Auto-generated but editable" required>
-                            </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Recipient and Transaction Date -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Penerima</label>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select id="recipient" name="recipient" class="global-select2 form-select recipients-select"
+                                data-allow-clear="false">
+                                @foreach ($suppliers as $supplier)
+                                    <option value="{{ $supplier->id }}"
+                                        {{ $expense->supplier_id == $supplier->id ? 'selected' : '' }}>
+                                        {{ $supplier->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if ($canAddContacts)
                             <div class="col-auto">
-                                <button type="button" class="btn btn-outline-primary d-flex align-items-center" id="generate-number-btn" title="Generate New Number">
-                                    <i class="icon-base ti tabler-refresh"></i>
-                                </button>
+                                <a href="{{ route('master_data.contact.add') }}" target="_blank"
+                                    class="btn btn-outline-primary d-flex align-items-center" title="Tambah Kontak Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
                             </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
-                
-                <!-- Row 2: Recipient and Transaction Date -->
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Penerima</label>
+                <div class="col-md-6">
+                    <label class="form-label">Tanggal Transaksi <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control global-single-date-picker" id="transaction-date"
+                        name="transaction_date" value="{{ $expense->transaction_date }}" placeholder="YYYY-MM-DD" required>
+                </div>
+            </div>
+
+            <!-- Row 3: Payment Terms (Conditional) -->
+            <div id="payment-terms-section" class="row g-3 mb-3" style="display: none;">
+                <div class="col-md-6">
+                    <label class="form-label">Syarat Pembayaran <span class="text-danger">*</span></label>
+                    <div class="row g-2">
+                        <div class="col">
+                            <select id="payment-terms" name="payment_terms"
+                                class="global-select2 form-select payment-terms-select">
+                                <option value="">Pilih Syarat Pembayaran</option>
+                                @foreach ($paymentTerms as $item)
+                                    <option value="{{ $item->id }}" data-day-count="{{ $item->days }}"
+                                        {{ $expense->f_payment_term_id == $item->id ? 'selected' : '' }}>
+                                        {{ $item->code }} - {{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if ($canAddPaymentTerms)
+                            <div class="col-auto">
+                                <a href="{{ route('master_data.payment_term.add') }}" target="_blank"
+                                    class="btn btn-outline-primary d-flex align-items-center"
+                                    title="Tambah Syarat Pembayaran Baru">
+                                    <i class="icon-base ti tabler-plus"></i>
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tanggal Jatuh Tempo <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control global-single-date-picker" id="due-date" name="due_date"
+                        placeholder="YYYY-MM-DD" disabled>
+                </div>
+            </div>
+
+            <!-- Row 4: Billing Address & Description -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Alamat Penagihan</label>
+                    <textarea id="billing-address" name="billing_address" class="form-control" rows="3"
+                        placeholder="Alamat penagihan dari vendor...">{{ $expense->billing_address }}</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Keterangan</label>
+                    <textarea id="description" name="description" class="form-control" rows="3"
+                        placeholder="Keterangan tambahan...">{{ $expense->description }}</textarea>
+                </div>
+            </div>
+            <!-- Section 2: Expense Information -->
+            <div class="section-header mt-12">
+                <h6>Informasi Biaya</h6>
+            </div>
+
+            <!-- Expense Table -->
+            <div class="mx-n5 my-4">
+                <table id="expense-table" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Akun Biaya <span class="text-danger">*</span></th>
+                            <th>Pajak</th>
+                            <th>Jumlah <span class="text-danger">*</span></th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expense-rows">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add Row Button -->
+            <div class="mb-3">
+                <button type="button" class="btn btn-primary" id="add-expense-row">
+                    <i class="icon-base ti tabler-plus me-1"></i>
+                    <span class="align-middle">Tambah Baris</span>
+                </button>
+            </div>
+
+            <!-- Additional Information & Summary -->
+            <div class="section-header mt-12">
+                <h6>Informasi Tambahan & Ringkasan</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <!-- Split Layout: Memo & Financial Summary -->
+            <div class="row">
+                <!-- Left Side: Tag, Memo and Attachment -->
+                <div class="col-md-6 mb-4">
+                    <div class="mb-3">
+                        <label class="form-label">Tag</label>
                         <div class="row g-2">
                             <div class="col">
-                                <select id="recipient" name="recipient" class="global-select2 form-select recipients-select" data-allow-clear="true">
-                                    <option value="">Pilih Penerima</option>
+                                <select class="global-select2 form-select tags-select" id="expense-tags" multiple
+                                    data-allow-clear="false">
+                                    @foreach ($availableTags as $tag)
+                                        <option value="{{ $tag->id }}"
+                                            {{ in_array($tag->id, $expense->selected_tags ?? []) ? 'selected' : '' }}>
+                                            {{ $tag->code }} - {{ $tag->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
-                            @if($canAddContacts)
+                            @if ($canAddTags)
                                 <div class="col-auto">
-                                    <a href="{{ route('master_data.contact.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Kontak Baru">
+                                    <a href="{{ route('master_data.tag.add') }}" target="_blank"
+                                        class="btn btn-outline-primary d-flex align-items-center" id="add-new-expense-tag"
+                                        title="Tambah Tag Baru">
                                         <i class="icon-base ti tabler-plus"></i>
                                     </a>
                                 </div>
                             @endif
                         </div>
+                        <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi</small>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tanggal Transaksi <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control global-single-date-picker" id="transaction-date" name="transaction_date" 
-                               value="{{ $expense->transaction_date }}" placeholder="YYYY-MM-DD" required>
+                    <div class="mb-3">
+                        <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
+                        <textarea id="memo" name="memo" class="form-control" rows="4" maxlength="500"
+                            placeholder="Catatan internal...">{{ $expense->memo }}</textarea>
+                        <small class="form-text text-muted">Maksimal 500 karakter - Hanya untuk keperluan internal</small>
                     </div>
-                </div>
-                
-                <!-- Row 3: Payment Terms (Conditional) -->
-                <div id="payment-terms-section" class="row g-3 mb-3" style="display: none;">
-                    <div class="col-md-6">
-                        <label class="form-label">Syarat Pembayaran <span class="text-danger">*</span></label>
-                        <div class="row g-2">
-                            <div class="col">
-                                <select id="payment-terms" name="payment_terms" class="global-select2 form-select payment-terms-select">
-                                    <option value="">Pilih Syarat Pembayaran</option>
-                                </select>
-                            </div>
-                            @if($canAddPaymentTerms)
-                                <div class="col-auto">
-                                    <a href="{{ route('master_data.payment_term.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" title="Tambah Syarat Pembayaran Baru">
-                                        <i class="icon-base ti tabler-plus"></i>
-                                    </a>
-                                </div>
-                            @endif
+                    <div class="mb-3">
+                        <label class="form-label">Lampiran</label>
+                        <input type="file" id="attachment" name="attachment" class="form-control"
+                            accept=".xlsx,.xls,.docx,.doc,.pdf,.png,.zip">
+                        <small class="text-muted">File dapat berupa Excel, Word, PDF, PNG, atau Zip (Max: 10MB)</small>
+                    </div>
+                    @if ($expense->attachment)
+                        <div class="mt-2">
+                            <small class="text-muted">File saat ini: </small>
+                            <a href="{{ Storage::url($expense->attachment) }}" target="_blank" class="text-primary">
+                                <i class="icon-base ti tabler-download me-1"></i>Download File
+                            </a>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tanggal Jatuh Tempo <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control global-single-date-picker" id="due-date" name="due_date" placeholder="YYYY-MM-DD" disabled>
-                    </div>
-                </div>
-                
-                <!-- Row 4: Billing Address & Description -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label">Alamat Penagihan</label>
-                        <textarea id="billing-address" name="billing_address" class="form-control" 
-                                  rows="3" placeholder="Alamat penagihan dari vendor...">{{ $expense->billing_address }}</textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Keterangan</label>
-                        <textarea id="description" name="description" class="form-control" 
-                                  rows="3" placeholder="Keterangan tambahan...">{{ $expense->description }}</textarea>
-                    </div>
-                </div>
-                <!-- Section 2: Expense Information -->
-                <div class="section-header mt-12">
-                    <h6>Informasi Biaya</h6>
-                </div>
-                
-                <!-- Expense Table -->
-                <div class="mx-n5 my-4">
-                    <table id="expense-table" class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th width="40%">Akun Biaya <span class="text-danger">*</span></th>
-                                <th width="25%">Pajak</th>
-                                <th width="25%">Jumlah <span class="text-danger">*</span></th>
-                                <th width="10%">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="expense-rows">
-                        </tbody>
-                    </table>
+                    @endif
                 </div>
 
-                <!-- Add Row Button -->
-                <div class="mb-3">
-                    <button type="button" class="btn btn-primary" id="add-expense-row">
-                        <i class="icon-base ti tabler-plus me-1"></i>
-                        <span class="align-middle">Tambah Baris</span>
-                    </button>
+                <!-- Right Side: Summary Section -->
+                <div class="col-md-6">
+                    <div class="summary-section ps-4">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Subtotal</label>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control readonly-field" id="subtotal-amount"
+                                    dir="rtl" value="Rp 0" disabled>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Total Pajak</label>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control readonly-field" id="tax-amount" dir="rtl"
+                                    value="Rp 0" disabled>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Total Sebelum Diskon</label>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control readonly-field" id="total-before-discount"
+                                    dir="rtl" value="Rp 0" disabled>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Diskon</label>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control currency-input" id="discount-amount"
+                                    name="discount_amount" dir="rtl" placeholder="Rp 0"
+                                    value="{{ number_format($expense->total_discount, 0, ',', '.') }}">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label"><strong>Total Akhir</strong></label>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control readonly-field fw-bold" id="final-total"
+                                    dir="rtl" value="Rp 0" disabled>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Additional Information & Summary -->
-                <div class="section-header mt-12">
-                    <h6>Informasi Tambahan & Ringkasan</h6>
-                    <hr class="mx-n6">
-                </div>
-                
-                <!-- Split Layout: Memo & Financial Summary -->
-                <div class="row">
-                    <!-- Left Side: Tag, Memo and Attachment -->
-                    <div class="col-md-6 mb-4">
-                        <div class="mb-3">
-                            <label class="form-label">Tag</label>
-                            <div class="row g-2">
-                                <div class="col">
-                                    <select class="global-select2 form-select tags-select" id="expense-tags" multiple data-allow-clear="false">
-                                    </select>
-                                </div>
-                                @if($canAddTags)
-                                    <div class="col-auto">
-                                        <a href="{{ route('master_data.tag.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center" id="add-new-expense-tag" title="Tambah Tag Baru">
-                                            <i class="icon-base ti tabler-plus"></i>
-                                        </a>
-                                    </div>
-                                @endif
-                            </div>
-                            <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi</small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
-                            <textarea id="memo" name="memo" class="form-control" rows="4" 
-                                      maxlength="500" placeholder="Catatan internal...">{{ $expense->memo }}</textarea>
-                            <small class="form-text text-muted">Maksimal 500 karakter - Hanya untuk keperluan internal</small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Lampiran</label>
-                            <input type="file" id="attachment" name="attachment" class="form-control" 
-                                   accept=".xlsx,.xls,.docx,.doc,.pdf,.png,.zip">
-                            <small class="text-muted">File dapat berupa Excel, Word, PDF, PNG, atau Zip (Max: 10MB)</small>
-                        </div>
-                    </div>
-                    
-                    <!-- Right Side: Summary Section -->
-                    <div class="col-md-6">
-                        <div class="summary-section ps-4">
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label">Subtotal</label>
-                                </div>
-                                <div class="col-6">
-                                    <input type="text" class="form-control readonly-field" id="subtotal-amount" dir="rtl" value="Rp 0" disabled>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label">Total Pajak</label>
-                                </div>
-                                <div class="col-6">
-                                    <input type="text" class="form-control readonly-field" id="tax-amount" dir="rtl" value="Rp 0" disabled>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label">Total Sebelum Diskon</label>
-                                </div>
-                                <div class="col-6">
-                                    <input type="text" class="form-control readonly-field" id="total-before-discount" dir="rtl" value="Rp 0" disabled>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label">Diskon</label>
-                                </div>
-                                <div class="col-6">
-                                    <input type="text" class="form-control currency-input" id="discount-amount" name="discount_amount" dir="rtl" placeholder="Rp 0" value="{{ number_format($expense->discount_amount, 0, ',', '.') }}">
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label"><strong>Total Akhir</strong></label>
-                                </div>
-                                <div class="col-6">
-                                    <input type="text" class="form-control readonly-field fw-bold" id="final-total" dir="rtl" value="Rp 0" disabled>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                
+
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
-                <a href="{{ route('main_transaction.expense.detail', $expense->id) }}" class="btn btn-label-danger me-3">Batalkan</a>
+                <a href="{{ route('main_transaction.expense.detail', $expense->id) }}"
+                    class="btn btn-label-danger me-3">Batalkan</a>
                 <button type="submit" class="btn btn-success" id="submit-btn">Update</button>
             </div>
         </form>
@@ -243,333 +288,183 @@
 @stop
 
 @section('js_script')
-<script>
-$(function() {
-    // Initialize searchable selects
-    initializeSearchableSelects();
-    
-    // Initialize transaction number
-    initializeTransactionNumber();
-    
-    // Initialize form functionality
-    initializeFormLogic();
-    
-    // Initialize expense table
-    initializeExpenseTable();
-    
-    // Initialize calculations
-    initializeCalculations();
-    
-    function initializeTransactionNumber() {
-        // Handle generate button click
-        $('#generate-number-btn').on('click', function() {
-            generateTransactionNumber();
-        });
-        
-        // Validate for duplicates when manually edited
-        $('#transaction-number').on('blur', function() {
-            const number = $(this).val();
-            if (number) {
-                checkDuplicateNumber(number);
-            }
-        });
-    }
-    
-    function generateTransactionNumber() {
-        $('#generate-number-btn').prop('disabled', true);
-        
-        $.ajax({
-            url: '{{ route("master_data.transaction_number.generate_number", "expense") }}',
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#transaction-number').val(response.number);
+    <script>
+        $(function() {
+            // Initialize form functionality
+            initializeFormLogic();
+
+            // Initialize expense table
+            initializeExpenseTable();
+
+            // Initialize calculations
+            initializeCalculations();
+
+            function initializeFormLogic() {
+                // Pay Later checkbox logic
+                const isChecked = $('#pay-later').is(':checked');
+                if (isChecked) {
+                    // Disable payment method
+                    $('#payment-method').prop('disabled', true).removeClass('is-invalid');
+
+                    // Show payment terms section
+                    $('#payment-terms-section').show();
+
+                    // Make payment terms required
+                    $('#payment-terms, #due-date').prop('required', true);
+
+                    // Calculate due date if payment terms selected
+                    calculateDueDate();
                 } else {
-                    console.error('Failed to generate transaction number:', response.message);
-                    // Fallback - show error or use placeholder
-                    $('#transaction-number').val('EXP-' + new Date().getFullYear() + '-001');
+                    // Enable payment method
+                    $('#payment-method').prop('disabled', false);
+
+                    // Hide payment terms section
+                    $('#payment-terms-section').hide();
+
+                    // Remove payment terms requirement
+                    $('#payment-terms, #due-date').prop('required', false);
                 }
-            },
-            error: function(xhr) {
-                console.error('Error generating transaction number:', xhr.responseText);
-                // Fallback - use basic format
-                $('#transaction-number').val('EXP-' + new Date().getFullYear() + '-001');
-            },
-            complete: function() {
-                $('#generate-number-btn').prop('disabled', false);
+
+                $('#pay-later').on('change', function() {
+                    const isChecked = $(this).is(':checked');
+
+                    if (isChecked) {
+                        // Disable payment method
+                        $('#payment-method').prop('disabled', true).removeClass('is-invalid');
+
+                        // Show payment terms section
+                        $('#payment-terms-section').show();
+
+                        // Make payment terms required
+                        $('#payment-terms, #due-date').prop('required', true);
+
+                        // Calculate due date if payment terms selected
+                        calculateDueDate();
+                    } else {
+                        // Enable payment method
+                        $('#payment-method').prop('disabled', false);
+
+                        // Hide payment terms section
+                        $('#payment-terms-section').hide();
+
+                        // Remove payment terms requirement
+                        $('#payment-terms, #due-date').prop('required', false);
+                    }
+                });
+
+                // Payment terms change
+                $('#payment-terms').on('change', function() {
+                    handlePaymentTermsChange();
+                    calculateDueDate();
+                });
+
+                // Transaction date change
+                $('#transaction-date').on('change', function() {
+                    calculateDueDate();
+                });
+
+                // Recipient change - populate billing address
+                $('#recipient').on('change', function() {
+                    const recipientId = $(this).val();
+                    if (recipientId) {
+                        // Simulate address population
+                        $('#billing-address').val('Alamat akan dimuat dari data penerima...');
+                    } else {
+                        $('#billing-address').val('');
+                    }
+                });
             }
-        });
-    }
-    
-    function checkDuplicateNumber(number) {
-        $.ajax({
-            url: '{{ route("master_data.transaction_number.check_duplicate", "expense") }}',
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                number: number
-            },
-            success: function(response) {
-                if (response.exists) {
-                    $('#transaction-number').addClass('is-invalid');
-                    // You could show a tooltip or error message here
+
+            function handlePaymentTermsChange() {
+                const paymentTerms = $('#payment-terms').val();
+                const dueDateField = $('#due-date');
+
+                if (paymentTerms === 'Custom') {
+                    // Enable due date field for custom payment terms
+                    dueDateField.prop('disabled', false);
                 } else {
-                    $('#transaction-number').removeClass('is-invalid');
+                    // Disable due date field and auto-calculate for standard terms
+                    dueDateField.prop('disabled', true);
                 }
-            },
-            error: function(xhr) {
-                console.error('Error checking duplicate:', xhr.responseText);
             }
-        });
-    }
-    
-    function initializeSearchableSelects() {
-        // Initialize payment terms select with AJAX
-        $('.payment-terms-select').select2({
-            placeholder: 'Pilih Syarat Pembayaran',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("main_transaction.expense.payment_terms") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
 
-        // Initialize tax select with AJAX
-        $('.tax-select').select2({
-            placeholder: 'Tanpa Pajak',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("main_transaction.expense.taxes") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
+            function calculateDueDate() {
+                const transactionDate = $('#transaction-date').val();
+                const paymentTerms = $('#payment-terms').val();
 
-        // Initialize tags select with AJAX
-        $('.tags-select').select2({
-            placeholder: 'Pilih Tag',
-            allowClear: false,
-            ajax: {
-                url: '{{ route("main_transaction.expense.tags") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.code, text: item.label };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
+                const paymentTermsSelect = $('#payment-terms');
+                const selectedOption = paymentTermsSelect.find('option:selected');
+                const days = selectedOption.data('day-count'); // Get dat
+                const dueDateField = $('#due-date');
 
-        // Initialize recipients select with AJAX
-        $('.recipients-select').select2({
-            placeholder: 'Pilih Penerima',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("main_transaction.expense.recipients") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
+                // Only auto-calculate for non-custom payment terms when pay later is checked
+                if (transactionDate && paymentTerms && paymentTerms !== 'Custom' && $('#pay-later').is(
+                        ':checked')) {
+
+                    if (days > 0) {
+                        const date = new Date(transactionDate);
+                        date.setDate(date.getDate() + days);
+                        dueDateField.val(date.toISOString().split('T')[0]);
+                    }
+                }
             }
-        });
-        
-        // Only expense account selects use AJAX for dynamic row addition
-        $('.expense-account').select2({
-            placeholder: 'Pilih Akun Biaya',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("main_transaction.expense.accounts") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
+
+            function initializeExpenseTable() {
+                // Load existing expense lines
+                @foreach ($expense->expense_lines as $line)
+                    addExpenseRowWithData({
+                        account_code: '{{ $line->coa_code }}',
+                        account_name: '{{ $line->coa_name }}',
+                        tax_id: '{{ $line->tax_id }}',
+                        tax_code: '{{ $line->tax_code }}',
+                        tax_name: '{{ $line->tax_name }}',
+                        amount: {{ $line->amount }}
+                    });
+                @endforeach
+
+                // Add expense row
+                $('#add-expense-row').on('click', function() {
+                    addExpenseRow();
+                });
+
+                // Remove expense row function
+                window.removeRow = function(button) {
+                    if ($('#expense-rows tr').length > 1) {
+                        $(button).closest('tr').remove();
+                        calculateTotals();
+                    }
+                };
+
+                // Currency input formatting
+                $(document).on('input', '.currency-input', function() {
+                    formatCurrencyInput(this);
+                    calculateTotals();
+                });
             }
-        });
-    }
-    
-    function initializeFormLogic() {
-        // Pay Later checkbox logic
-        $('#pay-later').on('change', function() {
-            const isChecked = $(this).is(':checked');
-            
-            if (isChecked) {
-                // Disable payment method
-                $('#payment-method').prop('disabled', true).removeClass('is-invalid');
-                
-                // Show payment terms section
-                $('#payment-terms-section').show();
-                
-                // Make payment terms required
-                $('#payment-terms, #due-date').prop('required', true);
-                
-                // Calculate due date if payment terms selected
-                calculateDueDate();
-            } else {
-                // Enable payment method
-                $('#payment-method').prop('disabled', false);
-                
-                // Hide payment terms section
-                $('#payment-terms-section').hide();
-                
-                // Remove payment terms requirement
-                $('#payment-terms, #due-date').prop('required', false);
-            }
-        });
-        
-        // Payment terms change
-        $('#payment-terms').on('change', function() {
-            handlePaymentTermsChange();
-            calculateDueDate();
-        });
-        
-        // Transaction date change
-        $('#transaction-date').on('change', function() {
-            calculateDueDate();
-        });
-        
-        
-        // Recipient change - populate billing address
-        $('#recipient').on('change', function() {
-            const recipientId = $(this).val();
-            if (recipientId) {
-                // Simulate address population
-                $('#billing-address').val('Alamat akan dimuat dari data penerima...');
-            } else {
-                $('#billing-address').val('');
-            }
-        });
-    }
-    
-    function handlePaymentTermsChange() {
-        const paymentTerms = $('#payment-terms').val();
-        const dueDateField = $('#due-date');
-        
-        if (paymentTerms === 'Custom') {
-            // Enable due date field for custom payment terms
-            dueDateField.prop('disabled', false);
-        } else {
-            // Disable due date field and auto-calculate for standard terms
-            dueDateField.prop('disabled', true);
-        }
-    }
-    
-    function calculateDueDate() {
-        const transactionDate = $('#transaction-date').val();
-        const paymentTerms = $('#payment-terms').val();
-        const dueDateField = $('#due-date');
-        
-        // Only auto-calculate for non-custom payment terms when pay later is checked
-        if (transactionDate && paymentTerms && paymentTerms !== 'Custom' && $('#pay-later').is(':checked')) {
-            let days = 0;
-            switch (paymentTerms) {
-                case 'net_15': days = 15; break;
-                case 'net_30': days = 30; break;
-                case 'net_45': days = 45; break;
-                case 'net_60': days = 60; break;
-            }
-            
-            if (days > 0) {
-                const date = new Date(transactionDate);
-                date.setDate(date.getDate() + days);
-                dueDateField.val(date.toISOString().split('T')[0]);
-            }
-        }
-    }
-    
-    function initializeExpenseTable() {
-        // Load existing expense lines
-        @foreach($expense->expense_lines as $line)
-            addExpenseRowWithData({
-                account_code: '{{ $line->account_code }}',
-                account_name: '{{ $line->account_name }}',
-                tax_code: '{{ $line->tax_code }}',
-                tax_name: '{{ $line->tax_name }}',
-                amount: {{ $line->amount }}
-            });
-        @endforeach
-        
-        // Add expense row
-        $('#add-expense-row').on('click', function() {
-            addExpenseRow();
-        });
-        
-        // Remove expense row function
-        window.removeRow = function(button) {
-            if ($('#expense-rows tr').length > 1) {
-                $(button).closest('tr').remove();
-                calculateTotals();
-            }
-        };
-        
-        // Currency input formatting
-        $(document).on('input', '.currency-input', function() {
-            formatCurrencyInput(this);
-            calculateTotals();
-        });
-    }
-    
-    function addExpenseRow() {
-        const newRow = `
+
+            function addExpenseRow() {
+                const coaAccountOptions = `
+                    <option value="">Pilih Akun Biaya</option>
+                    @foreach ($coa_accounts as $account)
+                        <option value="{{ $account->code }}">{{ $account->code }} - {{ $account->name }}</option>
+                    @endforeach
+                `;
+                const taxOptions = `
+                    <option value="">Pilih Pajak</option>
+                    @foreach ($taxOptions as $tax)
+                        <option value="{{ $tax->id }}" data-rate="{{ $tax->rate }}">{{ $tax->code }} - {{ $tax->name }}</option>
+                    @endforeach
+                `;
+                const newRow = `
             <tr class="expense-row">
                 <td>
                     <select name="expense_accounts[]" class="form-select expense-account" required>
-                        <option value="">Pilih Akun Biaya</option>
+                        ${coaAccountOptions}
                     </select>
                 </td>
                 <td>
                     <select name="taxes[]" class="form-select tax-select" data-allow-clear="true">
-                        <option value="">Tanpa Pajak</option>
+                          ${taxOptions}
                     </select>
                 </td>
                 <td>
@@ -584,68 +479,51 @@ $(function() {
                 </td>
             </tr>
         `;
-        
-        $('#expense-rows').append(newRow);
-        
-        // Initialize select2 for new row
-        const newExpenseRow = $('#expense-rows tr:last');
-        
-        // Initialize expense account select with AJAX
-        newExpenseRow.find('.expense-account').select2({
-            placeholder: 'Pilih Akun Biaya',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("main_transaction.expense.accounts") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
+
+                $('#expense-rows').append(newRow);
+
+                // Initialize select2 for new row
+                const newExpenseRow = $('#expense-rows tr:last');
+
+                // Initialize expense account select with AJAX
+                newExpenseRow.find('.expense-account').select2({
+                    placeholder: 'Pilih Akun Biaya',
+                    allowClear: true,
+                });
+
+                // // Initialize tax select with AJAX
+                newExpenseRow.find('select[name="taxes[]"]').select2({
+                    placeholder: 'Tanpa Pajak',
+                    allowClear: true,
+                });
             }
-        });
-        
-        // Initialize tax select with AJAX
-        newExpenseRow.find('select[name="taxes[]"]').select2({
-            placeholder: 'Tanpa Pajak',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("main_transaction.expense.taxes") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
-    }
-    
-    function addExpenseRowWithData(data) {
-        const newRow = `
+
+            function addExpenseRowWithData(data) {
+                const coaAccountOptions = `
+                    <option value="">Pilih Akun Biaya</option>
+                    @foreach ($coa_accounts as $account)
+                        <option value="{{ $account->code }}">{{ $account->code }} - {{ $account->name }}</option>
+                    @endforeach
+                `;
+                const taxOptions = `
+                    <option value="">Pilih Pajak</option>
+                    @foreach ($taxOptions as $tax)
+                        <option value="{{ $tax->id }}" data-rate="{{ $tax->rate }}">{{ $tax->code }} - {{ $tax->name }}</option>
+                    @endforeach
+                `;
+
+                const newRow = `
             <tr class="expense-row">
                 <td>
                     <select name="expense_accounts[]" class="form-select expense-account" required>
-                        <option value="${data.account_code}" selected>${data.account_name}</option>
+                        
+                        ${coaAccountOptions}
                     </select>
                 </td>
                 <td>
                     <select name="taxes[]" class="form-select tax-select" data-allow-clear="true">
-                        ${data.tax_code ? `<option value="${data.tax_code}" selected>${data.tax_name}</option>` : '<option value="">Tanpa Pajak</option>'}
+                    
+                        ${taxOptions}
                     </select>
                 </td>
                 <td>
@@ -660,201 +538,232 @@ $(function() {
                 </td>
             </tr>
         `;
-        
-        $('#expense-rows').append(newRow);
-        
-        // Initialize select2 for new row
-        const newExpenseRow = $('#expense-rows tr:last');
-        
-        // Initialize expense account select with AJAX
-        newExpenseRow.find('.expense-account').select2({
-            placeholder: 'Pilih Akun Biaya',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("main_transaction.expense.accounts") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
-        
-        // Initialize tax select with AJAX
-        newExpenseRow.find('select[name="taxes[]"]').select2({
-            placeholder: 'Tanpa Pajak',
-            allowClear: true,
-            ajax: {
-                url: '{{ route("main_transaction.expense.taxes") }}',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return { search: params.term };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.map(function(item) {
-                            return { id: item.value, text: item.label };
-                        })
-                    };
-                },
-                cache: true
-            }
-        });
-    }
-    
-    function initializeCalculations() {
-        // Initial calculation
-        calculateTotals();
-        
-        // Discount input change
-        $('#discount-amount').on('input', function() {
-            formatCurrencyInput(this);
-            calculateTotals();
-        });
-    }
-    
-    function calculateTotals() {
-        let subtotal = 0;
-        let totalTax = 0;
-        
-        // Calculate subtotal and taxes
-        $('.expense-row').each(function() {
-            const amount = parseCurrency($(this).find('input[name="amounts[]"]').val());
-            const tax = $(this).find('select[name="taxes[]"]').val();
-            
-            subtotal += amount;
-            
-            if (tax === 'ppn') {
-                totalTax += amount * 0.11;
-            }
-        });
-        
-        const totalBeforeDiscount = subtotal + totalTax;
-        const discount = parseCurrency($('#discount-amount').val());
-        const finalTotal = totalBeforeDiscount - discount;
-        
-        // Update display
-        $('#subtotal-amount').val(formatCurrency(subtotal));
-        $('#tax-amount').val(formatCurrency(totalTax));
-        $('#total-before-discount').val(formatCurrency(totalBeforeDiscount));
-        $('#final-total').val(formatCurrency(finalTotal));
-    }
-    
-    // Form submission
-    $('#expense-form').on('submit', function(e) {
-        e.preventDefault();
-        
-        // Validation
-        if (!validateForm()) {
-            return false;
-        }
-        
-        $('#submit-btn').prop('disabled', true).html(
-            '<span class="spinner-border spinner-border-sm me-2"></span>Loading...'
-        );
-        
-        $.ajax({
-            url: "{{ route('main_transaction.expense.update') }}",
-            method: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: $('#expense-id').val(),
-                payment_method: $('#payment-method').val(),
-                pay_later: $('#pay-later').is(':checked'),
-                transaction_number: $('#transaction-number').val(),
-                recipient: $('#recipient').val(),
-                transaction_date: $('#transaction-date').val(),
-                payment_terms: $('#payment-terms').val(),
-                due_date: $('#due-date').val(),
-                billing_address: $('#billing-address').val(),
-                memo: $('#memo').val(),
-                discount_amount: parseCurrency($('#discount-amount').val()),
-                // TODO: Add expense lines and tags data
-            },
-            success: function(response) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Pengeluaran berhasil diperbarui.',
-                    customClass: {
-                        confirmButton: 'btn btn-success'
-                    },
-                    buttonsStyling: false
-                }).then(function() {
-                    window.location.href = "{{ route('main_transaction.expense.detail', $expense->id) }}";
-                });
-            },
-            error: function(xhr) {
-                const res = xhr.responseJSON;
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal menyimpan',
-                    html: res?.message || 'Terjadi kesalahan saat menyimpan data.',
-                    customClass: {
-                        confirmButton: 'btn btn-primary'
-                    },
-                    buttonsStyling: false
-                });
-            },
-            complete: function() {
-                $('#submit-btn').prop('disabled', false).html('Update');
-            }
-        });
-    });
-    
-    function validateForm() {
-        let isValid = true;
-        
-        // Check pay later requirements
-        if ($('#pay-later').is(':checked')) {
-            if (!$('#payment-terms').val()) {
-                $('#payment-terms').addClass('is-invalid');
-                isValid = false;
-            }
-            if (!$('#due-date').val()) {
-                $('#due-date').addClass('is-invalid');
-                isValid = false;
-            }
-        } else {
-            if (!$('#payment-method').val()) {
-                $('#payment-method').addClass('is-invalid');
-                isValid = false;
-            }
-        }
-        
-        // Check expense rows
-        let hasValidExpense = false;
-        $('.expense-row').each(function() {
-            const account = $(this).find('select[name="expense_accounts[]"]').val();
-            const amount = parseCurrency($(this).find('input[name="amounts[]"]').val());
-            
-            if (account && amount > 0) {
-                hasValidExpense = true;
-            }
-        });
-        
-        if (!hasValidExpense) {
-            alert('Minimal satu baris biaya harus diisi dengan akun dan jumlah yang valid.');
-            isValid = false;
-        }
-        
-        return isValid;
-    }
-    
-    // Remove validation classes on input
-    $('input, select').on('input change', function() {
-        $(this).removeClass('is-invalid');
-    });
 
-});
-</script>
+                $('#expense-rows').append(newRow);
+
+                // Initialize select2 for new row
+                const newExpenseRow = $('#expense-rows tr:last');
+
+                // Initialize expense account select with AJAX
+                newExpenseRow.find('.expense-account').select2({
+                    placeholder: 'Pilih Akun Biaya',
+                    allowClear: true
+                }).val(data.account_code).trigger('change');
+
+                // Initialize tax select and set value
+                newExpenseRow.find('select[name="taxes[]"]').select2({
+                    placeholder: 'Tanpa Pajak',
+                    allowClear: true
+                }).val(data.tax_id).trigger('change');
+            }
+
+            function initializeCalculations() {
+                // Initial calculation
+                calculateTotals();
+
+                // Discount input change
+                $('#discount-amount').on('input', function() {
+                    formatCurrencyInput(this);
+                    calculateTotals();
+                });
+            }
+
+            function calculateTotals() {
+                let subtotal = 0;
+                let totalTax = 0;
+
+                // Calculate subtotal and taxes
+                $('.expense-row').each(function() {
+                    const amount = parseCurrency($(this).find('input[name="amounts[]"]').val());
+                    const tax = $(this).find('select[name="taxes[]"]').val();
+                    const taxRate = parseFloat($(this).find('select[name="taxes[]"] option:selected').data(
+                        'rate')) || 0;
+                    subtotal += amount;
+
+                    totalTax += amount * taxRate / 100;
+                });
+
+                const totalBeforeDiscount = subtotal + totalTax;
+                const discount = parseCurrency($('#discount-amount').val());
+                const finalTotal = totalBeforeDiscount - discount;
+
+                // Update display
+                $('#subtotal-amount').val(formatCurrency(subtotal));
+                $('#tax-amount').val(formatCurrency(totalTax));
+                $('#total-before-discount').val(formatCurrency(totalBeforeDiscount));
+                $('#final-total').val(formatCurrency(finalTotal));
+            }
+
+            function collectFormData() {
+                const formData = new FormData();
+
+                // Basic fields
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('expense_id', $('#expense-id').val());
+                formData.append('payment_method', $('#payment-method').val());
+                formData.append('pay_later', $('#pay-later').is(':checked') ? '1' : '0');
+                formData.append('transaction_number', $('#transaction-number').val());
+                formData.append('recipient_id', $('#recipient').val() || '');
+                formData.append('transaction_date', $('#transaction-date').val());
+                formData.append('payment_terms', $('#payment-terms').val() || '');
+                formData.append('due_date', $('#due-date').val() || '');
+                formData.append('billing_address', $('#billing-address').val());
+                formData.append('description', $('#description').val());
+                formData.append('memo', $('#memo').val());
+                formData.append('discount_amount', parseCurrency($('#discount-amount').val()) || 0);
+
+                // Tags
+                const tags = $('#expense-tags').val() || [];
+                tags.forEach((tag, index) => {
+                    formData.append(`tags[${index}]`, tag);
+                });
+
+                // Attachment file
+                const attachmentFile = $('#attachment')[0].files[0];
+                if (attachmentFile) {
+                    formData.append('attachment', attachmentFile);
+                }
+
+                // Expense lines
+                $('.expense-row').each(function(index) {
+                    const expenseAccount = $(this).find('select[name="expense_accounts[]"]').val();
+                    const taxId = $(this).find('select[name="taxes[]"]').val();
+                    const taxRate = parseFloat($(this).find('select[name="taxes[]"] option:selected').data(
+                        'rate')) || 0;
+                    const amount = parseCurrency($(this).find('input[name="amounts[]"]').val()) || 0;
+
+                    if (expenseAccount && amount > 0) {
+                        formData.append(`expense_lines[${index}][expense_account]`, expenseAccount);
+                        formData.append(`expense_lines[${index}][tax_id]`, taxId);
+                        formData.append(`expense_lines[${index}][tax_rate]`, taxRate);
+                        formData.append(`expense_lines[${index}][amount]`, amount);
+                    }
+                });
+
+                // Totals
+                formData.append('subtotal', parseCurrency($('#subtotal-amount').val()) || 0);
+                formData.append('tax_amount', parseCurrency($('#tax-amount').val()) || 0);
+                formData.append('total_before_discount', parseCurrency($('#total-before-discount').val()) || 0);
+                formData.append('final_total', parseCurrency($('#final-total').val()) || 0);
+
+                return formData;
+            }
+
+            // Form submission
+            $('#expense-form').on('submit', function(e) {
+                e.preventDefault();
+
+                // Validation
+                if (!validateForm()) {
+                    return false;
+                }
+
+                const formData = collectFormData();
+
+                Swal.fire({
+                    title: 'Simpan Data?',
+                    text: 'Cek kembali data yang sudah diisi!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Simpan!',
+                    customClass: {
+                        confirmButton: 'btn btn-success',
+                        cancelButton: 'btn btn-label-secondary'
+                    },
+                    buttonsStyling: false
+                }).then(function(result) {
+                    if (result.value) {
+                        if (result.value) {
+                            $('#submit-btn').prop('disabled', true).html(
+                                '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading...'
+                            );
+                            $.ajax({
+                                url: "{{ route('main_transaction.expense.update') }}",
+                                method: 'POST',
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function(response) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil!',
+                                        text: 'Data Pengeluaran berhasil diubah.',
+                                        customClass: {
+                                            confirmButton: 'btn btn-success'
+                                        },
+                                        buttonsStyling: false
+                                    }).then(function() {
+                                        window.location.href =
+                                            "{{ route('main_transaction.expense.index') }}";
+                                    });
+                                },
+                                error: function(xhr) {
+                                    const res = xhr.responseJSON;
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal menyimpan',
+                                        html: res?.message ||
+                                            'Terjadi kesalahan saat menyimpan data.',
+                                        customClass: {
+                                            confirmButton: 'btn btn-primary'
+                                        },
+                                        buttonsStyling: false
+                                    });
+                                },
+                                complete: function() {
+                                    $('#submit-btn').prop('disabled', false).html(
+                                        'Simpan Data');
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            function validateForm() {
+                let isValid = true;
+
+                // Check pay later requirements
+                if ($('#pay-later').is(':checked')) {
+                    if (!$('#payment-terms').val()) {
+                        $('#payment-terms').addClass('is-invalid');
+                        isValid = false;
+                    }
+                    if (!$('#due-date').val()) {
+                        $('#due-date').addClass('is-invalid');
+                        isValid = false;
+                    }
+                } else {
+                    if (!$('#payment-method').val()) {
+                        $('#payment-method').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                // Check expense rows
+                let hasValidExpense = false;
+                $('.expense-row').each(function() {
+                    const account = $(this).find('select[name="expense_accounts[]"]').val();
+                    const amount = parseCurrency($(this).find('input[name="amounts[]"]').val());
+
+                    if (account && amount > 0) {
+                        hasValidExpense = true;
+                    }
+                });
+
+                if (!hasValidExpense) {
+                    alert('Minimal satu baris biaya harus diisi dengan akun dan jumlah yang valid.');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            // Remove validation classes on input
+            $('input, select').on('input change', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+        });
+    </script>
 @endsection

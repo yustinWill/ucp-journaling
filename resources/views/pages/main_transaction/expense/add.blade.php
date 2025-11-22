@@ -23,7 +23,7 @@
                         <select id="payment-method" name="payment_method" class="global-select2 form-select" required>
                             <option value="">Pilih Metode Pembayaran</option>
                             @foreach ($paymentMethods as $method)
-                                <option value="{{ $method->code }}">{{ $method->code }} - {{ $method->name }}</option>
+                                <option value="{{ $method->id }}">{{ $method->code }} - {{ $method->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -94,7 +94,7 @@
                                 <select id="payment-terms" name="payment_terms" class="global-select2 form-select">
                                     <option value="">Pilih Syarat Pembayaran</option>
                                     @foreach ($paymentTerms as $item)
-                                        <option value="{{ $item->code }}" data-day-count="{{ $item->days }}">
+                                        <option value="{{ $item->id }}" data-day-count="{{ $item->days }}">
                                             {{ $item->code }} - {{ $item->name }}</option>
                                     @endforeach
                                 </select>
@@ -690,14 +690,14 @@
                 // Expense lines
                 $('.expense-row').each(function(index) {
                     const expenseAccount = $(this).find('select[name="expense_accounts[]"]').val();
-                    const taxCode = $(this).find('select[name="taxes[]"]').val();
+                    const taxId = $(this).find('select[name="taxes[]"]').val();
                     const taxRate = parseFloat($(this).find('select[name="taxes[]"] option:selected').data(
                         'rate')) || 0;
                     const amount = parseCurrency($(this).find('input[name="amounts[]"]').val()) || 0;
 
                     if (expenseAccount && amount > 0) {
                         formData.append(`expense_lines[${index}][expense_account]`, expenseAccount);
-                        formData.append(`expense_lines[${index}][tax_code]`, taxCode || '');
+                        formData.append(`expense_lines[${index}][tax_id]`, taxId);
                         formData.append(`expense_lines[${index}][tax_rate]`, taxRate);
                         formData.append(`expense_lines[${index}][amount]`, amount);
                     }
@@ -721,8 +721,6 @@
                 }
 
                 const formData = collectFormData();
-
-                console.log('Form Data:', formData); // For debuggin
 
                 Swal.fire({
                     title: 'Simpan Data?',

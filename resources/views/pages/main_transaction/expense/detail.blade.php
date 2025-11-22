@@ -205,11 +205,10 @@
                                     <div class="col-md-6 mb-4">
                                         <div class="mb-3">
                                             <label class="form-label">Tag</label>
-                                            @if ($expense->tags && count($expense->tags) > 0)
+                                             @if(isset($expense->tags) && is_array($expense->tags) && count($expense->tags) > 0)
                                                 <div class="d-flex flex-wrap gap-1">
-                                                    @foreach ($expense->tags as $tag)
-                                                        <span
-                                                            class="badge {{ $tag->preview }}">{{ $tag->name }}</span>
+                                                    @foreach($expense->tags as $tag)
+                                                        <span class="badge {{ $tag->preview }}">{{ $tag->name }}</span>
                                                     @endforeach
                                                 </div>
                                             @else

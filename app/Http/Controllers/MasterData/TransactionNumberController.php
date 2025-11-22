@@ -223,9 +223,9 @@ class TransactionNumberController extends Controller
 
     public function generateNumber(Request $request, $module)
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        // if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
+        //     return response()->json(['error' => 'Unauthorized'], 403);
+        // }
 
         try {
             $number = $this->transactionNumberService->generateNumber($module);
