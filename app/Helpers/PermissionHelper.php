@@ -35,7 +35,7 @@ class PermissionHelper
     private static function getMockPermissions(): array
     {
         $sessionPermissions = self::generatePermissions();
-
+        
         // If session permissions are empty, provide fallback mock permissions for development
         if (empty($sessionPermissions)) {
             return [
@@ -49,6 +49,7 @@ class PermissionHelper
                 'master_data_user' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
                 'master_data_warehouse' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
                 'master_data_revenue_split' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'master_data_budged' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
 
                 // Transaction permissions
                 'main_transaction_sales_order' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true, 'import' => true, 'export' => true],
@@ -76,7 +77,7 @@ class PermissionHelper
         if (isset($mockPermissions[$module][$permission])) {
             return $mockPermissions[$module][$permission];
         }
-
+        
         // Fallback to Gate for production
         return Gate::allows("{$module}.{$permission}");
     }
@@ -175,6 +176,17 @@ class PermissionHelper
             'master_data.sales_person.update' => ['master_data_sales_person', 'write'],
             'master_data.sales_person.import' => ['master_data_sales_person', 'write'],
             'master_data.sales_person.delete' => ['master_data_sales_person', 'delete'],
+
+            // budged
+            'master_data.budged.index' => ['master_data_budged', 'read'],
+            'master_data.budged.detail' => ['master_data_budged', 'read'],
+            'master_data.budged.export' => ['master_data_budged', 'read'],
+            'master_data.budged.add' => ['master_data_budged', 'write'],
+            'master_data.budged.save' => ['master_data_budged', 'write'],
+            'master_data.budged.edit' => ['master_data_budged', 'write'],
+            'master_data.budged.update' => ['master_data_budged', 'write'],
+            'master_data.budged.import' => ['master_data_budged', 'write'],
+            'master_data.budged.delete' => ['master_data_budged', 'delete'],
 
             // Tax
             'master_data.tax.index' => ['master_data_tax', 'read'],

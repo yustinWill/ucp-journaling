@@ -114,6 +114,14 @@ class PermissionGateProvider extends ServiceProvider
             return $this->hasPermission($user, 'purchase', 'read');
         });
 
+        Gate::define('budged.write', function ($user) {
+            return $this->hasPermission($user, 'budged', 'write');
+        });
+
+        Gate::define('budged.read', function ($user) {
+            return $this->hasPermission($user, 'budged', 'read');
+        });
+
         Gate::define('purchase.write', function ($user) {
             return $this->hasPermission($user, 'purchase', 'write');
         });

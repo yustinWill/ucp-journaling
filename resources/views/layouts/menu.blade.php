@@ -175,6 +175,12 @@
                 <div data-i18n="Chat">Stock Opname</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['master_data.budged.*'])) active @endif">
+            <a href="{{ route('master_data.budged.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-money"></i>
+                <div data-i18n="Chat">Anggaran</div>
+            </a>
+        </li>
         <li class="menu-item @if (request()->routeIs(['master_data.inventory.*'])) active @endif">
             <a href="{{ route('master_data.inventory.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-factory"></i>
