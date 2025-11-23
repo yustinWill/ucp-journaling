@@ -181,7 +181,7 @@
                                     value="{{ old('purchase-price', $product->unit_purchase_price ?? '') }}" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Akun Pembelian <span style="color: red;">*</span></label>
+                                <label class="form-label">Akun Pembelian </label>
                                 <select class="global-select2 form-select flex-grow-1" id="purchase-account"
                                     name="purchase-account" data-allow-clear="false">
                                     <option value="">Pilih Akun</option>
