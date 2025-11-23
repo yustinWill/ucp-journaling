@@ -358,12 +358,21 @@
                         });
                     });
                 } else {
+                    // Material-Based mode: Use actual material input from user
                     $('#components-rows-input tr').each(function() {
                         const $row = $(this);
                         const productId = $row.data('product-id');
                         const qtyPerBundle = parseFloat($row.data('qty-per-bundle'));
-                        const totalRequired = qtyPerBundle * quantityPlanned;
-                        
+                        const materialInputRaw = $row.find('.material-input').val();
+                        let totalRequired;
+
+                        // If material input is provided, use it; otherwise calculate from qty per bundle
+                        if (materialInputRaw && materialInputRaw.trim() !== '') {
+                            totalRequired = parseCurrency(materialInputRaw);
+                        } else {
+                            totalRequired = qtyPerBundle * quantityPlanned;
+                        }
+
                         productRequirements.push({
                             product_id: productId,
                             quantity_required: totalRequired
@@ -774,6 +783,7 @@
                 $('.material-input').on('input', function() {
                     calculateMaximumProduction();
                     calculateProductionCosts();
+                    updateFIFOPrices();
                 });
             }
 

@@ -30,7 +30,6 @@ class CreateProductionAction
             // dd($totals);
             // 3. Create main production record
             $productionData = array_merge($data, $totals);
-
             $productionId = app(ProductionService::class)->create($productionData);
 
             // 4. Create production items (raw materials)
@@ -314,10 +313,16 @@ class CreateProductionAction
             // But we only consume quantityConsumed (what's needed for production)
             $materialInput = $input['material_input'];
 
+            if (isset($input['material_input'])) {
+                $neededQuantity = $materialInput;
+            }else {
+                $neededQuantity = $quantityRequired;
+            }
+
             $items[] = [
                 'raw_material_product_id' => $input['product_id'],
-                'quantity_required' => $materialInput, // For stock validation - what user is providing
-                'quantity_consumed' => $quantityConsumed, // What's actually used in production
+                'quantity_required' => $neededQuantity, // For stock validation - what user is providing
+                'quantity_consumed' => $neededQuantity, // What's actually used in production
                 'unit_code' => $input['unit'],
                 'unit_cost' => $unitCost,
                 'total_cost' => $quantityConsumed * $unitCost,
