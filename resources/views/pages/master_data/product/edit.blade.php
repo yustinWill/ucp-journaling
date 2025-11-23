@@ -670,7 +670,7 @@
                                             <tr data-repeater-item class="cost-component-row">
                                                 <td>
                                                     <div class="position-relative">
-                                                        <select class="select2CoaCost form-select cost-account">
+                                                        <select class="select2CoaCost form-select cost-coa">
                                                             <option value="">Pilih Akun</option>
                                                             @foreach ($coaList as $coa)
                                                                 <option value="{{ $coa->code }}">{{ $coa->code }} -
@@ -681,7 +681,7 @@
                                                 </td>
                                                 <td>
                                                     <input type="text"
-                                                        class="form-control currency-input text-end cost-price"
+                                                        class="form-control currency-input text-end cost-value"
                                                         placeholder="Rp 0">
                                                 </td>
                                                 <td>
