@@ -8,7 +8,7 @@ use App\Domains\Production\Actions\CreateProductionAction;
 use App\Domains\Production\Actions\ReversalProductionAction;
 use App\Domains\Production\Services\ProductionAuditLogService;
 use App\Domains\Production\Services\ProductionExpenseService;
-use App\Domains\product\Services\ProductCostCompositionService;
+use App\Domains\Product\Services\ProductCostCompositionService;
 use App\Domains\Production\Services\ProductionItemService;
 use App\Domains\Production\Services\ProductionService;
 use App\Domains\User\Services\UserService;
