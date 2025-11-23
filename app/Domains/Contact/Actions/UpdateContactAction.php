@@ -121,7 +121,6 @@ class UpdateContactAction
                     app(ContactProductService::class)->delete($contact_id, $delete_id);
                 }
             }
-
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
                 'description' => 'Perubahan Kontak',
@@ -141,7 +140,7 @@ class UpdateContactAction
                         ],
                         'contact_type' => [
                             'label' => 'Tipe Kontak',
-                            'before' => $old_data['header']->type,
+                            'before' => $old_data['header']->type ?? null,
                             'after' => $data['contact_type'] ?? null,
                         ],
                         'contact_status' => [
