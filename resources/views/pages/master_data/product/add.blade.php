@@ -1107,7 +1107,7 @@
                     if (isSingleEnablePurchase) {
                         requiredFields.push(...[
                             'purchase-price',
-                            'purchase-account',
+                            // 'purchase-account',
                             'purchase-tax',
                         ])
                     }
@@ -1130,7 +1130,7 @@
                     if (isBundleEnablePurchase) {
                         requiredFields.push(...[
                             'bundle-purchase-price',
-                            'bundle-purchase-account',
+                            // 'bundle-purchase-account',
                             'bundle-purchase-tax',
                         ])
                     }

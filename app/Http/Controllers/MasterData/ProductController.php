@@ -186,15 +186,7 @@ class ProductController extends Controller
                 ],
                 'purchase_account' => [
                     'string',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'single' &&
-                            $req->input('purchase_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The purchase account field is required when type is single and purchase enabled is true.');
-                        }
-                    },
+                    'nullable'
                 ],
                 'purchase_tax' => [
                     'string',
@@ -310,15 +302,7 @@ class ProductController extends Controller
                 ],
                 'bundle_purchase_account' => [
                     'string',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'bundle' &&
-                            $req->input('bundle_purchase_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The purchase account field is required when type is bundle and purchase enabled is true.');
-                        }
-                    },
+                    'nullable'
                 ],
                 'bundle_purchase_tax' => [
                     'string',
@@ -346,15 +330,7 @@ class ProductController extends Controller
                 ],
                 'bundle_sales_account' => [
                     'string',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'bundle' &&
-                            $req->input('bundle_sales_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The sales price field is required when type is bundle and sales enabled is true.');
-                        }
-                    },
+                    'nullable'
                 ],
                 'bundle_sales_tax' => [
                     'string',
@@ -692,15 +668,7 @@ class ProductController extends Controller
                 ],
                 'purchase_account' => [
                     'string',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'single' &&
-                            $req->input('purchase_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The purchase account field is required when type is single and purchase enabled is true.');
-                        }
-                    },
+                    'nullable'
                 ],
                 'purchase_tax' => [
                     'string',
@@ -816,15 +784,7 @@ class ProductController extends Controller
                 ],
                 'bundle_purchase_account' => [
                     'string',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'bundle' &&
-                            $req->input('bundle_purchase_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The purchase account field is required when type is bundle and purchase enabled is true.');
-                        }
-                    },
+                    'nullable'
                 ],
                 'bundle_purchase_tax' => [
                     'string',
@@ -852,15 +812,7 @@ class ProductController extends Controller
                 ],
                 'bundle_sales_account' => [
                     'string',
-                    function ($attribute, $value, $fail) use ($req) {
-                        if (
-                            $req->input('type') === 'bundle' &&
-                            $req->input('bundle_sales_enabled') === 'true' &&
-                            empty($value)
-                        ) {
-                            $fail('The sales price field is required when type is bundle and sales enabled is true.');
-                        }
-                    },
+                    'nullable'
                 ],
                 'bundle_sales_tax' => [
                     'string',
