@@ -34,21 +34,30 @@ class BudgedService
     {
         $currentDate = now()->toDateString();
 
+        // Subquery to get current period for each budget
+        $currentPeriodSubquery = DB::table($this->history_table)
+            ->select([
+                'budged_id',
+                'period_start_date',
+                'period_end_date',
+                'budged_limit_value',
+                'budged_remaining_value'
+            ])
+            ->where('period_start_date', '<=', $currentDate)
+            ->where('period_end_date', '>=', $currentDate);
+
         $query = DB::table($this->table_name . ' as b')
             ->select([
                 'b.id',
                 'b.budged_name',
-                'bh.period_start_date',
-                'bh.period_end_date',
-                'bh.budged_limit_value as current_limit',
-                'bh.budged_remaining_value as current_remaining',
+                'cp.period_start_date',
+                'cp.period_end_date',
+                'cp.budged_limit_value as current_limit',
+                'cp.budged_remaining_value as current_remaining',
             ])
-            ->leftJoin($this->history_table . ' as bh', function($join) use ($currentDate) {
-                $join->on('b.id', '=', 'bh.budged_id')
-                     ->where('bh.period_start_date', '<=', $currentDate)
-                     ->where('bh.period_end_date', '>=', $currentDate);
-            })
-            ->groupBy('b.id', 'b.budged_name', 'bh.period_start_date', 'bh.period_end_date', 'bh.budged_limit_value', 'bh.budged_remaining_value');
+            ->leftJoinSub($currentPeriodSubquery, 'cp', function($join) {
+                $join->on('b.id', '=', 'cp.budged_id');
+            });
 
         // Search filter
         if ($search = request()->input('search')) {
