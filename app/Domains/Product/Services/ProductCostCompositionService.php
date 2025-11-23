@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 class ProductCostCompositionService
 {
     private $table_name = 'm_product_composition_cost';
-
     public function create(array $data)
     {
         $insert_data = [];
