@@ -237,4 +237,25 @@ class BudgedService
             ->where('id', $history_id)
             ->delete();
     }
+
+    public function getActiveBudgets()
+    {
+        $currentDate = now()->toDateString();
+
+        return DB::table($this->table_name . ' as b')
+            ->join($this->history_table . ' as bh', 'b.id', '=', 'bh.budged_id')
+            ->where('bh.period_start_date', '<=', $currentDate)
+            ->where('bh.period_end_date', '>=', $currentDate)
+            ->select([
+                'bh.id as history_id',
+                'b.id as budged_id',
+                'b.budged_name',
+                'bh.period_start_date',
+                'bh.period_end_date',
+                'bh.budged_limit_value',
+                'bh.budged_remaining_value'
+            ])
+            ->orderBy('b.budged_name')
+            ->get();
+    }
 }

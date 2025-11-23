@@ -35,6 +35,15 @@ class UpdateExpenseAction
 
             app(ExpenseCoaDetailService::class)->create($expense_coa_details);
 
+            // Update budget mapping
+            DB::table('t_budged_expenses')->where('expense_id', $expense_id)->delete();
+            if (!empty($data['budged_history_id'])) {
+                DB::table('t_budged_expenses')->insert([
+                    'budged_history_id' => $data['budged_history_id'],
+                    'expense_id' => $expense_id,
+                ]);
+            }
+
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
                 'description' => 'Perubahan Biaya',

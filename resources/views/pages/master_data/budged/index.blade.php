@@ -21,17 +21,15 @@
                         </div>
                     </div>
                 </form>
-
                 <hr class="my-6 mx-n6" />
-
                 <!-- Action Buttons -->
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
                             @if ($canShowAddButton)
-                                <a href="{{ route('master_data.budged.add') }}"
+                                <button type="button" id="btn-add-budged"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
                             @endif
                         </div>
                     </div>
@@ -66,21 +64,20 @@
             const canShowEditButton = @json($canShowEditButton);
             const canShowDeleteButton = @json($canShowDeleteButton);
 
-            // Initialize DataTable
-            const mainTable = document.querySelector('#main-table');
             let dt_adv_filter;
 
-            if (mainTable) {
-                dt_adv_filter = new DataTable(mainTable, {
-                    processing: true,
-                    serverSide: true,
-                    ordering: false,
-                    ajax: {
-                        url: `{{ route('master_data.budged.index-data-table') }}`,
-                        data: function(d) {
-                            return d;
-                        }
-                    },
+            // Initialize DataTable
+            dt_adv_filter = new DataTable('#main-table', {
+                processing: true,
+                serverSide: true,
+                ordering: false,
+                ajax: {
+                    url: `{{ route('master_data.budged.index-data-table') }}`,
+                    data: function(d) {
+                        d.search = $('#search').val();
+                        return d;
+                    }
+                },
                     columns: [{
                             data: 'budged_name',
                             responsivePriority: 2
@@ -165,22 +162,24 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    responsive: true,
-                    orderCellsTop: true
+                    responsive: true
                 });
-            }
 
+            // Button click event
+            $('#btn-add-budged').on('click', function() {
+                window.location.href = "{{ route('master_data.budged.add') }}";
+            });
+
+            // Search functionality with debounce
             let searchTimeout;
-            $('#search').on('keyup change',
-                function() {
-                    clearTimeout(searchTimeout);
-                    const input = this;
-                    searchTimeout = setTimeout(function() {
-                        if (dt_adv_filter) {
-                            dt_adv_filter.search(input.value).draw();
-                        }
-                    }, 400); // 400ms delay
-                });
+            $('#search').on('keyup change', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    if (dt_adv_filter) {
+                        dt_adv_filter.draw();
+                    }
+                }, 400); // 400ms delay
+            });
         });
     </script>
 @endsection

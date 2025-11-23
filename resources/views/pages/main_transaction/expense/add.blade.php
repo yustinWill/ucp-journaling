@@ -83,6 +83,7 @@
                         <input type="date" class="form-control global-single-date-picker" id="transaction-date"
                             name="transaction_date" value="{{ date('Y-m-d') }}" placeholder="YYYY-MM-DD" required>
                     </div>
+                    
                 </div>
 
                 <!-- Row 3: Payment Terms (Conditional) -->
@@ -169,6 +170,19 @@
                 <div class="row">
                     <!-- Left Side: Tag, Memo and Attachment -->
                     <div class="col-md-6 mb-4">
+                        <div class="md-3">
+                            <label class="form-label">Anggaran</label>
+                            <select id="budget" name="budged_history_id" class="global-select2 form-select"
+                                data-allow-clear="true">
+                                <option value="">Pilih Anggaran</option>
+                                @foreach ($activeBudgets as $budget)
+                                    <option value="{{ $budget->history_id }}">
+                                        {{ $budget->budged_name }}
+                                        ({{ date('d/m/Y', strtotime($budget->period_start_date)) }} - {{ date('d/m/Y', strtotime($budget->period_end_date)) }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Tag</label>
                             <div class="row g-2">
@@ -674,7 +688,7 @@
                 formData.append('description', $('#description').val());
                 formData.append('memo', $('#memo').val());
                 formData.append('discount_amount', parseCurrency($('#discount-amount').val()) || 0);
-
+                formData.append('budged_history_id', $('#budget').val());
                 // Tags
                 const tags = $('#expense-tags').val() || [];
                 tags.forEach((tag, index) => {

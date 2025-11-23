@@ -33,6 +33,14 @@ class CreateExpenseAction
             }
             app(ExpenseCoaDetailService::class)->create($expense_coa_details);
 
+            // Save budget mapping if provided
+            if (!empty($data['budged_history_id'])) {
+                DB::table('t_budged_expenses')->insert([
+                    'budged_history_id' => $data['budged_history_id'],
+                    'expense_id' => $expense_id,
+                ]);
+            }
+
             if ($data['pay_later'] == false) {
                 app(PaymentExpenseAction::class)->execute([
                     'expense_id' => $expense_id,

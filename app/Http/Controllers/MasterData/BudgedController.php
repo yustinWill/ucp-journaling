@@ -17,8 +17,25 @@ class BudgedController extends Controller
 {
     public function index()
     {
-        $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
-
+        // $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
+        
+        $permissionData =  [
+            "permissions" => [
+                "read" => true,
+                "write" => true,
+                "delete" => true,
+                "approval" => true
+            ],
+            "canRead" => true,
+            "canWrite" => true,
+            "canDelete" => true,
+            "canApprove" => true,
+            "canShowAddButton" => true,
+            "canShowEditButton" => true,
+            "canShowDeleteButton" => true,
+            "canShowImportButton" => true,
+            "canShowExportButton" => true
+    ]   ; 
         return view('pages.master_data.budged.index', $permissionData);
     }
 

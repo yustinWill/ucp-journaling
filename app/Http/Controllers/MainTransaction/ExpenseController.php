@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
+use App\Domains\Budged\Services\BudgedService;
 use App\Domains\Coa\Services\CoaService;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\Expense\Actions\CreateExpenseAction;
@@ -22,6 +23,7 @@ use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ExpenseController extends Controller
@@ -66,6 +68,7 @@ class ExpenseController extends Controller
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $paymentMethods = app(PaymentMethodService::class)->findAll();
         $coa_accounts = app(CoaService::class)->findAll();
+        $activeBudgets = app(BudgedService::class)->getActiveBudgets();
 
         return view('pages.main_transaction.expense.add', [
             'canAddTags' => $canAddTags,
@@ -77,6 +80,7 @@ class ExpenseController extends Controller
             'paymentTerms' => $paymentTerms,
             'paymentMethods' => $paymentMethods,
             'coa_accounts' => $coa_accounts,
+            'activeBudgets' => $activeBudgets,
 
         ]);
     }
@@ -129,8 +133,14 @@ class ExpenseController extends Controller
         $paymentTerms = app(PaymentTermService::class)->findAll();
         $paymentMethods = app(PaymentMethodService::class)->findAll();
         $coa_accounts = app(CoaService::class)->findAll();
+        $activeBudgets = app(BudgedService::class)->getActiveBudgets();
 
         $expense = app(ExpenseService::class)->findOne($id);
+
+        // Get current budget mapping
+        $currentBudget = DB::table('t_budged_expenses')
+            ->where('expense_id', $id)
+            ->first();
 
         return view('pages.main_transaction.expense.edit', [
             'expense' => $expense,
@@ -143,6 +153,8 @@ class ExpenseController extends Controller
             'availableTags' => $availableTags,
             'taxOptions' => $taxOptions,
             'coa_accounts' => $coa_accounts,
+            'activeBudgets' => $activeBudgets,
+            'currentBudget' => $currentBudget,
         ]);
     }
 
@@ -240,6 +252,9 @@ class ExpenseController extends Controller
                 'tax_amount' => 'required|numeric|min:0',
                 'total_before_discount' => 'required|numeric|min:0.01',
                 'final_total' => 'required|numeric|min:0.01',
+
+                // Budget field
+                'budged_history_id' => 'nullable|string|exists:m_budgeds_history,id',
 
                 // Expense lines validation
                 'expense_lines' => 'required|array|min:1',
@@ -400,6 +415,9 @@ class ExpenseController extends Controller
                 'tax_amount' => 'required|numeric|min:0',
                 'total_before_discount' => 'required|numeric|min:0.01',
                 'final_total' => 'required|numeric|min:0.01',
+
+                // Budget field
+                'budged_history_id' => 'nullable|string|exists:m_budgeds_history,id',
 
                 // Expense lines validation
                 'expense_lines' => 'required|array|min:1',
