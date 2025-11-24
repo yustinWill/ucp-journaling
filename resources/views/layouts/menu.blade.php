@@ -16,10 +16,16 @@
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Dashboard & Laporan</span>
         </li>
-        <li class="menu-item @if (request()->routeIs(['dashboard.*'])) active @endif">
+        <li class="menu-item @if (request()->routeIs(['dashboard.index'])) active @endif">
             <a href="{{ route('dashboard.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-home"></i>
                 <div data-i18n="Dashboard">Dashboard</div>
+            </a>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['dashboard.summary'])) active @endif">
+            <a href="{{ route('dashboard.summary') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-chart-pie"></i>
+                <div data-i18n="Pencatatan Keuangan">Pencatatan Keuangan</div>
             </a>
         </li>
         <li class="menu-item">

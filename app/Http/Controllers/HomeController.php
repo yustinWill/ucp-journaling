@@ -104,4 +104,31 @@ class HomeController extends Controller
 
         return view('pages.dashboard', array_merge($dashboardData, $revenueSplitData));
     }
+
+    public function dashboardSummary(Request $req): View
+    {
+        // Get period from request or default to monthly
+        $period = $req->input('period', 'monthly');
+        $dateFrom = $req->input('date_from', now()->startOfMonth()->format('Y-m-d'));
+        $dateTo = $req->input('date_to', now()->endOfMonth()->format('Y-m-d'));
+
+        // TODO: Replace with actual database queries
+        // For now, using mock data
+        $salesPabrik = 125000000;
+        $biayaPengeluaran = 85000000;
+        $salesTotal = 180000000;
+        $result = $salesPabrik + $biayaPengeluaran - $salesTotal;
+
+        $summaryData = [
+            'period' => $period,
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'sales_pabrik' => $salesPabrik,
+            'biaya_pengeluaran' => $biayaPengeluaran,
+            'sales_total' => $salesTotal,
+            'result' => $result,
+        ];
+
+        return view('pages.dashboard_summary', $summaryData);
+    }
 }
