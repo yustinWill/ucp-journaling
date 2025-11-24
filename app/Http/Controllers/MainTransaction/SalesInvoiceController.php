@@ -541,7 +541,7 @@ class SalesInvoiceController extends Controller
                 'payment_value' => 'required|numeric|min:0',
                 'payment_date' => 'required|date',
                 'deduction_value' => 'nullable|numeric|min:0',
-                'deduction_account_code' => 'required|string|max:20',
+                'deduction_account_code' => 'nullable|string|max:20',
             ], [], [
                 'customer_id' => 'Pelanggan',
                 'account_code' => 'Akun Setor',

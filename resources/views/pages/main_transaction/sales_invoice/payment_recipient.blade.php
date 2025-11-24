@@ -118,10 +118,10 @@
                     
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <label class="form-label">Masukkan Jumlah Pemotongan<span style="color: red;">*</span></label>
+                            <label class="form-label">Masukkan Jumlah Pemotongan</label>
                         </div>
                         <div class="col-md-4">
-                            <select class="global-select2 form-select" id="deduction-account" name="deduction_account_code" data-allow-clear="false" required>
+                            <select class="global-select2 form-select" id="deduction-account" name="deduction_account_code" data-allow-clear="false">
                                 <option value="">Pilih Akun</option>
                                 @foreach ($coa_accounts as $account)
                                     <option value="{{ $account->code }}">

@@ -301,5 +301,34 @@ class SalesInvoiceService
             ->orderBy('si.invoice_date', 'ASC')
             ->get();
     }
-    
+
+    public function updateStatusIfFullyPaid($invoiceId)
+    {
+        // Get invoice grand total
+        $invoice = DB::table($this->table_name)
+            ->where('id', $invoiceId)
+            ->where('company_code', session('user_company_code'))
+            ->first(['grand_total', 'status']);
+
+        if (!$invoice) {
+            return;
+        }
+
+        // Get total payments made
+        $totalPayments = DB::table('t_sales_invoice_payment')
+            ->where('sales_invoice_id', $invoiceId)
+            ->sum(DB::raw('payment_value - COALESCE(deduction_value, 0)'));
+
+        // Check if fully paid
+        if ($totalPayments >= $invoice->grand_total && $invoice->status !== 'PAID') {
+            DB::table($this->table_name)
+                ->where('id', $invoiceId)
+                ->update([
+                    'status' => 'PAID',
+                    'updated_at' => now(),
+                    'updated_by' => Auth::id(),
+                ]);
+        }
+    }
+
 }

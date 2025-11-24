@@ -225,7 +225,6 @@ class RevenueSplitController extends Controller
         // dd($salesOrdersData);
         $auditLogs = app(RevenueSplitAuditLogService::class)->findAllBasedOnRevenueSplitId($id);
         $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
-
         return view('pages.master_data.revenue_split.detail', array_merge(
             compact('revenueSplt', 'auditLogs'),
             $salesOrdersData,
@@ -272,8 +271,6 @@ class RevenueSplitController extends Controller
             ->whereBetween('so.transaction_date', [$cycle->start_date, $cycle->end_date])
             ->orderBy('so.transaction_date', 'desc')
             ->get();
-
-
         $expected_keuntungan_parbrik = 0;
         $expected_keuntungan_owner = 0;
         $expected_keuntungan_perusahaan = 0;
@@ -288,6 +285,7 @@ class RevenueSplitController extends Controller
         $total_so_paid = 0;
 
         $so_counter_arr = [];
+        // dd($salesOrdersRaw); 
         foreach ($salesOrdersRaw as $row) {
             $so_counter_arr[] = [
                 'order_id' => $row->order_id,
@@ -305,7 +303,6 @@ class RevenueSplitController extends Controller
                 $expected_keuntungan_perusahaan += $row->porsi_perusahaan;
             }
         }
-
         $expected_total_achievement = $expected_keuntungan_parbrik + $expected_keuntungan_owner + $expected_keuntungan_perusahaan;
         $actual_total_achievement = $actual_keuntungan_parbrik + $actual_keuntungan_owner + $actual_keuntungan_perusahaan;
 
