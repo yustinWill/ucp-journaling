@@ -85,9 +85,9 @@
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <button type="button" class="btn btn-label-danger me-3" onclick="window.history.back()">Batalkan</button>
-                @if($canWrite)
+                {{-- @if($canWrite) --}}
                     <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
-                @endif
+                {{-- @endif --}}
             </div>
         </form>
     </div>
