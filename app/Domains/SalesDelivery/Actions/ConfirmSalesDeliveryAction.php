@@ -48,9 +48,6 @@ class ConfirmSalesDeliveryAction
                 $deliveryQty = $product->qty;
                 $warehouseId = $salesDelivery->warehouse_id;
 
-                // Update product stock (decrease)
-                app(ProductService::class)->updateStock($productId, '-', $deliveryQty);
-
                 // Record stock movement (OUT)
                 app(StockMovementLogService::class)->recordMovement(
                     $warehouseId,
@@ -62,6 +59,9 @@ class ConfirmSalesDeliveryAction
                     'Sales Delivery Confirmed: ' . ($salesDelivery->delivery_number ?? 'Unknown'),
                     $salesDelivery->delivery_date ?? now()
                 );
+                
+                // Update product stock (decrease)
+                app(ProductService::class)->updateStock($productId, '-', $deliveryQty);
 
                 // Update delivered quantities in sales order
                 if ($salesDelivery->sales_order_id && $product->sales_order_product_id) {
