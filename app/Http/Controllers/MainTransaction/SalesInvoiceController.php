@@ -20,6 +20,7 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
+use App\Helpers\PdfHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -585,6 +586,30 @@ class SalesInvoiceController extends Controller
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
                 'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
+    /**
+     * Print Sales Invoice PDF
+     *
+     * @param int $id - Sales Invoice ID
+     * @return \Illuminate\Http\Response
+     */
+    public function print($id)
+    {
+        try {
+            // Check read permission
+            if (!PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
+                abort(403, 'Anda tidak memiliki akses untuk mencetak invoice.');
+            }
+
+            // Generate printable HTML
+            $html = PdfHelper::getPrintableHtml('sales_invoice', $id);
+
+            return response($html)->header('Content-Type', 'text/html');
+        } catch (\Exception $e) {
+            DiscordNotifier::reportException($e);
+            abort(500, 'Terjadi kesalahan saat mencetak invoice: ' . $e->getMessage());
         }
     }
 }

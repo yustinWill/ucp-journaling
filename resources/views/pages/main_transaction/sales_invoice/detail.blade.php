@@ -22,9 +22,12 @@
                             </a>
                         @endif
 
-                        {{-- <button type="button" class="btn btn-primary btn-md waves-effect waves-light" onclick="window.print()">
+                        <a href="{{ route('main_transaction.sales_invoice.print', $invoice_data->id) }}"
+                            class="btn btn-primary btn-md waves-effect waves-light"
+                            target="_blank"
+                            title="Print Invoice">
                             <i class="icon-base ti tabler-printer me-2"></i>Print
-                        </button> --}}
+                        </a>
 
                         {{-- @if ($canEditSalesInvoice)
                             <a href="{{ route('main_transaction.sales_invoice.edit', $invoice_data->id) }}" class="btn btn-success btn-md waves-effect waves-light">

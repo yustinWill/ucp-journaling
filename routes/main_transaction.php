@@ -176,6 +176,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_delivery_segment.'/add', 'add')->name('main_transaction.sales_delivery.add');
         Route::post($base_segment.$sales_delivery_segment.'/create', 'create')->name('main_transaction.sales_delivery.create');
         Route::get($base_segment.$sales_delivery_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_delivery.detail');
+        Route::post($base_segment.$sales_delivery_segment.'/confirm/{id}', 'confirm')->name('main_transaction.sales_delivery.confirm');
         Route::get($base_segment.$sales_delivery_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_delivery.edit');
         Route::post($base_segment.$sales_delivery_segment.'/update', 'update')->name('main_transaction.sales_delivery.update');
         Route::get($base_segment.$sales_delivery_segment.'/import', 'import')->name('main_transaction.sales_delivery.import');
@@ -193,6 +194,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_invoice_segment.'/add', 'add')->name('main_transaction.sales_invoice.add');
         Route::post($base_segment.$sales_invoice_segment.'/store', 'store')->name('main_transaction.sales_invoice.store');
         Route::get($base_segment.$sales_invoice_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_invoice.detail');
+        Route::get($base_segment.$sales_invoice_segment.'/print/{id}', 'print')->name('main_transaction.sales_invoice.print');
         Route::get($base_segment.$sales_invoice_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_invoice.edit');
         Route::put($base_segment.$sales_invoice_segment.'/update/{id}', 'update')->name('main_transaction.sales_invoice.update');
         Route::get($base_segment.$sales_invoice_segment.'/import', 'import')->name('main_transaction.sales_invoice.import');

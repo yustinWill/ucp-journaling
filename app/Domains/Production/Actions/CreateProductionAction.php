@@ -47,10 +47,10 @@ class CreateProductionAction
             $stockResult = $this->processStockMovements($productionId, $data);
 
             // Update production with stock processing results
-            // app(ProductionService::class)->update($productionId, [
-            //     'quantity_produced' => $data['quantity_produced'] ?? $data['quantity_planned'],
-            //     'status' => 'COMPLETED'
-            // ] + $productionData);
+            app(ProductionService::class)->update($productionId, [
+                'quantity_produced' => $data['quantity_produced'] ?? $data['quantity_planned'],
+                'status' => 'COMPLETED'
+            ] + $productionData);
 
             // 7. Create audit log
             app(ProductionAuditLogService::class)->logCreation(

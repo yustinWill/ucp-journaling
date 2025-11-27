@@ -57,6 +57,7 @@ class SalesDeliveryService
 
                 'w.name as warehouse_name',
                 'u.name as created_by_name',
+                'is_confirmed',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin('m_contacts as c', 't_sales_deliveries.customer_id', '=', 'c.id')
@@ -83,7 +84,6 @@ class SalesDeliveryService
         if ($data->attachment) {
             $data->attachment = Storage::disk('public')->url($data->attachment);
         }
-
         return $data;
     }
 

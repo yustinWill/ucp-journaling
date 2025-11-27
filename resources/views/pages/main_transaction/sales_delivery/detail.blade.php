@@ -10,46 +10,21 @@
                 <div class="col-md-8">
                     <h4 class="mb-3">Detail Sales Delivery</h4>
                 </div>
-                {{-- <div class="col-md-4">
-                    @php
-                        $totalActions = 0;
-                        if($canEdit) $totalActions++; // Edit always present
-                        // Add more actions based on status if needed
-                    @endphp
-
-                    @if ($totalActions < 3)
-                        <div class="d-flex gap-2 justify-content-end">
-                            @if ($canEdit)
-                                <a href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id) }}"
-                                    class="btn btn-primary btn-md waves-effect waves-light">
-                                    <i class="icon-base ti tabler-edit me-2"></i>
-                                    Edit
-                                </a>
-                            @endif
-                        </div>
-                    @else
-                        <!-- Show dropdown for 3 or more actions -->
-                        <div class="d-flex gap-2 justify-content-end">
-                            <div class="dropdown">
-                                <button type="button" class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Aksi
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    @if ($canEdit)
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id) }}">
-                                                <i class="icon-base ti tabler-edit me-2"></i>
-                                                Edit
-                                            </a>
-                                        </li>
-                                    @endif
-                                    <!-- Add status-based actions here if needed -->
-                                </ul>
-                            </div>
-                        </div>
-                    @endif
-                </div> --}}
+                <div class="col-md-4">
+                    <div class="d-flex gap-2 justify-content-end">
+                        @if ($salesDelivery->is_confirmed !== 1)
+                            <button type="button" id="btn-confirm-delivery" class="btn btn-success btn-md waves-effect waves-light">
+                                <i class="icon-base ti tabler-check me-2"></i>
+                                Konfirm
+                            </button>
+                        @else
+                            <span class="badge bg-label-success fs-6 py-2 px-3">
+                                <i class="icon-base ti tabler-check me-1"></i>
+                                Sudah Dikonfirmasi
+                            </span>
+                        @endif
+                    </div>
+                </div>
             </div>
 
             <!-- Sales Delivery Title -->
@@ -359,6 +334,74 @@
                 searching: false,
                 paging: false,
                 info: false
+            });
+
+            // Handle Konfirm button click
+            $('#btn-confirm-delivery').on('click', function() {
+                const deliveryId = {{ $salesDelivery->id }};
+                const deliveryNumber = '{{ $salesDelivery->delivery_number }}';
+
+                Swal.fire({
+                    title: 'Konfirmasi Sales Delivery?',
+                    html: `Anda akan mengkonfirmasi sales delivery:<br><strong>${deliveryNumber}</strong><br><br>` +
+                          `<div class="alert alert-warning">` +
+                          `<i class="icon-base ti tabler-alert-triangle me-2"></i>` +
+                          `Stock akan otomatis dikurangi dan movement log akan dibuat.` +
+                          `</div>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Konfirmasi',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#28c76f',
+                    cancelButtonColor: '#82868b'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Memproses...',
+                            text: 'Mohon tunggu sebentar',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Send AJAX request
+                        $.ajax({
+                            url: `{{ url('main_transaction/sales_delivery/confirm') }}/${deliveryId}`,
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: response.message,
+                                    confirmButtonColor: '#28c76f'
+                                }).then(() => {
+                                    // Reload page to show updated status
+                                    location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'Terjadi kesalahan saat mengkonfirmasi delivery.';
+
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal!',
+                                    text: errorMessage,
+                                    confirmButtonColor: '#ea5455'
+                                });
+                            }
+                        });
+                    }
+                });
             });
         });
     </script>

@@ -95,10 +95,10 @@ class ReversalProductionAction
 
         // Check if production batch has sufficient quantity (FIFO validation)
         $productionBatch = DB::table('t_product_stock_batches')
-            ->where('product_id', $production->bundle_product_id)
-            ->where('warehouse_id', $production->warehouse_id)
-            ->where('reference_type', 'PRODUCTION')
-            ->where('reference_id', $productionId)
+            ->where('f_product_id', $production->bundle_product_id)
+            // ->where('warehouse_id', $production->warehouse_id)
+            ->where('source_type', 'PRODUCTION')
+            ->where('batch_reference_code', $productionId)
             ->first();
 
         if (! $productionBatch || $productionBatch->remaining_quantity < $quantityToReverse) {

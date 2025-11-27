@@ -188,7 +188,7 @@ class ProductionService
             'total_production_expense' => $data['total_production_expense'] ?? 0,
             'total_production_cost' => $data['total_production_cost'] ?? 0,
             'total_items_consumed' => $data['total_items_consumed'] ?? 0,
-            'updated_by_user_id' => Auth::id(),
+            'updated_by' => Auth::id(),
             'updated_at' => now(),
         ];
 
@@ -213,7 +213,7 @@ class ProductionService
             ->where('company_code', session('user_company_code'))
             ->update([
                 'status' => $status,
-                'updated_by_user_id' => Auth::id(),
+                'updated_by' => Auth::id(),
                 'updated_at' => now(),
             ]);
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MainTransaction;
 
 use App\Domains\SalesDelivery\Actions\CreateSalesDeliveryAction;
 use App\Domains\SalesDelivery\Actions\UpdateSalesDeliveryAction;
+use App\Domains\SalesDelivery\Actions\ConfirmSalesDeliveryAction;
 use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
 use App\Domains\SalesDelivery\Services\SalesDeliveryService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
@@ -202,6 +203,7 @@ class SalesDeliveryController extends Controller
             'memo' => $salesDeliveryHeader->memo,
             'created_at' => $salesDeliveryHeader->created_at,
             'updated_at' => $salesDeliveryHeader->updated_at,
+            'is_confirmed' => $salesDeliveryHeader->is_confirmed,
         ];
         // dd($sales_delivery);
 
@@ -235,7 +237,7 @@ class SalesDeliveryController extends Controller
         }
 
         $audit_logs = app(SalesDeliveryAuditLogService::class)->findAllBasedOnSalesDeliveryId($id);
-
+        
         return view('pages.main_transaction.sales_delivery.detail', [
             'salesDelivery' => $sales_delivery,
             'customer' => $customer,
@@ -396,5 +398,46 @@ class SalesDeliveryController extends Controller
             'success' => true,
             'message' => 'Export functionality - TODO: Implement',
         ]);
+    }
+
+    /**
+     * Confirm Sales Delivery and process stock movement
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function confirm($id)
+    {
+        // Permission check
+        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk mengkonfirmasi sales delivery.',
+            ], 403);
+        }
+
+        try {
+            app(ConfirmSalesDeliveryAction::class)->execute($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => SuccessCodes::UPDATE_SALES_DELIVERY_SUCCESS->message() . ' - Stock telah diperbarui.',
+            ], SuccessCodes::UPDATE_SALES_DELIVERY_SUCCESS->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Exception $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
     }
 }
