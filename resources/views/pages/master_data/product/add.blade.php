@@ -28,7 +28,7 @@
                             <select class="global-select2 form-select" id="unit-select" data-allow-clear="false">
                                 <option value="">Pilih Unit</option>
                                 @foreach ($units as $unit)
-                                    <option value="{{ $unit->id }}">{{ $unit->id }} - {{ $unit->name }}</option>
+                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                                 @endforeach
                             </select>
                         </div>
