@@ -945,8 +945,15 @@
                 // Show appropriate content
                 if (type === 'single') {
                     $('#single-content').show();
+
+                    // Auto-check enable-purchase and enable-sales for single product
+                    $('#enable-purchase').prop('checked', true).trigger('change');
+                    $('#enable-sales').prop('checked', true).trigger('change');
                 } else if (type === 'bundle') {
                     $('#bundle-content').show();
+
+                    // Auto-check bundle-enable-purchase for bundle product
+                    $('#bundle-enable-sales').prop('checked', true).trigger('change');
                 }
             }
 
