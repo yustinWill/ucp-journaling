@@ -109,7 +109,7 @@
                                 <option value="">Pilih Payment Terms</option>
                                 @foreach ($paymentTerms as $term)
                                     <option value="{{ $term->id }}" data-days="{{ $term->days }}"
-                                        data-type="{{ $term->type }}">{{ $term->name }}</option>
+                                        data-type="{{ $term->type }}"  {{ $term->code == "NET_15" ? 'selected' : '' }}>{{ $term->name }}</option>
                                 @endforeach
                             </select>
                         </div>
