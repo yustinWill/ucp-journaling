@@ -118,16 +118,8 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Sales Person</label>
-                    <select class="global-select2 form-select" name="sales_person_id" id="sales_person_id"
-                        data-allow-clear="false">
-                        <option value="">Pilih Sales Person</option>
-                        @foreach ($salesPersons as $person)
-                            <option value="{{ $person->id }}"
-                                {{ $person->id == $salesOrder['customer_sales_person_id'] ? 'selected' : '' }}>
-                                {{ $person->employee_name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="text" class="form-control" id="sales_person_id" value="{{ $salesOrder['sales_person_name'] ?? '' }}" placeholder="Akan terisi otomatis berdasarkan customer" disabled>
+                    <input type="hidden" id="sales_person_id_hidden" name="sales_person_id" value="{{ $salesOrder['customer_sales_person_id'] ?? '' }}">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Gudang <span style="color: red;">*</span></label>
@@ -610,11 +602,39 @@
                 });
             });
 
+            // Load customer information
+            function loadCustomerInfo(customerId) {
+                $.ajax({
+                    url: '{{ route('main_transaction.sales_order.get_customer_info', ':customer_id') }}'
+                        .replace(':customer_id', customerId),
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#customer_email').val(response.data.email || '');
+                            $('#customer_address').val(response.data.address || '');
+
+                            // Auto-fill sales person if customer has mapped sales person
+                            if (response.data.sales_person_id) {
+                                $('#sales_person_id').val(response.data.sales_person_name || '');
+                                $('#sales_person_id_hidden').val(response.data.sales_person_id);
+                            } else {
+                                $('#sales_person_id').val('');
+                                $('#sales_person_id_hidden').val('');
+                            }
+                        }
+                    },
+                    error: function() {
+                        console.error('Failed to load customer info');
+                    }
+                });
+            }
+
             // Clear customer information
             function clearCustomerInfo() {
                 $('#customer_email').val('');
                 $('#customer_address').val('');
-                $('#sales_person_name').val('');
+                $('#sales_person_id').val('');
+                $('#sales_person_id_hidden').val('');
             }
 
             // Load products for a specific row (new products)

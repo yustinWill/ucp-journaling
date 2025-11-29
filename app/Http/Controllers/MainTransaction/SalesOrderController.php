@@ -550,13 +550,14 @@ class SalesOrderController extends Controller
                 't.email',
                 'ca.address as billing_address',
                 't.f_sales_pic_id',
-                'u.name as sales_person_name',
+                'c.name as sales_person_name',
             ])
             ->leftJoin('m_contact_addresses as ca', function ($join) {
                 $join->on('ca.f_contact_id', '=', 't.id')
                     ->where('ca.type', '=', 'BILLING');
             })
-            ->leftJoin('users as u', 't.f_sales_pic_id', '=', 'u.id')
+            ->leftJoin('m_sales_persons as sp', 't.f_sales_pic_id', '=', 'sp.id')
+            ->leftJoin('m_contacts as c', 'sp.f_employee_contact_id', '=', 'c.id')
             ->where('t.id', $customerId)
             ->where('t.company_code', session('user_company_code'))
             ->where('t.is_customer', true)
@@ -574,6 +575,7 @@ class SalesOrderController extends Controller
             'data' => [
                 'email' => $customer->email,
                 'address' => $customer->billing_address,
+                'sales_person_id' => $customer->f_sales_pic_id,
                 'sales_person_name' => $customer->sales_person_name,
             ],
         ]);

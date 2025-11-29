@@ -93,7 +93,7 @@
                         maxlength="20" value="{{ $contact->phone }}" />
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Sales Penanggung Jawab</label>
+                    <label class="form-label">Sales Person</label>
                     <select class="global-select2 form-select" id="sales_user" data-allow-clear="false">
                         <option value="">Pilih Sales</option>
                         @foreach ($sales_users as $sales_user)

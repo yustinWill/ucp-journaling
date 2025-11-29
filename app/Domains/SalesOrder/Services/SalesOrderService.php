@@ -157,7 +157,8 @@ class SalesOrderService
             ->leftJoin('m_contacts as c', 'so.f_customer_id', '=', 'c.id')
             ->leftJoin('m_warehouses as w', 'so.f_warehouse_id', '=', 'w.id')
             ->leftJoin('m_payment_terms as pt', 'so.f_payment_term_id', '=', 'pt.id')
-            ->leftJoin('users as u', 'c.f_sales_pic_id', '=', 'u.id')
+            ->leftJoin('m_sales_persons as sp', 'c.f_sales_pic_id', '=', 'sp.id')
+            ->leftJoin('m_contacts as emp', 'sp.f_employee_contact_id', '=', 'emp.id')
             ->leftJoin('m_contact_addresses as ca', function ($join) {
                 $join->on('ca.f_contact_id', '=', 'c.id')
                     ->where('ca.type', '=', 'BILLING');
@@ -170,7 +171,7 @@ class SalesOrderService
                 'c.name as customer',
                 'c.email as customer_default_email',
                 'ca.address as customer_default_address',
-                'u.name as sales_person_name',
+                'emp.name as sales_person_name',
                 'w.name as warehouse',
                 'pt.name as payment_terms',
                 'pt.type as payment_terms_type',

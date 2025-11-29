@@ -109,7 +109,7 @@
                                 <option value="">Pilih Payment Terms</option>
                                 @foreach ($paymentTerms as $term)
                                     <option value="{{ $term->id }}" data-days="{{ $term->days }}"
-                                        data-type="{{ strtoupper($term->type) }}" {{ $item->id == "NET_15" ? 'selected' : '' }}>{{ $term->name }}
+                                        data-type="{{ strtoupper($term->type) }}" {{ $term->code == "NET_15" ? 'selected' : '' }}>{{ $term->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -147,27 +147,8 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Sales Person</label>
-                    <div class="row g-2">
-                        <div class="col">
-                            <select class="global-select2 form-select" id="sales-order-sales-person"
-                                name="sales_person_id" data-allow-clear="false">
-                                <option value="">Pilih Sales Person</option>
-                                @foreach ($salesPersons as $person)
-                                    <option value="{{ $person->id }}">{{ $person->code }} -
-                                        {{ $person->employee_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        @if ($canWrite)
-                            <div class="col-auto">
-                                <a href="{{ route('master_data.contact.add') }}" target="_blank"
-                                    class="btn btn-outline-primary d-flex align-items-center"
-                                    title="Tambah Sales Person Baru">
-                                    <i class="icon-base ti tabler-plus"></i>
-                                </a>
-                            </div>
-                        @endif
-                    </div>
+                    <input type="text" class="form-control" id="sales-order-sales-person" placeholder="Akan terisi otomatis berdasarkan customer" disabled>
+                    <input type="hidden" id="sales-order-sales-person-hidden" name="sales_person_id" value="">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Gudang <span style="color: red;">*</span></label>
@@ -634,7 +615,15 @@
                         if (response.success) {
                             $('#sales-order-email').val(response.data.email || '');
                             $('#sales-order-address').val(response.data.address || '');
-                            $('#sales-order-sales-person').val(response.data.sales_person_name || '-');
+
+                            // Auto-fill sales person if customer has mapped sales person
+                            if (response.data.sales_person_id) {
+                                $('#sales-order-sales-person').val(response.data.sales_person_name || '');
+                                $('#sales-order-sales-person-hidden').val(response.data.sales_person_id);
+                            } else {
+                                $('#sales-order-sales-person').val('');
+                                $('#sales-order-sales-person-hidden').val('');
+                            }
                         }
                     },
                     error: function() {
@@ -648,6 +637,7 @@
                 $('#sales-order-email').val('');
                 $('#sales-order-address').val('');
                 $('#sales-order-sales-person').val('');
+                $('#sales-order-sales-person-hidden').val('');
             }
 
             // Check product table enabled state
