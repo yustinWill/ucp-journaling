@@ -95,8 +95,8 @@
                                 <select id="payment-terms" name="payment_terms" class="global-select2 form-select">
                                     <option value="">Pilih Syarat Pembayaran</option>
                                     @foreach ($paymentTerms as $item)
-                                        <option value="{{ $item->id }}" data-day-count="{{ $item->days }}">
-                                            {{ $item->code }} - {{ $item->name }}</option>
+                                        <option value="{{ $item->id }}" data-day-count="{{ $item->days }}" {{ $item->id == "NET_15" ? 'selected' : '' }}>
+                                            {{ $item->name }}</option>
                                     @endforeach
                                 </select>
                             </div>

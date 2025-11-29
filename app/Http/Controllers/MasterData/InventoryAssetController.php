@@ -77,12 +77,12 @@ class InventoryAssetController extends Controller
 
         // Payment terms options
         $paymentTerms = [
-            ['value' => 'CASH', 'label' => 'CASH - Tunai'],
-            ['value' => 'NET_7', 'label' => 'NET_7 - Jatuh Tempo 7 Hari'],
-            ['value' => 'NET_15', 'label' => 'NET_15 - Jatuh Tempo 15 Hari'],
-            ['value' => 'NET_30', 'label' => 'NET_30 - Jatuh Tempo 30 Hari'],
-            ['value' => 'NET_45', 'label' => 'NET_45 - Jatuh Tempo 45 Hari'],
-            ['value' => 'NET_60', 'label' => 'NET_60 - Jatuh Tempo 60 Hari']
+            ['value' => 'CASH', 'label' => 'Tunai'],
+            ['value' => 'NET_7', 'label' => 'Jatuh Tempo 7 Hari'],
+            ['value' => 'NET_15', 'label' => 'Jatuh Tempo 15 Hari'],
+            ['value' => 'NET_30', 'label' => 'Jatuh Tempo 30 Hari'],
+            ['value' => 'NET_45', 'label' => 'Jatuh Tempo 45 Hari'],
+            ['value' => 'NET_60', 'label' => 'Jatuh Tempo 60 Hari']
         ];
 
         return view('pages.master_data.inventory.add', [

@@ -89,7 +89,7 @@
                             <option value="{{ $term->id }}" data-type="{{ strtoupper($term->type) }}"
                                 data-days="{{ $term->days }}"
                                 {{ $term->id == $salesOrder['f_payment_term_id'] ? 'selected' : '' }}>
-                                {{ $term->code }} - {{ $term->name }}
+                                {{ $term->name }}
                             </option>
                         @endforeach
                     </select>

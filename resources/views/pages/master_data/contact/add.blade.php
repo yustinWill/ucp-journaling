@@ -174,7 +174,7 @@
             <div class="row g-6">
                 <div class="col-md-6">
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="copy-from-billing-address">
+                        <input class="form-check-input" type="checkbox" id="copy-from-billing-address" checked>
                         <label class="form-check-label" for="copy-from-billing-address">
                             Samakan Dengan Alamat Penagihan
                         </label>
@@ -500,6 +500,10 @@
             // Add a class to billing fields for easy selection
             $('#billing_province, #billing_city, #billing_district, #billing_subdistrict, #billing_address, #billing_postal_code, #billing_area, #billing_maps_url')
                 .addClass('billing-sync');
+
+            // Trigger change event on page load to sync shipping address if checkbox is checked
+            $('#copy-from-billing-address').trigger('change');
+
             // SweetAlert for submit
             $('#submit-btn').click(function(e) {
                 e.preventDefault();

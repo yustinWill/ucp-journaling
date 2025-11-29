@@ -30,7 +30,9 @@
                     <select class="global-select2 form-select" id="sales-person-status" name="sales_person_status" data-allow-clear="false" required>
                         <option value="">Pilih Status</option>
                         @foreach($statuses as $status)
-                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                            <option value="{{ $status['value'] }}" @if ($status["value"] === "ACTIVE")
+                                selected
+                            @endif>{{ $status['label'] }}</option>
                         @endforeach
                     </select>
                 </div>

@@ -102,7 +102,7 @@
                                 @foreach ($paymentTerms as $item)
                                     <option value="{{ $item->id }}" data-day-count="{{ $item->days }}"
                                         {{ $expense->f_payment_term_id == $item->id ? 'selected' : '' }}>
-                                        {{ $item->code }} - {{ $item->name }}</option>
+                                        {{ $item->name }}</option>
                                 @endforeach
                             </select>
                         </div>
