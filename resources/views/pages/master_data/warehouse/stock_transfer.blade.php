@@ -208,16 +208,18 @@
                             <table class="table table-bordered" id="available-products-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 20%;">Kode Produk</th>
-                                        <th style="width: 30%;">Nama Produk</th>
-                                        <th style="width: 10%;">Unit</th>
-                                        <th style="width: 15%;">Stok Tersedia</th>
-                                        <th style="width: 10%;">Aksi</th>
+                                        <th style="width: 15%;">Kode Produk</th>
+                                        <th style="width: 25%;">Nama Produk</th>
+                                        <th style="width: 8%;">Unit</th>
+                                        <th style="width: 12%;">Stok Tersedia</th>
+                                        <th style="width: 12%;">Qty Transfer</th>
+                                        <th style="width: 12%;">Sisa Stok</th>
+                                        <th style="width: 16%;">Alasan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="available-products-tbody">
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-5">
+                                        <td colspan="7" class="text-center text-muted py-5">
                                             <i class="icon-base ti tabler-box-off me-2"></i>
                                             Pilih gudang dan klik "Load Produk dari Gudang" untuk memuat data
                                         </td>
@@ -251,42 +253,6 @@
                 </div>
             </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0">Produk yang akan disesuaikan</h6>
-                        <small class="text-muted">Total produk dipilih: <span
-                                id="selected-products-count">0</span></small>
-                    </div>
-
-                    <div class="mx-n5">
-                        <table class="table table-bordered" id="selected-products-table">
-                            <thead>
-                                <tr>
-                                    <th>Kodee Produk</th>
-                                    <th>Nama Produk</th>
-                                    <th>Unit</th>
-                                    <th>Stok Sistem</th>
-                                    <th>Qty Transfer</th>
-                                    <th>Sisa Stok</th>
-                                    <th>Alasan</th>
-                                    @if (!isset($header_data['form_type']))
-                                        <th>Hapus</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody id="selected-products-tbody">
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        <i class="icon-base ti tabler-plus me-2"></i>
-                                        Tambahkan produk dari daftar di atas untuk mulai melakukan adjustment
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
 
             <!-- Informasi Tambahan Section -->
             <div class="section-header mt-12">
@@ -348,7 +314,6 @@
             let selectedProducts = [];
             let currentWarehouse = null;
 
-            renderSelectedProductsTable();
             // Generate initial transaction number on page load
             generateTransactionNumber();
 
@@ -388,16 +353,21 @@
                     }
                 });
 
-                // Check if at least one product is selected with transfer qty
-                const hasValidProducts = selectedProducts.filter(function(product) {
-                    return product.adjustment_qty && product.adjustment_qty !== 0;
-                }).length > 0;
+                // Check if at least one product has qty transfer > 0
+                let hasValidProducts = false;
+                $('#available-products-tbody .qty-transfer-input').each(function() {
+                    const qtyTransfer = parseInt($(this).val()) || 0;
+                    if (qtyTransfer > 0) {
+                        hasValidProducts = true;
+                        return false; // break the loop
+                    }
+                });
 
                 if (!hasValidProducts) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Produk Transfer',
-                        text: 'Pilih minimal satu produk dengan qty transfer yang tidak nol.',
+                        text: 'Minimal satu produk harus memiliki qty transfer lebih dari 0.',
                         customClass: {
                             confirmButton: 'btn btn-primary'
                         },
@@ -500,7 +470,7 @@
                 if (availableProducts.length === 0) {
                     tbody.html(`
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
+                            <td colspan="7" class="text-center text-muted py-4">
                                 <i class="icon-base ti tabler-search-off me-2"></i>
                                 Tidak ada produk ditemukan dengan filter yang dipilih
                             </td>
@@ -511,22 +481,39 @@
 
                 let rows = '';
                 availableProducts.forEach(function(product) {
-                    const isAlreadySelected = selectedProducts.find(p => p.product_code === product.code);
-                    const buttonClass = isAlreadySelected ? 'btn-secondary' : 'btn-primary';
-                    const buttonText = isAlreadySelected ? 'Sudah Dipilih' : 'Tambah';
-                    const buttonDisabled = isAlreadySelected ? 'disabled' : '';
+                    const existingProduct = selectedProducts.find(p => p.product_code === product.code);
+                    const qtyTransfer = existingProduct ? existingProduct.adjustment_qty : 0;
+                    const sisaStok = product.current_stock - qtyTransfer;
+                    const reason = existingProduct ? existingProduct.reason : '';
 
                     rows += `
-                        <tr data-product-code="${product.code}">
+                        <tr data-product-code="${product.code}" data-product-id="${product.id}">
                             <td><strong>${product.code}</strong></td>
                             <td>${product.name}</td>
                             <td>${product.unit}</td>
-                            <td><span class="text-info">${product.current_stock.toLocaleString('id-ID')}</span></td>
+                            <td><span class="text-info">${Math.floor(product.current_stock)}</span></td>
                             <td>
-                                <button type="button" class="btn btn-sm ${buttonClass} add-product-btn" 
-                                        data-product='${JSON.stringify(product)}' ${buttonDisabled}>
-                                    <i class="icon-base ti tabler-plus me-1"></i>${buttonText}
-                                </button>
+                                <input type="number" class="form-control form-control-sm qty-transfer-input"
+                                    value="${qtyTransfer}"
+                                    data-product-code="${product.code}"
+                                    data-product-id="${product.id}"
+                                    data-product-name="${product.name}"
+                                    data-unit="${product.unit}"
+                                    data-current-stock="${product.current_stock}"
+                                    data-unit-cost="${product.unit_cost}"
+                                    min="0"
+                                    max="${product.current_stock}"
+                                    placeholder="0">
+                            </td>
+                            <td class="sisa-stok-display">
+                                <span class="text-${sisaStok < 0 ? 'danger' : 'info'}">${Math.floor(sisaStok)}</span>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control form-control-sm reason-input"
+                                    data-product-code="${product.code}"
+                                    placeholder="Alasan transfer..."
+                                    value="${reason}"
+                                    maxlength="200">
                             </td>
                         </tr>
                     `;
@@ -535,133 +522,41 @@
                 tbody.html(rows);
             }
 
-            function renderSelectedProductsTable() {
-                const tbody = $('#selected-products-tbody');
 
-                let is_blank_input = true;
-                @if (!empty($items))
-                    is_blank_input = false;
-                @endif
+            // Handle qty transfer input changes
+            $(document).on('input', '.qty-transfer-input', function() {
+                const $input = $(this);
+                const qtyTransfer = parseInt($input.val()) || 0;
+                const currentStock = parseInt($input.data('current-stock')) || 0;
+                const productCode = $input.data('product-code');
+                const productId = $input.data('product-id');
+                const productName = $input.data('product-name');
+                const unit = $input.data('unit');
+                const unitCost = $input.data('unit-cost');
+                const row = $input.closest('tr');
+                const sisaStok = currentStock - qtyTransfer;
 
-                if (is_blank_input === false) {
-                    selectedProducts = @json($items);
-                }
+                // Update sisa stok display
+                row.find('.sisa-stok-display').html(
+                    `<span class="text-${sisaStok < 0 ? 'danger' : 'info'}">${Math.floor(sisaStok)}</span>`
+                );
 
-                if (selectedProducts.length === 0) {
-                    tbody.html(`
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                <i class="icon-base ti tabler-plus me-2"></i>
-                                Tambahkan produk dari daftar di atas untuk mulai melakukan adjustment
-                            </td>
-                        </tr>
-                    `);
-                    $('#selected-products-count').text('0');
-                    return;
-                }
-
-                let rows = '';
-                selectedProducts.forEach(function(product, index) {
-                    rows += `
-                        <tr data-product-code="${product.product_code}">
-                            <td><strong>${product.product_code}</strong></td>
-                            <td>${product.product_name}</td>
-                            <td>${product.unit}</td>
-                            <td><span class="text-info">${product.current_stock.toLocaleString('id-ID')}</span></td>
-                            <td>
-                                <input type="number" class="form-control form-control-sm adjustment-qty" `
-
-                    if (is_blank_input === false) {
-                        rows += `disabled `;
-                    }
-                    rows += `placeholder="0" value="${product.adjustment_qty || 0}" 
-                            data-current-stock="${product.current_stock}" 
-                            data-unit-cost="${product.unit_cost}" 
-                            min="-${product.current_stock}">
-                            </td>
-                            <td class="variance-display">
-                                ${getVarianceDisplay(product.current_stock - product.adjustment_qty|| 0)}
-                            </td>
-                            <td>
-                                <input type="text" class="form-control form-control-sm reason-input" 
-                                    placeholder="Alasan stock transfer..." maxlength="200" 
-                                    value="${product.reason || ''}">
-                            </td>`;
-
-                    if (is_blank_input === true) {
-                        rows += `
-                            <td>
-                                <button type="button" class="btn btn-sm btn-danger remove-product-btn" 
-                                        data-product-code="${product.product_code}">
-                                    <i class="icon-base ti tabler-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    }
-
-                });
-
-                tbody.html(rows);
-                $('#selected-products-count').text(selectedProducts.length);
-                updateSummary();
-            }
-
-            function getVarianceDisplay(qty) {
-                const adjustmentQty = parseInt(qty) || 0;
-                if (adjustmentQty > 0) {
-                    return `<span class="text-success">+${adjustmentQty.toLocaleString('id-ID')}</span>`;
-                } else if (adjustmentQty < 0) {
-                    return `<span class="text-danger">${adjustmentQty.toLocaleString('id-ID')}</span>`;
-                } else {
-                    return '<span class="text-muted">0</span>';
-                }
-            }
-
-            // Add product to adjustment list
-            $(document).on('click', '.add-product-btn', function() {
-                const productData = JSON.parse($(this).attr('data-product'));
-
-                const selectedProduct = {
-                    product_id: productData.id,
-                    product_code: productData.code,
-                    product_name: productData.name,
-                    unit: productData.unit,
-                    current_stock: productData.current_stock,
-                    unit_cost: productData.unit_cost,
-                    adjustment_qty: 0,
-                    reason: ''
-                };
-
-                selectedProducts.push(selectedProduct);
-                renderSelectedProductsTable();
-                renderAvailableProductsTable(); // Refresh to show "Sudah Dipilih" status
-            });
-
-            // Remove product from adjustment list
-            $(document).on('click', '.remove-product-btn', function() {
-                const productCode = $(this).data('product-code');
-                selectedProducts = selectedProducts.filter(p => p.product_code !== productCode);
-                renderSelectedProductsTable();
-                renderAvailableProductsTable(); // Refresh to show "Tambah" button again
-                updateSummary();
-            });
-
-            // Auto-calculation for variance and summary
-            $(document).on('input', '.adjustment-qty', function() {
-                const adjustmentQty = parseInt($(this).val()) || 0;
-                const current_stock = parseInt($(this).data('current-stock')) || 0;
-                const row = $(this).closest('tr');
-                const productCode = row.data('product-code');
-                const varianceCell = row.find('.variance-display');
-
-                // Update variance display
-                varianceCell.html(current_stock - adjustmentQty);
-
-                // Update selectedProducts array
+                // Update or add to selectedProducts array
                 const productIndex = selectedProducts.findIndex(p => p.product_code === productCode);
                 if (productIndex !== -1) {
-                    selectedProducts[productIndex].adjustment_qty = adjustmentQty;
+                    selectedProducts[productIndex].adjustment_qty = qtyTransfer;
+                } else if (qtyTransfer > 0) {
+                    // Add new product to selected list
+                    selectedProducts.push({
+                        product_id: productId,
+                        product_code: productCode,
+                        product_name: productName,
+                        unit: unit,
+                        current_stock: currentStock,
+                        unit_cost: unitCost,
+                        adjustment_qty: qtyTransfer,
+                        reason: row.find('.reason-input').val() || ''
+                    });
                 }
 
                 updateSummary();
@@ -670,8 +565,7 @@
             // Update reason in selectedProducts array
             $(document).on('input', '.reason-input', function() {
                 const reason = $(this).val();
-                const row = $(this).closest('tr');
-                const productCode = row.data('product-code');
+                const productCode = $(this).data('product-code');
 
                 const productIndex = selectedProducts.findIndex(p => p.product_code === productCode);
                 if (productIndex !== -1) {
@@ -716,14 +610,18 @@
                 let totalQty = 0;
                 let totalValue = 0;
 
-                selectedProducts.forEach(function(product) {
-                    const adjustmentQty = parseInt(product.current_stock - product.adjustment_qty) || 0;
-                    const unitCost = parseInt(product.unit_cost) || 0;
+                // Loop through all qty-transfer-input fields in the table
+                $('#available-products-tbody .qty-transfer-input').each(function() {
+                    const qtyTransfer = parseInt($(this).val()) || 0;
+                    const unitCost = parseFloat($(this).data('unit-cost')) || 0;
 
-                    if (adjustmentQty !== 0) {
+                    // Add to total qty (sum of all qty transfer inputs)
+                    totalQty += qtyTransfer;
+
+                    // Count items only if qty transfer > 0
+                    if (qtyTransfer > 0) {
                         totalItems++;
-                        totalQty += adjustmentQty;
-                        totalValue += (adjustmentQty * unitCost);
+                        totalValue += (qtyTransfer * unitCost);
                     }
                 });
 
@@ -773,24 +671,13 @@
                 // Clear available products table
                 $('#available-products-tbody').html(`
             <tr>
-                <td colspan="6" class="text-center text-muted py-5">
+                <td colspan="7" class="text-center text-muted py-5">
                     <i class="icon-base ti tabler-box-off me-2"></i>
                     Pilih gudang dan klik "Load Produk dari Gudang" untuk memuat data
                 </td>
             </tr>
         `);
 
-                // Clear selected products table
-                $('#selected-products-tbody').html(`
-            <tr>
-                <td colspan="8" class="text-center text-muted py-4">
-                    <i class="icon-base ti tabler-plus me-2"></i>
-                    Tambahkan produk dari daftar di atas untuk mulai melakukan adjustment
-                </td>
-            </tr>
-        `);
-
-                $('#selected-products-count').text('0');
                 updateSummary();
             }
 
@@ -845,19 +732,27 @@
                     return;
                 }
 
-                // Collect selected products with valid adjustment quantities
-                selectedProducts.forEach(function(product) {
-                    if (product.adjustment_qty && product.adjustment_qty !== 0) {
-                        formData.products.push({
-                            product_id: product.product_id,
-                            product_code: product.product_code,
-                            product_name: product.product_name,
-                            unit: product.unit,
-                            stock_before: product.current_stock,
-                            adjustment_qty: product.adjustment_qty,
-                            unit_cost: product.unit_cost,
-                            reason: product.reason
-                        });
+                // Collect products directly from table with qty_transfer > 0
+                $('#available-products-tbody tr').each(function() {
+                    const $row = $(this);
+                    const qtyTransferInput = $row.find('.qty-transfer-input');
+
+                    if (qtyTransferInput.length) {
+                        const qtyTransfer = parseInt(qtyTransferInput.val()) || 0;
+
+                        // Only include products with qty_transfer > 0
+                        if (qtyTransfer > 0) {
+                            formData.products.push({
+                                product_id: qtyTransferInput.data('product-id'),
+                                product_code: qtyTransferInput.data('product-code'),
+                                product_name: qtyTransferInput.data('product-name'),
+                                unit: qtyTransferInput.data('unit'),
+                                stock_before: qtyTransferInput.data('current-stock'),
+                                adjustment_qty: qtyTransfer,
+                                unit_cost: qtyTransferInput.data('unit-cost'),
+                                reason: $row.find('.reason-input').val() || ''
+                            });
+                        }
                     }
                 });
 
