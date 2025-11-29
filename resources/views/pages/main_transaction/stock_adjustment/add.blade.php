@@ -68,7 +68,7 @@
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
                                     <option value="{{ $warehouse['value'] }}"
-                                        @if (isset($header_data['warehouse_id']) && $header_data['warehouse_id'] === $warehouse['value']) selected @endif>{{ $warehouse['label'] }}</option>
+                                        @if (isset($header_data['warehouse_id']) && $header_data['warehouse_id'] === $warehouse['value']) selected @elseif(!isset($header_data['warehouse_id']) && $loop->first) selected @endif>{{ $warehouse['label'] }}</option>
                                 @endforeach
                             </select>
                         </div>

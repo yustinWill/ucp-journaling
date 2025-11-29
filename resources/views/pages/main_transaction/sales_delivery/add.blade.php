@@ -146,7 +146,7 @@
                                 data-allow-clear="false" required @if (isset($preselectedSOId)) disabled @endif>
                                 <option value="">Pilih Gudang</option>
                                 @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}
+                                    <option value="{{ $warehouse->id }}" {{ $loop->first ? 'selected' : '' }}>{{ $warehouse->code }} - {{ $warehouse->name }}
                                     </option>
                                 @endforeach
                             </select>

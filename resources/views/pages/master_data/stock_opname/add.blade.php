@@ -32,7 +32,7 @@
                     <select class="global-select2 form-select" id="warehouse-select" data-allow-clear="false">
                         <option value="">Pilih Gudang</option>
                         @foreach ($warehouses as $warehouse)
-                            <option value="{{ $warehouse->id }}">{{ $warehouse->code }} - {{ $warehouse->name }}</option>
+                            <option value="{{ $warehouse->id }}" {{ $loop->first ? 'selected' : '' }}>{{ $warehouse->code }} - {{ $warehouse->name }}</option>
                         @endforeach
                     </select>
                 </div>
