@@ -252,7 +252,7 @@ class ExpenseController extends Controller
                 'tax_amount' => 'required|numeric|min:0',
                 'total_before_discount' => 'required|numeric|min:0.01',
                 'final_total' => 'required|numeric|min:0.01',
-
+                'category_type' => session('user_company_code') === '001' ? 'required|string|in:Anggaran,Overhead,Lainnya' : 'nullable|string|in:Anggaran,Overhead,Lainnya',
                 // Budget field
                 'budged_history_id' => 'nullable|string|exists:m_budgeds_history,id',
 
@@ -294,6 +294,8 @@ class ExpenseController extends Controller
                 'tags.*.exists' => 'Tag tidak valid.',
                 'attachment.mimes' => 'File lampiran harus berformat PDF, JPG, JPEG, atau PNG.',
                 'attachment.max' => 'Ukuran file lampiran maksimal 5MB.',
+                'category_type.required' => 'Kategori pengeluaran wajib dipilih.',
+                'category_type.in' => 'Kategori pengeluaran harus salah satu dari: Anggaran, Overhead, atau Lainnya.',
             ]);
             app(CreateExpenseAction::class)->execute($validated);
 
@@ -415,7 +417,7 @@ class ExpenseController extends Controller
                 'tax_amount' => 'required|numeric|min:0',
                 'total_before_discount' => 'required|numeric|min:0.01',
                 'final_total' => 'required|numeric|min:0.01',
-
+                'category_type' => session('user_company_code') === '001' ? 'required|string|in:Anggaran,Overhead,Lainnya' : 'nullable|string|in:Anggaran,Overhead,Lainnya',
                 // Budget field
                 'budged_history_id' => 'nullable|string|exists:m_budgeds_history,id',
 
@@ -457,6 +459,8 @@ class ExpenseController extends Controller
                 'tags.*.exists' => 'Tag tidak valid.',
                 'attachment.mimes' => 'File lampiran harus berformat PDF, JPG, JPEG, atau PNG.',
                 'attachment.max' => 'Ukuran file lampiran maksimal 5MB.',
+                'category_type.required' => 'Kategori pengeluaran wajib dipilih.',
+                'category_type.in' => 'Kategori pengeluaran harus salah satu dari: Anggaran, Overhead, atau Lainnya.',
             ]);
 
             app(UpdateExpenseAction::class)->execute($validated);

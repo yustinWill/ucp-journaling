@@ -39,6 +39,7 @@ class ExpenseService
             'total_before_discount' => $data['total_before_discount'],
             'total_discount' => $data['discount_amount'],
             'total_amount' => $data['final_total'],
+            'category_type' => $data['category_type'] ?? null,
             'total_remaining_amount' => $data['final_total'],
             'total_paid_amount' => 0,
             'created_at' => now(),
@@ -73,6 +74,7 @@ class ExpenseService
             'total_before_discount' => $data['total_before_discount'],
             'total_discount' => $data['discount_amount'],
             'total_amount' => $data['final_total'],
+            'category_type' => $data['category_type'] ?? null,
             'total_remaining_amount' => $data['final_total'],
             'total_paid_amount' => 0,
             'updated_at' => now(),
@@ -134,6 +136,7 @@ class ExpenseService
                 't.updated_by',
                 't.company_code',
                 't.f_payment_method_id',
+                'category_type',
                 'pm.name AS payment_method_name',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])

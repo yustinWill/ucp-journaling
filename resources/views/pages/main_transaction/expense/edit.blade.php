@@ -176,7 +176,8 @@
             <div class="row">
                 <!-- Left Side: Tag, Memo and Attachment -->
                 <div class="col-md-6 mb-4">
-                    <div class="md-3">
+                    @if(session('user_company_code') !== '001')
+                    <div class="mb-3">
                         <label class="form-label">Anggaran</label>
                         <select id="budget" name="budged_history_id" class="global-select2 form-select"
                             data-allow-clear="true">
@@ -190,6 +191,18 @@
                             @endforeach
                         </select>
                     </div>
+                    @else
+                    <div class="mb-3">
+                        <label class="form-label">Kategori Pengeluaran <span class="text-danger">*</span></label>
+                        <select id="expense-category" name="category_type" class="global-select2 form-select" required data-allow-clear="false">
+                            <option value="">Pilih Kategori</option>
+                            <option value="ANGGARAN" {{ $expense->category_type == 'ANGGARAN' ? 'selected' : '' }}>Anggaran</option>
+                            <option value="OVERHEAD" {{ $expense->category_type == 'OVERHEAD' ? 'selected' : '' }}>Overhead</option>
+                            <option value="LAINNYA" {{ $expense->category_type == 'LAINNYA' ? 'selected' : '' }}>Lainnya</option>
+                        </select>
+                        <small class="form-text text-muted">Pilih kategori pengeluaran untuk klasifikasi biaya</small>
+                    </div>
+                    @endif
                     <div class="mb-3">
                         <label class="form-label">Tag</label>
                         <div class="row g-2">
@@ -626,7 +639,8 @@
                 formData.append('description', $('#description').val());
                 formData.append('memo', $('#memo').val());
                 formData.append('discount_amount', parseCurrency($('#discount-amount').val()) || 0);
-                formData.append('budged_history_id',$('#budget').val());
+                formData.append('budged_history_id', $('#budget').val() || '');
+                formData.append('category_type', $('#expense-category').val() || '');
 
                 // Tags
                 const tags = $('#expense-tags').val() || [];
