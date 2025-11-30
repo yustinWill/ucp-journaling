@@ -28,7 +28,7 @@
         </div>
 
         <!-- Empty State -->
-        <div class="card mb-4" id="empty-state" style="display: block;">
+        <div class="card mb-4" id="empty-state" style="display: none;">
             <div class="card-body text-center py-5">
                 <div class="avatar avatar-xl mx-auto mb-3">
                     <span class="avatar-initial rounded bg-label-secondary">
@@ -201,6 +201,20 @@
             // Load settlement history on page load
             loadHistory();
 
+            // Auto-load data for current period on page load
+            const currentPeriod = $('#period-selector').val();
+            if (currentPeriod) {
+                loadPreviewData(currentPeriod);
+            }
+
+            // Period selector change event
+            $('#period-selector').on('change', function() {
+                const period = $(this).val();
+                if (period) {
+                    loadPreviewData(period);
+                }
+            });
+
             // Load data button
             $('#load-data-btn').click(function() {
                 const period = $('#period-selector').val();
@@ -318,9 +332,9 @@
                 productions.forEach(function(prod) {
                     totalQty += parseFloat(prod.qty);
 
-                    // HPP Sementara = (Direct Cost + Production Overhead) / Qty
-                    const hppSementara = (parseFloat(prod.direct_cost) + parseFloat(prod.production_overhead)) / parseFloat(prod.qty);
-                    totalHppSementara += hppSementara * parseFloat(prod.qty);
+                    // HPP Sementara from production table before overhead allocation
+                    const hppSementara = parseFloat(prod.hpp_sementara);
+                    totalHppSementara += hppSementara; // Sum of HPP Sementara, not multiplied by qty
 
                     // HPP Final = HPP Sementara + (allocated_overhead / qty)
                     let hppFinalDisplay = '-';
@@ -329,7 +343,7 @@
                         const allocatedOverheadPerUnit = parseFloat(prod.allocated_overhead) / parseFloat(prod.qty);
                         hppFinal = hppSementara + allocatedOverheadPerUnit;
                         hppFinalDisplay = formatCurrency(hppFinal);
-                        totalHppFinal += hppFinal * parseFloat(prod.qty);
+                        totalHppFinal += hppFinal; // Sum of HPP Final, not multiplied by qty
                     }
 
                     const row = `

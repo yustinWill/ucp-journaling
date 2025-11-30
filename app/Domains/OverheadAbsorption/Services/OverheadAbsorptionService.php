@@ -33,7 +33,8 @@ class OverheadAbsorptionService
                 'p.total_component_cost_unit as direct_cost',
                 'p.bundle_price as production_overhead',
                 DB::raw('(p.total_component_cost_unit + p.bundle_price) as total_cost'),
-                DB::raw('ROUND((p.total_component_cost_unit + p.bundle_price) / p.quantity_planned, 2) as cost_per_unit')
+                DB::raw('ROUND((p.total_component_cost_unit + p.bundle_price) / p.quantity_planned, 2) as cost_per_unit'),
+                'hpp_production'
             )
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->where('p.company_code', session('user_company_code'))
@@ -129,14 +130,16 @@ class OverheadAbsorptionService
             ];
         }
 
-        // If there's no overhead at all (production overhead + expense overhead = 0), still show data but overhead per unit is 0
-        $overheadPerUnit = $totalQty > 0 ? $grandTotalOverhead / $totalQty : 0;
+        // Calculate overhead per unit using only expense overhead (End-of-Month Overhead)
+        // Production overhead is already included in hpp_production
+        $overheadPerUnit = $totalQty > 0 ? $totalExpenseOverhead / $totalQty : 0;
 
         // Calculate HPP for each production (preview only - no overhead/hpp shown)
         $productionsWithHPP = [];
         foreach ($productionData['productions'] as $production) {
             $allocatedOverhead = $production->qty * $overheadPerUnit;
-            $hppPerUnit = $production->cost_per_unit + $overheadPerUnit;
+            $hppSementara = $production->hpp_production ?? 0;
+            $hppPerUnit = $hppSementara + $overheadPerUnit;
 
             $productionsWithHPP[] = [
                 'production_id' => $production->id,
@@ -147,6 +150,7 @@ class OverheadAbsorptionService
                 'qty' => $production->qty,
                 'direct_cost' => $production->direct_cost,
                 'production_overhead' => $production->production_overhead,
+                'hpp_sementara' => $hppSementara, // HPP from production table before overhead
                 'allocated_overhead' => round($allocatedOverhead, 2),
                 'hpp_per_unit' => round($hppPerUnit, 2),
             ];
@@ -188,6 +192,9 @@ class OverheadAbsorptionService
             $prodOverhead = $production ? $production->bundle_price : 0;
             $totalProductionOverhead += $prodOverhead;
 
+            // Get HPP Sementara from production table (hpp_production field)
+            $hppSementara = $production ? ($production->hpp_production ?? 0) : 0;
+
             $productionsFormatted[] = [
                 'production_id' => $prod->f_production_id,
                 'production_number' => $prod->production_number,
@@ -197,6 +204,7 @@ class OverheadAbsorptionService
                 'qty' => $prod->production_qty,
                 'direct_cost' => $production ? $production->total_component_cost_unit : 0,
                 'production_overhead' => $prodOverhead,
+                'hpp_sementara' => $hppSementara, // HPP from production table before overhead
                 'allocated_overhead' => $prod->overhead_allocated,
                 'hpp_per_unit' => $prod->hpp_per_unit,
             ];
