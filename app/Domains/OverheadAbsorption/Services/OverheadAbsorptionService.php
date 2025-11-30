@@ -295,6 +295,13 @@ class OverheadAbsorptionService
                         'updated_by' => Auth::id(),
                         'updated_at' => now(),
                     ]);
+                DB::table('t_product_stock_batches')
+                    ->where('f_source_transaction_id', $prod['production_id'])
+                    ->update([
+                        'final_hpp' => $prod['hpp_per_unit'],
+                        'hpp_status' => 'SETTLED',
+                        'updated_at' => now(),
+                    ]);
             }
 
             // Create expense detail records and update expenses
@@ -316,7 +323,6 @@ class OverheadAbsorptionService
                         'updated_at' => now(),
                     ]);
             }
-
             return [
                 'header_id' => $headerId,
                 'transaction_no' => $transactionNo,

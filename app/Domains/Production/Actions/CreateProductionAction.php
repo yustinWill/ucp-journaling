@@ -128,6 +128,8 @@ class CreateProductionAction
             'warehouse_id' => $data['warehouse_id'],
             'quantity_produced' => $data['quantity_produced'] ?? $data['quantity_planned'],
             'total_production_cost' => $data['total_production_cost'] ?? 0,
+            "hpp_production" => $data['hpp_production'] ?? 0,
+            "bundle_price" => $data['bundle_price'] ?? 0,
         ];
 
         return $stockService->createProductionStockMovements(

@@ -371,7 +371,6 @@ class ProductionStockService
     private function createProductionBatch(int $productId, int $warehouseId, float $quantity, int $productionId, array $productionData): int
     {
         $batchNumber = $this->generateBatchNumber('PROD');
-
         return DB::table($this->batch_table)->insertGetId([
             'company_code' => session('user_company_code'),
             'f_product_id' => $productId,
@@ -382,9 +381,9 @@ class ProductionStockService
             'initial_qty' => $quantity,
             'remaining_qty' => $quantity,
             'raw_material_cost' => 0.00,
-            'production_cost' => $this->calculateBundleProductUnitCost($productionData),
+            'production_cost' => $productionData["bundle_price"] ?? 0.00,
             'purchase_price' => 0.00,
-            'estimated_hpp' => $this->calculateBundleProductUnitCost($productionData),
+            'estimated_hpp' => $productionData["hpp_production"] ?? 0.00,
             'final_hpp' => null,
             'hpp_status' => 'UNSETTLED',
             'status' => 'ACTIVE',
