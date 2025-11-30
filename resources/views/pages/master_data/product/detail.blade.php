@@ -435,7 +435,13 @@
                                                     <td class="text-end">
                                                         {{ number_format($batch['remaining_qty'], 0, ',', '.') }}</td>
                                                     <td class="text-end">Rp
-                                                        {{ number_format($batch['estimated_hpp'], 0, ',', '.') }}</td>
+                                                        @if ($batch['hpp_status'] === 'SETTLED')
+                                                            {{ number_format($batch['final_hpp'], 0, ',', '.') }}
+                                                        
+                                                        @else
+                                                            {{ number_format($batch['estimated_hpp'], 0, ',', '.') }}
+                                                        
+                                                        @endif</td>
                                                     <td>
                                                         @if ($batch['hpp_status'] === 'SETTLED')
                                                             <span class="badge bg-label-success">SETTLED</span>
