@@ -471,6 +471,7 @@
                 const hppPerUnit = totalComponentCostPerUnit + bundlePricePerUnit;
 
                 // Update the fields
+                $('#bundle-price-unit').val('Rp ' + formatNumber(bundlePricePerUnit));
                 $('#total-component-cost-unit').val('Rp ' + formatNumber(totalComponentCostPerUnit));
                 $('#hpp-production').val('Rp ' + formatNumber(hppPerUnit));
 
