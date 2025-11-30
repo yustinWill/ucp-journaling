@@ -2,6 +2,12 @@
 @section('page_title')
     Absorpsi Overhead
 @stop
+
+@section('css_script')
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+@stop
+
 @section('content')
     <div class="mt-6">
         <!-- Header Card -->
@@ -188,15 +194,80 @@
             </div>
         </div>
 
+        <!-- Riwayat Batch Produk Settlement History -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Riwayat Settlement Overhead</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle" id="batch-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>No. Transaksi</th>
+                                <th>Periode</th>
+                                <th>Tanggal Settlement</th>
+                                <th class="text-end">Total Qty</th>
+                                <th class="text-end">Total Overhead</th>
+                                <th class="text-end">Overhead/Unit</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 @stop
 
 @section('js_script')
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function() {
             let currentPreviewData = null;
+            let historyTable = null;
 
             console.log('Overhead Absorption initialized');
+
+            // Initialize DataTable for history
+            historyTable = $('#batch-table').DataTable({
+                processing: true,
+                serverSide: false,
+                pageLength: 10,
+                order: [[1, 'desc']], // Sort by period descending
+                responsive: true,
+                autoWidth: false,
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+                },
+                columnDefs: [
+                    { targets: 0, width: '15%' },
+                    { targets: 1, width: '10%' },
+                    { targets: 2, width: '13%' },
+                    { targets: 3, width: '10%', className: 'text-end' },
+                    { targets: 4, width: '15%', className: 'text-end' },
+                    { targets: 5, width: '12%', className: 'text-end' },
+                    { targets: 6, width: '10%', className: 'text-center', orderable: false },
+                    { targets: 7, width: '15%', className: 'text-center', orderable: false, searchable: false }
+                ],
+                columns: [
+                    { data: 'transaction_no', name: 'transaction_no' },
+                    { data: 'period', name: 'period' },
+                    { data: 'settlement_date', name: 'settlement_date' },
+                    { data: 'total_production_qty', name: 'total_production_qty' },
+                    { data: 'total_overhead_cost', name: 'total_overhead_cost' },
+                    { data: 'overhead_per_unit', name: 'overhead_per_unit' },
+                    { data: 'status', name: 'status' },
+                    { data: 'action', name: 'action' }
+                ]
+            });
 
             // Load settlement history on page load
             loadHistory();
@@ -438,43 +509,46 @@
                     },
                     error: function(xhr) {
                         console.error('Error loading history:', xhr);
-                        $('#history-tbody').html('<tr><td colspan="8" class="text-center text-danger">Gagal memuat riwayat</td></tr>');
+                        historyTable.clear().draw();
                     }
                 });
             }
 
             function displayHistory(settlements) {
-                const tbody = $('#history-tbody');
-                tbody.empty();
+                // Clear existing data
+                historyTable.clear();
 
                 if (settlements.length === 0) {
-                    tbody.append('<tr><td colspan="8" class="text-center text-muted">Belum ada riwayat settlement</td></tr>');
+                    historyTable.draw();
                     return;
                 }
 
-                settlements.forEach(function(settlement) {
+                // Format data for DataTable
+                const formattedData = settlements.map(function(settlement) {
                     const statusBadge = settlement.is_settled
                         ? '<span class="badge bg-label-success"><i class="ti ti-check me-1"></i>Settled</span>'
                         : '<span class="badge bg-label-warning"><i class="ti ti-alert-circle me-1"></i>Draft</span>';
 
-                    const row = `
-                        <tr>
-                            <td>${settlement.transaction_no}</td>
-                            <td>${settlement.period}</td>
-                            <td>${formatDate(settlement.settlement_date)}</td>
-                            <td class="text-end">${formatNumber(settlement.total_production_qty)}</td>
-                            <td class="text-end">${formatCurrency(settlement.total_overhead_cost)}</td>
-                            <td class="text-end">${formatCurrency(settlement.overhead_per_unit)}</td>
-                            <td>${statusBadge}</td>
-                            <td>
-                                <button class="btn btn-sm btn-info" onclick="viewDetails(${settlement.id})">
-                                    <i class="ti ti-eye"></i> Detail
-                                </button>
-                            </td>
-                        </tr>
+                    const actionButton = `
+                        <button class="btn btn-sm btn-info" onclick="viewDetails(${settlement.id})">
+                            <i class="ti ti-eye me-1"></i> Detail
+                        </button>
                     `;
-                    tbody.append(row);
+
+                    return {
+                        transaction_no: `<strong>${settlement.transaction_no}</strong>`,
+                        period: settlement.period,
+                        settlement_date: formatDate(settlement.settlement_date),
+                        total_production_qty: formatNumber(settlement.total_production_qty),
+                        total_overhead_cost: formatCurrency(settlement.total_overhead_cost),
+                        overhead_per_unit: formatCurrency(settlement.overhead_per_unit),
+                        status: statusBadge,
+                        action: actionButton
+                    };
                 });
+
+                // Add data to DataTable and redraw
+                historyTable.rows.add(formattedData).draw();
             }
 
             window.viewDetails = function(id) {
