@@ -166,6 +166,12 @@
                 <div data-i18n="Produksi">Produksi</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.overhead_absorption.*'])) active @endif">
+            <a href="{{ route('main_transaction.overhead_absorption.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-chart-dots"></i>
+                <div data-i18n="Absorpsi Overhead">Absorpsi Overhead</div>
+            </a>
+        </li>
         @if (session('CLIENT_CODE') == '001')
             <li class="menu-item">
                 <a href="app-chat.html" class="menu-link">

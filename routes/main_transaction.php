@@ -4,6 +4,7 @@ use App\Http\Controllers\MainTransaction\CreditMemoController;
 // Controllers
 use App\Http\Controllers\MainTransaction\ExpenseController;
 use App\Http\Controllers\MainTransaction\JournalController;
+use App\Http\Controllers\MainTransaction\OverheadAbsorptionController;
 use App\Http\Controllers\MainTransaction\ProductionController;
 use App\Http\Controllers\MainTransaction\PurchaseController;
 use App\Http\Controllers\MainTransaction\PurchaseDeliveryController;
@@ -312,5 +313,14 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         // API endpoints
         Route::get($base_segment.$return_management_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.return_management.generate_transaction_number');
         Route::get($base_segment.$return_management_segment.'/get_invoice_products', 'getInvoiceProducts')->name('main_transaction.return_management.get_invoice_products');
+    });
+
+    // Overhead Absorption Routes
+    Route::controller(OverheadAbsorptionController::class)->group(function () use ($base_segment) {
+        Route::get($base_segment.'/overhead_absorption/index', 'index')->name('main_transaction.overhead_absorption.index');
+        Route::get($base_segment.'/overhead_absorption/preview', 'getPreview')->name('main_transaction.overhead_absorption.preview');
+        Route::post($base_segment.'/overhead_absorption/settle', 'settle')->name('main_transaction.overhead_absorption.settle');
+        Route::get($base_segment.'/overhead_absorption/history', 'getHistory')->name('main_transaction.overhead_absorption.history');
+        Route::get($base_segment.'/overhead_absorption/details/{id}', 'getDetails')->name('main_transaction.overhead_absorption.details');
     });
 });

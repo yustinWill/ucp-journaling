@@ -61,6 +61,7 @@ class PermissionHelper
                 'main_transaction_expense' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
                 'main_transaction_journal' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
                 'main_transaction_return_management' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
+                'main_transaction_overhead_absorption' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
             ];
         }
 
