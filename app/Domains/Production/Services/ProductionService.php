@@ -18,7 +18,9 @@ class ProductionService
                 'bp.code as bundle_product_code',
                 'w.name as warehouse_name',
                 'w.code as warehouse_code',
-                'u.name as pic_name'
+                'u.name as pic_name',
+                // Get HPP from t_product_stock_batches: if settled use final_hpp, otherwise use estimated_hpp
+                DB::raw("(SELECT CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id = p.id LIMIT 1) as hpp_production")
             )
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
@@ -56,7 +58,9 @@ class ProductionService
                 'w.name as warehouse_name',
                 'w.code as warehouse_code',
                 'u.name as pic_name',
-                DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = p.id LIMIT 1) as unit_code')
+                DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = p.id LIMIT 1) as unit_code'),
+                // Get HPP from t_product_stock_batches: if settled use final_hpp, otherwise use estimated_hpp
+                DB::raw("(SELECT CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id = p.id LIMIT 1) as hpp_production")
             )
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
@@ -117,7 +121,9 @@ class ProductionService
                 'w.name as warehouse_name',
                 'w.code as warehouse_code',
                 'u.name as pic_name',
-                'created_user.name as created_by'
+                'created_user.name as created_by',
+                // Get HPP from t_product_stock_batches: if settled use final_hpp, otherwise use estimated_hpp
+                DB::raw("(SELECT CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id = p.id LIMIT 1) as hpp_production")
             )
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')

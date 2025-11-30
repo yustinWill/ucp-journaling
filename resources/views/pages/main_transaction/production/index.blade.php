@@ -135,7 +135,7 @@
                             <th style="width: 100px;">Jumlah Produksi</th>
                             <th style="width: 120px;">Unit</th>
                             <th style="width: 100px;">HPP</th>
-                            <th style="width: 100px;">Aksi</th>
+                             <th style="width: 100px;">Aksi</th>
                         </tr>
                     </thead>
                 </table>
