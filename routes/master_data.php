@@ -3,6 +3,7 @@
 use App\Http\Controllers\MasterData\CategoryController;
 // Controllers
 use App\Http\Controllers\MasterData\BudgedController;
+use App\Http\Controllers\MasterData\BudgetCategoryController;
 use App\Http\Controllers\MasterData\CoaController;
 use App\Http\Controllers\MasterData\ContactController;
 use App\Http\Controllers\MasterData\InventoryAssetController;
@@ -26,6 +27,7 @@ $contact_segment = '/contact';
 $warehouse_segment = '/warehouse';
 $product_segment = '/product';
 $budged_segment = '/budged';
+$budget_category_segment = '/budget_category';
 $coa_segment = '/coa';
 $user_segment = '/user';
 $role_segment = '/role';
@@ -40,7 +42,7 @@ $payment_term_segment = '/payment_term';
 $transaction_number_segment = '/transaction_number';
 $revenue_split_segment = '/revenue_split';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment,$budged_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $inventory_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment, $revenue_split_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment,$budged_segment, $budget_category_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $inventory_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment, $revenue_split_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment.$contact_segment.'/index', 'index')->name('master_data.contact.index');
         Route::get($base_segment.$contact_segment.'/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table');
@@ -110,11 +112,20 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment.$budged_segment.'/get-all-budgets', 'get_all_budgets')->name('master_data.budged.get-all-budgets');
         Route::get($base_segment.$budged_segment.'/get-periods/{id}', 'get_periods')->name('master_data.budged.get-periods');
 
-        // Budget Period Management Routes
-        Route::post($base_segment.$budged_segment.'/add-periode', 'add_periode')->name('master_data.budged.add-periode');
-        Route::post($base_segment.$budged_segment.'/update-periode', 'update_periode')->name('master_data.budged.update-periode');
-        Route::post($base_segment.$budged_segment.'/delete-periode', 'delete_periode')->name('master_data.budged.delete-periode');
-        Route::post($base_segment.$budged_segment.'/validate-period', 'validate_period')->name('master_data.budged.validate-period');
+        // New Period-Centric Routes
+        Route::get($base_segment.$budged_segment.'/get-budgets-by-period/{periodId}', 'get_budgets_by_period')->name('master_data.budged.get-budgets-by-period');
+        Route::post($base_segment.$budged_segment.'/update-period-budgets', 'update_period_budgets')->name('master_data.budged.update-period-budgets');
+    });
+
+    Route::controller(BudgetCategoryController::class)->group(function () use ($base_segment, $budget_category_segment) {
+        Route::get($base_segment.$budget_category_segment.'/index', 'index')->name('master_data.budget_category.index');
+        Route::get($base_segment.$budget_category_segment.'/index_data_table', 'index_data_table')->name('master_data.budget_category.index_data_table');
+        Route::get($base_segment.$budget_category_segment.'/add', 'add')->name('master_data.budget_category.add');
+        Route::post($base_segment.$budget_category_segment.'/save', 'save')->name('master_data.budget_category.save');
+        Route::get($base_segment.$budget_category_segment.'/edit/{id}', 'edit')->name('master_data.budget_category.edit');
+        Route::post($base_segment.$budget_category_segment.'/update', 'update')->name('master_data.budget_category.update');
+        Route::post($base_segment.$budget_category_segment.'/delete', 'delete')->name('master_data.budget_category.delete');
+        Route::get($base_segment.$budget_category_segment.'/get-all', 'get_all')->name('master_data.budget_category.get-all');
     });
 
     Route::controller(UserController::class)->group(function () use ($base_segment, $user_segment) {

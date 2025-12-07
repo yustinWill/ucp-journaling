@@ -189,7 +189,7 @@
         </li>
         <li class="menu-item @if (request()->routeIs(['master_data.budged.*'])) active @endif">
             <a href="{{ route('master_data.budged.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-money"></i>
+                <i class="menu-icon icon-base ti tabler-chart-line"></i>
                 <div data-i18n="Chat">Anggaran</div>
             </a>
         </li>
@@ -244,6 +244,7 @@
                 'master_data.sales_person.*',
                 'master_data.payment_term.*',
                 'master_data.transaction_number.*',
+                'master_data.budget_category.*',
             ])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
@@ -268,6 +269,11 @@
                 <li class="menu-item @if (request()->routeIs(['master_data.tag.*'])) active @endif">
                     <a href="{{ route('master_data.tag.index') }}" class="menu-link">
                         <div data-i18n="Tags">Tag Management</div>
+                    </a>
+                </li>
+                <li class="menu-item @if (request()->routeIs(['master_data.budget_category.*'])) active @endif">
+                    <a href="{{ route('master_data.budget_category.index') }}" class="menu-link">
+                        <div data-i18n="BudgetCategory">Kategori Anggaran</div>
                     </a>
                 </li>
                 <li class="menu-item @if (request()->routeIs(['master_data.sales_person.*'])) active @endif">

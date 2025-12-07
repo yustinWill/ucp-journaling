@@ -69,7 +69,6 @@ class ExpenseController extends Controller
         $paymentMethods = app(PaymentMethodService::class)->findAll();
         $coa_accounts = app(CoaService::class)->findAll();
         $activeBudgets = app(BudgedService::class)->getActiveBudgets();
-
         return view('pages.main_transaction.expense.add', [
             'canAddTags' => $canAddTags,
             'canAddContacts' => $canAddContacts,
@@ -254,7 +253,7 @@ class ExpenseController extends Controller
                 'final_total' => 'required|numeric|min:0.01',
                 'category_type' => session('user_company_code') === '001' ? 'required|string|in:Anggaran,Overhead,Lainnya' : 'nullable|string|in:Anggaran,Overhead,Lainnya',
                 // Budget field
-                'budged_history_id' => 'nullable|string|exists:m_budgeds_history,id',
+                'budged_history_id' => 'nullable|string|exists:m_budgeds,id',
 
                 // Expense lines validation
                 'expense_lines' => 'required|array|min:1',
@@ -419,7 +418,7 @@ class ExpenseController extends Controller
                 'final_total' => 'required|numeric|min:0.01',
                 'category_type' => session('user_company_code') === '001' ? 'required|string|in:Anggaran,Overhead,Lainnya' : 'nullable|string|in:Anggaran,Overhead,Lainnya',
                 // Budget field
-                'budged_history_id' => 'nullable|string|exists:m_budgeds_history,id',
+                'budged_history_id' => 'nullable|string|exists:m_budgeds,id',
 
                 // Expense lines validation
                 'expense_lines' => 'required|array|min:1',

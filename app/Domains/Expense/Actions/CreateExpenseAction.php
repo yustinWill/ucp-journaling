@@ -8,6 +8,7 @@ use App\Domains\Expense\Services\ExpenseService;
 use App\Domains\Expense\Services\ExpenseCoaDetailService;
 use App\Domains\Expense\Services\ExpenseAuditLogService;
 use App\Domains\Expense\Actions\PaymentExpenseAction;
+use App\Domains\Budged\Services\BudgedService;
 
 
 class CreateExpenseAction
@@ -33,12 +34,18 @@ class CreateExpenseAction
             }
             app(ExpenseCoaDetailService::class)->create($expense_coa_details);
 
-            // Save budget mapping if provided
+            // Save budget mapping if provided and update budget remaining value
             if (!empty($data['budged_history_id'])) {
                 DB::table('t_budged_expenses')->insert([
                     'budged_history_id' => $data['budged_history_id'],
                     'expense_id' => $expense_id,
                 ]);
+
+                // Update budget remaining value
+                app(BudgedService::class)->updateBudgetRemaining(
+                    $data['budged_history_id'],
+                    $data['final_total']
+                );
             }
 
             if ($data['pay_later'] == false) {

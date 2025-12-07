@@ -7,6 +7,7 @@ use App\Domains\Expense\Services\ExpenseCoaDetailService;
 use App\Domains\Expense\Services\ExpenseService;
 use App\Enums\ActionTypes;
 use Illuminate\Support\Facades\DB;
+use App\Domains\Budged\Services\BudgedService;
 
 class UpdateExpenseAction
 {
@@ -35,13 +36,37 @@ class UpdateExpenseAction
 
             app(ExpenseCoaDetailService::class)->create($expense_coa_details);
 
-            // Update budget mapping
+            // Get old expense data to handle budget updates
+            $oldExpense = app(ExpenseService::class)->findOne($expense_id);
+            $oldBudgetMapping = DB::table('t_budged_expenses')
+                ->where('expense_id', $expense_id)
+                ->first();
+
+            // Update budget mapping and remaining values
             DB::table('t_budged_expenses')->where('expense_id', $expense_id)->delete();
+
+            $budgedService = app(BudgedService::class);
+
+            // If there was an old budget, restore its remaining value
+            if ($oldBudgetMapping) {
+                // Add back the old expense amount to the old budget
+                DB::table('m_budgeds')
+                    ->where('id', $oldBudgetMapping->budged_history_id)
+                    ->increment('budged_remaining_value', $oldExpense->total_amount);
+            }
+
+            // If there's a new budget, deduct the new amount
             if (!empty($data['budged_history_id'])) {
                 DB::table('t_budged_expenses')->insert([
                     'budged_history_id' => $data['budged_history_id'],
                     'expense_id' => $expense_id,
                 ]);
+
+                // Deduct new expense amount from new budget
+                $budgedService->updateBudgetRemaining(
+                    $data['budged_history_id'],
+                    $data['final_total']
+                );
             }
 
             $log_data = [

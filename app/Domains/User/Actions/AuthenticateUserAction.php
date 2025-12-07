@@ -41,7 +41,6 @@ class AuthenticateUserAction
             foreach ($config_data as $config) {
                 session([$config->code => $config->value]);
             }
-
             session(['permissions' => $permissions, 'user_company' => $user_company, 'user_company_code' => $user_company_code, 'user_company_name' => $user_company_name]);
 
             return true;

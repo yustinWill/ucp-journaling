@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\MasterData;
 
+use App\Domains\Budged\Actions\CreateBudgedAction;
+use App\Domains\Budged\Actions\UpdateBudgedAction;
 use App\Domains\Budged\Services\BudgedService;
+use App\Domains\BudgetCategory\Services\BudgetCategoryService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
@@ -11,6 +14,7 @@ use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class BudgedController extends Controller
@@ -49,75 +53,40 @@ class BudgedController extends Controller
     public function add()
     {
         $budgedlist = app(BudgedService::class)->findAllDatatable();
+        $budgetCategories = app(BudgetCategoryService::class)->findAllActive();
         // dd($budgedlist["data"]);
-        return view('pages.master_data.budged.add',["budgedlist" => $budgedlist["data"]]);
+        return view('pages.master_data.budged.add',["budgedlist" => $budgedlist["data"], "budgetCategories" => $budgetCategories]);
     }
 
     public function save(Request $request)
     {
         try {
-            $budgetType = $request->input('budget_type');
-
-            $rules = [
-                'budget_type' => 'required|in:new,existing',
+            // Validate the new structure: period first, then array of budgets
+            $validated = $request->validate([
                 'period_start_date' => 'required|date',
                 'period_end_date' => 'required|date|after_or_equal:period_start_date',
-                'budged_limit_value' => 'required|numeric|min:0',
-            ];
-
-            if ($budgetType === 'new') {
-                $rules['budged_name'] = 'required|string|max:255';
-            } else {
-                $rules['existing_budged_id'] = 'required|exists:m_budgeds,id';
-            }
-
-            $validated = $request->validate($rules, [], [
-                'budged_name' => 'Nama Anggaran',
-                'existing_budged_id' => 'Anggaran',
+                'budgets' => 'required|array|min:1',
+                'budgets.*.f_budget_category_id' => 'required|exists:m_budget_categories,id',
+                'budgets.*.budged_limit_value' => 'required|numeric|min:0',
+            ], [], [
                 'period_start_date' => 'Tanggal Mulai Periode',
                 'period_end_date' => 'Tanggal Akhir Periode',
-                'budged_limit_value' => 'Nilai Limit Anggaran',
+                'budgets' => 'Daftar Anggaran',
+                'budgets.*.f_budget_category_id' => 'Kategori Anggaran',
+                'budgets.*.budged_limit_value' => 'Nilai Limit Anggaran',
             ]);
 
-            $budgedService = app(BudgedService::class);
-
-            if ($budgetType === 'new') {
-                // Create new budget
-                $budgedId = $budgedService->create(['budged_name' => $validated['budged_name']]);
-            } else {
-                // Use existing budget
-                $budgedId = $validated['existing_budged_id'];
-
-                // Validate period doesn't overlap
-                $validation = $budgedService->validatePeriodOverlap(
-                    $budgedId,
-                    $validated['period_start_date'],
-                    $validated['period_end_date']
-                );
-
-                if (!$validation['valid']) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => $validation['message'],
-                    ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
-                }
-            }
-
-            // Create period for the budget
-            $budgedService->createHistory($budgedId, [
-                'budged_limit_value' => $validated['budged_limit_value'],
-                'period_start_date' => $validated['period_start_date'],
-                'period_end_date' => $validated['period_end_date'],
-            ]);
-
-            $message = $budgetType === 'new'
-                ? 'Anggaran dan periode berhasil ditambahkan'
-                : 'Periode anggaran berhasil ditambahkan';
+            $result = app(CreateBudgedAction::class)->execute($validated);
 
             return response()->json([
                 'success' => true,
-                'message' => $message,
-                'budged_id' => $budgedId,
+                'message' => sprintf(
+                    '%d anggaran berhasil ditambahkan untuk periode %s s/d %s',
+                    $result['count'],
+                    date('d/m/Y', strtotime($result['period_start_date'])),
+                    date('d/m/Y', strtotime($result['period_end_date']))
+                ),
+                'data' => $result,
             ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([
@@ -145,21 +114,30 @@ class BudgedController extends Controller
 
     public function detail($id)
     {
-        $budged = app(BudgedService::class)->findOne($id);
-        $history = app(BudgedService::class)->findHistoryWithExpenses($id);
+        // $id is now the period_id
+        $periodData = app(BudgedService::class)->getPeriodWithBudgetsAndExpenses($id);
         $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
 
         return view('pages.master_data.budged.detail', array_merge(
-            compact('budged', 'history'),
+            compact('periodData'),
             $permissionData
         ));
     }
 
     public function edit($id)
     {
-        $budged = app(BudgedService::class)->findOne($id);
+        // $id is now the period_id
+        $period = app(BudgedService::class)->findPeriodById($id);
+        $budgetCategories = app(BudgetCategoryService::class)->findAllActive();
         $canWrite = true;
-        return view('pages.master_data.budged.edit', compact('budged','canWrite'));
+
+        return view('pages.master_data.budged.edit', [
+            'period_id' => $period->id,
+            'period_start_date' => $period->period_start_date,
+            'period_end_date' => $period->period_end_date,
+            'budgetCategories' => $budgetCategories,
+            'canWrite' => $canWrite,
+        ]);
     }
 
     public function update(Request $request)
@@ -409,6 +387,78 @@ class BudgedController extends Controller
                 'success' => false,
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
+    public function get_budgets_by_period($periodId)
+    {
+        try {
+            $budgets = app(BudgedService::class)->findByPeriodId($periodId);
+
+            return response()->json([
+                'success' => true,
+                'data' => $budgets,
+            ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
+    public function update_period_budgets(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'period_id' => 'required|exists:m_budget_periods,id',
+                'budgets' => 'required|array|min:1',
+                'budgets.*.id' => 'nullable|exists:m_budgeds,id',
+                'budgets.*.budged_name' => 'required|string|max:255',
+                'budgets.*.budged_limit_value' => 'required|numeric|min:0',
+                'budgets.*.budged_remaining_value' => 'required|numeric|min:0',
+            ], [], [
+                'period_id' => 'ID Periode',
+                'budgets' => 'Daftar Anggaran',
+                'budgets.*.budged_name' => 'Nama Anggaran',
+                'budgets.*.budged_limit_value' => 'Nilai Limit Anggaran',
+                'budgets.*.budged_remaining_value' => 'Nilai Sisa Anggaran',
+            ]);
+
+            $periodId = $validated['period_id'];
+            $budgets = $validated['budgets'];
+
+            // Use UpdateBudgedAction to handle the update logic
+            app(UpdateBudgedAction::class)->execute($periodId, $budgets);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Perubahan berhasil disimpan',
+            ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => ValidationHelper::formatErrors($e->errors()),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (AppException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }

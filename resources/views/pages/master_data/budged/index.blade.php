@@ -6,7 +6,7 @@
     <!-- Main Content Card -->
     <div class="mt-6">
         <div class="card">
-            <h4 class="card-header">Kelola Anggaran</h4>
+            <h4 class="card-header">Kelola Anggaran Berdasarkan Periode</h4>
             <div class="card-body">
                 <!-- Advanced Search Form -->
                 <form class="dt_adv_search" method="GET" autocomplete="off">
@@ -15,7 +15,7 @@
                             <div class="row g-3">
                                 <div class="col-12 col-sm-6 col-lg-4">
                                     <label class="form-label">Pencarian:</label>
-                                    <input type="text" class="form-control" id="search" placeholder="Cari Anggaran">
+                                    <input type="text" class="form-control" id="search" placeholder="Cari berdasarkan periode atau anggaran">
                                 </div>
                             </div>
                         </div>
@@ -29,7 +29,7 @@
                             @if ($canShowAddButton)
                                 <button type="button" id="btn-add-budged"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Periode & Anggaran</button>
                             @endif
                         </div>
                     </div>
@@ -41,10 +41,10 @@
                 <table id="main-table" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Nama Anggaran</th>
-                            <th>Periode Berjalan</th>
-                            <th>Limit Periode</th>
-                            <th>Sisa Periode</th>
+                            <th>Periode</th>
+                            <th>Jumlah Anggaran</th>
+                            <th>Total Limit</th>
+                            <th>Total Sisa</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -78,92 +78,89 @@
                         return d;
                     }
                 },
-                    columns: [{
-                            data: 'budged_name',
-                            responsivePriority: 2
-                        },
-                        {
-                            data: 'period_start_date',
-                            responsivePriority: 3,
-                            className: 'text-center',
-                            render: function(data, type, row) {
-                                if (!data || !row.period_end_date) {
-                                    return '<span class="badge bg-label-secondary">Tidak Ada Periode Aktif</span>';
-                                }
-                                const startDate = moment(data).format('DD/MM/YYYY');
-                                const endDate = moment(row.period_end_date).format('DD/MM/YYYY');
-                                return `${startDate} - ${endDate}`;
-                            }
-                        },
-                        {
-                            data: 'current_limit',
-                            responsivePriority: 4,
-                            className: 'text-end',
-                            render: function(data) {
-                                return data ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data) : '-';
-                            }
-                        },
-                        {
-                            data: 'current_remaining',
-                            responsivePriority: 5,
-                            className: 'text-end',
-                            render: function(data) {
-                                return data ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data) : '-';
-                            }
-                        },
-                        {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            responsivePriority: 1,
-                            width: '120px',
-                            render: function(data, type, row, meta) {
-                                const detailUrl =
-                                    `{{ route('master_data.budged.detail', ':id') }}`.replace(
-                                        ':id', row.id);
-                                const editUrl = `{{ route('master_data.budged.edit', ':id') }}`
-                                    .replace(':id', row.id);
-                                let actions = '<div class="d-flex gap-2">';
-
-                                if (canRead) {
-                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-xs icon-base ti tabler-eye"></i>
-                                    </a>`;
-                                }
-
-                                if (canShowEditButton) {
-                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-xs icon-base ti tabler-edit"></i>
-                                    </a>`;
-                                }
-
-                                actions += '</div>';
-                                return actions;
-                            }
-                        }
-                    ],
-                    layout: {
-                        topStart: {
-                            rowClass: 'm-0',
-                            features: []
-                        },
-                        topEnd: {},
-                        bottomStart: {
-                            rowClass: 'row mx-3 justify-content-between',
-                            features: ['info']
-                        },
-                        bottomEnd: 'paging'
-                    },
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                columns: [{
+                        data: 'period',
+                        responsivePriority: 2,
+                        render: function(data, type, row) {
+                            const startDate = moment(row.period_start_date).format('DD/MM/YYYY');
+                            const endDate = moment(row.period_end_date).format('DD/MM/YYYY');
+                            return `${startDate} - ${endDate}`;
                         }
                     },
-                    responsive: true
-                });
+                    {
+                        data: 'budget_count',
+                        responsivePriority: 3,
+                        className: 'text-center'
+                    },
+                    {
+                        data: 'total_limit',
+                        responsivePriority: 4,
+                        className: 'text-end',
+                        render: function(data) {
+                            return data ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data) : 'Rp 0';
+                        }
+                    },
+                    {
+                        data: 'total_remaining',
+                        responsivePriority: 5,
+                        className: 'text-end',
+                        render: function(data) {
+                            return data ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data) : 'Rp 0';
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        responsivePriority: 1,
+                        width: '120px',
+                        render: function(data, type, row, meta) {
+                            const detailUrl =
+                                `{{ route('master_data.budged.detail', ':id') }}`.replace(
+                                    ':id', row.period_id);
+                            const editUrl = `{{ route('master_data.budged.edit', ':id') }}`
+                                .replace(':id', row.period_id);
+                            let actions = '<div class="d-flex gap-2">';
+
+                            if (canRead) {
+                                actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                    <i class="icon-xs icon-base ti tabler-eye"></i>
+                                </a>`;
+                            }
+
+                            if (canShowEditButton) {
+                                actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <i class="icon-xs icon-base ti tabler-edit"></i>
+                                </a>`;
+                            }
+
+                            actions += '</div>';
+                            return actions;
+                        }
+                    }
+                ],
+                layout: {
+                    topStart: {
+                        rowClass: 'm-0',
+                        features: []
+                    },
+                    topEnd: {},
+                    bottomStart: {
+                        rowClass: 'row mx-3 justify-content-between',
+                        features: ['info']
+                    },
+                    bottomEnd: 'paging'
+                },
+                language: {
+                    paginate: {
+                        next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                        previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                        first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                        last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                    }
+                },
+                responsive: true
+            });
 
             // Button click event
             $('#btn-add-budged').on('click', function() {

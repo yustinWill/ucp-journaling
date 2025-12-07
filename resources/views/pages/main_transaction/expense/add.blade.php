@@ -170,14 +170,14 @@
                 <div class="row">
                     <!-- Left Side: Tag, Memo and Attachment -->
                     <div class="col-md-6 mb-4">
-                        @if(session('user_company_code') !== '001')
+                        @if(session('user_company_code') !== "001")
                         <div class="mb-3">
                             <label class="form-label">Anggaran</label>
                             <select id="budget" name="budged_history_id" class="global-select2 form-select"
                                 data-allow-clear="true">
                                 <option value="">Pilih Anggaran</option>
                                 @foreach ($activeBudgets as $budget)
-                                    <option value="{{ $budget->history_id }}">
+                                    <option value="{{ $budget->budget_id }}">
                                         {{ $budget->budged_name }}
                                         ({{ date('d/m/Y', strtotime($budget->period_start_date)) }} - {{ date('d/m/Y', strtotime($budget->period_end_date)) }})
                                     </option>

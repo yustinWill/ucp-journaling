@@ -183,7 +183,7 @@
                             data-allow-clear="true">
                             <option value="">Pilih Anggaran</option>
                             @foreach ($activeBudgets as $budget)
-                                <option value="{{ $budget->history_id }}"
+                                <option value="{{ $budget->budget_id }}"
                                     {{ $currentBudget && $currentBudget->budged_history_id == $budget->history_id ? 'selected' : '' }}>
                                     {{ $budget->budged_name }}
                                     ({{ date('d/m/Y', strtotime($budget->period_start_date)) }} - {{ date('d/m/Y', strtotime($budget->period_end_date)) }})

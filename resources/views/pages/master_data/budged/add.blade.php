@@ -8,52 +8,6 @@
         <form class="card-body" id="budged-form" action="#" method="POST" autocomplete="off">
             @csrf
 
-            <!-- Info Anggaran Section -->
-            <div class="section-header mt-12">
-                <h6>Info Anggaran</h6>
-                <hr class="mx-n6">
-            </div>
-
-            <!-- Budget Type Selection -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="budget_type" id="new_budget" value="new" checked>
-                        <label class="form-check-label" for="new_budget">
-                            Buat Anggaran Baru
-                        </label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="budget_type" id="existing_budget" value="existing">
-                        <label class="form-check-label" for="existing_budget">
-                            Gunakan Anggaran Yang Ada
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- New Budget Name Input -->
-            <div class="row g-3 mb-4" id="new-budget-section">
-                <div class="col-md-6">
-                    <label class="form-label">Nama Anggaran <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="budged_name" name="budged_name"
-                        placeholder="Masukkan nama anggaran">
-                </div>
-            </div>
-
-            <!-- Existing Budget Selection -->
-            <div class="row g-3 mb-4" id="existing-budget-section" style="display: none;">
-                <div class="col-md-6">
-                    <label class="form-label">Pilih Anggaran <span style="color: red;">*</span></label>
-                    <select class="global-select2 form-select" id="existing_budged_id" name="existing_budged_id" data-allow-clear="false">
-                        <option value="">-- Pilih Anggaran --</option>
-                        @foreach ($budgedlist as $row)
-                            <option value='{{ $row->id; }}'>{{ $row->budged_name; }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
             <!-- Period Information -->
             <div class="section-header mt-12">
                 <h6>Informasi Periode</h6>
@@ -61,33 +15,38 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label">Tanggal Mulai Periode <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="period_start_date" name="period_start_date" required>
-                    <div class="invalid-feedback">
-                        Periode bertumpang tindih dengan periode yang sudah ada
-                    </div>
+                    <input type="text" class="form-control global-single-date-picker" id="period_start_date"
+                           name="period_start_date" placeholder="yyyy-mm-dd" required>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label">Tanggal Akhir Periode <span style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="period_end_date" name="period_end_date" required>
-                    <div class="invalid-feedback">
-                        Periode bertumpang tindih dengan periode yang sudah ada
-                    </div>
+                    <input type="text" class="form-control global-single-date-picker" id="period_end_date"
+                           name="period_end_date" placeholder="yyyy-mm-dd" required>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Nilai Limit Anggaran <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control currency-input" id="budged_limit_value"
-                        name="budged_limit_value" placeholder="Rp 0" required>
-                </div>
+            </div>
+
+            <!-- Budget Items Section -->
+            <div class="section-header mt-12">
+                <h6>Daftar Anggaran</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <div id="budget-items-container">
+                <!-- Budget items will be added here -->
+            </div>
+
+            <div class="mb-4">
+                <button type="button" class="btn btn-primary" id="add-budget-item">
+                    <i class="icon-base ti tabler-plus me-2"></i> Tambah Anggaran
+                </button>
             </div>
 
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
                 <button type="button" class="btn btn-label-danger me-3" onclick="window.history.back()">Batalkan</button>
-                {{-- @if($canWrite) --}}
-                    <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
-                {{-- @endif --}}
+                <button type="submit" class="btn btn-success" id="submit-btn">Simpan</button>
             </div>
         </form>
     </div>
@@ -96,165 +55,185 @@
 @section('js_script')
     <script>
         $(function() {
-            // Currency formatting
-            $('.currency-input').on('input', function() {
-                let value = $(this).val().replace(/[^0-9]/g, '');
-                if (value) {
-                    $(this).val('Rp ' + new Intl.NumberFormat('id-ID').format(value));
-                }
-            });
+            let budgetItemIndex = 0;
 
-            // Parse currency helper
-            function parseCurrency(value) {
-                return parseFloat(value.replace(/[^0-9]/g, '')) || 0;
+            // Budget item template
+            function getBudgetItemTemplate(index) {
+                return `
+                    <div class="card mb-3 budget-item" data-index="${index}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Anggaran #${index + 1}</h6>
+                                <button type="button" class="btn btn-sm btn-danger remove-budget-item" data-index="${index}">
+                                    <i class="ti ti-trash"></i> Hapus
+                                </button>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Kategori Anggaran <span style="color: red;">*</span></label>
+                                    <select class="form-select budget-category-select" name="budgets[${index}][f_budget_category_id]" id="category_${index}" required>
+                                        <option value="">Pilih Kategori</option>
+                                        @foreach($budgetCategories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->category_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Nilai Limit Anggaran <span style="color: red;">*</span></label>
+                                    <input type="text" class="form-control currency-input" name="budgets[${index}][budged_limit_value]"
+                                        placeholder="Rp 0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
-            // Initialize Select2
-            function initializeSelect2() {
-                $('#existing_budged_id').select2({
-                    placeholder: '-- Pilih Anggaran --',
-                    allowClear: true,
-                    width: '100%'
+            // Function to update category dropdowns (disable selected options)
+            function updateCategoryOptions() {
+                const selectedCategories = [];
+
+                // Collect all selected category IDs
+                $('.budget-category-select').each(function() {
+                    const value = $(this).val();
+                    if (value) {
+                        selectedCategories.push(value);
+                    }
                 });
-            }
 
-            // Load existing budgets
-            function loadExistingBudgets() {
-                $.ajax({
-                    url: "{{ route('master_data.budged.get-all-budgets') }}",
-                    type: 'GET',
-                    success: function(response) {
-                        // Destroy Select2 if already initialized
-                        if ($('#existing_budged_id').hasClass('select2-hidden-accessible')) {
-                            $('#existing_budged_id').select2('destroy');
+                // Update each dropdown
+                $('.budget-category-select').each(function() {
+                    const currentSelect = $(this);
+                    const currentValue = currentSelect.val();
+
+                    // Enable all options first
+                    currentSelect.find('option').prop('disabled', false);
+
+                    // Disable options that are selected in other dropdowns
+                    selectedCategories.forEach(function(categoryId) {
+                        if (categoryId !== currentValue) {
+                            currentSelect.find(`option[value="${categoryId}"]`).prop('disabled', true);
                         }
+                    });
 
-                        $('#existing_budged_id').empty().append('<option value="">-- Pilih Anggaran --</option>');
-                        if (response.success && response.data && response.data.length > 0) {
-                            response.data.forEach(function(budget) {
-                                $('#existing_budged_id').append(
-                                    `<option value="${budget.id}">${budget.budged_name}</option>`
-                                );
-                            });
-                        }
-
-                        // Re-initialize Select2
-                        initializeSelect2();
-                    },
-                    error: function() {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: 'Gagal memuat daftar anggaran',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
-                            buttonsStyling: false
+                    // Refresh select2 to show disabled state
+                    if (currentSelect.hasClass('select2-hidden-accessible')) {
+                        currentSelect.select2('destroy');
+                        currentSelect.select2({
+                            placeholder: 'Pilih Kategori',
+                            allowClear: true
                         });
                     }
                 });
             }
 
-            // Toggle between new and existing budget
-            $('input[name="budget_type"]').on('change', function() {
-                const budgetType = $(this).val();
-                if (budgetType === 'new') {
-                    $('#new-budget-section').show();
-                    $('#existing-budget-section').hide();
-                    $('#budged_name').prop('required', true);
-                    $('#existing_budged_id').prop('required', false);
-                } else {
-                    $('#new-budget-section').hide();
-                    $('#existing-budget-section').show();
-                    $('#budged_name').prop('required', false);
-                    $('#existing_budged_id').prop('required', true);
-                    loadExistingBudgets();
-                }
-            });
+            // Add budget item
+            function addBudgetItem() {
+                const template = getBudgetItemTemplate(budgetItemIndex);
+                $('#budget-items-container').append(template);
 
-            // Validate period dates don't overlap
-            async function validatePeriodDates(budgetId, startDate, endDate) {
-                try {
-                    const response = await $.ajax({
-                        url: "{{ url('master_data/budged/validate-period') }}",
-                        type: 'POST',
-                        data: {
-                            budged_id: budgetId,
-                            period_start_date: startDate,
-                            period_end_date: endDate
-                        },
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        }
-                    });
-                    return response;
-                } catch (error) {
-                    return { valid: false, message: 'Gagal memvalidasi periode' };
-                }
+                // Initialize currency formatting for new item
+                initializeCurrencyInput($(`[name="budgets[${budgetItemIndex}][budged_limit_value]"]`));
+
+                // Initialize select2 for the new dropdown
+                $(`#category_${budgetItemIndex}`).select2({
+                    placeholder: 'Pilih Kategori',
+                    allowClear: true
+                });
+
+                budgetItemIndex++;
+                updateBudgetNumbers();
+                updateCategoryOptions();
             }
 
-            // Validate period dates when budget or dates change
-            let validationTimeout = null;
-            $('#existing_budged_id, #period_start_date, #period_end_date').on('change', function() {
-                const budgetType = $('input[name="budget_type"]:checked').val();
-
-                // Only validate if using existing budget
-                if (budgetType === 'existing') {
-                    const budgetId = $('#existing_budged_id').val();
-                    const startDate = $('#period_start_date').val();
-                    const endDate = $('#period_end_date').val();
-
-                    // Clear previous timeout
-                    if (validationTimeout) {
-                        clearTimeout(validationTimeout);
-                    }
-
-                    // Only validate if all fields are filled
-                    if (budgetId && startDate && endDate) {
-                        // Add small delay to avoid too many requests
-                        validationTimeout = setTimeout(async function() {
-                            // First check if start date is before end date
-                            if (new Date(startDate) > new Date(endDate)) {
-                                $('#period_end_date').addClass('is-invalid');
-                                return;
-                            }
-
-                            // Validate period overlap
-                            const validation = await validatePeriodDates(budgetId, startDate, endDate);
-
-                            if (!validation.valid) {
-                                // Show error styling
-                                $('#period_start_date').addClass('is-invalid');
-                                $('#period_end_date').addClass('is-invalid');
-
-                                // Show error message
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: 'Periode Tidak Valid',
-                                    text: validation.message || 'Periode yang dipilih bertumpang tindih dengan periode yang sudah ada',
-                                    confirmButtonText: 'OK',
-                                    customClass: {
-                                        confirmButton: 'btn btn-primary'
-                                    },
-                                    buttonsStyling: false
-                                });
-                            } else {
-                                // Remove error styling if valid
-                                $('#period_start_date').removeClass('is-invalid');
-                                $('#period_end_date').removeClass('is-invalid');
-                            }
-                        }, 500);
-                    }
-                }
+            // Remove budget item
+            $(document).on('click', '.remove-budget-item', function() {
+                const index = $(this).data('index');
+                $(`.budget-item[data-index="${index}"]`).remove();
+                updateBudgetNumbers();
+                updateCategoryOptions();
             });
+
+            // Update budget numbers
+            function updateBudgetNumbers() {
+                $('.budget-item').each(function(i) {
+                    $(this).find('h6').text(`Anggaran #${i + 1}`);
+                });
+            }
+
+            // Handle category selection change
+            $(document).on('change', '.budget-category-select', function() {
+                updateCategoryOptions();
+            });
+
+            // Add budget item button
+            $('#add-budget-item').on('click', function() {
+                addBudgetItem();
+            });
+
+            // Initialize with one budget item
+            addBudgetItem();
+
+            // Currency formatting
+            function initializeCurrencyInput($element) {
+                $element.on('input', function() {
+                    let value = $(this).val().replace(/[^0-9]/g, '');
+                    if (value) {
+                        $(this).val('Rp ' + new Intl.NumberFormat('id-ID').format(value));
+                    }
+                });
+            }
+
+            // Initialize currency inputs for all existing items
+            $('.currency-input').each(function() {
+                initializeCurrencyInput($(this));
+            });
+
+            // Parse currency helper
+            function parseCurrency(value) {
+                if (!value) return 0;
+                return parseFloat(value.toString().replace(/[^0-9]/g, '')) || 0;
+            }
+
+            // Format date to yyyy-mm-dd
+            function formatDateToYMD(dateString) {
+                if (!dateString) return '';
+
+                // If already in yyyy-mm-dd format, return as is
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+                    return dateString;
+                }
+
+                // Parse and format to yyyy-mm-dd
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
 
             // Form validation and submission
             $('#budged-form').on('submit', async function(e) {
                 e.preventDefault();
 
-                const budgetType = $('input[name="budget_type"]:checked').val();
-                const periodStartDate = $('#period_start_date').val();
-                const periodEndDate = $('#period_end_date').val();
+                // Get and format dates to yyyy-mm-dd
+                const periodStartDate = formatDateToYMD($('#period_start_date').val());
+                const periodEndDate = formatDateToYMD($('#period_end_date').val());
+
+                // Validate date format
+                if (!periodStartDate || !periodEndDate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Silakan isi tanggal periode dengan benar (format: yyyy-mm-dd)',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
 
                 // Validate dates
                 if (new Date(periodStartDate) > new Date(periodEndDate)) {
@@ -271,67 +250,71 @@
                     return;
                 }
 
-                let formData = {
-                    budget_type: budgetType,
+                // Validate at least one budget item
+                if ($('.budget-item').length === 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Silakan tambahkan minimal satu anggaran',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                // Collect budget items
+                const budgets = [];
+                let hasError = false;
+
+                $('.budget-item').each(function() {
+                    const index = $(this).data('index');
+                    const categoryId = $(`[name="budgets[${index}][f_budget_category_id]"]`).val();
+                    const limitValue = parseCurrency($(`[name="budgets[${index}][budged_limit_value]"]`).val());
+
+                    if (!categoryId || !limitValue) {
+                        hasError = true;
+                        return false;
+                    }
+
+                    budgets.push({
+                        f_budget_category_id: categoryId,
+                        budged_limit_value: limitValue
+                    });
+                });
+
+                if (hasError) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Silakan lengkapi semua data anggaran',
+                        confirmButtonText: 'OK',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
+                const formData = {
                     period_start_date: periodStartDate,
                     period_end_date: periodEndDate,
-                    budged_limit_value: parseCurrency($('#budged_limit_value').val())
+                    budgets: budgets
                 };
 
-                if (budgetType === 'new') {
-                    formData.budged_name = $('#budged_name').val();
-                    if (!formData.budged_name) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: 'Silakan masukkan nama anggaran',
-                            confirmButtonText: 'OK',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
-                            buttonsStyling: false
-                        });
-                        return;
-                    }
-                } else {
-                    const existingBudgetId = $('#existing_budged_id').val();
-                    if (!existingBudgetId) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal!',
-                            text: 'Silakan pilih anggaran yang ada',
-                            confirmButtonText: 'OK',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
-                            buttonsStyling: false
-                        });
-                        return;
-                    }
-
-                    // Validate period doesn't overlap
-                    const validation = await validatePeriodDates(existingBudgetId, periodStartDate, periodEndDate);
-                    if (!validation.valid) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Periode Tidak Valid!',
-                            text: validation.message || 'Periode yang dipilih bertumpang tindih dengan periode yang sudah ada',
-                            confirmButtonText: 'OK',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
-                            buttonsStyling: false
-                        });
-                        return;
-                    }
-
-                    formData.existing_budged_id = existingBudgetId;
-                }
+                // Debug: Log the formatted dates
+                console.log('Formatted dates:', {
+                    period_start_date: periodStartDate,
+                    period_end_date: periodEndDate
+                });
 
                 // Confirm save
                 Swal.fire({
                     title: 'Simpan Anggaran?',
-                    text: 'Apakah Anda yakin ingin membuat anggaran ini?',
+                    text: `Apakah Anda yakin ingin membuat ${budgets.length} anggaran untuk periode ini?`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Simpan!',
@@ -388,8 +371,8 @@
             });
 
             // Real-time validation
-            $('input, select, textarea').on('change blur', function() {
-                if (this.hasAttribute('required') && !this.value.trim()) {
+            $(document).on('change blur', 'input[required], select[required], textarea[required]', function() {
+                if (!this.value.trim()) {
                     this.classList.add('is-invalid');
                 } else {
                     this.classList.remove('is-invalid');
