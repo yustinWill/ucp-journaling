@@ -104,8 +104,8 @@
                             <th>No Sales Order</th>
                             <th>Customer</th>
                             <th>Gudang</th>
-                            {{-- <th>Status</th> --}}
                             <th>Diinput Oleh</th>
+                            <th>Status</th>
                             <th>Tag</th>
                             <th>Aksi</th>
                         </tr>
@@ -206,29 +206,6 @@
                         {
                             data: 'warehouse',
                         },
-                        // {
-                        //     data: 'status',
-                        //     width: '120px',
-                        //     render: function(data) {
-                        //         const statusBadges = {
-                        //             'PENDING': 'bg-label-warning',
-                        //             'IN_TRANSIT': 'bg-label-info',
-                        //             'DELIVERED': 'bg-label-success',
-                        //             'CANCELLED': 'bg-label-danger',
-                        //             'RETURNED': 'bg-label-secondary'
-                        //         };
-                        //         const statusLabels = {
-                        //             'PENDING': 'Menunggu',
-                        //             'IN_TRANSIT': 'Dalam Perjalanan',
-                        //             'DELIVERED': 'Terkirim',
-                        //             'CANCELLED': 'Dibatalkan',
-                        //             'RETURNED': 'Dikembalikan'
-                        //         };
-                        //         const badgeClass = statusBadges[data] || 'bg-label-secondary';
-                        //         const label = statusLabels[data] || data;
-                        //         return `<span class="badge ${badgeClass}">${label}</span>`;
-                        //     }
-                        // },
                         {
                             data: 'created_by',
                             render: function(data, type, row) {
@@ -240,6 +217,17 @@
                                     return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 }
                                 return data;
+                            }
+                        },
+                        {
+                            data: 'is_confirmed',
+                            width: '100px',
+                            render: function(data, type, row) {
+                                if (data === '1' || data === 1) {
+                                    return `<span class="badge bg-label-success">Diterima</span>`;
+                                } else {
+                                    return `<span class="badge bg-label-info">Dikirim</span>`;
+                                }
                             }
                         },
                         {

@@ -105,10 +105,10 @@
             <!-- Row 2: Customer Reference -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Referensi Customer</label>
+                    <label class="form-label">Nomor Resi Pengiriman</label>
                     <input type="text" class="form-control" id="sales-delivery-customer-ref" name="customer_reference"
                         value="{{ $salesDelivery->customer_reference ?? '' }}"
-                        placeholder="Nomor referensi dari customer (PO Number, dll)" />
+                        placeholder="Nomor Resi Pengiriman" />
                 </div>
             </div>
 

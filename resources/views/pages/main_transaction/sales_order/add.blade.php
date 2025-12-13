@@ -175,8 +175,17 @@
                 </div>
             </div>
 
-            <!-- Row 3: Keterangan -->
+            <!-- Row 3: Harga Ongkos Kirim, Keterangan -->
             <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Harga Ongkos Kirim <span class="text-muted">(Opsional)</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="number" class="form-control" id="sales-order-shipping-cost" name="shipping_cost"
+                            placeholder="0" min="0" step="0.01" value="0" />
+                    </div>
+                    <small class="form-text text-muted">Biaya ongkir yang dibayar seller (tidak termasuk di invoice)</small>
+                </div>
                 <div class="col-md-6">
                     <label class="form-label">Keterangan</label>
                     <textarea class="form-control" id="sales-order-description" name="description" rows="2"

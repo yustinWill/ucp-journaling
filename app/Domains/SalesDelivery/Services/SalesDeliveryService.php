@@ -140,6 +140,7 @@ class SalesDeliveryService
                 'sd.delivery_number',
                 'sd.delivery_date',
                 'sd.status',
+                'sd.is_confirmed',
                 'sd.created_at',
                 'sd.created_by',
                 'so.transaction_code as sales_order_number',

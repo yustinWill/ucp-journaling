@@ -162,9 +162,9 @@
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Referensi Customer</label>
+                    <label class="form-label">Nomor Resi Pengiriman</label>
                     <input type="text" class="form-control" id="sales-delivery-customer-ref"
-                        name="customer_reference" placeholder="Nomor referensi dari customer (SO Number, dll)" />
+                        name="customer_reference" placeholder="Nomor Resi Pengiriman" />
                 </div>
                 {{-- <div class="col-md-6">
                     <label class="form-label">Status <span style="color: red;">*</span></label>
