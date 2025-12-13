@@ -316,6 +316,7 @@ class ProductController extends Controller
                         }
                     },
                 ],
+                'is_packaging' => 'nullable|in:true,false',
                 'bundle_sales_price' => [
                     'string',
                     function ($attribute, $value, $fail) use ($req) {
@@ -782,6 +783,7 @@ class ProductController extends Controller
                         }
                     },
                 ],
+                'is_packaging' => 'nullable|in:true,false',
                 'bundle_purchase_account' => [
                     'string',
                     'nullable'

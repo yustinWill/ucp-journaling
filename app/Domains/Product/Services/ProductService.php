@@ -6,6 +6,8 @@ use App\Enums\StockStatuses;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
 
 class ProductService
 {
@@ -36,6 +38,18 @@ class ProductService
             ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name','m_products.bundle_batch_qty')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
             ->where('m_products.type', '=', 'BUNDLE')
+            ->orderBy('m_products.name', 'asc')
+            ->get();
+    }
+
+
+    public function findAllBundlePacking()
+    {
+        return DB::table($this->table_name.' as m_products')
+            ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name','m_products.bundle_batch_qty')
+            ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
+            ->where('m_products.type', '=', 'BUNDLE')
+            ->where('m_products.is_packaging', '!=', 1)
             ->orderBy('m_products.name', 'asc')
             ->get();
     }
@@ -100,6 +114,7 @@ class ProductService
             'f_category_id' => $data['category_id'],
             'main_image' => $data['image'] ?? null,
             'type' => $data['type'],
+            'is_packaging' => $data['type'] === 'bundle' && isset($data['is_packaging']) && $data['is_packaging'] === 'true' ? true : false,
             'is_item_purchased' => $this->getValueWithBundlePrefix($data, 'purchase_enabled') === 'true' ? true : false,
             'unit_purchase_price' => $this->getValueWithBundlePrefix($data, 'purchase_price'),
             'f_purchase_coa_code' => $this->getValueWithBundlePrefix($data, 'purchase_account'),
@@ -136,6 +151,7 @@ class ProductService
             'f_unit_id' => $data['unit_id'],
             'f_category_id' => $data['category_id'],
             'type' => $data['type'],
+            'is_packaging' => $data['type'] === 'bundle' && isset($data['is_packaging']) && $data['is_packaging'] === 'true' ? true : false,
             'is_item_purchased' => $this->getValueWithBundlePrefix($data, 'purchase_enabled') === 'true' ? true : false,
             'unit_purchase_price' => $this->getValueWithBundlePrefix($data, 'purchase_price'),
             'f_purchase_coa_code' => $this->getValueWithBundlePrefix($data, 'purchase_account'),
@@ -185,6 +201,46 @@ class ProductService
         } else {
             throw new \InvalidArgumentException("Invalid stock update type: {$type}");
         }
+    }
+
+    /**
+     * Update product average price using weighted average formula
+     * Formula: ((purchase_price × qty_purchased) + (current_avg_price × current_stock)) / (qty_purchased + current_stock)
+     *
+     * @param int $productId
+     * @param float $purchasePrice - Price per unit of the new purchase
+     * @param float $qtyPurchased - Quantity being purchased
+     * @return bool
+     */
+    public function updateAveragePriceWeighted(int $productId, float $purchasePrice, float $qtyPurchased): bool
+    {
+        // Get current product data
+        $product = DB::table($this->table_name)
+            ->where('id', $productId)
+            ->first();
+
+        if (!$product) {
+            return false;
+        }
+
+        $currentStock = (float) $product->total_stock;
+        $currentAvgPrice = (float) ($product->average_price ?? 0);
+
+        // Calculate weighted average HPP
+        // Formula: ((harga beli × qty beli) + (harga stock sebelumnya × qty sisa stock sebelumnya)) / (stock beli + stock sisa)
+        $totalValue = ($purchasePrice * $qtyPurchased) + ($currentAvgPrice * $currentStock);
+        $totalQty = $qtyPurchased + $currentStock;
+
+        $newAveragePrice = $totalQty > 0 ? $totalValue / $totalQty : $purchasePrice;
+
+        // Update average price
+        return DB::table($this->table_name)
+            ->where('id', $productId)
+            ->update([
+                'average_price' => $newAveragePrice,
+                'updated_at' => now(),
+                'updated_by' => Auth::id(),
+            ]) > 0;
     }
 
     public function findAllDatatable()

@@ -166,6 +166,12 @@
                 <div data-i18n="Produksi">Produksi</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.packing.*'])) active @endif">
+            <a href="{{ route('main_transaction.packing.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-package"></i>
+                <div data-i18n="Packing Produk">Packing Produk</div>
+            </a>
+        </li>
         <li class="menu-item @if (request()->routeIs(['main_transaction.overhead_absorption.*'])) active @endif">
             <a href="{{ route('main_transaction.overhead_absorption.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-chart-dots"></i>

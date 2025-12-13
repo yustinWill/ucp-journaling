@@ -175,6 +175,18 @@
                                         <input type="text" class="form-control" value="{{ $product->type }}"
                                             disabled />
                                     </div>
+                                    @if($product->type === 'bundle')
+                                    <div class="col-md-6">
+                                        <label class="form-label">Produk Packaging</label>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="checkbox"
+                                                {{ $product->is_packaging ? 'checked' : '' }} disabled>
+                                            <label class="form-check-label">
+                                                {{ $product->is_packaging ? 'Ya, produk ini untuk packing' : 'Bukan produk packaging' }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    @endif
                                 </div>
 
                                 <!-- Pricing & Inventory Section -->

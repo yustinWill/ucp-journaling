@@ -69,7 +69,10 @@ class CreatePurchaseDeliveryAction
             if (isset($data['products']) && is_array($data['products'])) {
                 app(PurchaseDeliveryService::class)->createDeliveryProducts($deliveryId, $data['products']);
 
-                // Create product batches for HPP tracking
+                // Update weighted average HPP BEFORE creating batches and updating stock
+                $this->updateProductAverageHPP($data);
+
+                // Create product batches for HPP tracking with updated average price
                 $this->createProductBatches($deliveryId, $data);
 
                 foreach ($data['products'] as $product) {
@@ -87,7 +90,7 @@ class CreatePurchaseDeliveryAction
                         'Purchase Delivery: '.($data['reference_no']),
                         $data['delivery_date'] ?? now()
                     );
-                    
+
                     app(ProductService::class)->updateStock($product['product_id'], '+', $product['delivery_qty']);
                 }
             }
@@ -108,7 +111,47 @@ class CreatePurchaseDeliveryAction
     }
 
     /**
+     * Update product average HPP using weighted average formula
+     * This must be called BEFORE updating stock
+     */
+    private function updateProductAverageHPP(array $data)
+    {
+        if (! isset($data['purchase_order_id']) || ! isset($data['products'])) {
+            return;
+        }
+
+        // Get PO products with pricing information
+        $poProducts = DB::table('t_purchase_order_products as pop')
+            ->select('pop.f_product_id', 'pop.price_per_qty')
+            ->where('pop.f_purchase_order_id', $data['purchase_order_id'])
+            ->get()
+            ->keyBy('f_product_id');
+
+        foreach ($data['products'] as $product) {
+            if (! isset($product['delivery_qty']) || $product['delivery_qty'] <= 0) {
+                continue;
+            }
+
+            $productId = $product['product_id'];
+            $deliveryQty = $product['delivery_qty'];
+
+            // Get the purchase price from PO
+            $poProduct = $poProducts->get($productId);
+            if (! $poProduct) {
+                continue;
+            }
+
+            $purchasePrice = (float) $poProduct->price_per_qty;
+
+            // Update product average price using weighted average formula
+            // Formula: ((harga beli × qty beli) + (harga stock sebelumnya × qty sisa stock sebelumnya)) / (stock beli + stock sisa)
+            app(ProductService::class)->updateAveragePriceWeighted($productId, $purchasePrice, $deliveryQty);
+        }
+    }
+
+    /**
      * Create product stock batches for HPP tracking using BatchManagementService
+     * This should be called AFTER updateProductAverageHPP
      */
     private function createProductBatches(int $deliveryId, array $data)
     {
@@ -139,14 +182,20 @@ class CreatePurchaseDeliveryAction
 
             $purchasePrice = (float) $poProduct->price_per_qty;
 
-            // Use BatchManagementService to create batch
+            // Get the updated weighted average HPP from product
+            $productData = DB::table('m_products')
+                ->where('id', $productId)
+                ->first();
+            $weightedAverageHPP = (float) ($productData->average_price ?? $purchasePrice);
+
+            // Use BatchManagementService to create batch with weighted average HPP
             app(BatchManagementService::class)->createBatch([
                 'f_product_id' => $productId,
                 'source_type' => 'PURCHASE', // Use valid enum value
                 'f_source_transaction_id' => $deliveryId,
                 'quantity' => $deliveryQty,
                 'purchase_price' => $purchasePrice,
-                'estimated_hpp' => $purchasePrice,
+                'estimated_hpp' => $weightedAverageHPP, // Use weighted average HPP
                 'batch_date' => $data['delivery_date'] ?? now()->format('Y-m-d'),
                 'reference_code' => $data['reference_no'],
                 'notes' => 'Purchase Delivery: '.$data['reference_no'],

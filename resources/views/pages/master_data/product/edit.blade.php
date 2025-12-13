@@ -150,6 +150,19 @@
                 </div>
             </div>
 
+            <div class="row g-3 mb-4" id="is-packaging-section" style="display: none;">
+                <div class="col-md-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is-packaging" name="is-packaging"
+                            {{ old('is-packaging', $product->is_packaging ?? false) ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is-packaging">
+                            Produk Packaging (untuk packing produk)
+                        </label>
+                    </div>
+                    <small class="form-text text-muted">Centang jika produk bundle ini digunakan untuk packaging/packing produk lain</small>
+                </div>
+            </div>
+
             <!-- Conditional Content Placeholder -->
             <div id="conditional-content" style="display: none;">
                 <!-- Content will be dynamically loaded here -->
@@ -1057,6 +1070,7 @@
                 // Show appropriate content
                 if (type === 'single') {
                     $('#single-content').show();
+                    $('#is-packaging-section').hide();
                     if (isEnableSinglePurchaseChecked === true) {
                         $('#enable-purchase').prop('checked', true);
                         $('#purchase-fields').show();
@@ -1071,6 +1085,7 @@
                     }
                 } else if (type === 'bundle') {
                     $('#bundle-content').show();
+                    $('#is-packaging-section').show();
                     if (isEnableBundlePurchaseChecked === true) {
                         $('#bundle-enable-purchase').prop('checked', true);
                         $('#bundle-purchase-fields').show();
@@ -1395,6 +1410,7 @@
 
                     // Bundle product fields
                     if (data.type === 'bundle') {
+                        data.is_packaging = $('#is-packaging').is(':checked') ? 'true' : 'false';
                         data.bundle_purchase_enabled = $('#bundle-enable-purchase').is(':checked');
                         data.bundle_sales_enabled = $('#bundle-enable-sales').is(':checked');
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');

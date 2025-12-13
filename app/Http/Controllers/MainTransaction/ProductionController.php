@@ -62,12 +62,21 @@ class ProductionController extends Controller
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
+    /**
+     * Calculate material costs using FIFO method with HPP from batches
+     *
+     * For Bundle Product HPP Formula:
+     * HPP = (biaya produksi + sum(hpp material × qty yang dibutuhkan)) / qty produksi
+     *
+     * This method calculates: sum(hpp material × qty yang dibutuhkan)
+     * Where hpp material comes from batch estimated_hpp (weighted average)
+     */
     public function calculateFifoPrices(Request $request)
     {
         try {
             $bundleProductId = $request->input('bundle_product_id');
             $quantityPlanned = $request->input('quantity_planned');
-            
+
             // Parse JSON string to array
             $productRequirements = json_decode($request->input('product_requirements', '[]'), true);
             
@@ -93,19 +102,22 @@ class ProductionController extends Controller
                     if ($remainingNeed <= 0) {
                         break;
                     }
-                    
+
                     // Take what we can from this batch
                     $qtyToTake = min($batch->remaining_qty, $remainingNeed);
-                    
-                    // Calculate cost from this batch
-                    $batchCost = $qtyToTake * $batch->purchase_price;
+
+                    // Calculate cost from this batch using estimated_hpp (weighted average HPP)
+                    // This ensures we use the correct HPP for material costs in bundle production
+                    $hppPerUnit = $batch->estimated_hpp ?? $batch->purchase_price ?? 0;
+                    $batchCost = $qtyToTake * $hppPerUnit;
                     $totalCost += $batchCost;
-                    
+
                     // Reduce remaining need
                     $remainingNeed -= $qtyToTake;
                 }
                 
-                // Calculate price per piece
+                // Calculate HPP per piece for this material
+                // This represents the cost per unit of bundle product for this specific material
                 $pricePerPcs = $quantityPlanned > 0 ? ($totalCost / $quantityPlanned) : 0;
                 
                 $prices[] = [

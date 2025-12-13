@@ -137,6 +137,18 @@
                 </div>
             </div>
 
+            <div class="row g-3 mb-4" id="is-packaging-section" style="display: none;">
+                <div class="col-md-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is-packaging" name="is-packaging">
+                        <label class="form-check-label" for="is-packaging">
+                            Produk Packaging (untuk packing produk)
+                        </label>
+                    </div>
+                    <small class="form-text text-muted">Centang jika produk bundle ini digunakan untuk packaging/packing produk lain</small>
+                </div>
+            </div>
+
             <!-- Conditional Content Placeholder -->
             <div id="conditional-content" style="display: none;">
                 <!-- Content will be dynamically loaded here -->
@@ -352,6 +364,13 @@
                     <div class="tab-pane fade show active mx-n6" id="bundle-pricing-tab" role="tabpanel">
                         <!-- Purchase Section -->
                         <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="bundle-packaging">
+                                <label class="form-check-label" for="bundle-packaging">
+                                    Produk Packaging (untuk packing produk)
+                                </label>
+                            </div>
+                            
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="bundle-enable-purchase">
                                 <label class="form-check-label" for="bundle-enable-purchase">
@@ -945,12 +964,14 @@
                 // Show appropriate content
                 if (type === 'single') {
                     $('#single-content').show();
+                    $('#is-packaging-section').hide();
 
                     // Auto-check enable-purchase and enable-sales for single product
                     $('#enable-purchase').prop('checked', true).trigger('change');
                     $('#enable-sales').prop('checked', true).trigger('change');
                 } else if (type === 'bundle') {
                     $('#bundle-content').show();
+                    $('#is-packaging-section').show();
 
                     // Auto-check bundle-enable-purchase for bundle product
                     $('#bundle-enable-sales').prop('checked', true).trigger('change');
@@ -1265,6 +1286,7 @@
 
                     // Bundle product fields
                     if (data.type === 'bundle') {
+                        data.is_packaging = $('#is-packaging').is(':checked') ? 'true' : 'false';
                         data.bundle_purchase_enabled = $('#bundle-enable-purchase').is(':checked');
                         data.bundle_sales_enabled = $('#bundle-enable-sales').is(':checked');
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');

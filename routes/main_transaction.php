@@ -5,6 +5,7 @@ use App\Http\Controllers\MainTransaction\CreditMemoController;
 use App\Http\Controllers\MainTransaction\ExpenseController;
 use App\Http\Controllers\MainTransaction\JournalController;
 use App\Http\Controllers\MainTransaction\OverheadAbsorptionController;
+use App\Http\Controllers\MainTransaction\PackingController;
 use App\Http\Controllers\MainTransaction\ProductionController;
 use App\Http\Controllers\MainTransaction\PurchaseController;
 use App\Http\Controllers\MainTransaction\PurchaseDeliveryController;
@@ -31,9 +32,10 @@ $credit_memo_segment = '/credit_memo';
 $expense_segment = '/expense';
 $stock_adjustment_segment = '/stock_adjustment';
 $production_segment = '/production';
+$packing_segment = '/packing';
 $return_management_segment = '/return_management';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $return_management_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $packing_segment, $return_management_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment.$journal_segment.'/index', 'index')->name('main_transaction.journal.index');
         Route::get($base_segment.$journal_segment.'/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table');
@@ -297,6 +299,29 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         // Action Routes for production management
         Route::post($base_segment.$production_segment.'/complete/{id}', 'complete')->name('main_transaction.production.complete');
         Route::post($base_segment.$production_segment.'/cancel/{id}', 'cancel')->name('main_transaction.production.cancel');
+    });
+
+    // Packing Routes
+    Route::controller(PackingController::class)->group(function () use ($base_segment, $packing_segment) {
+        Route::get($base_segment.$packing_segment.'/index', 'index')->name('main_transaction.packing.index');
+        Route::get($base_segment.$packing_segment.'/index_data_table', 'index_data_table')->name('main_transaction.packing.index_data_table');
+        Route::get($base_segment.$packing_segment.'/add', 'add')->name('main_transaction.packing.add');
+        Route::post($base_segment.$packing_segment.'/store', 'store')->name('main_transaction.packing.store');
+        Route::get($base_segment.$packing_segment.'/detail/{id}', 'detail')->name('main_transaction.packing.detail');
+        Route::delete($base_segment.$packing_segment.'/{id}', 'destroy')->name('main_transaction.packing.destroy');
+        Route::get($base_segment.$packing_segment.'/export', 'export')->name('main_transaction.packing.export');
+        Route::post($base_segment.$packing_segment.'/process_export', 'processExport')->name('main_transaction.packing.process_export');
+
+        // AJAX Routes for dynamic functionality
+        Route::get($base_segment.$packing_segment.'/get_bundle_components', 'getBundleComponents')->name('main_transaction.packing.get_bundle_components');
+        Route::get($base_segment.$packing_segment.'/get_warehouses', 'getWarehouses')->name('main_transaction.packing.get_warehouses');
+        Route::get($base_segment.$packing_segment.'/get_bundle_products', 'getBundleProducts')->name('main_transaction.packing.get_bundle_products');
+        Route::get($base_segment.$packing_segment.'/get_packaging_products', 'getPackagingProducts')->name('main_transaction.packing.get_packaging_products');
+        Route::get($base_segment.$packing_segment.'/get_bundle_stock', 'getBundleStock')->name('main_transaction.packing.get_bundle_stock');
+        Route::get($base_segment.$packing_segment.'/get_pic_users', 'getPicUsers')->name('main_transaction.packing.get_pic_users');
+        Route::get($base_segment.$packing_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.packing.generate_transaction_number');
+        Route::get($base_segment.$packing_segment.'/calculate_fifo_prices', 'calculateFifoPrices')->name('main_transaction.packing.calculate_fifo_prices');
+        Route::get($base_segment.$packing_segment.'/get_bundle_price', 'getBundlePrice')->name('main_transaction.packing.get_bundle_price');
     });
 
     // Return Management Routes
