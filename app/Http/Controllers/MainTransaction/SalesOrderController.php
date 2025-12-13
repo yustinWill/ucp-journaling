@@ -594,7 +594,7 @@ class SalesOrderController extends Controller
 
         // Get products mapped to this customer with their special pricing
         $products = DB::table('m_contact_products as cp')
-            ->join('m_products as p', 'cp.f_product_code', '=', 'p.id')
+            ->join('m_products as p', 'cp.f_product_code', '=', 'p.code')
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
             ->where('cp.f_contact_id', $customerId)
             ->where('p.company_code', session('user_company_code'))
@@ -611,7 +611,6 @@ class SalesOrderController extends Controller
             ])
             ->orderBy('p.name')
             ->get();
-
         return response()->json([
             'success' => true,
             'data' => $products,
