@@ -251,9 +251,9 @@ class ExpenseController extends Controller
                 'tax_amount' => 'required|numeric|min:0',
                 'total_before_discount' => 'required|numeric|min:0.01',
                 'final_total' => 'required|numeric|min:0.01',
-                'category_type' => session('user_company_code') === '001' ? 'required|string|in:Anggaran,Overhead,Lainnya' : 'nullable|string|in:Anggaran,Overhead,Lainnya',
+                'category_type' => session('user_company_code') === '001' ? 'required|string|in:ANGGARAN,OVERHEAD,LAINNYA' : 'nullable|string',
                 // Budget field
-                'budged_history_id' => 'nullable|string|exists:m_budgeds,id',
+                'budged_history_id' => 'nullable|string|exists:m_budgeds,id', 
 
                 // Expense lines validation
                 'expense_lines' => 'required|array|min:1',
