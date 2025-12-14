@@ -46,8 +46,11 @@ class CreateSalesOrderAction
             $config_data = app(GlobalConfigService::class)->findOne('AUTO_GENERATE_SI_AFTER_SO');
 
             if ($config_data && $config_data->value == 'true') {
+                // Generate a unique invoice number (not reuse the SO number!)
+                $invoiceNumber = app(TransactionNumberService::class)->generateNumber('sales_invoice');
+
                 $invoiceData = [
-                    'invoice_number' => $data['reference_no'],
+                    'invoice_number' => $invoiceNumber,
                     'invoice_date' => $data['date'],
                     'transaction_date' => $data['date'],
                     'due_date' => $data['payment_term_due_date'],

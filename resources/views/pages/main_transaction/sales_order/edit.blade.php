@@ -734,7 +734,7 @@
 
                 const grandTotal = subtotal; // No discount for now
 
-                $('#sales-order-total').val(grandTotal);
+                $('#grand_price').val(grandTotal);
                 $('#display-grand-total').text(formatCurrency(grandTotal));
             }
 
