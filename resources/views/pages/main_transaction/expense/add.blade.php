@@ -170,6 +170,16 @@
                 <div class="row">
                     <!-- Left Side: Tag, Memo and Attachment -->
                     <div class="col-md-6 mb-4">
+                        <div class="mb-3">
+                            <label class="form-label">Entitas <span class="text-danger">*</span></label>
+                            <select id="expense-entity" name="entity_type" class="global-select2 form-select" required data-allow-clear="false">
+                                <option value="">Pilih Entitas</option>
+                                <option value="KINGDOM">Kingdom</option>
+                                <option value="OWNER">Owner</option>
+                                <option value="PABRIK">Pabrik</option>
+                            </select>
+                            <small class="form-text text-muted">Pilih kategori pengeluaran untuk klasifikasi biaya</small>
+                        </div>
                         @if(session('user_company_code') !== "001")
                         <div class="mb-3">
                             <label class="form-label">Anggaran</label>
@@ -703,6 +713,7 @@
                 formData.append('discount_amount', parseCurrency($('#discount-amount').val()) || 0);
                 formData.append('budged_history_id', $('#budget').val() || '');
                 formData.append('category_type', $('#expense-category').val() || '');
+                formData.append('entity_type', $('#expense-entity').val() || '');
                 // Tags
                 const tags = $('#expense-tags').val() || [];
                 tags.forEach((tag, index) => {

@@ -42,6 +42,7 @@ class ExpenseService
             'category_type' => $data['category_type'] ?? null,
             'total_remaining_amount' => $data['final_total'],
             'total_paid_amount' => 0,
+            'entity_type' => $data['entity_type'] ?? null,
             'created_at' => now(),
             'created_by' => Auth::id(),
         ];
@@ -77,6 +78,7 @@ class ExpenseService
             'category_type' => $data['category_type'] ?? null,
             'total_remaining_amount' => $data['final_total'],
             'total_paid_amount' => 0,
+            'entity_type' => $data['entity_type'],
             'updated_at' => now(),
             'updated_by' => Auth::id(),
         ];
