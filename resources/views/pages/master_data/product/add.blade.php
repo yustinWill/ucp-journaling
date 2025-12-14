@@ -365,13 +365,6 @@
                         <!-- Purchase Section -->
                         <div class="mb-4">
                             <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="bundle-packaging">
-                                <label class="form-check-label" for="bundle-packaging">
-                                    Produk Packaging (untuk packing produk)
-                                </label>
-                            </div>
-                            
-                            <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="bundle-enable-purchase">
                                 <label class="form-check-label" for="bundle-enable-purchase">
                                     Saya beli produk ini
