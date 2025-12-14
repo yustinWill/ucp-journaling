@@ -273,10 +273,14 @@
                     const id = $(this).data('id');
 
                     // Get category ID (from select or hidden input for existing budgets)
-                    let categoryId = $(`[name="budgets[${index}][f_budget_category_id]"]`).val();
-                    if (!categoryId) {
-                        const hiddenCategoryInput = $(`input[type="hidden"][name="budgets[${index}][f_budget_category_id]"]`);
-                        categoryId = hiddenCategoryInput.val();
+                    let categoryId;
+                    const select = $(this).find(`.budget-category-select`);
+                    if (select.is(':disabled')) {
+                        // For existing budgets, get from hidden input
+                        categoryId = $(this).find(`input[type="hidden"][name="budgets[${index}][f_budget_category_id]"]`).val();
+                    } else {
+                        // For new budgets, get from select
+                        categoryId = select.val();
                     }
 
                     const limitValue = parseCurrency($(`[name="budgets[${index}][budged_limit_value]"]`).val());
