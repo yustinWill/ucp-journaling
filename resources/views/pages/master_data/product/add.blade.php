@@ -1286,7 +1286,7 @@
 
                     // Bundle product fields
                     if (data.type === 'bundle') {
-                        data.is_packaging = $('#is-packaging').is(':checked');
+                        data.is_packaging = $('#bundle-packaging').is(':checked');
                         data.bundle_purchase_enabled = $('#bundle-enable-purchase').is(':checked');
                         data.bundle_sales_enabled = $('#bundle-enable-sales').is(':checked');
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');
