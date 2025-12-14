@@ -178,6 +178,12 @@
                 <div data-i18n="Absorpsi Overhead">Absorpsi Overhead</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.topup.*'])) active @endif">
+            <a href="{{ route('main_transaction.topup.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-cash"></i>
+                <div data-i18n="Top Up">Top Up</div>
+            </a>
+        </li>
         @if (session('CLIENT_CODE') == '001')
             <li class="menu-item">
                 <a href="app-chat.html" class="menu-link">

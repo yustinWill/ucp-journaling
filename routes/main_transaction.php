@@ -17,6 +17,7 @@ use App\Http\Controllers\MainTransaction\SalesInvoiceController;
 use App\Http\Controllers\MainTransaction\SalesOrderController;
 use App\Http\Controllers\MainTransaction\SalesOrderRevenueSplitController;
 use App\Http\Controllers\MainTransaction\StockAdjustmentController;
+use App\Http\Controllers\MainTransaction\TopUpController;
 use Illuminate\Support\Facades\Route;
 
 $base_segment = '/main_transaction';
@@ -34,8 +35,9 @@ $stock_adjustment_segment = '/stock_adjustment';
 $production_segment = '/production';
 $packing_segment = '/packing';
 $return_management_segment = '/return_management';
+$topup_segment = '/topup';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $packing_segment, $return_management_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $packing_segment, $return_management_segment, $topup_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment.$journal_segment.'/index', 'index')->name('main_transaction.journal.index');
         Route::get($base_segment.$journal_segment.'/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table');
@@ -347,5 +349,22 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::post($base_segment.'/overhead_absorption/settle', 'settle')->name('main_transaction.overhead_absorption.settle');
         Route::get($base_segment.'/overhead_absorption/history', 'getHistory')->name('main_transaction.overhead_absorption.history');
         Route::get($base_segment.'/overhead_absorption/details/{id}', 'getDetails')->name('main_transaction.overhead_absorption.details');
+    });
+
+    // Top Up Routes
+    Route::controller(TopUpController::class)->group(function () use ($base_segment, $topup_segment) {
+        Route::get($base_segment.$topup_segment.'/index', 'index')->name('main_transaction.topup.index');
+        Route::get($base_segment.$topup_segment.'/index_data_table', 'index_data_table')->name('main_transaction.topup.index_data_table');
+        Route::get($base_segment.$topup_segment.'/add', 'add')->name('main_transaction.topup.add');
+        Route::post($base_segment.$topup_segment.'/store', 'store')->name('main_transaction.topup.store');
+        Route::get($base_segment.$topup_segment.'/detail/{id}', 'detail')->name('main_transaction.topup.detail');
+        Route::get($base_segment.$topup_segment.'/edit/{id}', 'edit')->name('main_transaction.topup.edit');
+        Route::post($base_segment.$topup_segment.'/update', 'update')->name('main_transaction.topup.update');
+        Route::delete($base_segment.$topup_segment.'/{id}', 'destroy')->name('main_transaction.topup.destroy');
+
+        // AJAX Routes
+        Route::get($base_segment.$topup_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.topup.generate_transaction_number');
+        Route::get($base_segment.$topup_segment.'/get_outstanding_sales_orders', 'getOutstandingSalesOrders')->name('main_transaction.topup.get_outstanding_sales_orders');
+        Route::post($base_segment.$topup_segment.'/calculate_fifo_allocation', 'calculateFifoAllocation')->name('main_transaction.topup.calculate_fifo_allocation');
     });
 });
