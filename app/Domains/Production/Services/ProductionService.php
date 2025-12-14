@@ -167,6 +167,7 @@ class ProductionService
             'bundle_price_unit'=> $data['bundle_price_unit'] ?? 0,
             'total_component_cost_unit'=> $data['total_component_cost_unit'] ?? 0,
             'hpp_production'=> $data['hpp_production'] ?? 0,
+            'is_packaging'=> $data['is_packaging'] ?? false,
             'created_by' => Auth::id(),
             // 'updated_by' => Auth::id(),
             'created_at' => now(),

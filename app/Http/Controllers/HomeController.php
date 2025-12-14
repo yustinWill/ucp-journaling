@@ -112,21 +112,184 @@ class HomeController extends Controller
         $dateFrom = $req->input('date_from', now()->startOfMonth()->format('Y-m-d'));
         $dateTo = $req->input('date_to', now()->endOfMonth()->format('Y-m-d'));
 
-        // TODO: Replace with actual database queries
-        // For now, using mock data
-        $salesPabrik = 125000000;
-        $biayaPengeluaran = 85000000;
-        $salesTotal = 180000000;
-        $result = $salesPabrik + $biayaPengeluaran - $salesTotal;
+        // Mock data for PABRIK Tab
+        $sales_pabrik_data = collect([
+            (object)[
+                'date' => '2025-12-12',
+                'destination' => 'Kingdom',
+                'product' => 'RIYO Water 600ml',
+                'qty' => 1000,
+                'transfer_price' => 15000,
+                'total_value' => 15000000,
+                'status' => 'PAID',
+            ],
+            (object)[
+                'date' => '2025-12-11',
+                'destination' => 'Owner',
+                'product' => 'RIYO Water 1500ml',
+                'qty' => 500,
+                'transfer_price' => 40000,
+                'total_value' => 20000000,
+                'status' => 'OPEN',
+            ],
+            (object)[
+                'date' => '2025-12-10',
+                'destination' => 'Kingdom',
+                'product' => 'RIYO Water 330ml',
+                'qty' => 2000,
+                'transfer_price' => 4000,
+                'total_value' => 8000000,
+                'status' => 'PARTIAL',
+            ],
+            (object)[
+                'date' => '2025-12-09',
+                'destination' => 'Owner',
+                'product' => 'RIYO Water 19L Galon',
+                'qty' => 300,
+                'transfer_price' => 20000,
+                'total_value' => 6000000,
+                'status' => 'PAID',
+            ],
+            (object)[
+                'date' => '2025-12-08',
+                'destination' => 'Kingdom',
+                'product' => 'RIYO Water 240ml Cup',
+                'qty' => 1500,
+                'transfer_price' => 3500,
+                'total_value' => 5250000,
+                'status' => 'PAID',
+            ],
+        ]);
+
+        $piutang_pabrik_data = collect([
+            (object)[
+                'source_entity' => 'Kingdom',
+                'ref_sales' => 'SK-001',
+                'receivable_amount' => 15000000,
+                'paid_amount' => 15000000,
+                'remaining_amount' => 0,
+                'status' => 'PAID',
+            ],
+            (object)[
+                'source_entity' => 'Owner',
+                'ref_sales' => 'SO-002',
+                'receivable_amount' => 20000000,
+                'paid_amount' => 0,
+                'remaining_amount' => 20000000,
+                'status' => 'OPEN',
+            ],
+            (object)[
+                'source_entity' => 'Kingdom',
+                'ref_sales' => 'SK-003',
+                'receivable_amount' => 8000000,
+                'paid_amount' => 3000000,
+                'remaining_amount' => 5000000,
+                'status' => 'PARTIAL',
+            ],
+            (object)[
+                'source_entity' => 'Owner',
+                'ref_sales' => 'SO-004',
+                'receivable_amount' => 6000000,
+                'paid_amount' => 6000000,
+                'remaining_amount' => 0,
+                'status' => 'PAID',
+            ],
+        ]);
+
+        // Mock data for KINGDOM Tab
+        $sales_kingdom_data = collect([
+            (object)[
+                'date' => '2025-12-13',
+                'customer' => 'Toko Segar Mart',
+                'product' => 'RIYO Water 600ml',
+                'qty' => 800,
+                'price' => 25000,
+                'total' => 20000000,
+                'status' => 'PAID',
+            ],
+            (object)[
+                'date' => '2025-12-12',
+                'customer' => 'Minimarket Berkah',
+                'product' => 'RIYO Water 1500ml',
+                'qty' => 400,
+                'price' => 65000,
+                'total' => 26000000,
+                'status' => 'PARTIAL',
+            ],
+            (object)[
+                'date' => '2025-12-11',
+                'customer' => 'Warung Bu Ita',
+                'product' => 'RIYO Water 330ml',
+                'qty' => 1200,
+                'price' => 8500,
+                'total' => 10200000,
+                'status' => 'OPEN',
+            ],
+        ]);
+
+        // Mock data for OWNER Tab
+        $sales_owner_data = collect([
+            (object)[
+                'date' => '2025-12-13',
+                'customer' => 'Hotel Grand Deluxe',
+                'product' => 'RIYO Water 330ml',
+                'qty' => 2000,
+                'price' => 8500,
+                'total' => 17000000,
+                'status' => 'PAID',
+            ],
+            (object)[
+                'date' => '2025-12-12',
+                'customer' => 'Restoran Seafood Asli',
+                'product' => 'RIYO Water 600ml',
+                'qty' => 600,
+                'price' => 25000,
+                'total' => 15000000,
+                'status' => 'PARTIAL',
+            ],
+            (object)[
+                'date' => '2025-12-10',
+                'customer' => 'Kantin Pabrik ABC',
+                'product' => 'RIYO Water 19L Galon',
+                'qty' => 200,
+                'price' => 35000,
+                'total' => 7000000,
+                'status' => 'OPEN',
+            ],
+        ]);
+
+        // Calculate summary values
+        $sales_pabrik = $sales_pabrik_data->sum('total_value');
+        $piutang_pabrik = $piutang_pabrik_data->sum('remaining_amount');
+        $piutang_count = $piutang_pabrik_data->where('status', '!=', 'PAID')->count();
+
+        $sales_kingdom = $sales_kingdom_data->sum('total');
+        $pengeluaran_kingdom = 12000000; // Mock operational expenses
+
+        $sales_owner = $sales_owner_data->sum('total');
+        $pengeluaran_owner = 8500000; // Mock operational expenses
 
         $summaryData = [
             'period' => $period,
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
-            'sales_pabrik' => $salesPabrik,
-            'biaya_pengeluaran' => $biayaPengeluaran,
-            'sales_total' => $salesTotal,
-            'result' => $result,
+
+            // PABRIK Tab Data
+            'sales_pabrik' => $sales_pabrik,
+            'piutang_pabrik' => $piutang_pabrik,
+            'piutang_count' => $piutang_count,
+            'sales_pabrik_data' => $sales_pabrik_data,
+            'piutang_pabrik_data' => $piutang_pabrik_data,
+
+            // KINGDOM Tab Data
+            'sales_kingdom' => $sales_kingdom,
+            'pengeluaran_kingdom' => $pengeluaran_kingdom,
+            'sales_kingdom_data' => $sales_kingdom_data,
+
+            // OWNER Tab Data
+            'sales_owner' => $sales_owner,
+            'pengeluaran_owner' => $pengeluaran_owner,
+            'sales_owner_data' => $sales_owner_data,
         ];
 
         return view('pages.dashboard_summary', $summaryData);

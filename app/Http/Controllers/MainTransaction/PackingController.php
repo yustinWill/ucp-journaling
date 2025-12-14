@@ -38,18 +38,23 @@ class PackingController extends Controller
 
     public function index_data_table(Request $request)
     {
-        // Using t_productions table with is_packaging flag
-        $query = DB::table('t_productions as p')
+        // Group by transaction_number from t_packaging
+        $query = DB::table('t_packaging as pkg')
             ->select(
-                'p.*',
-                'bp.name as bundle_product_name',
-                'bp.code as bundle_product_code',
-                'w.name as warehouse_name',
-                'w.code as warehouse_code',
-                'u.name as pic_name',
-                DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = p.id LIMIT 1) as unit_code'),
-                DB::raw("(SELECT CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id = p.id AND psb.source_type = 'PRODUCTION' LIMIT 1) as hpp_packing")
+                'pkg.transaction_number',
+                DB::raw('MIN(p.production_date) as packing_date'),
+                DB::raw('MIN(p.id) as id'), // First production ID for the transaction
+                DB::raw('GROUP_CONCAT(DISTINCT p.production_number ORDER BY p.production_number SEPARATOR ", ") as packing_number'),
+                DB::raw('GROUP_CONCAT(DISTINCT bp.name ORDER BY p.production_number SEPARATOR ", ") as bundle_product_name'),
+                DB::raw('GROUP_CONCAT(DISTINCT bp.code ORDER BY p.production_number SEPARATOR ", ") as bundle_product_code'),
+                DB::raw('SUM(pkg.quantity_packed) as quantity_packed'),
+                DB::raw('MIN(w.name) as warehouse_name'),
+                DB::raw('MIN(w.code) as warehouse_code'),
+                DB::raw('MIN(u.name) as pic_name'),
+                DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = MIN(p.id) LIMIT 1) as unit_code'),
+                DB::raw("(SELECT AVG(CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END) FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id IN (SELECT tp.id FROM t_productions tp WHERE tp.id IN (SELECT pkg2.production_id FROM t_packaging pkg2 WHERE pkg2.transaction_number = pkg.transaction_number)) AND psb.source_type = 'PRODUCTION') as hpp_packing")
             )
+            ->leftJoin('t_productions as p', 'pkg.production_id', '=', 'p.id')
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
@@ -74,21 +79,29 @@ class PackingController extends Controller
         }
 
         if ($packing_no = request()->input('packing_no')) {
-            $query->where('p.production_number', 'like', "%{$packing_no}%");
+            $query->where(function($q) use ($packing_no) {
+                $q->where('p.production_number', 'like', "%{$packing_no}%")
+                  ->orWhere('pkg.transaction_number', 'like', "%{$packing_no}%");
+            });
         }
 
-        $query->groupBy('p.id');
+        $query->groupBy('pkg.transaction_number');
 
         $draw = (int) request()->input('draw', 1);
-        $recordsTotal = DB::table('t_productions')->where('is_packaging', true)->count();
+        $recordsTotal = DB::table('t_packaging')
+            ->join('t_productions', 't_packaging.production_id', '=', 't_productions.id')
+            ->where('t_productions.is_packaging', true)
+            ->distinct('t_packaging.transaction_number')
+            ->count('t_packaging.transaction_number');
+
         $filteredQuery = clone $query;
 
         // Pagination
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
-        $recordsFiltered = $filteredQuery->get()->count();
-        $query->orderBy('p.id', 'DESC');
+        $recordsFiltered = $filteredQuery->count();
+        $query->orderBy('pkg.transaction_number', 'DESC');
         $data = $query->get();
 
         return response()->json([
@@ -191,10 +204,76 @@ class PackingController extends Controller
 
     public function detail($id)
     {
-        
+        // Get the first production record details
+        $production = DB::table('t_productions as p')
+            ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
+            ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
+            ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
+            ->leftJoin('m_units as unit', 'bp.f_unit_id', '=', 'unit.id')
+            ->where('p.id', $id)
+            ->where('p.is_packaging', true)
+            ->select(
+                'p.*',
+                'bp.name as bundle_product_name',
+                'bp.code as bundle_product_code',
+                'w.name as warehouse_name',
+                'w.code as warehouse_code',
+                'u.name as pic_name',
+                'unit.code as bundle_unit_code'
+            )
+            ->first();
 
-        // This will be implemented later with PackingService
-        return view('pages.main_transaction.packing.detail');
+        if (!$production) {
+            abort(404, 'Packing record not found');
+        }
+
+        // Get all packaging products from this transaction
+        $packagingProducts = DB::table('t_packaging as pkg')
+            ->join('t_productions as p', 'pkg.production_id', '=', 'p.id')
+            ->join('m_products as prod', 'pkg.packaging_product_id', '=', 'prod.id')
+            ->leftJoin('m_units as u', 'prod.f_unit_id', '=', 'u.id')
+            ->where('pkg.transaction_number', function($query) use ($id) {
+                $query->select('transaction_number')
+                    ->from('t_packaging')
+                    ->where('production_id', $id)
+                    ->limit(1);
+            })
+            ->select(
+                'pkg.*',
+                'p.id as production_id',
+                'p.production_number',
+                'prod.code as product_code',
+                'prod.name as product_name',
+                'u.code as unit_code',
+                DB::raw("(SELECT CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id = p.id AND psb.source_type = 'PRODUCTION' LIMIT 1) as hpp_packing")
+            )
+            ->get();
+
+        // Get production items (materials consumed) for each packaging product
+        foreach ($packagingProducts as $packaging) {
+            $packaging->items = DB::table('t_production_items as pi')
+                ->join('m_products as p', 'pi.raw_material_product_id', '=', 'p.id')
+                ->where('pi.production_id', $packaging->production_id)
+                ->select(
+                    'pi.*',
+                    'p.code as product_code',
+                    'p.name as product_name'
+                )
+                ->get();
+        }
+
+        // Get source bundle product info
+        $sourceBundleProduct = DB::table('m_products as p')
+            ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
+            ->where('p.id', $packagingProducts[0]->bundle_product_id ?? null)
+            ->select('p.code', 'p.name', 'u.code as unit_code')
+            ->first();
+
+        return view('pages.main_transaction.packing.detail', [
+            'production' => $production,
+            'packagingProducts' => $packagingProducts,
+            'sourceBundleProduct' => $sourceBundleProduct,
+        ]);
     }
 
     public function destroy($id)

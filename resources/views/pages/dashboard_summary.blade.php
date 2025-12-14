@@ -325,12 +325,38 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @forelse($sales_kingdom_data ?? [] as $sale)
+                                <tr>
+                                    <td>{{ date('d/m/Y', strtotime($sale->date)) }}</td>
+                                    <td>{{ $sale->customer }}</td>
+                                    <td>{{ $sale->product }}</td>
+                                    <td>{{ number_format($sale->qty, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($sale->price, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($sale->total, 0, ',', '.') }}</td>
+                                    <td>
+                                        @if($sale->status == 'PAID')
+                                            <span class="badge bg-label-success">
+                                                <i class="icon-xs ti ti-check"></i> PAID
+                                            </span>
+                                        @elseif($sale->status == 'PARTIAL')
+                                            <span class="badge bg-label-warning">
+                                                <i class="icon-xs ti ti-circle-half"></i> PARTIAL
+                                            </span>
+                                        @else
+                                            <span class="badge bg-label-danger">
+                                                <i class="icon-xs ti ti-circle"></i> OPEN
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
                                 <tr>
                                     <td colspan="7" class="text-center text-muted py-4">
                                         <i class="icon-base ti tabler-database-off icon-32px mb-2"></i>
                                         <p class="mb-0">No sales data available</p>
                                     </td>
                                 </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -413,12 +439,38 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @forelse($sales_owner_data ?? [] as $sale)
+                                <tr>
+                                    <td>{{ date('d/m/Y', strtotime($sale->date)) }}</td>
+                                    <td>{{ $sale->customer }}</td>
+                                    <td>{{ $sale->product }}</td>
+                                    <td>{{ number_format($sale->qty, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($sale->price, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($sale->total, 0, ',', '.') }}</td>
+                                    <td>
+                                        @if($sale->status == 'PAID')
+                                            <span class="badge bg-label-success">
+                                                <i class="icon-xs ti ti-check"></i> PAID
+                                            </span>
+                                        @elseif($sale->status == 'PARTIAL')
+                                            <span class="badge bg-label-warning">
+                                                <i class="icon-xs ti ti-circle-half"></i> PARTIAL
+                                            </span>
+                                        @else
+                                            <span class="badge bg-label-danger">
+                                                <i class="icon-xs ti ti-circle"></i> OPEN
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @empty
                                 <tr>
                                     <td colspan="7" class="text-center text-muted py-4">
                                         <i class="icon-base ti tabler-database-off icon-32px mb-2"></i>
                                         <p class="mb-0">No sales data available</p>
                                     </td>
                                 </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

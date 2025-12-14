@@ -106,12 +106,30 @@
                         {
                             data: 'packing_number',
                             render: function(data, type, row) {
-                                
-                                const detailUrl =
-                                    "{{ route('main_transaction.packing.detail', ':id') }}"
-                                    .replace(':id', row.id);
-                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                                
+                                // Split multiple packing numbers by comma
+                                const packingNumbers = data ? data.split(', ') : [];
+
+                                if (packingNumbers.length === 1) {
+                                    // Single packing number
+                                    const detailUrl =
+                                        "{{ route('main_transaction.packing.detail', ':id') }}"
+                                        .replace(':id', row.id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                } else if (packingNumbers.length > 1) {
+                                    // Multiple packing numbers - show as badges
+                                    const detailUrl =
+                                        "{{ route('main_transaction.packing.detail', ':id') }}"
+                                        .replace(':id', row.id);
+                                    let html = `<a href="${detailUrl}" class="text-decoration-none">`;
+                                    packingNumbers.forEach((num, index) => {
+                                        if (index > 0) html += '<br>';
+                                        html += `<span class="badge bg-label-primary me-1">${num.trim()}</span>`;
+                                    });
+                                    html += '</a>';
+                                    return html;
+                                } else {
+                                    return '-';
+                                }
                             }
                         },
                         {

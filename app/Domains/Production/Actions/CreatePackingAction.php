@@ -78,7 +78,7 @@ class CreatePackingAction
                 $this->processStockMovementsForSinglePackaging($productionId, $productionData, $data['bundle_product_id'], $packaging);
 
                 // 5. Create t_packaging mapping record
-                $this->createPackagingMapping($productionId, $data['bundle_product_id'], $packaging);
+                $this->createPackagingMapping($number,$productionId, $data['bundle_product_id'], $packaging);
 
                 // 6. Create audit log
                 app(ProductionAuditLogService::class)->logCreation(
@@ -320,7 +320,7 @@ class CreatePackingAction
         );
     }
 
-    private function createPackagingMapping(int $productionId, int $sourceBundleProductId, array $packaging): void
+    private function createPackagingMapping(int $transactionnumber,int $productionId, int $sourceBundleProductId, array $packaging): void
     {
         $companyCode = session('user_company_code');
 
@@ -330,6 +330,7 @@ class CreatePackingAction
             'bundle_product_id' => $sourceBundleProductId, // The bundle that was consumed
             'packaging_product_id' => $packaging['packaging_product_id'], // The packaging product produced
             'quantity_packed' => $packaging['quantity_packed'],
+            'transaction_number' => $transactionnumber,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
