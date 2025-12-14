@@ -33,8 +33,18 @@ class CreatePackingAction
                 // Calculate HPP for this specific packaging product
                 $totals = $this->calculateTotalsForSinglePackaging($data, $packaging);
 
+                
                 // Generate unique production number for each line
-                $productionNumber = $data['production_number'] . '-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
+                // TODO: Generate unique production number
+                $year = date('Y');
+                $month = date('m');
+                $day = date('d');
+                $timestamp = time();
+
+                // Mock generation - replace with proper sequence
+                $number = "PROD-{$year}-".str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+
+                $productionNumber = $number . '-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
 
                 // Create production record with packaging product as bundle_product_id
                 $productionData = [
