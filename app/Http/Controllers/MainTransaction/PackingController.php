@@ -101,7 +101,7 @@ class PackingController extends Controller
 
     public function add()
     {
-        $bundleProducts = app(ProductService::class)->findAllBundlePacking();
+        $bundleProducts = app(ProductService::class)->findAllBundle();
         $warehouses = app(WarehouseService::class)->findAll();
         $picUsers = app(UserService::class)->findAll();
 
