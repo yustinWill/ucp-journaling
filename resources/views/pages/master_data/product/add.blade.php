@@ -137,7 +137,7 @@
                 </div>
             </div>
 
-            <div class="row g-3 mb-4" id="is-packaging-section" style="display: none;">
+            {{-- <div class="row g-3 mb-4" id="is-packaging-section" style="display: none;">
                 <div class="col-md-12">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="is-packaging" name="is-packaging">
@@ -147,7 +147,7 @@
                     </div>
                     <small class="form-text text-muted">Centang jika produk bundle ini digunakan untuk packaging/packing produk lain</small>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Conditional Content Placeholder -->
             <div id="conditional-content" style="display: none;">
@@ -364,6 +364,13 @@
                     <div class="tab-pane fade show active mx-n6" id="bundle-pricing-tab" role="tabpanel">
                         <!-- Purchase Section -->
                         <div class="mb-4">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="bundle-packaging">
+                                <label class="form-check-label" for="bundle-packaging">
+                                    Produk Packaging (untuk packing produk)
+                                </label>
+                            </div>
+                            
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="bundle-enable-purchase">
                                 <label class="form-check-label" for="bundle-enable-purchase">
@@ -1279,7 +1286,7 @@
 
                     // Bundle product fields
                     if (data.type === 'bundle') {
-                        data.is_packaging = $('#is-packaging').is(':checked') ? 'true' : 'false';
+                        data.is_packaging = $('#is-packaging').is(':checked');
                         data.bundle_purchase_enabled = $('#bundle-enable-purchase').is(':checked');
                         data.bundle_sales_enabled = $('#bundle-enable-sales').is(':checked');
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');
