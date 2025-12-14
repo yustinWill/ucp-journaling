@@ -243,13 +243,13 @@ class BudgedController extends Controller
                 'period_start_date' => 'required|date',
                 'period_end_date' => 'required|date|after_or_equal:period_start_date',
                 'budged_limit_value' => 'required|numeric|min:0',
-                'budged_remaining_value' => 'required|numeric|min:0',
+                // 'budged_remaining_value' => 'required|numeric|min:0',
             ], [], [
                 'history_id' => 'ID Periode',
                 'period_start_date' => 'Tanggal Mulai Periode',
                 'period_end_date' => 'Tanggal Akhir Periode',
                 'budged_limit_value' => 'Nilai Limit Anggaran',
-                'budged_remaining_value' => 'Nilai Sisa Anggaran',
+                // 'budged_remaining_value' => 'Nilai Sisa Anggaran',
             ]);
 
             // Get current period to find budget_id
@@ -418,13 +418,13 @@ class BudgedController extends Controller
                 'period_id' => 'required|exists:m_budget_periods,id',
                 'budgets' => 'required|array|min:1',
                 'budgets.*.id' => 'nullable|exists:m_budgeds,id',
-                'budgets.*.budged_name' => 'required|string|max:255',
+                'budgets.*.f_budget_category_id' => 'required|exists:m_budget_categories,id',
                 'budgets.*.budged_limit_value' => 'required|numeric|min:0',
-                'budgets.*.budged_remaining_value' => 'required|numeric|min:0',
+                'budgets.*.budged_remaining_value' => 'nullable|numeric',
             ], [], [
                 'period_id' => 'ID Periode',
                 'budgets' => 'Daftar Anggaran',
-                'budgets.*.budged_name' => 'Nama Anggaran',
+                'budgets.*.f_budget_category_id' => 'Kategori Anggaran',
                 'budgets.*.budged_limit_value' => 'Nilai Limit Anggaran',
                 'budgets.*.budged_remaining_value' => 'Nilai Sisa Anggaran',
             ]);

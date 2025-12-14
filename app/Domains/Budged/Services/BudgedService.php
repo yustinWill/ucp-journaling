@@ -103,7 +103,6 @@ class BudgedService
         return DB::table($this->table_name)
             ->where('id', $id)
             ->update([
-                'budged_name' => $data['budged_name'],
                 'budged_limit_value' => $data['budged_limit_value'],
                 'budged_remaining_value' => $data['budged_remaining_value'],
                 'updated_by' => Auth::id(),

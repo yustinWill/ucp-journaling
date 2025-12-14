@@ -21,14 +21,14 @@ class UpdateBudgedAction
                     $oldBudget = $budgedService->findById($budget['id']);
 
                     $updateData = [
-                        'budged_name' => $budget['budged_name'],
+                        'f_budget_category_id' => $budget['f_budget_category_id'],
                         'budged_limit_value' => $budget['budged_limit_value'],
                     ];
 
                     // Smart update: If old limit equals old remaining, update remaining to match new limit
                     if ($oldBudget && $oldBudget->budged_limit_value == $oldBudget->budged_remaining_value) {
                         $updateData['budged_remaining_value'] = $budget['budged_limit_value'];
-                    } else {
+                    } elseif (isset($budget['budged_remaining_value'])) {
                         $updateData['budged_remaining_value'] = $budget['budged_remaining_value'];
                     }
 
@@ -38,7 +38,7 @@ class UpdateBudgedAction
                     // Create new budget
                     $budgedService->create([
                         'f_budget_period_id' => $periodId,
-                        'budged_name' => $budget['budged_name'],
+                        'f_budget_category_id' => $budget['f_budget_category_id'],
                         'budged_limit_value' => $budget['budged_limit_value'],
                         'budged_remaining_value' => $budget['budged_limit_value'],
                     ]);
