@@ -150,7 +150,7 @@ Potential improvements for future iterations:
 
 3. **Status Timestamp**:
    - Show when delivery was confirmed
-   - Add `confirmed_at` and `confirmed_by` fields
+   - Add `confirm_at` and `confirmed_by` fields
 
 4. **Delivery Tracking**:
    - Integrate with shipping carriers for real-time tracking

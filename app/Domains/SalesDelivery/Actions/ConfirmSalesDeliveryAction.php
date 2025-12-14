@@ -83,7 +83,7 @@ class ConfirmSalesDeliveryAction
                     'is_confirmed' => '1',
                     'updated_at' => now(),
                     'updated_by' => Auth::id(),
-                    'confirmed_at' => now(),
+                    'confirm_at' => now(),
                     'confirmed_by' => Auth::id(),
                 ]);
 
@@ -94,7 +94,7 @@ class ConfirmSalesDeliveryAction
                 'metadata' => json_encode([
                     'before' => ['status' => $salesDelivery->status],
                     'after' => ['status' => 'CONFIRMED'],
-                    'confirmed_at' => now(),
+                    'confirm_at' => now(),
                     'confirmed_by' => Auth::id(),
                 ]),
             ];
