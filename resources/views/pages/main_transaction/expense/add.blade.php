@@ -180,7 +180,7 @@
                             </select>
                             <small class="form-text text-muted">Pilih kategori pengeluaran untuk klasifikasi biaya</small>
                         </div>
-                        @if(session('user_company_code') !== "001")
+                        {{-- @if(session('user_company_code') !== "001") --}}
                         <div class="mb-3">
                             <label class="form-label">Anggaran</label>
                             <select id="budget" name="budged_history_id" class="global-select2 form-select"
@@ -194,7 +194,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        @else
+                        {{-- @else
                         <div class="mb-3">
                             <label class="form-label">Kategori Pengeluaran <span class="text-danger">*</span></label>
                             <select id="expense-category" name="category_type" class="global-select2 form-select" required data-allow-clear="false">
@@ -205,7 +205,7 @@
                             </select>
                             <small class="form-text text-muted">Pilih kategori pengeluaran untuk klasifikasi biaya</small>
                         </div>
-                        @endif
+                        @endif --}}
                         <div class="mb-3">
                             <label class="form-label">Tag</label>
                             <div class="row g-2">
