@@ -140,6 +140,7 @@ class ExpenseService
                 't.f_payment_method_id',
                 'category_type',
                 'pm.name AS payment_method_name',
+                'entity_type',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin('m_contacts as s', 't.f_receiver_customer_id', '=', 's.id')
