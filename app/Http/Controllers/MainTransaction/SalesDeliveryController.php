@@ -116,6 +116,7 @@ class SalesDeliveryController extends Controller
                 'delivery_address' => 'required|string|max:500',
                 'customer_reference' => 'nullable|string|max:255',
                 'delivery_notes' => 'nullable|string|max:1000',
+                'shipping_cost' => 'nullable|numeric|min:0',
                 'memo' => 'nullable|string|max:500',
                 'tags' => 'nullable|array',
                 'tags.*' => 'integer|exists:m_tags,id',
@@ -138,6 +139,7 @@ class SalesDeliveryController extends Controller
                 'delivery_address' => 'Alamat Pengiriman',
                 'customer_reference' => 'Referensi Pelanggan',
                 'delivery_notes' => 'Catatan Pengiriman',
+                'shipping_cost' => 'Ongkos Kirim',
                 'memo' => 'Memo',
                 'tags' => 'Tag',
                 'tags.*' => 'Tag',
@@ -198,6 +200,7 @@ class SalesDeliveryController extends Controller
             'delivery_address' => $salesDeliveryHeader->delivery_address,
             'customer_reference' => $salesDeliveryHeader->customer_reference,
             'delivery_notes' => $salesDeliveryHeader->delivery_notes,
+            'shipping_cost' => $salesDeliveryHeader->shipping_cost ?? 0,
             'tags' => $salesDeliveryHeader->tags,
             'attachment' => $salesDeliveryHeader->attachment,
             'memo' => $salesDeliveryHeader->memo,
@@ -256,23 +259,35 @@ class SalesDeliveryController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
         }
 
-        // TODO: Load actual data
-        $sales_delivery = (object) [
-            'id' => $id,
-            'delivery_number' => 'SD-2025-001',
-            'customer_id' => 1,
-            'delivery_date' => '2025-01-15',
-            'warehouse_id' => 1,
-            'status' => 'PENDING',
-        ];
+        $salesDelivery = app(SalesDeliveryService::class)->findById($id);
 
-        $customers = [];
-        $warehouses = [];
+        if (!$salesDelivery) {
+            abort(404, 'Sales Delivery tidak ditemukan');
+        }
+
+        $customers = app(ContactService::class)->findAllByFlag('customer');
+        $warehouses = app(WarehouseService::class)->findAll();
+        $products = app(\App\Domains\Product\Services\ProductService::class)->findAll();
+        $productLines = app(SalesDeliveryService::class)->findProductLines($id);
+        $tags = app(TagService::class)->findAll();
+
+        // Get selected tags
+        $selectedTags = [];
+        if ($salesDelivery->tags) {
+            $tagsArray = json_decode($salesDelivery->tags, true);
+            if (is_array($tagsArray)) {
+                $selectedTags = $tagsArray;
+            }
+        }
 
         return view('pages.main_transaction.sales_delivery.edit', [
-            'sales_delivery' => $sales_delivery,
+            'salesDelivery' => $salesDelivery,
             'customers' => $customers,
             'warehouses' => $warehouses,
+            'products' => $products,
+            'productLines' => $productLines,
+            'tags' => $tags,
+            'selectedTags' => $selectedTags,
         ]);
     }
 
@@ -288,7 +303,13 @@ class SalesDeliveryController extends Controller
                 'id' => 'required|integer',
                 'status' => 'required|string',
                 'delivery_date' => 'required|date',
-                // TODO: Add more validation rules
+                'customer_reference' => 'nullable|string|max:255',
+                'delivery_address' => 'nullable|string|max:500',
+                'delivery_notes' => 'nullable|string|max:1000',
+                'shipping_cost' => 'nullable|numeric|min:0',
+                'memo' => 'nullable|string|max:500',
+                'tags' => 'nullable|array',
+                'tags.*' => 'integer|exists:m_tags,id',
             ]);
 
             $id = $validated['id'];

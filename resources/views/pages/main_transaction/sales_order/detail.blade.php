@@ -178,16 +178,8 @@
                                     </div>
                                 @endif
 
-                                <!-- Row 3: Harga Ongkos Kirim, Keterangan -->
+                                <!-- Row 3: Keterangan -->
                                 <div class="row g-3 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Harga Ongkos Kirim</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">Rp</span>
-                                            <input type="text" class="form-control" value="{{ number_format($salesOrder['shipping_cost'] ?? 0, 2, ',', '.') }}" disabled />
-                                        </div>
-                                        <small class="form-text text-muted">Biaya ongkir yang dibayar seller</small>
-                                    </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Keterangan</label>
                                         <textarea class="form-control" rows="3" disabled>{{ $salesOrder['description'] ?? '-' }}</textarea>

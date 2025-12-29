@@ -143,8 +143,15 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Customer Reference</label>
-                            <input type="text" class="form-control" 
+                            <input type="text" class="form-control"
                                 value="{{ $salesDelivery->customer_reference ?? '-' }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Ongkos Kirim</label>
+                            <input type="text" class="form-control"
+                                value="Rp {{ number_format($salesDelivery->shipping_cost ?? 0, 0, ',', '.') }}" disabled />
                         </div>
                     </div>
                     <div class="row g-3 mb-4">

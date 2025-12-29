@@ -22,6 +22,7 @@ class SalesDeliveryService
             'customer_reference' => $data['customer_reference'] ?? null,
             'delivery_notes' => $data['delivery_notes'] ?? null,
             'delivery_address' => $data['delivery_address'] ?? null,
+            'shipping_cost' => $data['shipping_cost'] ?? 0,
             'tags' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'delivery_date' => $data['delivery_date'] ?? now(),
             'status' => $data['status'] ?? 'PENDING',
@@ -39,6 +40,10 @@ class SalesDeliveryService
             ->update([
                 'status' => $data['status'] ?? null,
                 'delivery_date' => $data['delivery_date'] ?? null,
+                'customer_reference' => $data['customer_reference'] ?? null,
+                'delivery_address' => $data['delivery_address'] ?? null,
+                'delivery_notes' => $data['delivery_notes'] ?? null,
+                'shipping_cost' => $data['shipping_cost'] ?? 0,
                 'updated_at' => now(),
                 'updated_by' => Auth::id(),
             ]);

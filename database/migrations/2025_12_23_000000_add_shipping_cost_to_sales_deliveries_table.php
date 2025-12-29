@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('t_sales_orders', function (Blueprint $table) {
-            $table->decimal('shipping_cost', 15, 2)->default(0)->after('warehouse_id')
-                ->comment('Biaya ongkos kirim yang dibayar seller (tidak termasuk dalam invoice)');
+        Schema::table('t_sales_deliveries', function (Blueprint $table) {
+            $table->decimal('shipping_cost', 15, 2)->default(0)->after('delivery_notes');
         });
     }
 
@@ -22,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('t_sales_orders', function (Blueprint $table) {
+        Schema::table('t_sales_deliveries', function (Blueprint $table) {
             $table->dropColumn('shipping_cost');
         });
     }

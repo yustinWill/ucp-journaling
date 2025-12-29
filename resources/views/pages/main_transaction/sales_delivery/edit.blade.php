@@ -112,6 +112,19 @@
                 </div>
             </div>
 
+            <!-- Row 3: Shipping Cost -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Ongkos Kirim <span class="text-muted">(Opsional)</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="text" class="form-control global-currency" id="shipping-cost" name="shipping_cost"
+                            placeholder="0" value="{{ $salesDelivery->shipping_cost ?? 0 }}" />
+                    </div>
+                    <small class="form-text text-muted">Biaya ongkir untuk pengiriman ini</small>
+                </div>
+            </div>
+
             <!-- Section 5: Product Lines -->
             <div class="section-header mt-12">
                 <h6>Detail Produk</h6>

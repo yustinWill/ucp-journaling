@@ -166,6 +166,19 @@
                     <input type="text" class="form-control" id="sales-delivery-customer-ref"
                         name="customer_reference" placeholder="Nomor Resi Pengiriman" />
                 </div>
+            </div>
+
+            <!-- Row 2: Shipping Cost -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Ongkos Kirim <span class="text-muted">(Opsional)</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="text" class="form-control global-currency" id="shipping-cost" name="shipping_cost"
+                            placeholder="0" value="0" />
+                    </div>
+                    <small class="form-text text-muted">Biaya ongkir untuk pengiriman ini</small>
+                </div>
                 {{-- <div class="col-md-6">
                     <label class="form-label">Status <span style="color: red;">*</span></label>
                     <select class="global-select2 form-select" id="sales-delivery-status" name="status"
