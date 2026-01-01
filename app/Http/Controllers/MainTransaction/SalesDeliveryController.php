@@ -11,6 +11,7 @@ use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\Contact\Services\ContactService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\Tag\Services\TagService;
+use App\Domains\Notification\Services\NotificationService;
 use App\Exceptions\AppException;
 use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
@@ -158,7 +159,23 @@ class SalesDeliveryController extends Controller
                 'products.*.status' => 'Status Pengiriman',
             ]);
 
-            app(CreateSalesDeliveryAction::class)->execute($validated);
+            $sales_delivery_id = app(CreateSalesDeliveryAction::class)->execute($validated);
+
+            // Send notification
+            $title = 'Sales Delivery Baru Dibuat';
+            $message = 'Sales Delivery dengan nomor ' . $validated['delivery_number'] . ' telah dibuat.';
+            $icon_text = 'ti tabler-truck-delivery';
+            $notification_type = 'SALES_DELIVERY';
+            app(NotificationService::class)->create([
+                'broadcast_type' => 'PUBLIC',
+                'notification_type' => $notification_type,
+                'target_user_id' => null, // Broadcast to all users
+                'icon_text' => $icon_text,
+                'title' => $title,
+                'message' => $message,
+                'metadata' => json_encode(['type' => $notification_type, 'id' => $sales_delivery_id]),
+                'status' => 'ACTIVE',
+            ]);
 
             return response()->json([
                 'message' => SuccessCodes::CREATE_SALES_DELIVERY_SUCCESS->message(),

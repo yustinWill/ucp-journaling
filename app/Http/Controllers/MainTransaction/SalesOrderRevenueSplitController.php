@@ -14,7 +14,6 @@ class SalesOrderRevenueSplitController extends Controller
 
     public function __construct(SalesOrderRevenueSplitService $revenueSplitService)
     {
-        $this->middleware('auth');
         $this->revenueSplitService = $revenueSplitService;
     }
 

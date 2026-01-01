@@ -88,6 +88,13 @@
                             <i class="icon-base ti tabler-history me-2"></i>
                             <b>Audit Log</b>
                         </a>
+                        @if ($invoice_data->f_sales_order_id)
+                            <a class="list-group-item list-group-item-action waves-effect" id="revenue-split-list-item"
+                                data-bs-toggle="list" href="#horizontal-revenue-split" aria-selected="false" role="tab">
+                                <i class="icon-base ti tabler-percentage me-2"></i>
+                                <b>Revenue Split</b>
+                            </a>
+                        @endif
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <!-- Information Tab -->
@@ -523,6 +530,25 @@
                                 </table>
                             </div>
                         </div>
+
+                        <!-- Revenue Split Tab -->
+                        @if ($invoice_data->f_sales_order_id)
+                            <div class="tab-pane fade" id="horizontal-revenue-split" role="tabpanel">
+                                <div class="section-header mt-6">
+                                    <h6>Revenue Split per Produk</h6>
+                                    <p class="text-muted mb-0">Masukkan pembagian revenue dalam Rupiah untuk setiap produk</p>
+                                </div>
+
+                                <div id="revenue-split-content" class="mt-4">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="text-muted mt-2">Memuat data revenue split...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -532,6 +558,9 @@
 
 @section('js_script')
     <script>
+        // Embed invoice products data as JSON
+        const invoiceProductsData = @json($invoice_products);
+
         $(function() {
             // Audit Log DataTable
             $('#audit-log-table').DataTable({
@@ -543,6 +572,336 @@
                 paging: false,
                 info: false
             });
+
+            // Load Revenue Split when tab is clicked
+            let revenueSplitLoaded = false;
+            $('#revenue-split-list-item').on('click', function() {
+                if (!revenueSplitLoaded) {
+                    loadRevenueSplit();
+                    revenueSplitLoaded = true;
+                }
+            });
+
+            function loadRevenueSplit() {
+                const salesOrderId = {{ $invoice_data->f_sales_order_id ?? 0 }};
+
+                // Try to load existing revenue split first
+                $.ajax({
+                    url: `/main_transaction/sales_order/revenue-split/${salesOrderId}`,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success && response.data && response.data.splits && response.data.splits.length > 0) {
+                            // Has existing splits - load the breakdown view
+                            loadExistingBreakdown(salesOrderId);
+                        } else {
+                            // No splits yet - show input form
+                            loadInputForm(salesOrderId);
+                        }
+                    },
+                    error: function() {
+                        // On error, try to show input form
+                        loadInputForm(salesOrderId);
+                    }
+                });
+            }
+
+            function loadExistingBreakdown(salesOrderId) {
+                $.ajax({
+                    url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/breakdown`,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success && response.html) {
+                            $('#revenue-split-content').html(response.html);
+                        }
+                    }
+                });
+            }
+
+            function loadInputForm(salesOrderId) {
+                $('#revenue-split-content').html(`
+                    <div id="emptyStateContainer">
+                        <div class="text-center py-4">
+                            <i class="icon-base ti tabler-percentage icon-48px text-muted mb-3"></i>
+                            <h6 class="text-muted">Belum Ada Revenue Split</h6>
+                            <p class="text-muted mb-3">Klik tombol di bawah untuk menambahkan revenue split.</p>
+                            <button type="button" class="btn btn-primary" onclick="showAddRevenueSplitFormInvoice()">
+                                <i class="icon-base ti tabler-plus me-2"></i>Tambah Revenue Split
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="addRevenueSplitFormContainer" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="icon-base ti tabler-info-circle me-2"></i>
+                            <strong>Petunjuk:</strong> Masukkan porsi revenue untuk setiap produk. Total porsi harus sama dengan total harga produk.
+                        </div>
+
+                        <form id="addRevenueSplitForm">
+                            <div id="productSplitsList">
+                                <!-- Products will be loaded here dynamically -->
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-4">
+                                <button type="button" class="btn btn-secondary" onclick="hideAddRevenueSplitFormInvoice()">
+                                    <i class="icon-base ti tabler-x me-2"></i>Batal
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan Semua
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                `);
+            }
         });
+
+        // Show Add Revenue Split Form
+        function showAddRevenueSplitFormInvoice() {
+            $('#emptyStateContainer').hide();
+            $('#addRevenueSplitFormContainer').show();
+            loadProductsForRevenueSplitInvoice();
+        }
+
+        // Hide Add Revenue Split Form
+        function hideAddRevenueSplitFormInvoice() {
+            $('#addRevenueSplitFormContainer').hide();
+            $('#emptyStateContainer').show();
+        }
+
+        // Load Products for Revenue Split
+        function loadProductsForRevenueSplitInvoice() {
+            const salesOrderId = {{ $invoice_data->f_sales_order_id ?? 0 }};
+
+            // Use embedded invoice products data
+            if (invoiceProductsData && invoiceProductsData.length > 0) {
+                // Transform invoice products to the format expected by renderProductSplitFormsInvoice
+                const products = invoiceProductsData.map(function(product) {
+                    return {
+                        f_product_id: product.f_product_id,
+                        product_name: product.product_name,
+                        product_code: product.product_code,
+                        quantity: product.qty,
+                        unit_price: product.unit_price,
+                        unit_name: product.unit_code,
+                        line_total: product.line_total
+                    };
+                });
+                renderProductSplitFormsInvoice(products, salesOrderId);
+            } else {
+                $('#productSplitsList').html(`
+                    <div class="alert alert-warning">
+                        <i class="icon-base ti tabler-alert-circle me-2"></i>
+                        Tidak ada produk dalam invoice ini.
+                    </div>
+                `);
+            }
+        }
+
+        // Render Product Split Forms
+        function renderProductSplitFormsInvoice(products, salesOrderId) {
+            let html = '';
+
+            products.forEach(function(product, index) {
+                const productTotal = product.line_total || (product.unit_price * product.quantity);
+
+                html += `
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <strong>${product.product_name}</strong>
+                                <br><small class="text-muted">${product.product_code}</small>
+                            </h6>
+                            <small class="text-muted">
+                                ${formatNumberInvoice(product.quantity)} ${product.unit_name || ''} × Rp ${formatNumberInvoice(product.unit_price)} =
+                                <strong>Rp ${formatNumberInvoice(productTotal)}</strong>
+                            </small>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" class="product-id" value="${product.f_product_id}">
+                            <input type="hidden" class="product-total" value="${productTotal}">
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Porsi Pabrik <span style="color: red;">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="text" class="form-control global-currency porsi-pabrik"
+                                            data-index="${index}" required>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input remaining-allocation" type="radio"
+                                            name="remaining_allocation_${index}" value="pabrik"
+                                            id="remaining_pabrik_${index}">
+                                        <label class="form-check-label text-success" for="remaining_pabrik_${index}">
+                                            <small>Dapat sisa</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Porsi Owner <span style="color: red;">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="text" class="form-control global-currency porsi-owner"
+                                            data-index="${index}" required>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input remaining-allocation" type="radio"
+                                            name="remaining_allocation_${index}" value="owner"
+                                            id="remaining_owner_${index}">
+                                        <label class="form-check-label text-success" for="remaining_owner_${index}">
+                                            <small>Dapat sisa</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Porsi Perusahaan <span style="color: red;">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="text" class="form-control global-currency porsi-perusahaan"
+                                            data-index="${index}" required>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input remaining-allocation" type="radio"
+                                            name="remaining_allocation_${index}" value="perusahaan"
+                                            id="remaining_perusahaan_${index}" checked>
+                                        <label class="form-check-label text-success" for="remaining_perusahaan_${index}">
+                                            <small>Dapat sisa</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Total Split</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="text" class="form-control total-split-${index}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Selisih</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="text" class="form-control difference-${index}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#productSplitsList').html(html);
+
+            // Re-initialize currency formatting
+            initializeCurrencyFormatting();
+
+            // Add event listeners for calculation
+            $('.porsi-pabrik, .porsi-owner, .porsi-perusahaan').on('input', function() {
+                const index = $(this).data('index');
+                calculateSplitTotalsInvoice(index);
+            });
+
+            // Handle form submission
+            $('#addRevenueSplitForm').off('submit').on('submit', function(e) {
+                e.preventDefault();
+                submitRevenueSplitInvoice(salesOrderId);
+            });
+        }
+
+        // Calculate Split Totals
+        function calculateSplitTotalsInvoice(index) {
+            const pabrik = parseNumberInvoice($(`.porsi-pabrik[data-index="${index}"]`).val());
+            const owner = parseNumberInvoice($(`.porsi-owner[data-index="${index}"]`).val());
+            const perusahaan = parseNumberInvoice($(`.porsi-perusahaan[data-index="${index}"]`).val());
+            const productTotal = parseNumberInvoice($('.product-total').eq(index).val());
+
+            const totalSplit = pabrik + owner + perusahaan;
+            const difference = totalSplit - productTotal;
+
+            $(`.total-split-${index}`).val(formatNumberInvoice(totalSplit));
+            $(`.difference-${index}`).val(formatNumberInvoice(Math.abs(difference)));
+
+            // Update difference styling
+            if (Math.abs(difference) > 0.01) {
+                $(`.difference-${index}`).removeClass('text-success').addClass('text-danger');
+            } else {
+                $(`.difference-${index}`).removeClass('text-danger').addClass('text-success');
+            }
+        }
+
+        // Submit Revenue Split
+        function submitRevenueSplitInvoice(salesOrderId) {
+            const products = [];
+            let hasError = false;
+
+            // Collect all product splits
+            $('.card', '#productSplitsList').each(function(index) {
+                const productId = $(this).find('.product-id').val();
+                const productTotal = parseNumberInvoice($(this).find('.product-total').val());
+                const porsiPabrik = parseNumberInvoice($(this).find('.porsi-pabrik').val());
+                const porsiOwner = parseNumberInvoice($(this).find('.porsi-owner').val());
+                const porsiPerusahaan = parseNumberInvoice($(this).find('.porsi-perusahaan').val());
+                const remainingAllocation = $(this).find(`.remaining-allocation:checked`).val();
+
+                const totalSplit = porsiPabrik + porsiOwner + porsiPerusahaan;
+
+                // Validate totals match
+                if (Math.abs(totalSplit - productTotal) > 0.01) {
+                    toastr.error(`Total porsi untuk produk index ${index + 1} tidak sesuai`);
+                    hasError = true;
+                    return false;
+                }
+
+                products.push({
+                    product_id: productId,
+                    porsi_pabrik: porsiPabrik,
+                    porsi_owner: porsiOwner,
+                    porsi_perusahaan: porsiPerusahaan,
+                    remaining_allocation: remainingAllocation,
+                    product_total_amount: productTotal
+                });
+            });
+
+            if (hasError) return;
+
+            // Submit all splits
+            const requests = products.map(function(product) {
+                return $.ajax({
+                    url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/product/${product.product_id}`,
+                    type: 'PUT',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    data: product
+                });
+            });
+
+            // Wait for all requests to complete
+            Promise.all(requests)
+                .then(function() {
+                    toastr.success('Revenue split berhasil disimpan');
+                    hideAddRevenueSplitFormInvoice();
+                    // Reload the revenue split to show the breakdown
+                    revenueSplitLoaded = false;
+                    loadRevenueSplit();
+                })
+                .catch(function(error) {
+                    toastr.error('Gagal menyimpan revenue split');
+                    console.error(error);
+                });
+        }
+
+        // Utility Functions
+        function formatNumberInvoice(value) {
+            if (!value || value === 0) return '0';
+            return parseInt(value).toLocaleString('id-ID');
+        }
+
+        function parseNumberInvoice(value) {
+            if (!value) return 0;
+            return parseInt(value.toString().replace(/[^\d]/g, '')) || 0;
+        }
     </script>
 @endsection

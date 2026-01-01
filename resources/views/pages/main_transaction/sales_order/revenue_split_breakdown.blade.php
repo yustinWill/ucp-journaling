@@ -243,11 +243,39 @@
     </div>
 
 @else
-    <!-- Empty State -->
-    <div class="text-center py-4">
-        <i class="icon-base ti tabler-percentage icon-48px text-muted mb-3"></i>
-        <h6 class="text-muted">Belum Ada Revenue Split</h6>
-        <p class="text-muted mb-0">Revenue split akan dibuat otomatis ketika sales order memiliki produk.</p>
+    <!-- Empty State with Add Form -->
+    <div id="emptyStateContainer">
+        <div class="text-center py-4">
+            <i class="icon-base ti tabler-percentage icon-48px text-muted mb-3"></i>
+            <h6 class="text-muted">Belum Ada Revenue Split</h6>
+            <p class="text-muted mb-3">Klik tombol di bawah untuk menambahkan revenue split.</p>
+            <button type="button" class="btn btn-primary" onclick="showAddRevenueSplitForm()">
+                <i class="icon-base ti tabler-plus me-2"></i>Tambah Revenue Split
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Revenue Split Form (Hidden by default) -->
+    <div id="addRevenueSplitFormContainer" style="display: none;">
+        <div class="alert alert-info">
+            <i class="icon-base ti tabler-info-circle me-2"></i>
+            <strong>Petunjuk:</strong> Masukkan porsi revenue untuk setiap produk. Total porsi harus sama dengan total harga produk.
+        </div>
+
+        <form id="addRevenueSplitForm">
+            <div id="productSplitsList">
+                <!-- Products will be loaded here dynamically -->
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" class="btn btn-secondary" onclick="hideAddRevenueSplitForm()">
+                    <i class="icon-base ti tabler-x me-2"></i>Batal
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan Semua
+                </button>
+            </div>
+        </form>
     </div>
 @endif
 
