@@ -167,6 +167,11 @@
                             </div>
 
                             <div class="row g-6 mt-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Biaya Produksi</label>
+                                    <input type="text" class="form-control"
+                                        value="Rp {{ number_format($production->biaya_produksi ?? 0, 0, ',', '.') }}" disabled />
+                                </div>
                                 {{-- <div class="col-md-6">
                                     <label class="form-label">Progress</label>
                                     @php
@@ -183,7 +188,7 @@
                                         </div>
                                     </div>
                                 </div> --}}
-                                
+
                             </div>
 
                             <div class="row g-6 mt-3">

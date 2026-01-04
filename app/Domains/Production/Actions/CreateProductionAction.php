@@ -108,10 +108,20 @@ class CreateProductionAction
             }
         }
 
+        // Get biaya produksi from input
+        $biayaProduksi = 0;
+        if (isset($data['biaya_produksi'])) {
+            // Remove any non-numeric characters (thousands separators, etc.)
+            $biayaProduksi = is_numeric($data['biaya_produksi'])
+                ? $data['biaya_produksi']
+                : (float) preg_replace('/[^0-9.]/', '', $data['biaya_produksi']);
+        }
+
         return [
             'total_raw_material_cost' => $totalRawMaterialCost,
             'total_production_expense' => $totalProductionExpense,
-            'total_production_cost' => $totalRawMaterialCost + $totalProductionExpense,
+            'biaya_produksi' => $biayaProduksi,
+            'total_production_cost' => $totalRawMaterialCost + $totalProductionExpense + $biayaProduksi,
             'total_items_consumed' => $totalItemsConsumed,
         ];
     }

@@ -155,6 +155,15 @@
                         placeholder="0" min="1" step="1" required disabled />
                     <small class="form-text text-muted" id="quantity-planned-note"><span style="color: #ff6b6b;">Dihitung otomatis dari material input</span></small>
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label">Biaya Produksi <span class="text-muted">(Opsional)</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="text" class="form-control global-currency" id="biaya-produksi" name="biaya_produksi"
+                            placeholder="0" value="0" />
+                    </div>
+                    <small class="form-text text-muted">Biaya tambahan produksi (akan ditambahkan ke HPP)</small>
+                </div>
             </div>
 
             <!-- Bundle Components Section -->
@@ -467,8 +476,13 @@
                 const bundlePrice = parseCurrency(bundlePriceText);
                 const bundlePricePerUnit = bundlePrice / quantityPlanned;
 
-                // HPP = Component costs per unit + Bundle production cost per unit
-                const hppPerUnit = totalComponentCostPerUnit + bundlePricePerUnit;
+                // Get biaya produksi
+                const biayaProduksiText = $('#biaya-produksi').val() || '0';
+                const biayaProduksi = parseCurrency(biayaProduksiText);
+                const biayaProduksiPerUnit = biayaProduksi / quantityPlanned;
+
+                // HPP = Component costs per unit + Bundle production cost per unit + Biaya Produksi per unit
+                const hppPerUnit = totalComponentCostPerUnit + bundlePricePerUnit + biayaProduksiPerUnit;
 
                 // Update the fields
                 $('#bundle-price-unit').val('Rp ' + formatNumber(bundlePricePerUnit));
@@ -479,6 +493,8 @@
                     totalComponentCost: totalComponentCost,
                     totalComponentCostPerUnit: totalComponentCostPerUnit,
                     bundlePricePerUnit: bundlePricePerUnit,
+                    biayaProduksi: biayaProduksi,
+                    biayaProduksiPerUnit: biayaProduksiPerUnit,
                     hppPerUnit: hppPerUnit,
                     quantityPlanned: quantityPlanned
                 });
@@ -787,6 +803,11 @@
                     updateFIFOPrices();
                 });
             }
+
+            // Biaya Produksi change - recalculate HPP
+            $('#biaya-produksi').on('input', function() {
+                calculateProductionCosts();
+            });
 
             function updateTotalRequiredQuantities() {
                 const qtyPlanned = $('#quantity-planned').val() || 0;
