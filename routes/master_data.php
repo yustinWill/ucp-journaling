@@ -18,6 +18,7 @@ use App\Http\Controllers\MasterData\TagController;
 use App\Http\Controllers\MasterData\TaxController;
 use App\Http\Controllers\MasterData\TransactionNumberController;
 use App\Http\Controllers\MasterData\UnitController;
+use App\Http\Controllers\MasterData\UnitConversionController;
 use App\Http\Controllers\MasterData\UserController;
 use App\Http\Controllers\MasterData\WarehouseController;
 use Illuminate\Support\Facades\Route;
@@ -36,13 +37,14 @@ $inventory_segment = '/inventory';
 $tag_segment = '/tag';
 $tax_segment = '/tax';
 $unit_segment = '/unit';
+$unit_conversion_segment = '/unit_conversion';
 $category_segment = '/category';
 $sales_person_segment = '/sales_person';
 $payment_term_segment = '/payment_term';
 $transaction_number_segment = '/transaction_number';
 $revenue_split_segment = '/revenue_split';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment,$budged_segment, $budget_category_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $inventory_segment, $tag_segment, $tax_segment, $unit_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment, $revenue_split_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segment, $warehouse_segment, $product_segment,$budged_segment, $budget_category_segment, $coa_segment, $user_segment, $role_segment, $stock_opname_segment, $inventory_segment, $tag_segment, $tax_segment, $unit_segment, $unit_conversion_segment, $category_segment, $sales_person_segment, $payment_term_segment, $transaction_number_segment, $revenue_split_segment) {
     Route::controller(ContactController::class)->group(function () use ($base_segment, $contact_segment) {
         Route::get($base_segment.$contact_segment.'/index', 'index')->name('master_data.contact.index');
         Route::get($base_segment.$contact_segment.'/index_data_table', 'index_data_table')->name('master_data.contact.index_data_table');
@@ -225,6 +227,17 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::get($base_segment.$unit_segment.'/detail/{id}', 'detail')->name('master_data.unit.detail');
         Route::get($base_segment.$unit_segment.'/export', 'export')->name('master_data.unit.export');
         Route::get($base_segment.$unit_segment.'/import', 'import')->name('master_data.unit.import');
+    });
+
+    Route::controller(UnitConversionController::class)->group(function () use ($base_segment, $unit_conversion_segment) {
+        Route::get($base_segment.$unit_conversion_segment.'/index', 'index')->name('master_data.unit_conversion.index');
+        Route::get($base_segment.$unit_conversion_segment.'/index_data_table', 'index_data_table')->name('master_data.unit_conversion.index_data_table');
+        Route::get($base_segment.$unit_conversion_segment.'/add', 'add')->name('master_data.unit_conversion.add');
+        Route::post($base_segment.$unit_conversion_segment.'/save', 'save')->name('master_data.unit_conversion.save');
+        Route::get($base_segment.$unit_conversion_segment.'/edit/{id}', 'edit')->name('master_data.unit_conversion.edit');
+        Route::put($base_segment.$unit_conversion_segment.'/update/{id}', 'update')->name('master_data.unit_conversion.update');
+        Route::get($base_segment.$unit_conversion_segment.'/detail/{id}', 'detail')->name('master_data.unit_conversion.detail');
+        Route::delete($base_segment.$unit_conversion_segment.'/delete/{id}', 'delete')->name('master_data.unit_conversion.delete');
     });
 
     Route::controller(CategoryController::class)->group(function () use ($base_segment, $category_segment) {

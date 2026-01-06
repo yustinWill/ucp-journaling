@@ -209,18 +209,42 @@
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
-                                            <th style="width: 12%;">Kode Produk</th>
-                                            <th style="width: 20%;">Nama Produk</th>
-                                            <th style="width: 8%;">Unit</th>
-                                            <th style="width: 10%;">Stok Sistem</th>
-                                            <th style="width: 10%;">Qty Adjustment</th>
-                                            <th style="width: 10%;">Harga Satuan</th>
-                                            <th style="width: 12%;">Total Nilai</th>
-                                            <th style="width: 18%;">Alasan & Detail</th>
+                                            <th style="width: 10%;">Kode Produk</th>
+                                            <th style="width: 15%;">Nama Produk</th>
+                                            <th style="width: 6%;">Unit</th>
+                                            <th style="width: 8%;">Stock Sebelum</th>
+                                            <th style="width: 10%;">Tipe Adjustment</th>
+                                            <th style="width: 8%;">Nilai Adjustment</th>
+                                            <th style="width: 8%;">Stock Final</th>
+                                            <th style="width: 8%;">Harga Satuan</th>
+                                            <th style="width: 10%;">Total Nilai</th>
+                                            <th style="width: 17%;">Alasan & Detail</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($adjustmentItems as $item)
+                                        @php
+                                            // Calculate stock final
+                                            $stockFinal = $item->stock_before + $item->adjustment_qty;
+
+                                            // Determine adjustment type
+                                            if ($item->adjustment_qty > 0) {
+                                                $adjustmentType = 'Menambah';
+                                                $adjustmentBadge = 'bg-label-success';
+                                                $adjustmentIcon = 'tabler-arrow-up';
+                                            } elseif ($item->adjustment_qty < 0) {
+                                                $adjustmentType = 'Mengurangi';
+                                                $adjustmentBadge = 'bg-label-danger';
+                                                $adjustmentIcon = 'tabler-arrow-down';
+                                            } else {
+                                                $adjustmentType = 'Tidak Ada';
+                                                $adjustmentBadge = 'bg-label-secondary';
+                                                $adjustmentIcon = 'tabler-minus';
+                                            }
+
+                                            // Calculate adjustment value (absolute difference)
+                                            $adjustmentValue = abs($item->adjustment_qty);
+                                        @endphp
                                         <tr>
                                             <td>
                                                 <a href="{{ route('master_data.product.detail', $item->product_code) }}" class="text-primary fw-semibold" title="Lihat detail produk">
@@ -228,16 +252,24 @@
                                                 </a>
                                             </td>
                                             <td>{{ $item->product_name }}</td>
-                                            <td>{{ $item->unit }}</td>
-                                            <td class="text-end">{{ number_format($item->stock_before, 0, ',', '.') }}</td>
+                                            <td class="text-center">{{ $item->unit }}</td>
                                             <td class="text-end">
-                                                @if($item->adjustment_qty > 0)
-                                                    <span class="text-success">+{{ number_format($item->adjustment_qty, 0, ',', '.') }}</span>
-                                                @elseif($item->adjustment_qty < 0)
-                                                    <span class="text-danger">{{ number_format($item->adjustment_qty, 0, ',', '.') }}</span>
+                                                <strong>{{ number_format($item->stock_before, 0, ',', '.') }}</strong>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge {{ $adjustmentBadge }}">
+                                                    <i class="icon-base ti {{ $adjustmentIcon }} me-1"></i>{{ $adjustmentType }}
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                @if($adjustmentValue > 0)
+                                                    <strong>{{ number_format($adjustmentValue, 0, ',', '.') }}</strong>
                                                 @else
                                                     <span class="text-muted">0</span>
                                                 @endif
+                                            </td>
+                                            <td class="text-end">
+                                                <strong class="text-primary">{{ number_format($stockFinal, 0, ',', '.') }}</strong>
                                             </td>
                                             <td class="text-end">Rp {{ number_format($item->unit_cost, 0, ',', '.') }}</td>
                                             <td class="text-end">
