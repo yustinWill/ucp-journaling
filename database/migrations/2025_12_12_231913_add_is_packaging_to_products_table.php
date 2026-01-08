@@ -12,7 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('m_products', function (Blueprint $table) {
-            $table->boolean('is_packaging')->default(false)->after('is_bundle')->comment('Flag to mark products that are used for packing (subset of bundle products)');
+            // Add is_packaging column
+            // Note: Position after 'track_batch' since 'is_bundle' column doesn't exist in the schema
+            if (! Schema::hasColumn('m_products', 'is_packaging')) {
+                $table->boolean('is_packaging')->default(false)->after('track_batch')->comment('Flag to mark products that are used for packing (subset of bundle products)');
+            }
         });
     }
 
