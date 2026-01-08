@@ -27,29 +27,35 @@ return new class extends Migration
 
         // Step 2: Migrate existing data from m_budgeds_history to m_budget_periods
         // and restructure m_budgeds to reference periods
+        // Only run if tables exist (for migrating existing data, not for fresh migrations)
 
-        // Get unique periods from m_budgeds_history
-        $periods = DB::table('m_budgeds_history')
-            ->select('period_start_date', 'period_end_date', 'created_by', 'created_at')
-            ->distinct()
-            ->get();
-
-        // Insert unique periods into m_budget_periods
         $periodMap = [];
-        foreach ($periods as $period) {
-            $periodId = DB::table('m_budget_periods')->insertGetId([
-                'period_start_date' => $period->period_start_date,
-                'period_end_date' => $period->period_end_date,
-                'created_by' => $period->created_by,
-                'created_at' => $period->created_at,
-            ]);
 
-            $key = $period->period_start_date . '|' . $period->period_end_date;
-            $periodMap[$key] = $periodId;
+        if (Schema::hasTable('m_budgeds_history')) {
+            // Get unique periods from m_budgeds_history
+            $periods = DB::table('m_budgeds_history')
+                ->select('period_start_date', 'period_end_date', 'created_by', 'created_at')
+                ->distinct()
+                ->get();
+
+            // Insert unique periods into m_budget_periods
+            foreach ($periods as $period) {
+                $periodId = DB::table('m_budget_periods')->insertGetId([
+                    'period_start_date' => $period->period_start_date,
+                    'period_end_date' => $period->period_end_date,
+                    'created_by' => $period->created_by,
+                    'created_at' => $period->created_at,
+                ]);
+
+                $key = $period->period_start_date . '|' . $period->period_end_date;
+                $periodMap[$key] = $periodId;
+            }
         }
 
-        // Step 3: Rename old m_budgeds to m_budgeds_old for backup
-        Schema::rename('m_budgeds', 'm_budgeds_old');
+        // Step 3: Rename old m_budgeds to m_budgeds_old for backup (only if it exists)
+        if (Schema::hasTable('m_budgeds')) {
+            Schema::rename('m_budgeds', 'm_budgeds_old');
+        }
 
         // Step 4: Create new m_budgeds table with period reference
         Schema::create('m_budgeds', function (Blueprint $table) {
@@ -67,34 +73,38 @@ return new class extends Migration
             $table->index('f_budget_period_id');
         });
 
-        // Step 5: Migrate data from old structure to new structure
-        $histories = DB::table('m_budgeds_history')->get();
+        // Step 5: Migrate data from old structure to new structure (only if old data exists)
+        if (Schema::hasTable('m_budgeds_history') && Schema::hasTable('m_budgeds_old')) {
+            $histories = DB::table('m_budgeds_history')->get();
 
-        foreach ($histories as $history) {
-            $key = $history->period_start_date . '|' . $history->period_end_date;
-            $periodId = $periodMap[$key] ?? null;
+            foreach ($histories as $history) {
+                $key = $history->period_start_date . '|' . $history->period_end_date;
+                $periodId = $periodMap[$key] ?? null;
 
-            if ($periodId) {
-                // Get budget name from old m_budgeds_old table
-                $oldBudget = DB::table('m_budgeds_old')->where('id', $history->budged_id)->first();
+                if ($periodId) {
+                    // Get budget name from old m_budgeds_old table
+                    $oldBudget = DB::table('m_budgeds_old')->where('id', $history->budged_id)->first();
 
-                if ($oldBudget) {
-                    DB::table('m_budgeds')->insert([
-                        'f_budget_period_id' => $periodId,
-                        'budged_name' => $oldBudget->budged_name,
-                        'budged_limit_value' => $history->budged_limit_value,
-                        'budged_remaining_value' => $history->budged_remaining_value ?? $history->budged_limit_value,
-                        'created_by' => $history->created_by,
-                        'created_at' => $history->created_at,
-                        'updated_by' => $history->updated_by ?? null,
-                        'updated_at' => $history->updated_at ?? null,
-                    ]);
+                    if ($oldBudget) {
+                        DB::table('m_budgeds')->insert([
+                            'f_budget_period_id' => $periodId,
+                            'budged_name' => $oldBudget->budged_name,
+                            'budged_limit_value' => $history->budged_limit_value,
+                            'budged_remaining_value' => $history->budged_remaining_value ?? $history->budged_limit_value,
+                            'created_by' => $history->created_by,
+                            'created_at' => $history->created_at,
+                            'updated_by' => $history->updated_by ?? null,
+                            'updated_at' => $history->updated_at ?? null,
+                        ]);
+                    }
                 }
             }
         }
 
-        // Step 6: Rename m_budgeds_history to m_budgeds_history_old for backup
-        Schema::rename('m_budgeds_history', 'm_budgeds_history_old');
+        // Step 6: Rename m_budgeds_history to m_budgeds_history_old for backup (only if it exists)
+        if (Schema::hasTable('m_budgeds_history')) {
+            Schema::rename('m_budgeds_history', 'm_budgeds_history_old');
+        }
 
         // Note: We keep m_budgeds_old and m_budgeds_history_old for backup
         // You can drop them manually after verifying the migration was successful
