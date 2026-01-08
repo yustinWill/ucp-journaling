@@ -32,11 +32,9 @@ class DatabaseSeeder extends Seeder
         // Create default company
         $companyCode = 'RIYO001';
         DB::table('m_companies')->insert([
-            'company_code' => $companyCode,
-            'company_name' => 'RIYO Company',
-            'address' => 'Default Address',
-            'phone' => '0000000000',
-            'email' => 'company@riyo.com',
+            'code' => $companyCode,
+            'name' => 'RIYO Company',
+            'description' => 'Default Company',
             'status' => 'ACTIVE',
             'created_at' => now(),
             'updated_at' => now(),
@@ -47,9 +45,8 @@ class DatabaseSeeder extends Seeder
         if ($user) {
             DB::table('m_user_companies')->insert([
                 'f_user_id' => $user->id,
-                'company_code' => $companyCode,
-                'company_name' => 'RIYO Company',
-                'default_company' => true,
+                'f_company_code' => $companyCode,
+                'status' => 'ACTIVE',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
