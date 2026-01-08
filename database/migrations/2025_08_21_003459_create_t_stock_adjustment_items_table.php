@@ -29,11 +29,15 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
 
+            $table->foreign('stock_adjustment_id')->references('id')->on('t_stock_adjustments')->onDelete('cascade');
+            $table->foreign('product_id')->references('id')->on('m_products');
+            $table->foreign('created_by')->references('id')->on('users');
+            $table->foreign('updated_by')->references('id')->on('users');
+            $table->foreign('company_code')->references('code')->on('m_companies');
+
             $table->index(['company_code', 'stock_adjustment_id']);
             $table->index('product_id');
             $table->index('product_code');
-
-            $table->foreign('stock_adjustment_id')->references('id')->on('t_stock_adjustments')->onDelete('cascade');
         });
     }
 

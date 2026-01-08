@@ -44,6 +44,12 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
 
+            $table->foreign('warehouse_id')->references('id')->on('m_warehouses');
+            $table->foreign('pic_id')->references('id')->on('users');
+            $table->foreign('created_by')->references('id')->on('users');
+            $table->foreign('updated_by')->references('id')->on('users');
+            $table->foreign('company_code')->references('code')->on('m_companies');
+
             $table->index(['company_code', 'adjustment_date']);
             $table->index(['adjustment_type', 'status']);
             $table->index('warehouse_id');

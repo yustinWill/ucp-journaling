@@ -19,7 +19,7 @@ return new class extends Migration
                 'total_price_before_discount',
                 'discount',
             ]);
-            $table->unsignedInteger('f_customer_id')->after('supplier_reference_no')->nullable();
+            $table->unsignedBigInteger('f_customer_id')->after('supplier_reference_no')->nullable();
             $table->foreign('f_customer_id')->references('id')->on('m_contacts');
         });
 

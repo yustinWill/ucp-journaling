@@ -45,6 +45,11 @@ return new class extends Migration
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
 
+            $table->foreign('warehouse_id')->references('id')->on('m_warehouses');
+            $table->foreign('product_id')->references('id')->on('m_products');
+            $table->foreign('created_by')->references('id')->on('users');
+            $table->foreign('company_code')->references('code')->on('m_companies');
+
             $table->index(['company_code', 'movement_date']);
             $table->index(['warehouse_id', 'product_id']);
             $table->index(['reference_type', 'reference_number']);

@@ -26,6 +26,8 @@ return new class extends Migration
 
             // Foreign key constraints
             $table->foreign('production_id')->references('id')->on('t_productions')->onDelete('cascade');
+            $table->foreign('raw_material_product_id')->references('id')->on('m_products');
+            $table->foreign('unit_code')->references('code')->on('m_units');
 
             // Indexes
             $table->index(['production_id', 'raw_material_product_id']);
