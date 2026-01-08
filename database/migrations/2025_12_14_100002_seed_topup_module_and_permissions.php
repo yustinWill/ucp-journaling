@@ -43,7 +43,6 @@ return new class extends Migration
             $permissions[] = [
                 'module_id' => $topupModule->id,
                 'permission_type' => $type,
-                'name' => "main_transaction_topup.{$type}",
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
