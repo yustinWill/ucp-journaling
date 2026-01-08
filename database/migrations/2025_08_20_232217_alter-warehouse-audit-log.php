@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Check if the old column name still exists before attempting rename
-        // This migration may be redundant if 2025_08_20_003200_rename_storage_to_warehouse_final.php already ran
-        if (Schema::hasColumn('m_warehouse_audit_logs', 'f_storage_id')) {
-            Schema::table('m_warehouse_audit_logs', function (Blueprint $table) {
-                $table->renameColumn('f_storage_id', 'f_warehouse_id');
-            });
-        }
+        // This migration is redundant - the column rename is already handled by
+        // 2025_08_20_003200_rename_storage_to_warehouse_final.php migration
+        // Keeping this file for migration history, but doing nothing
+
+        // Original code (now disabled):
+        // Schema::table('m_warehouse_audit_logs', function (Blueprint $table) {
+        //     $table->renameColumn('f_storage_id', 'f_warehouse_id');
+        // });
     }
 
     /**
