@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
                 'f_user_id' => $user->id,
                 'f_company_code' => $companyCode,
                 'status' => 'ACTIVE',
+                'default_company' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

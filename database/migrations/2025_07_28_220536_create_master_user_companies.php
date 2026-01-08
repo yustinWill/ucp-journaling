@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('f_user_id');
             $table->string('f_company_code');
             $table->string('status');
+            $table->boolean('default_company')->default(false);
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
