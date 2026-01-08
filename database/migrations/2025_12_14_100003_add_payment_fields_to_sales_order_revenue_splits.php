@@ -20,9 +20,9 @@ return new class extends Migration
             $table->boolean('is_paid_pabrik')->default(false)->after('is_paid_owner')
                 ->comment('Payment status for Factory (Pabrik) portion');
 
-            // Add indexes for filtering
-            $table->index(['is_paid_perusahaan', 'company_code']);
-            $table->index(['is_paid_owner', 'company_code']);
+            // Add indexes for filtering (with custom short names to avoid MySQL 64-char limit)
+            $table->index(['is_paid_perusahaan', 'company_code'], 'idx_rev_split_paid_perusahaan');
+            $table->index(['is_paid_owner', 'company_code'], 'idx_rev_split_paid_owner');
         });
     }
 
@@ -32,8 +32,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('t_sales_order_revenue_splits', function (Blueprint $table) {
-            $table->dropIndex(['is_paid_perusahaan', 'company_code']);
-            $table->dropIndex(['is_paid_owner', 'company_code']);
+            $table->dropIndex('idx_rev_split_paid_perusahaan');
+            $table->dropIndex('idx_rev_split_paid_owner');
 
             $table->dropColumn([
                 'is_paid_perusahaan',
