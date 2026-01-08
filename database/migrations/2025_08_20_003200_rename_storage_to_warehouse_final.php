@@ -63,8 +63,17 @@ return new class extends Migration
                 if (! empty($foreignKeys)) {
                     $table->dropForeign($foreignKeys[0]->CONSTRAINT_NAME);
                 }
-                $table->dropIndex('unq_storage_product_snapshot');
-                $table->dropIndex('idx_storage_snapshot_date');
+                // Try to drop indexes, but continue if they don't exist
+                try {
+                    $table->dropIndex('unq_storage_product_snapshot');
+                } catch (\Exception $e) {
+                    // Index doesn't exist, continue
+                }
+                try {
+                    $table->dropIndex('idx_storage_snapshot_date');
+                } catch (\Exception $e) {
+                    // Index doesn't exist, continue
+                }
                 $table->renameColumn('f_storage_id', 'f_warehouse_id');
             });
 
