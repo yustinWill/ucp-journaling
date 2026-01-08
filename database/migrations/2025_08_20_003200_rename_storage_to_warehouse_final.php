@@ -46,37 +46,59 @@ return new class extends Migration
         // Step 3: Stock movements table was removed - using t_stock_movement_logs instead
 
         // Step 4: Rename stock snapshots table and update foreign keys
+        // Note: This table gets dropped in a later migration (2025_09_12), so we skip this step
+        // if the table doesn't exist to avoid errors on fresh migrations
         if (Schema::hasTable('t_storage_stock_snapshots')) {
             Schema::rename('t_storage_stock_snapshots', 't_warehouse_stock_snapshots');
 
-            // Get the actual foreign key constraint name
+            // Get all existing indexes and foreign keys on the renamed table
             $foreignKeys = DB::select("
-                SELECT CONSTRAINT_NAME 
-                FROM information_schema.KEY_COLUMN_USAGE 
-                WHERE TABLE_SCHEMA = DATABASE() 
-                AND TABLE_NAME = 't_warehouse_stock_snapshots' 
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = 't_warehouse_stock_snapshots'
                 AND COLUMN_NAME = 'f_storage_id'
                 AND CONSTRAINT_NAME != 'PRIMARY'
+                AND REFERENCED_TABLE_NAME IS NOT NULL
             ");
 
-            Schema::table('t_warehouse_stock_snapshots', function (Blueprint $table) use ($foreignKeys) {
-                if (! empty($foreignKeys)) {
-                    $table->dropForeign($foreignKeys[0]->CONSTRAINT_NAME);
-                }
-                // Try to drop indexes, but continue if they don't exist
-                try {
-                    $table->dropIndex('unq_storage_product_snapshot');
-                } catch (\Exception $e) {
-                    // Index doesn't exist, continue
-                }
-                try {
-                    $table->dropIndex('idx_storage_snapshot_date');
-                } catch (\Exception $e) {
-                    // Index doesn't exist, continue
-                }
-                $table->renameColumn('f_storage_id', 'f_warehouse_id');
-            });
+            $allIndexes = DB::select("
+                SELECT DISTINCT INDEX_NAME
+                FROM information_schema.STATISTICS
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = 't_warehouse_stock_snapshots'
+                AND INDEX_NAME NOT IN ('PRIMARY')
+                AND COLUMN_NAME IN ('f_storage_id', 'f_product_id', 'snapshot_date')
+            ");
 
+            // Drop all non-primary indexes and foreign keys before column rename
+            if (! empty($allIndexes) || ! empty($foreignKeys)) {
+                Schema::table('t_warehouse_stock_snapshots', function (Blueprint $table) use ($foreignKeys, $allIndexes) {
+                    // Drop foreign keys first
+                    foreach ($foreignKeys as $fk) {
+                        $table->dropForeign($fk->CONSTRAINT_NAME);
+                    }
+
+                    // Drop all indexes (unique and regular)
+                    foreach ($allIndexes as $index) {
+                        try {
+                            DB::statement("ALTER TABLE t_warehouse_stock_snapshots DROP INDEX {$index->INDEX_NAME}");
+                        } catch (\Exception $e) {
+                            // Index might not exist or already dropped, continue
+                        }
+                    }
+
+                    // Now rename the column
+                    $table->renameColumn('f_storage_id', 'f_warehouse_id');
+                });
+            } else {
+                // Just rename the column if no indexes to drop
+                Schema::table('t_warehouse_stock_snapshots', function (Blueprint $table) {
+                    $table->renameColumn('f_storage_id', 'f_warehouse_id');
+                });
+            }
+
+            // Recreate foreign key and indexes with new warehouse naming
             Schema::table('t_warehouse_stock_snapshots', function (Blueprint $table) {
                 $table->foreign('f_warehouse_id')->references('id')->on('m_warehouses');
                 $table->unique(['f_warehouse_id', 'f_product_id', 'snapshot_date'], 'unq_warehouse_product_snapshot');
