@@ -57,15 +57,13 @@ class RevenueSplitSeeder extends Seeder
                 $existingRolePermission = DB::table('role_permissions')
                     ->where('role_id', $superAdminRole->id)
                     ->where('permission_id', $permissionId)
-                    ->where('company_code', '001')
                     ->first();
-                    
+
                 if (!$existingRolePermission) {
                     DB::table('role_permissions')->insert([
-                        'company_code' => '001',
                         'role_id' => $superAdminRole->id,
                         'permission_id' => $permissionId,
-                        'status' => 'ACTIVE',
+                        'status' => 'active',
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);

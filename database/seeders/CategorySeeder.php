@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Domains\Category\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
@@ -58,7 +58,10 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $categoryData) {
-            Category::create($categoryData);
+            DB::table('m_categories')->insert(array_merge($categoryData, [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]));
         }
     }
 }
