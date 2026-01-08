@@ -70,7 +70,7 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email',
                 'phone' => 'nullable|string|max:255|unique:users,phone',
-                'role' => 'required|exists:m_tags,id',
+                'role' => 'required|exists:roles,id',
                 'status' => [
                     'required',
                     Rule::in(array_column($this->statuses, 'value')),
@@ -147,7 +147,7 @@ class UserController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,'.$request->id,
                 'phone' => 'nullable|string|max:255|unique:users,phone,'.$request->id,
-                'role' => 'required|exists:m_tags,id',
+                'role' => 'required|exists:roles,id',
                 'status' => [
                     'required',
                     Rule::in(array_column($this->statuses, 'value')),
