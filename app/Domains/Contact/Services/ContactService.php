@@ -178,13 +178,29 @@ class ContactService
 
     public function create(array $data)
     {
+        // Determine type based on boolean flags (supports multiple types)
+        $isCustomer = isset($data['is_customer']) && $data['is_customer'] ? true : false;
+        $isSupplier = isset($data['is_supplier']) && $data['is_supplier'] ? true : false;
+        $isEmployee = isset($data['is_employee']) && $data['is_employee'] ? true : false;
+        $isOther = isset($data['is_other']) && $data['is_other'] ? true : false;
+
+        // Build type string - can be multiple comma-separated values
+        $types = [];
+        if ($isCustomer) $types[] = 'CUSTOMER';
+        if ($isSupplier) $types[] = 'SUPPLIER';
+        if ($isEmployee) $types[] = 'EMPLOYEE';
+        if ($isOther) $types[] = 'OTHER';
+
+        $type = !empty($types) ? implode(',', $types) : 'OTHER';
+
         return DB::table($this->table_name)->insertGetId([
             'name' => $data['contact_name'],
+            'type' => $type,
             'group_contact_name' => $data['group_name'] ?? null,
-            'is_customer' => isset($data['is_customer']) && $data['is_customer'] ? true : false,
-            'is_supplier' => isset($data['is_supplier']) && $data['is_supplier'] ? true : false,
-            'is_employee' => isset($data['is_employee']) && $data['is_employee'] ? true : false,
-            'is_other' => isset($data['is_other']) && $data['is_other'] ? true : false,
+            'is_customer' => $isCustomer,
+            'is_supplier' => $isSupplier,
+            'is_employee' => $isEmployee,
+            'is_other' => $isOther,
             'status' => $data['contact_status'],
             'f_identity_type_code' => $data['identity_type'] ?? null,
             'identity_number' => $data['identity_number'] ?? null,
@@ -207,13 +223,29 @@ class ContactService
 
     public function update(int $id, array $data): int
     {
+        // Determine type based on boolean flags (supports multiple types)
+        $isCustomer = isset($data['is_customer']) && $data['is_customer'] ? true : false;
+        $isSupplier = isset($data['is_supplier']) && $data['is_supplier'] ? true : false;
+        $isEmployee = isset($data['is_employee']) && $data['is_employee'] ? true : false;
+        $isOther = isset($data['is_other']) && $data['is_other'] ? true : false;
+
+        // Build type string - can be multiple comma-separated values
+        $types = [];
+        if ($isCustomer) $types[] = 'CUSTOMER';
+        if ($isSupplier) $types[] = 'SUPPLIER';
+        if ($isEmployee) $types[] = 'EMPLOYEE';
+        if ($isOther) $types[] = 'OTHER';
+
+        $type = !empty($types) ? implode(',', $types) : 'OTHER';
+
         return DB::table($this->table_name)->where('id', $id)->update([
             'name' => $data['contact_name'],
+            'type' => $type,
             'group_contact_name' => $data['group_name'] ?? null,
-            'is_customer' => isset($data['is_customer']) && $data['is_customer'] ? true : false,
-            'is_supplier' => isset($data['is_supplier']) && $data['is_supplier'] ? true : false,
-            'is_employee' => isset($data['is_employee']) && $data['is_employee'] ? true : false,
-            'is_other' => isset($data['is_other']) && $data['is_other'] ? true : false,
+            'is_customer' => $isCustomer,
+            'is_supplier' => $isSupplier,
+            'is_employee' => $isEmployee,
+            'is_other' => $isOther,
             'status' => $data['contact_status'],
             'f_identity_type_code' => $data['identity_type'] ?? null,
             'identity_number' => $data['identity_number'] ?? null,
