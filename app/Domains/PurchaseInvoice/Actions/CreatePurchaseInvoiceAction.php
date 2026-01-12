@@ -21,6 +21,15 @@ class CreatePurchaseInvoiceAction
                 $attachmentPath = $file->storeAs('purchase_invoices', $fileName, 'public');
             }
 
+            // Map invoice_status to database status enum
+            // invoice_status (from form): COMPLETED, PARTIAL
+            // status (database): DRAFT, UNPAID, PAID, PARTIAL_PAID, OVERDUE, CANCELLED
+            $statusMapping = [
+                'COMPLETED' => 'PAID',
+                'PARTIAL' => 'PARTIAL_PAID',
+            ];
+            $dbStatus = $statusMapping[$data['invoice_status']] ?? 'UNPAID';
+
             // Create invoice data
             $invoiceData = [
                 'purchase_order_id' => $data['purchase_order_id'],
@@ -37,7 +46,7 @@ class CreatePurchaseInvoiceAction
                 'tax_amount' => 0,
                 'discount_amount' => 0,
                 'total' => $data['total_amount'],
-                'status' => $data['invoice_status'],
+                'status' => $dbStatus,
             ];
 
             // Create the invoice
