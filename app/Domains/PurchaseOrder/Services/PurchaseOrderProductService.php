@@ -21,6 +21,7 @@ class PurchaseOrderProductService
             'price_per_qty' => $data['price_per_qty'],
             // 'f_tax_id' => $data['tax_id'],
             'total' => $data['total'],
+            'status' => $data['status'] ?? 'PENDING',
             'created_at' => now(),
             'created_by' => Auth::id(),
         ]);
@@ -40,6 +41,7 @@ class PurchaseOrderProductService
                 'price_per_qty' => $data['price_per_qty'],
                 // 'f_tax_id' => $data['tax_id'],
                 'total' => $data['total'],
+                'status' => $data['status'] ?? 'PENDING',
                 'updated_at' => now(),
                 'updated_by' => Auth::id(),
             ]);
