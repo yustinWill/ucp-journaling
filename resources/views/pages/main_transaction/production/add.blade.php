@@ -186,7 +186,7 @@
                                 <th style="width: 15%;">Qty per Bundle</th>
                                 <th style="width: 15%;">Total Required</th>
                                 <th style="width: 15%;">Stock Available</th>
-                                <th style="width: 15%;">Harga Satuan</th>
+                                <th style="width: 15%;">HPP</th>
                                 <th style="width: 15%;">Status</th>
                             </tr>
                         </thead>
@@ -389,54 +389,57 @@
                     });
                 }
 
-                // Make AJAX call to get FIFO prices (changed to GET)
-                $.ajax({
-                    url: "{{ route('main_transaction.production.calculate_fifo_prices') }}",
-                    type: 'GET',
-                    data: {
-                        bundle_product_id: bundleProductId,
-                        quantity_planned: quantityPlanned,
-                        product_requirements: JSON.stringify(productRequirements)
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // Update prices in the preview table
-                            if (currentProductionMode === 'QUANTITY_PLANNED') {
-                                $('#components-rows-preview tr').each(function() {
-                                    const $row = $(this);
-                                    const productId = $row.find('td:first').data('product-id');
-                                    const priceData = response.prices.find(p => p.product_id == productId);
-                                    
-                                    if (priceData) {
-                                        const $priceCell = $row.find('.purchase-price');
-                                        $priceCell.data('price-per-unit', priceData.price_per_pcs);
-                                        $priceCell.text('Rp. ' + formatNumber(priceData.price_per_pcs));
-                                    }
-                                });
-                            } else {
-                                // Update prices in the input table
-                                $('#components-rows-input tr').each(function() {
-                                    const $row = $(this);
-                                    const productId = $row.data('product-id');
-                                    const priceData = response.prices.find(p => p.product_id == productId);
-                                    
-                                    if (priceData) {
-                                        $row.data('price-per-unit', priceData.price_per_pcs);
-                                        $row.find('.purchase-price').text('Rp. ' + formatNumber(priceData.price_per_pcs));
-                                    }
-                                });
-                            }
-                            
-                            // Recalculate production costs after updating prices
-                            calculateProductionCosts();
-                            
-                            console.log('✅ FIFO Prices Updated:', response.prices);
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Failed to calculate FIFO prices:', xhr);
-                    }
-                });
+                // COMMENTED OUT: AJAX call to calculate_fifo_prices - now using purchase_price from get_bundle_components
+                // $.ajax({
+                //     url: "{{ route('main_transaction.production.calculate_fifo_prices') }}",
+                //     type: 'GET',
+                //     data: {
+                //         bundle_product_id: bundleProductId,
+                //         quantity_planned: quantityPlanned,
+                //         product_requirements: JSON.stringify(productRequirements)
+                //     },
+                //     success: function(response) {
+                //         if (response.success) {
+                //             // Update prices in the preview table
+                //             if (currentProductionMode === 'QUANTITY_PLANNED') {
+                //                 $('#components-rows-preview tr').each(function() {
+                //                     const $row = $(this);
+                //                     const productId = $row.find('td:first').data('product-id');
+                //                     const priceData = response.prices.find(p => p.product_id == productId);
+                //
+                //                     if (priceData) {
+                //                         const $priceCell = $row.find('.purchase-price');
+                //                         $priceCell.data('price-per-unit', priceData.price_per_pcs);
+                //                         $priceCell.text('Rp. ' + formatNumber(priceData.price_per_pcs));
+                //                     }
+                //                 });
+                //             } else {
+                //                 // Update prices in the input table
+                //                 $('#components-rows-input tr').each(function() {
+                //                     const $row = $(this);
+                //                     const productId = $row.data('product-id');
+                //                     const priceData = response.prices.find(p => p.product_id == productId);
+                //
+                //                     if (priceData) {
+                //                         $row.data('price-per-unit', priceData.price_per_pcs);
+                //                         $row.find('.purchase-price').text('Rp. ' + formatNumber(priceData.price_per_pcs));
+                //                     }
+                //                 });
+                //             }
+                //
+                //             // Recalculate production costs after updating prices
+                //             calculateProductionCosts();
+                //
+                //             console.log('✅ FIFO Prices Updated:', response.prices);
+                //         }
+                //     },
+                //     error: function(xhr) {
+                //         console.error('Failed to calculate FIFO prices:', xhr);
+                //     }
+                // });
+
+                // Use purchase_price from get_bundle_components and recalculate costs
+                calculateProductionCosts();
             }
 
             // Calculate production costs based on component prices
@@ -747,7 +750,7 @@
                     <td class="text-center">${formatNumber(component.quantity_required)}</td>
                     <td class="text-center total-required" data-stock-available="${component.stock_available}" data-qty-per-bundle="${component.quantity_required}">${formatNumber(totalRequired)}</td>
                     <td class="text-center">${formatNumber(component.stock_available)}</td>
-                    <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}"></td>
+                    <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}">Rp. ${formatNumber(component.purchase_price)}</td>
                     <td class="text-center">
                         ${isAvailable
                             ? '<span class="badge bg-label-success">Available</span>'
@@ -775,7 +778,7 @@
                     <td class="text-center">${component.unit}</td>
                     <td class="text-center" >${formatNumber(component.quantity_required)}</td>
                     <td class="text-center stock-available" >${formatNumber(component.stock_available)}</td>
-                    <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}"></td>
+                    <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}">Rp. ${formatNumber(component.purchase_price)}</td>
                     <td>
                         <input type="text"
                             class="form-control numeric-input material-input"

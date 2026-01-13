@@ -564,7 +564,17 @@ class ProductController extends Controller
         $latestBatch = $batchData['batches'] && count($batchData['batches']) > 0
             ? end($batchData['batches'])
             : null;
-        $product->estimated_hpp = $latestBatch ? $latestBatch['final_hpp'] : 0;
+
+        // Use final_hpp if available and > 0, otherwise fallback to estimated_hpp
+        if ($latestBatch) {
+            $finalHpp = $latestBatch['final_hpp'] ?? 0;
+            $estimatedHpp = $latestBatch['estimated_hpp'] ?? 0;
+            $product->estimated_hpp = ($finalHpp > 0) ? $finalHpp : $estimatedHpp;
+            $product->final_hpp = $finalHpp;
+        } else {
+            $product->estimated_hpp = 0;
+            $product->final_hpp = 0;
+        }
         return view('pages.master_data.product.detail', [
             'product' => $product,
             'inventoryData' => $inventoryData,

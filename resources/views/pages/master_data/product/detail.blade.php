@@ -252,7 +252,7 @@
                                             <input type="text" class="form-control" value="Rp. {{ number_format($product->estimated_hpp, 0, ',', '.') }}" disabled />
                                             <small class="form-text text-muted">Harga Pokok Penjualan rata-rata</small>
                                         </div>
-                                        <div class="col-md-4">
+                                        {{-- <div class="col-md-4">
                                             <label class="form-label">Margin Keuntungan</label>
                                             <input type="text" class="form-control" value="0" disabled />
                                             <small class="form-text text-muted">Persentase margin dari harga jual</small>
@@ -261,7 +261,7 @@
                                             <label class="form-label">Keuntungan per Unit</label>
                                             <input type="text" class="form-control" value="0" disabled />
                                             <small class="form-text text-muted">Selisih harga jual dan HPP</small>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </div>
 

@@ -59,37 +59,14 @@ class ProductCompositionService
                 DB::raw('COALESCE(stock.total_stock, 0) as total_stock'),
                 'prd.name as product_name',
                 'unt.name as unit_name',
-                DB::raw('(
-                    select
-                        CASE
-                            WHEN COUNT(*) = 0 THEN 0
-                            WHEN COUNT(*) = 1 THEN MAX(purchase_price)
-                            ELSE SUM(purchase_price * use_qty) / SUM(use_qty)
-                        END
-                    from (
-                        select
-                            purchase_price,
-                            LEAST(remaining_qty, GREATEST(0, COALESCE(stock.total_stock, 0) - 
-                                COALESCE((
-                                    select SUM(remaining_qty)
-                                    from t_product_stock_batches psb2
-                                    where psb2.f_product_id = psb.f_product_id
-                                        and psb2.status = "ACTIVE"
-                                        and psb2.remaining_qty > 0
-                                        and psb2.company_code = psb.company_code
-                                        and (psb2.batch_date < psb.batch_date 
-                                            OR (psb2.batch_date = psb.batch_date AND psb2.id < psb.id))
-                                ), 0)
-                            )) as use_qty
-                        from t_product_stock_batches psb
-                        where psb.f_product_id = `t`.`f_product_composition_product_id`
-                            and psb.status = "ACTIVE"
-                            and psb.remaining_qty > 0
-                        order by psb.batch_date ASC, psb.id ASC
-                        limit 2
-                    ) fifo_batches
-                    where use_qty > 0
-                ) as purchase_price')
+                DB::raw('COALESCE((
+                    SELECT final_hpp
+                    FROM t_product_stock_batches
+                    WHERE f_product_id = t.f_product_composition_product_id
+                        AND status = "ACTIVE"
+                    ORDER BY batch_date DESC, id DESC
+                    LIMIT 1
+                ), 0) as purchase_price')
             )
             ->join('m_products as prd', 'prd.id', '=', 't.f_product_composition_product_id')
             ->join('m_units as unt', 'unt.id', '=', 't.f_unit_id')
