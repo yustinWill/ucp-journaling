@@ -196,6 +196,7 @@ class CreatePurchaseDeliveryAction
                 'quantity' => $deliveryQty,
                 'purchase_price' => $purchasePrice,
                 'estimated_hpp' => $weightedAverageHPP, // Use weighted average HPP
+                'final_hpp' => $weightedAverageHPP, // Use weighted average HPP
                 'batch_date' => $data['delivery_date'] ?? now()->format('Y-m-d'),
                 'reference_code' => $data['reference_no'],
                 'notes' => 'Purchase Delivery: '.$data['reference_no'],
