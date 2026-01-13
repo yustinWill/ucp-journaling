@@ -5,6 +5,7 @@ namespace App\Domains\PurchaseInvoice\Actions;
 use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceAuditLogService;
 use App\Domains\PurchaseInvoice\Services\PurchaseInvoiceService;
 use App\Enums\ActionTypes;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
