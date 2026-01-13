@@ -249,7 +249,7 @@
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-4">
                                             <label class="form-label">Estimasi HPP</label>
-                                            <input type="text" class="form-control" value="0" disabled />
+                                            <input type="text" class="form-control" value="Rp. {{ number_format($product->estimated_hpp, 0, ',', '.') }}" disabled />
                                             <small class="form-text text-muted">Harga Pokok Penjualan rata-rata</small>
                                         </div>
                                         <div class="col-md-4">
@@ -420,8 +420,8 @@
                                             <th>Sumber</th>
                                             <th>Qty Awal</th>
                                             <th>Qty Tersisa</th>
-                                            <th>HPP</th>
-                                            <th>Status HPP</th>
+                                            {{-- <th>HPP</th>
+                                            <th>Status HPP</th> --}}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -446,7 +446,7 @@
                                                         {{ number_format($batch['initial_qty'], 0, ',', '.') }}</td>
                                                     <td class="text-end">
                                                         {{ number_format($batch['remaining_qty'], 0, ',', '.') }}</td>
-                                                    <td class="text-end">Rp
+                                                    {{-- <td class="text-end">Rp
                                                         @if ($batch['hpp_status'] === 'SETTLED')
                                                             {{ number_format($batch['final_hpp'], 0, ',', '.') }}
                                                         
@@ -462,7 +462,7 @@
                                                         @else
                                                             <span class="badge bg-label-secondary">UNKNOWN</span>
                                                         @endif
-                                                    </td>
+                                                    </td> --}}
                                                 </tr>
                                             @endforeach
                                         @endif

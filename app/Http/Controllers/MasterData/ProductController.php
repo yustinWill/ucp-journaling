@@ -560,6 +560,11 @@ class ProductController extends Controller
         if ($product->type === 'bundle') {
             $bundleComponents = app(ProductCompositionService::class)->findAllBasedOnProductIdOld($id);
         }
+        // Get latest batch's final_hpp (batches are in ASC order, so get the last one)
+        $latestBatch = $batchData['batches'] && count($batchData['batches']) > 0
+            ? end($batchData['batches'])
+            : null;
+        $product->estimated_hpp = $latestBatch ? $latestBatch['final_hpp'] : 0;
         return view('pages.master_data.product.detail', [
             'product' => $product,
             'inventoryData' => $inventoryData,
