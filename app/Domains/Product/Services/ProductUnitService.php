@@ -1,0 +1,185 @@
+<?php
+
+namespace App\Domains\Product\Services;
+
+use App\Enums\GeneralStatuses;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class ProductUnitService
+{
+    private $table_name = 'm_product_units';
+
+    /**
+     * Create multiple units for a product
+     */
+    public function createMultiple(int $productId, array $units): void
+    {
+        foreach ($units as $unit) {
+            $this->create($productId, $unit);
+        }
+    }
+
+    /**
+     * Create a single product unit
+     */
+    public function create(int $productId, array $data): int
+    {
+        return DB::table($this->table_name)->insertGetId([
+            'company_code' => session('user_company_code'),
+            'f_product_id' => $productId,
+            'f_unit_id' => $data['unit_id'],
+            'is_default' => $data['is_default'] ?? false,
+            'conversion_factor' => $data['conversion_factor'] ?? 1,
+            'status' => $data['status'] ?? GeneralStatuses::ACTIVE->value,
+            'notes' => $data['notes'] ?? null,
+            'created_at' => now(),
+            'created_by' => Auth::id(),
+        ]);
+    }
+
+    /**
+     * Update product units - delete old ones and create new ones
+     */
+    public function updateProductUnits(int $productId, array $units): void
+    {
+        // Delete existing units for this product
+        $this->deleteByProduct($productId);
+
+        // Create new units
+        $this->createMultiple($productId, $units);
+    }
+
+    /**
+     * Get all units for a specific product
+     */
+    public function findByProduct(int $productId)
+    {
+        return DB::table($this->table_name . ' as pu')
+            ->select([
+                'pu.*',
+                'u.code as unit_code',
+                'u.name as unit_name',
+                DB::raw('CONCAT(u.name, " (", u.code, ")") as unit_display'),
+            ])
+            ->leftJoin('m_units as u', 'pu.f_unit_id', '=', 'u.id')
+            ->where('pu.f_product_id', $productId)
+            ->where('pu.company_code', session('user_company_code'))
+            ->orderBy('pu.is_default', 'desc')
+            ->orderBy('pu.created_at', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get default unit for a product
+     */
+    public function findDefaultUnit(int $productId)
+    {
+        return DB::table($this->table_name . ' as pu')
+            ->select([
+                'pu.*',
+                'u.code as unit_code',
+                'u.name as unit_name',
+            ])
+            ->leftJoin('m_units as u', 'pu.f_unit_id', '=', 'u.id')
+            ->where('pu.f_product_id', $productId)
+            ->where('pu.company_code', session('user_company_code'))
+            ->where('pu.is_default', true)
+            ->first();
+    }
+
+    /**
+     * Convert quantity from one unit to default unit
+     */
+    public function convertToDefaultUnit(int $productId, int $fromUnitId, float $quantity): ?float
+    {
+        $unit = DB::table($this->table_name)
+            ->where('company_code', session('user_company_code'))
+            ->where('f_product_id', $productId)
+            ->where('f_unit_id', $fromUnitId)
+            ->where('status', GeneralStatuses::ACTIVE->value)
+            ->first();
+
+        if ($unit) {
+            return $quantity * $unit->conversion_factor;
+        }
+
+        return null;
+    }
+
+    /**
+     * Convert quantity from default unit to another unit
+     */
+    public function convertFromDefaultUnit(int $productId, int $toUnitId, float $quantity): ?float
+    {
+        $unit = DB::table($this->table_name)
+            ->where('company_code', session('user_company_code'))
+            ->where('f_product_id', $productId)
+            ->where('f_unit_id', $toUnitId)
+            ->where('status', GeneralStatuses::ACTIVE->value)
+            ->first();
+
+        if ($unit && $unit->conversion_factor > 0) {
+            return $quantity / $unit->conversion_factor;
+        }
+
+        return null;
+    }
+
+    /**
+     * Delete all units for a product
+     */
+    public function deleteByProduct(int $productId): int
+    {
+        return DB::table($this->table_name)
+            ->where('f_product_id', $productId)
+            ->where('company_code', session('user_company_code'))
+            ->delete();
+    }
+
+    /**
+     * Delete a specific product unit
+     */
+    public function delete(int $id): int
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->delete();
+    }
+
+    /**
+     * Check if a product has units configured
+     */
+    public function hasUnits(int $productId): bool
+    {
+        return DB::table($this->table_name)
+            ->where('f_product_id', $productId)
+            ->where('company_code', session('user_company_code'))
+            ->exists();
+    }
+
+    /**
+     * Get active units for a product (for dropdowns)
+     */
+    public function findActiveByProduct(int $productId)
+    {
+        return DB::table($this->table_name . ' as pu')
+            ->select([
+                'pu.id',
+                'pu.f_unit_id',
+                'pu.conversion_factor',
+                'pu.is_default',
+                'u.code as unit_code',
+                'u.name as unit_name',
+                DB::raw('CONCAT(u.name, " (", u.code, ")") as unit_display'),
+            ])
+            ->leftJoin('m_units as u', 'pu.f_unit_id', '=', 'u.id')
+            ->where('pu.f_product_id', $productId)
+            ->where('pu.company_code', session('user_company_code'))
+            ->where('pu.status', GeneralStatuses::ACTIVE->value)
+            ->orderBy('pu.is_default', 'desc')
+            ->orderBy('pu.created_at', 'asc')
+            ->get();
+    }
+}
