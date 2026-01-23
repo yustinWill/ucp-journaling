@@ -35,6 +35,23 @@ class ProductionItemService
 
     public function createBulk(int $productionId, array $items): void
     {
+        // Get bundle product's default unit code
+        $production = DB::table('t_productions')->where('id', $productionId)->first();
+
+        $bundleDefaultUnitCode = DB::table('m_product_units as pu')
+            ->join('m_units as u', 'pu.f_unit_id', '=', 'u.id')
+            ->where('pu.f_product_id', $production->bundle_product_id)
+            ->where('pu.is_default', 1)
+            ->value('u.code');
+
+        // Fallback to product's default unit if no product_unit found
+        if (!$bundleDefaultUnitCode) {
+            $bundleDefaultUnitCode = DB::table('m_products as p')
+                ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
+                ->where('p.id', $production->bundle_product_id)
+                ->value('u.code');
+        }
+
         $insertData = [];
 
         foreach ($items as $item) {
@@ -45,7 +62,7 @@ class ProductionItemService
                 'quantity_consumed' => $item['quantity_consumed'] ?? $item['quantity_required'],
                 'material_input' => $item['material_input'] ?? null, // For Material-Based mode
                 'leftover_amount' => $item['leftover'] ?? null, // For Material-Based mode (4 decimals)
-                'unit_code' => $item['unit_code'],
+                'unit_code' => $bundleDefaultUnitCode, // Use bundle product's default unit instead of component unit
                 'unit_cost' => $item['unit_cost'] ?? 0,
                 'total_cost' => ($item['quantity_consumed'] ?? $item['quantity_required']) * ($item['unit_cost'] ?? 0),
                 'batch_consumption' => json_encode($item['batch_consumption'] ?? []),

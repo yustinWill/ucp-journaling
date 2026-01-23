@@ -58,11 +58,17 @@ class ProductionService
                 'w.name as warehouse_name',
                 'w.code as warehouse_code',
                 'u.name as pic_name',
-                DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = p.id LIMIT 1) as unit_code'),
+                DB::raw('COALESCE(MAX(bp_unit_default.code), MAX(bp_unit_fallback.code)) as unit_code'),
                 // Get HPP from t_product_stock_batches: if settled use final_hpp, otherwise use estimated_hpp
                 DB::raw("(SELECT CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id = p.id LIMIT 1) as hpp_production")
             )
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
+            ->leftJoin('m_product_units as pu', function($join) {
+                $join->on('pu.f_product_id', '=', 'bp.id')
+                     ->where('pu.is_default', '=', 1);
+            })
+            ->leftJoin('m_units as bp_unit_default', 'pu.f_unit_id', '=', 'bp_unit_default.id')
+            ->leftJoin('m_units as bp_unit_fallback', 'bp.f_unit_id', '=', 'bp_unit_fallback.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
             ->where('p.company_code', session('user_company_code'));

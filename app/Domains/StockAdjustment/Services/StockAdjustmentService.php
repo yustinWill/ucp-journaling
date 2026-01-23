@@ -51,7 +51,6 @@ class StockAdjustmentService
             'total_items' => $data['total_items'] ?? 0,
             'total_adjustment_qty' => $data['total_adjustment_qty'] ?? 0,
             'total_adjustment_value' => $data['total_adjustment_value'] ?? 0,
-            'source_reference_id' => $data['form_reference_id'] ?? null,
             'created_by' => Auth::id(),
             'created_at' => now(),
         ];

@@ -93,7 +93,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Tanggal Jatuh Tempo</label>
-                            <input type="date" class="form-control" name="due_date" id="due_date" disabled />
+                            <input type="date" class="form-control" name="due_date" id="due_date" readonly />
                             <small class="text-muted">*Otomatis dari Sales Order</small>
                         </div>
                     </div>
