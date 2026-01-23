@@ -125,6 +125,97 @@
                 </div>
             </div>
 
+            <!-- Product Units Section -->
+            <div class="section-header mt-12">
+                <h6>Unit Produk <span style="color: red;">*</span></h6>
+                <hr class="mx-n6">
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        <i class="ti ti-info-circle me-2"></i>
+                        Unit dasar diambil dari Unit yang dipilih di atas. Tambahkan unit lain untuk menunjukkan berapa unit dasar per 1 unit tersebut (contoh: 1 BOX = 12 PCS).
+                    </div>
+
+                    <div class="mx-n5 form-repeater-product-units">
+                        <table class="table table-bordered" id="product-units-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45%">Unit <span style="color: red;">*</span></th>
+                                    <th style="width: 40%">Isi per Unit <span style="color: red;">*</span></th>
+                                    <th style="width: 15%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="product-units-tbody" data-repeater-list="product_units">
+                                @php
+                                    $hasNonDefaultUnits = $productUnits->where('is_default', '!=', 1)->count() > 0;
+                                @endphp
+
+                                @if(!$hasNonDefaultUnits)
+                                    {{-- Template row for when no units exist yet --}}
+                                    <tr data-repeater-item class="product-unit-row" style="display: none;">
+                                        <td>
+                                            <select class="form-select unit-select" required>
+                                                <option value="">Pilih Unit</option>
+                                                @foreach($units as $unit)
+                                                    <option value="{{ $unit->id }}" data-name="{{ $unit->name }}">{{ $unit->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-text">1 <span class="unit-name-display ms-1"></span> =</span>
+                                                <input type="number" class="form-control conversion-factor" value="" step="0.01" min="0.01" required>
+                                                <span class="input-group-text"><span class="base-unit-display">Unit Dasar</span></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-label-danger" data-repeater-delete type="button">
+                                                <i class="icon-base ti tabler-x me-1"></i>
+                                                <span class="align-middle">Hapus</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endif
+
+                                @foreach($productUnits as $index => $productUnit)
+                                    @if($productUnit->is_default != 1)
+                                    <tr data-repeater-item class="product-unit-row">
+                                        <td>
+                                            <select class="form-select unit-select" required>
+                                                <option value="">Pilih Unit</option>
+                                                @foreach($units as $unit)
+                                                    <option value="{{ $unit->id }}" data-name="{{ $unit->name }}" {{ $productUnit->f_unit_id == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-text">1 <span class="unit-name-display ms-1"></span> =</span>
+                                                <input type="number" class="form-control conversion-factor" value="{{ $productUnit->conversion_factor }}" step="0.01" min="0.01" required>
+                                                <span class="input-group-text"><span class="base-unit-display">Unit Dasar</span></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-label-danger" data-repeater-delete type="button">
+                                                <i class="icon-base ti tabler-x me-1"></i>
+                                                <span class="align-middle">Hapus</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-primary mt-2" data-repeater-create>
+                            <i class="icon-base ti tabler-plus"></i>
+                            <span class="align-middle">Tambah Unit</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Product Type Selection -->
             <div class="section-header mt-12">
                 <h6>Tipe Produk</h6>
@@ -600,8 +691,7 @@
                                                         <select class="select2Product form-select component-product">
                                                             <option value="">Pilih Produk</option>
                                                             @foreach ($products as $product_master)
-                                                                <option value="{{ $product_master->id }}"
-                                                                    data-unit="{{ $product_master->unit_name ?? 'pcs' }}">
+                                                                <option value="{{ $product_master->id }}">
                                                                     {{ $product_master->name }}</option>
                                                             @endforeach
                                                         </select>
@@ -612,7 +702,9 @@
                                                         id="minimum-stock" min="1" value="1" />
                                                 </td>
                                                 <td>
-                                                    <input type="text" class="form-control component-unit" readonly>
+                                                    <select class="form-select component-unit-select" required>
+                                                        <option value="">Pilih Unit</option>
+                                                    </select>
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-label-danger" data-repeater-delete
@@ -624,7 +716,7 @@
                                             </tr>
                                         @endif
                                         @foreach ($productCompositions as $row)
-                                            <tr data-repeater-item class="bundle-component-row">
+                                            <tr data-repeater-item class="bundle-component-row" data-product-id="{{ $row->f_product_composition_product_id }}" data-unit-id="{{ $row->f_unit_id }}">
                                                 <input type="hidden" class="form-control composition_id"
                                                     value="{{ $row->id }}" />
                                                 <td>
@@ -633,7 +725,6 @@
                                                             <option value="">Pilih Produk</option>
                                                             @foreach ($products as $product_master)
                                                                 <option value="{{ $product_master->id }}"
-                                                                    data-unit="{{ $product_master->unit_name ?? 'pcs' }}"
                                                                     {{ $row->f_product_composition_product_id == $product_master->id ? 'selected' : '' }}>
                                                                     {{ $product_master->name }}</option>
                                                             @endforeach
@@ -645,7 +736,9 @@
                                                         id="minimum-stock" min="1" value="{{ $row->qty }}" />
                                                 </td>
                                                 <td>
-                                                    <input type="text" class="form-control component-unit" readonly>
+                                                    <select class="form-select component-unit-select" required>
+                                                        <option value="">Loading...</option>
+                                                    </select>
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-label-danger" data-repeater-delete
@@ -1013,6 +1106,123 @@
                     $(this).slideUp(remove);
                 }
             });
+
+            // Product Units Repeater
+            $('.form-repeater-product-units').repeater({
+                show: function() {
+                    // Explicitly remove inline display:none style and show the row
+                    $(this).removeAttr('style').css('display', '');
+
+                    $(this).slideDown(() => {
+                        // Remove existing Select2 containers and reinitialize
+                        $(this).find('.select2-container').remove();
+                        $(this).find('select.unit-select').removeClass(
+                            'select2-hidden-accessible').removeAttr(
+                            'data-select2-id tabindex aria-hidden');
+                        $(this).find('select.unit-select').each(function() {
+                            if ($.fn.select2 && $(this).data('select2')) {
+                                $(this).select2('destroy');
+                            }
+                            $(this).select2({
+                                placeholder: "Pilih Unit",
+                                allowClear: true,
+                                dropdownParent: $(this).parent(),
+                                width: '100%'
+                            });
+                        });
+                        updateUnitDisplays();
+                    });
+                },
+                hide: function(remove) {
+                    $(this).slideUp(() => {
+                        remove();
+                        updateUnitDisplays();
+                    });
+                }
+            });
+
+            // Update unit displays when unit selection changes
+            $(document).on('change', '#product-units-tbody .unit-select', function() {
+                const selectedUnit = $(this).val();
+                const baseUnitId = $('#unit-select').val();
+
+                // Check if trying to select the base unit
+                if (selectedUnit === baseUnitId && selectedUnit !== '') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Unit Tidak Valid',
+                        text: 'Unit ini sudah menjadi unit dasar. Silakan pilih unit lain.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    $(this).val('');
+                    updateUnitDisplays();
+                    return;
+                }
+
+                // Validate unit uniqueness
+                let isDuplicate = false;
+                $('#product-units-tbody .unit-select').not(this).each(function() {
+                    if ($(this).val() === selectedUnit && selectedUnit !== '') {
+                        isDuplicate = true;
+                        return false;
+                    }
+                });
+
+                if (isDuplicate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Unit Duplikat',
+                        text: 'Unit ini sudah ditambahkan. Silakan pilih unit lain.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    $(this).val('');
+                }
+
+                updateUnitDisplays();
+            });
+
+            function updateUnitDisplays() {
+                // Get base unit from main unit selector
+                const $mainUnitSelect = $('#unit-select');
+                const baseUnitOption = $mainUnitSelect.find('option:selected');
+                let baseUnitName = baseUnitOption.text() || 'Unit Dasar';
+
+                // Update all rows
+                $('#product-units-tbody tr.product-unit-row').each(function() {
+                    const $row = $(this);
+                    const $select = $row.find('.unit-select');
+                    const selectedOption = $select.find('option:selected');
+                    const selectedUnitName = selectedOption.data('name') || selectedOption.text() || '';
+
+                    $row.find('.unit-name-display').text(selectedUnitName);
+                    $row.find('.base-unit-display').text(baseUnitName);
+                });
+            }
+
+            // Update unit displays when main unit selector changes
+            $('#unit-select').change(function() {
+                updateUnitDisplays();
+            });
+
+            // Initialize Select2 for unit selects in product units table
+            $('#product-units-tbody select.unit-select').each(function() {
+                $(this).select2({
+                    placeholder: "Pilih Unit",
+                    allowClear: true,
+                    dropdownParent: $(this).parent(),
+                    width: '100%'
+                });
+            });
+
+            // Initialize unit displays on page load
+            updateUnitDisplays();
+
             // Product type change handler with confirmation
             $('input[name="product-type"]').change(function() {
                 const newType = $(this).val();
@@ -1193,14 +1403,76 @@
             });
 
             function onComponentProductChange(thisvar) {
-                const selectedOption = $(thisvar).find(':selected');
-                const unit = selectedOption.data('unit') || 'pcs';
-                const price = selectedOption.data('price') || 0;
-
-                // Find the closest row and update fields in that row
+                const productId = $(thisvar).val();
                 const $row = $(thisvar).closest('tr');
-                $row.find('.component-unit').val(unit);
-                // updateComponentPriceRow($row);
+                const $unitSelect = $row.find('.component-unit-select');
+
+                if (!productId) {
+                    // Destroy Select2 if exists
+                    if ($unitSelect.data('select2')) {
+                        $unitSelect.select2('destroy');
+                    }
+                    $unitSelect.html('<option value="">Pilih Unit</option>');
+                    return;
+                }
+
+                // Load units for the selected product
+                $.ajax({
+                    url: `/master_data/product/${productId}/units`,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success && response.data.length > 0) {
+                            let options = '<option value="">Pilih Unit</option>';
+                            response.data.forEach(function(unit) {
+                                const badge = unit.is_default == 1 ? ' (Default)' : '';
+                                options += `<option value="${unit.f_unit_id}">${unit.unit_name}${badge}</option>`;
+                            });
+
+                            // Destroy Select2 if exists
+                            if ($unitSelect.data('select2')) {
+                                $unitSelect.select2('destroy');
+                            }
+
+                            $unitSelect.html(options);
+
+                            // Initialize Select2
+                            $unitSelect.select2({
+                                placeholder: "Pilih Unit",
+                                allowClear: true,
+                                dropdownParent: $unitSelect.parent(),
+                                width: '100%'
+                            });
+
+                            // Check if row has data-unit-id attribute (for existing rows)
+                            const savedUnitId = $row.data('unit-id');
+                            if (savedUnitId) {
+                                $unitSelect.val(savedUnitId).trigger('change');
+                            } else {
+                                // Auto-select default unit if exists
+                                const defaultUnit = response.data.find(u => u.is_default == 1);
+                                if (defaultUnit) {
+                                    $unitSelect.val(defaultUnit.f_unit_id).trigger('change');
+                                }
+                            }
+                        } else {
+                            if ($unitSelect.data('select2')) {
+                                $unitSelect.select2('destroy');
+                            }
+                            $unitSelect.html('<option value="">No units available</option>');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to load product units'
+                        });
+                        if ($unitSelect.data('select2')) {
+                            $unitSelect.select2('destroy');
+                        }
+                        $unitSelect.html('<option value="">Error loading units</option>');
+                    }
+                });
             }
 
             // Bundle component events
@@ -1356,6 +1628,29 @@
                     }
                 }
 
+                // Validate Product Units - only validate visible rows (exclude hidden template)
+                let hasEmptyUnit = false;
+                $('#product-units-tbody tr.product-unit-row:visible .unit-select').each(function() {
+                    const val = $(this).val();
+                    if (!val || val === '' || val === null) {
+                        hasEmptyUnit = true;
+                        return false;
+                    }
+                });
+
+                if (hasEmptyUnit) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validasi Gagal',
+                        text: 'Semua unit yang ditambahkan harus dipilih. Hapus baris kosong atau pilih unit.',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
                 function getProductFormJson() {
                     const data = {};
 
@@ -1435,15 +1730,17 @@
 
                         data.bundle_components = [];
 
-                        $('#bundle-components-tbody tr.bundle-component-row').each(function() {
+                        $('#bundle-components-tbody tr.bundle-component-row:visible').each(function() {
                             const productId = $(this).find('.component-product').val();
                             const compositionId = $(this).find('.composition_id').val();
+                            const unitId = $(this).find('.component-unit-select').val();
                             const qty = parseCurrency($(this).find('.component-qty').val());
-                            
-                            if (productId && productId !== "null" && qty && qty !== "null") {
+
+                            if (productId && productId !== "null" && qty && qty !== "null" && unitId && unitId !== "null") {
                                 data.bundle_components.push({
                                     product_id: productId,
                                     composition_id: compositionId,
+                                    unit_id: unitId,
                                     qty: qty,
                                 });
                             }
@@ -1481,6 +1778,45 @@
                             }
                         });
                     }
+
+                    // Product Units
+                    data.product_units = [];
+
+                    // First add the base unit from main unit selector
+                    const baseUnitId = $('#unit-select').val();
+                    console.log('Base Unit ID:', baseUnitId);
+
+                    if (baseUnitId && baseUnitId !== '' && baseUnitId !== null) {
+                        data.product_units.push({
+                            unit_id: parseInt(baseUnitId),
+                            is_default: 1,
+                            conversion_factor: 1,
+                            status: 'ACTIVE',
+                            note: ''
+                        });
+                    }
+
+                    // Then add additional units from the repeater (only visible rows)
+                    $('#product-units-tbody tr.product-unit-row:visible').each(function() {
+                        const $row = $(this);
+                        const $select = $row.find('.unit-select');
+                        const unitId = $select.val();
+                        const conversionFactor = $row.find('.conversion-factor').val();
+
+                        console.log('Additional Unit ID:', unitId, 'Conversion:', conversionFactor);
+
+                        if (unitId && unitId !== '' && unitId !== null && unitId !== baseUnitId) {
+                            data.product_units.push({
+                                unit_id: parseInt(unitId),
+                                is_default: 0,
+                                conversion_factor: parseFloat(conversionFactor) || 1,
+                                status: 'ACTIVE',
+                                note: ''
+                            });
+                        }
+                    });
+
+                    console.log('Product Units Data:', data.product_units);
 
                     return data;
                 }

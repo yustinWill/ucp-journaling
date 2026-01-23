@@ -429,11 +429,54 @@
                                                             {{ $product->product_name ?? '' }}
                                                         @endif
                                                     </td>
-                                                    <td>{{ number_format($product->ordered_qty ?? 0, 4, ',', '.') }} {{ $product->unit_name ?? '' }}
+                                                    <td>
+                                                        @php
+                                                            $orderedQty = $product->ordered_qty ?? 0;
+                                                            if ($orderedQty == floor($orderedQty)) {
+                                                                $formattedOrderedQty = number_format($orderedQty, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($orderedQty, 4, ',', '.');
+                                                                $formattedOrderedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        {{ $formattedOrderedQty }} {{ $product->unit_name ?? '' }}
                                                     </td>
-                                                    <td>{{ number_format($product->qty ?? 0, 4, ',', '.') }} {{ $product->unit_name ?? '' }}</td>
-                                                    <td>{{ number_format($product->unit_price ?? 0, 4, ',', '.') }}</td>
-                                                    <td>{{ number_format($product->total_price ?? 0, 4, ',', '.') }}</td>
+                                                    <td>
+                                                        @php
+                                                            $qty = $product->qty ?? 0;
+                                                            if ($qty == floor($qty)) {
+                                                                $formattedQty = number_format($qty, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($qty, 4, ',', '.');
+                                                                $formattedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        {{ $formattedQty }} {{ $product->unit_name ?? '' }}
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $unitPrice = $product->unit_price ?? 0;
+                                                            if ($unitPrice == floor($unitPrice)) {
+                                                                $formattedUnitPrice = number_format($unitPrice, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($unitPrice, 4, ',', '.');
+                                                                $formattedUnitPrice = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        {{ $formattedUnitPrice }}
+                                                    </td>
+                                                    <td>
+                                                        @php
+                                                            $totalPrice = $product->total_price ?? 0;
+                                                            if ($totalPrice == floor($totalPrice)) {
+                                                                $formattedTotalPrice = number_format($totalPrice, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($totalPrice, 4, ',', '.');
+                                                                $formattedTotalPrice = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        {{ $formattedTotalPrice }}
+                                                    </td>
                                                     <td>{{ $product->note ?? '-' }}</td>
                                                 </tr>
                                             @empty
@@ -450,8 +493,16 @@
                                                 <tr>
                                                     <th colspan="4" class="text-end">Total Invoice:</th>
                                                     <th class="text-end">
-                                                        Rp
-                                                        {{ number_format($invoice_products->sum('total_price') ?? 0, 4, ',', '.') }}
+                                                        @php
+                                                            $totalInvoice = $invoice_products->sum('total_price') ?? 0;
+                                                            if ($totalInvoice == floor($totalInvoice)) {
+                                                                $formattedTotalInvoice = number_format($totalInvoice, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($totalInvoice, 4, ',', '.');
+                                                                $formattedTotalInvoice = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        Rp {{ $formattedTotalInvoice }}
                                                     </th>
                                                     <th></th>
                                                 </tr>

@@ -7,6 +7,7 @@ use App\Domains\Product\Services\ProductCompositionService;
 use App\Domains\Product\Services\ProductCostCompositionService;
 use App\Domains\Product\Services\ProductExpenseService;
 use App\Domains\Product\Services\ProductService;
+use App\Domains\Product\Services\ProductUnitService;
 use App\Enums\ActionTypes;
 use Illuminate\Support\Facades\DB;
 
@@ -24,15 +25,22 @@ class CreateProductAction
             if (isset($data['bundle_components'])) {
                 $bundle_components = [];
                 foreach ($data['bundle_components'] as $row) {
-                    $product_data = app(ProductService::class)->findOne($row['product_id']);
+                    // Skip if row doesn't have required fields
+                    if (!isset($row['product_id']) || !isset($row['unit_id']) || !isset($row['qty'])) {
+                        continue;
+                    }
+
                     $bundle_components[] = [
                         'f_product_id' => $product_id,
                         'f_product_composition_product_id' => $row['product_id'],
                         'qty' => $row['qty'],
-                        'f_unit_id' => $product_data->f_unit_id,
+                        'f_unit_id' => $row['unit_id'],
                     ];
                 }
-                app(ProductCompositionService::class)->create($bundle_components);
+
+                if (!empty($bundle_components)) {
+                    app(ProductCompositionService::class)->create($bundle_components);
+                }
             }
 
             if (isset($data['cost'])) {
@@ -57,6 +65,28 @@ class CreateProductAction
                     ];
                 }
                 app(ProductExpenseService::class)->create($bundle_accounts);
+            }
+
+            if (isset($data['product_units']) && !empty($data['product_units'])) {
+                $product_units = [];
+                foreach ($data['product_units'] as $row) {
+                    // Skip if row doesn't have unit_id
+                    if (!isset($row['unit_id']) || empty($row['unit_id'])) {
+                        continue;
+                    }
+
+                    $product_units[] = [
+                        'unit_id' => $row['unit_id'],
+                        'is_default' => $row['is_default'] ?? 0,
+                        'conversion_factor' => $row['conversion_factor'] ?? 1,
+                        'status' => $row['status'] ?? 'ACTIVE',
+                        'note' => $row['note'] ?? '',
+                    ];
+                }
+
+                if (!empty($product_units)) {
+                    app(ProductUnitService::class)->createMultiple($product_id, $product_units);
+                }
             }
 
             $log_data = [

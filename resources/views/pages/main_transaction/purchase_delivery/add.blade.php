@@ -202,12 +202,42 @@
                                 <tr>
                                     <td>{{ $purchaseOrderProduct->product_code }} -
                                         {{ $purchaseOrderProduct->product_name }}</td>
-                                    <td>{{ number_format($purchaseOrderProduct->qty, 4, ',', '.') }}
-                                        {{ $purchaseOrderProduct->unit_name }}</td>
-                                    <td>{{ number_format($purchaseOrderProduct->delivered_qty, 4, ',', '.') }}
-                                        {{ $purchaseOrderProduct->unit_name }}</td>
-                                    <td>{{ number_format($purchaseOrderProduct->remaining_qty, 4, ',', '.') }}
-                                        {{ $purchaseOrderProduct->unit_name }}</td>
+                                    <td>
+                                        @php
+                                            $qty = $purchaseOrderProduct->qty;
+                                            if ($qty == floor($qty)) {
+                                                $formattedQty = number_format($qty, 0, ',', '.');
+                                            } else {
+                                                $formatted = number_format($qty, 4, ',', '.');
+                                                $formattedQty = rtrim(rtrim($formatted, '0'), ',');
+                                            }
+                                        @endphp
+                                        {{ $formattedQty }} {{ $purchaseOrderProduct->unit_name }}
+                                    </td>
+                                    <td>
+                                        @php
+                                            $deliveredQty = $purchaseOrderProduct->delivered_qty;
+                                            if ($deliveredQty == floor($deliveredQty)) {
+                                                $formattedDeliveredQty = number_format($deliveredQty, 0, ',', '.');
+                                            } else {
+                                                $formatted = number_format($deliveredQty, 4, ',', '.');
+                                                $formattedDeliveredQty = rtrim(rtrim($formatted, '0'), ',');
+                                            }
+                                        @endphp
+                                        {{ $formattedDeliveredQty }} {{ $purchaseOrderProduct->unit_name }}
+                                    </td>
+                                    <td>
+                                        @php
+                                            $remainingQty = $purchaseOrderProduct->remaining_qty;
+                                            if ($remainingQty == floor($remainingQty)) {
+                                                $formattedRemainingQty = number_format($remainingQty, 0, ',', '.');
+                                            } else {
+                                                $formatted = number_format($remainingQty, 4, ',', '.');
+                                                $formattedRemainingQty = rtrim(rtrim($formatted, '0'), ',');
+                                            }
+                                        @endphp
+                                        {{ $formattedRemainingQty }} {{ $purchaseOrderProduct->unit_name }}
+                                    </td>
                                     <td>
                                         <input type="hidden"
                                             name="products[{{ $counter }}][product_order_product_id]"

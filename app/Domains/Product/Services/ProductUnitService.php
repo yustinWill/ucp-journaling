@@ -32,7 +32,7 @@ class ProductUnitService
             'is_default' => $data['is_default'] ?? false,
             'conversion_factor' => $data['conversion_factor'] ?? 1,
             'status' => $data['status'] ?? GeneralStatuses::ACTIVE->value,
-            'notes' => $data['notes'] ?? null,
+            'notes' => isset($data['note']) && $data['note'] !== '' ? $data['note'] : null,
             'created_at' => now(),
             'created_by' => Auth::id(),
         ]);

@@ -183,8 +183,30 @@
                                     @forelse($productLines ?? [] as $product)
                                         <tr>
                                             <td>{{ $product->product_name ?? $product->product_code }}</td>
-                                            <td>{{ number_format($product->quantity_ordered, 4, ',', '.') }}</td>
-                                            <td>{{ number_format($product->quantity_delivered, 4, ',', '.') }}</td>
+                                            <td>
+                                                @php
+                                                    $quantityOrdered = $product->quantity_ordered;
+                                                    if ($quantityOrdered == floor($quantityOrdered)) {
+                                                        $formattedQuantityOrdered = number_format($quantityOrdered, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($quantityOrdered, 4, ',', '.');
+                                                        $formattedQuantityOrdered = rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                                {{ $formattedQuantityOrdered }}
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $quantityDelivered = $product->quantity_delivered;
+                                                    if ($quantityDelivered == floor($quantityDelivered)) {
+                                                        $formattedQuantityDelivered = number_format($quantityDelivered, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($quantityDelivered, 4, ',', '.');
+                                                        $formattedQuantityDelivered = rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                                {{ $formattedQuantityDelivered }}
+                                            </td>
                                             <td>{{ $product->unit_name ?? '-' }}</td>
                                             <td>
                                                 @php

@@ -431,19 +431,54 @@
                                             @forelse($invoice_products as $product)
                                                 <tr>
                                                     <td><strong>{{ $product->product_code ?? '' }} - {{ $product->product_name ?? '' }}</strong></td>
-                                                    <td class="text-center">{{ number_format($product->ordered_qty, 4, ',', '.') }}
-                                                        {{ $product->unit_code ?? '' }}</td>
                                                     <td class="text-center">
-                                                        <span
-                                                            class="badge bg-label-info">{{ number_format($product->qty , 4, ',', '.') }}</span>
+                                                        @php
+                                                            $orderedQty = $product->ordered_qty;
+                                                            if ($orderedQty == floor($orderedQty)) {
+                                                                $formattedOrderedQty = number_format($orderedQty, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($orderedQty, 4, ',', '.');
+                                                                $formattedOrderedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        {{ $formattedOrderedQty }} {{ $product->unit_code ?? '' }}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @php
+                                                            $qty = $product->qty;
+                                                            if ($qty == floor($qty)) {
+                                                                $formattedQty = number_format($qty, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($qty, 4, ',', '.');
+                                                                $formattedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        <span class="badge bg-label-info">{{ $formattedQty }}</span>
                                                         {{ $product->unit_code ?? '' }}
                                                     </td>
-                                                    <td class="text-end">Rp
-                                                        {{ number_format($product->unit_price ?? 0, 0, ',', '.') }}
+                                                    <td class="text-end">
+                                                        @php
+                                                            $unitPrice = $product->unit_price ?? 0;
+                                                            if ($unitPrice == floor($unitPrice)) {
+                                                                $formattedUnitPrice = number_format($unitPrice, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($unitPrice, 4, ',', '.');
+                                                                $formattedUnitPrice = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        Rp {{ $formattedUnitPrice }}
                                                     </td>
                                                     <td class="text-end">
-                                                        <strong>Rp
-                                                            {{ number_format($product->line_total ?? 0, 0, ',', '.') }}</strong>
+                                                        @php
+                                                            $lineTotal = $product->line_total ?? 0;
+                                                            if ($lineTotal == floor($lineTotal)) {
+                                                                $formattedLineTotal = number_format($lineTotal, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($lineTotal, 4, ',', '.');
+                                                                $formattedLineTotal = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        <strong>Rp {{ $formattedLineTotal }}</strong>
                                                     </td>
                                                     <td>{{ $product->product_invoice_note ?? '-' }}</td>
                                                 </tr>

@@ -88,6 +88,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $contact_segm
         Route::post($base_segment.$product_segment.'/update', 'update')->name('master_data.product.update');
         Route::get($base_segment.$product_segment.'/export', 'export')->name('master_data.product.export');
         Route::get($base_segment.$product_segment.'/import', 'import')->name('master_data.product.import');
+        Route::get($base_segment.$product_segment.'/{id}/units', 'getProductUnits')->name('master_data.product.get_units');
     });
 
     Route::controller(CoaController::class)->group(function () use ($base_segment, $coa_segment) {

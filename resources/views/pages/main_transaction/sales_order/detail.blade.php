@@ -222,8 +222,17 @@
                                                                 disabled />
                                                         </td>
                                                         <td>
+                                                            @php
+                                                                $quantity = $line['quantity'];
+                                                                if ($quantity == floor($quantity)) {
+                                                                    $formattedQuantity = number_format($quantity, 0, ',', '.');
+                                                                } else {
+                                                                    $formatted = number_format($quantity, 4, ',', '.');
+                                                                    $formattedQuantity = rtrim(rtrim($formatted, '0'), ',');
+                                                                }
+                                                            @endphp
                                                             <input type="text" class="form-control text-end"
-                                                                value="{{ number_format($line['quantity'], 4, ',', '.') }}"
+                                                                value="{{ $formattedQuantity }}"
                                                                 disabled />
                                                         </td>
                                                         <td>
@@ -231,13 +240,31 @@
                                                                 value="{{ $line['unit_name'] }}" disabled />
                                                         </td>
                                                         <td>
+                                                            @php
+                                                                $unitPrice = $line['unit_price'];
+                                                                if ($unitPrice == floor($unitPrice)) {
+                                                                    $formattedUnitPrice = number_format($unitPrice, 0, ',', '.');
+                                                                } else {
+                                                                    $formatted = number_format($unitPrice, 4, ',', '.');
+                                                                    $formattedUnitPrice = rtrim(rtrim($formatted, '0'), ',');
+                                                                }
+                                                            @endphp
                                                             <input type="text" class="form-control text-end"
-                                                                value="Rp {{ number_format($line['unit_price'], 0, ',', '.') }}"
+                                                                value="Rp {{ $formattedUnitPrice }}"
                                                                 disabled />
                                                         </td>
                                                         <td>
+                                                            @php
+                                                                $lineTotal = $line['line_total'];
+                                                                if ($lineTotal == floor($lineTotal)) {
+                                                                    $formattedLineTotal = number_format($lineTotal, 0, ',', '.');
+                                                                } else {
+                                                                    $formatted = number_format($lineTotal, 4, ',', '.');
+                                                                    $formattedLineTotal = rtrim(rtrim($formatted, '0'), ',');
+                                                                }
+                                                            @endphp
                                                             <input type="text" class="form-control text-end"
-                                                                value="Rp {{ number_format($line['line_total'], 0, ',', '.') }}"
+                                                                value="Rp {{ $formattedLineTotal }}"
                                                                 disabled />
                                                         </td>
                                                     </tr>
@@ -357,12 +384,40 @@
                                                 <tr>
                                                     <td>{{ $line['product_code'] }} - {{ $line['product_name'] }}</td>
                                                     <td class="text-end">
-                                                        {{ number_format($line['quantity'], 4, ',', '.') }}</td>
-                                                    <td class="text-end">
-                                                        {{ number_format($line['delivered_qty'], 4, ',', '.') }}
+                                                        @php
+                                                            $quantity = $line['quantity'];
+                                                            if ($quantity == floor($quantity)) {
+                                                                $formattedQuantity = number_format($quantity, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($quantity, 4, ',', '.');
+                                                                $formattedQuantity = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        {{ $formattedQuantity }}
                                                     </td>
                                                     <td class="text-end">
-                                                        {{ number_format($line['remaining_qty'], 4, ',', '.') }}
+                                                        @php
+                                                            $deliveredQty = $line['delivered_qty'];
+                                                            if ($deliveredQty == floor($deliveredQty)) {
+                                                                $formattedDeliveredQty = number_format($deliveredQty, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($deliveredQty, 4, ',', '.');
+                                                                $formattedDeliveredQty = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        {{ $formattedDeliveredQty }}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        @php
+                                                            $remainingQty = $line['remaining_qty'];
+                                                            if ($remainingQty == floor($remainingQty)) {
+                                                                $formattedRemainingQty = number_format($remainingQty, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($remainingQty, 4, ',', '.');
+                                                                $formattedRemainingQty = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        {{ $formattedRemainingQty }}
                                                     </td>
                                                     <td>{{ $line['unit_name'] }}</td>
                                                 </tr>

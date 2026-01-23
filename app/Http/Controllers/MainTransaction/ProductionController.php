@@ -330,15 +330,31 @@ class ProductionController extends Controller
         $warehouseId = $request->get('warehouse_id');
 
         $data = app(ProductCompositionService::class)->findAllBasedOnProductId($bundleProductId,$warehouseId);
-        
+
         $components = [];
         foreach ($data as $row) {
+            // Get conversion factor for the component's unit
+            $productUnit = DB::table('m_product_units')
+                ->where('f_product_id', $row->f_product_composition_product_id)
+                ->where('f_unit_id', $row->f_unit_id)
+                ->first();
+
+            $conversionFactor = $productUnit->conversion_factor ?? 1;
+
+            // Stock available is in base unit, convert to component's unit for display
+            // Example: stock_available = 1000 KG (base unit), conversion_factor = 100 (1 BOX = 100 KG)
+            // stock_available_in_component_unit = 1000 / 100 = 10 BOX
+            $stockAvailableInComponentUnit = ($row->total_stock ?? 0) / $conversionFactor;
+
             $components[] = [
                 'id' => $row->f_product_composition_product_id,
                 'product_name' => $row->product_name,
                 'quantity_required' => $row->qty,
-                'stock_available' => $row->total_stock ?? 0,
+                'stock_available' => $row->total_stock ?? 0, // Base unit - for availability checking
+                'stock_available_display' => $stockAvailableInComponentUnit, // Component unit - for display
+                'conversion_factor' => $conversionFactor,
                 'unit' => $row->unit_name,
+                'unit_code' => $row->unit_code, // Unit code for database insertion
                 'purchase_price' => $row->purchase_price,
             ];
         }

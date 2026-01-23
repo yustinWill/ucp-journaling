@@ -231,8 +231,12 @@
                                 <td><input type="text" class="form-control numeric-input quantity-input"
                                         name="products[0][quantity]" min="1" step="1" value="1"
                                         disabled /></td>
-                                <td><input type="text" class="form-control unit-display" name="products[0][unit]"
-                                        disabled /></td>
+                                <td>
+                                    <select class="select2Unit form-select unit-select"
+                                        name="products[0][unit_id]" data-allow-clear="false" disabled>
+                                        <option value="">Pilih Satuan</option>
+                                    </select>
+                                </td>
                                 <td>
                                     <input type="text" class="form-control currency-input unit-price unit-price-input"
                                         name="products[0][unit_price]" disabled />
@@ -466,6 +470,15 @@
                 });
             });
 
+            $('select.select2Unit').each(function() {
+                $(this).select2({
+                    placeholder: "Pilih Satuan",
+                    allowClear: true,
+                    dropdownParent: $(this).parent(),
+                    width: '100%'
+                });
+            });
+
             $('.form-repeater-product').repeater({
                 show: function() {
                     $(this).slideDown(() => {
@@ -482,6 +495,22 @@
                             }
                             $(this).select2({
                                 placeholder: "Pilih Produk",
+                                allowClear: true,
+                                dropdownParent: $(this).parent(),
+                                width: '100%'
+                            });
+                        });
+
+                        // Initialize Select2 for unit dropdowns (keep disabled state from HTML)
+                        $(this).find('select.select2Unit').removeClass(
+                            'select2-hidden-accessible').removeAttr(
+                            'data-select2-id tabindex aria-hidden');
+                        $(this).find('select.select2Unit').each(function() {
+                            if ($.fn.select2 && $(this).data('select2')) {
+                                $(this).select2('destroy');
+                            }
+                            $(this).select2({
+                                placeholder: "Pilih Satuan",
                                 allowClear: true,
                                 dropdownParent: $(this).parent(),
                                 width: '100%'
@@ -519,6 +548,7 @@
                 // formData.append('products', productLines);
                 productLines.forEach(function(line, idx) {
                     formData.append(`products[${idx}][product_id]`, line.product_id);
+                    formData.append(`products[${idx}][unit_id]`, line.unit_id);
                     formData.append(`products[${idx}][quantity]`, line.quantity);
                     formData.append(`products[${idx}][unit_price]`, line.unit_price);
                     formData.append(`products[${idx}][total]`, line.line_total);
@@ -657,8 +687,17 @@
                 productTableEnabled = true;
                 $('#product-disabled-message').hide();
                 $('#add-product-row').prop('disabled', false);
-                $('.product-row input:not(.unit-display):not([name$="[total]"]), .product-row select, .product-row button')
+
+                // Enable all inputs, selects, and buttons (including unit-select)
+                $('.product-row input:not([name$="[total]"]), .product-row select, .product-row button')
                     .prop('disabled', false);
+
+                // Enable Select2 for all selects
+                $('.product-row select').each(function() {
+                    if ($(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2('enable');
+                    }
+                });
             }
 
             // Disable product table
@@ -666,8 +705,17 @@
                 productTableEnabled = false;
                 $('#product-disabled-message').show();
                 $('#add-product-row').prop('disabled', true);
-                $('.product-row input:not(.unit-display):not([name$="[total]"]), .product-row select, .product-row button')
+
+                // Disable all inputs, selects, and buttons (including unit-select)
+                $('.product-row input:not([name$="[total]"]), .product-row select, .product-row button')
                     .prop('disabled', true);
+
+                // Disable Select2
+                $('.product-row select').each(function() {
+                    if ($(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2('enable', false);
+                    }
+                });
             }
 
             // Load products for a specific row
@@ -709,16 +757,65 @@
 
             $(document).on('change', '.product-select', function() {
                 const selectedOption = $(this).find(':selected');
-
-                const unit = selectedOption.data('unit') || '';
+                const productId = $(this).val();
                 const perPrice = selectedOption.data('price');
                 const row = $(this).closest('tr');
+                const $unitSelect = row.find('.unit-select');
 
-                if (unit) {
-                    row.find('.unit-display').val(unit).prop('disabled', true);
-                } else {
-                    row.find('.unit-display').val('').prop('disabled', true);
+                // Clear unit select
+                $unitSelect.html('<option value="">Pilih Satuan</option>').prop('disabled', true);
+
+                if (!productId) {
+                    return;
                 }
+
+                // Load product units via AJAX
+                $.ajax({
+                    url: `/master_data/product/${productId}/units`,
+                    method: 'GET',
+                    success: function(response) {
+                        console.log('Full response:', response);
+                        console.log('Response data:', response.data);
+                        console.log('Number of units:', response.data ? response.data.length : 0);
+
+                        if (response.success && response.data.length > 0) {
+                            let options = '<option value="">Pilih Satuan</option>';
+                            response.data.forEach(function(unit) {
+                                console.log('Unit:', unit);
+                                const badge = unit.is_default == 1 ? ' (Default)' : '';
+                                options += `<option value="${unit.f_unit_id}">${unit.unit_name}${badge}</option>`;
+                            });
+
+                            // Destroy Select2 if exists
+                            if ($unitSelect.data('select2')) {
+                                $unitSelect.select2('destroy');
+                            }
+
+                            $unitSelect.html(options);
+
+                            // Initialize Select2
+                            $unitSelect.select2({
+                                placeholder: "Pilih Satuan",
+                                allowClear: true,
+                                dropdownParent: $unitSelect.parent(),
+                                width: '100%'
+                            });
+
+                            // Auto-select default unit
+                            const defaultUnit = response.data.find(u => u.is_default == 1);
+                            if (defaultUnit) {
+                                $unitSelect.val(defaultUnit.f_unit_id).trigger('change');
+                            }
+
+                            $unitSelect.prop('disabled', false);
+                        } else {
+                            $unitSelect.html('<option value="">No units available</option>');
+                        }
+                    },
+                    error: function() {
+                        $unitSelect.html('<option value="">Error loading units</option>');
+                    }
+                });
 
                 if (perPrice) {
                     const unitPriceInput = row.find('.unit-price')[0];
@@ -730,6 +827,11 @@
                     }
                 }
 
+                calculateTotals();
+            });
+
+            // Handle unit change
+            $(document).on('change', '.unit-select', function() {
                 calculateTotals();
             });
 
@@ -761,6 +863,7 @@
 
                 $('#products-tbody tr').each(function() {
                     const productId = $(this).find('.product-select').val();
+                    const unitId = $(this).find('.unit-select').val();
                     const quantity = parseCurrency($(this).find('.quantity-input').val()) || 0;
                     const unitPrice = parseCurrency($(this).find('.unit-price').val()) || 0;
                     const lineTotal = parseCurrency($(this).find('input[name*="[total]"]').val()) || 0;
@@ -769,6 +872,7 @@
                     if (productId && quantity > 0 && unitPrice >= 0) {
                         productLines.push({
                             product_id: productId,
+                            unit_id: unitId,
                             quantity: quantity,
                             unit_price: unitPrice,
                             line_total: lineTotal,

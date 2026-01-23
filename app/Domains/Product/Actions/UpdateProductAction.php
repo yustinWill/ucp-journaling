@@ -8,6 +8,7 @@ use App\Domains\Product\Services\ProductCompositionService;
 use App\Domains\Product\Services\ProductCostCompositionService;
 use App\Domains\Product\Services\ProductExpenseService;
 use App\Domains\Product\Services\ProductService;
+use App\Domains\Product\Services\ProductUnitService;
 use App\Domains\Unit\Services\UnitService;
 use App\Enums\ActionTypes;
 use Illuminate\Support\Facades\DB;
@@ -41,13 +42,17 @@ class UpdateProductAction
             if (isset($data['bundle_components'])) {
                 $submitted_composition_ids = [];
                 foreach ($data['bundle_components'] as $composition) {
-                    $product_data = app(ProductService::class)->findOne($composition['product_id']);
+                    // Skip if row doesn't have required fields
+                    if (!isset($composition['product_id']) || !isset($composition['unit_id']) || !isset($composition['qty'])) {
+                        continue;
+                    }
+
                     if (isset($composition['composition_id'])) {
 
                         app(ProductCompositionService::class)->update($composition['composition_id'], [
                             'f_product_composition_product_id' => $composition['product_id'],
                             'qty' => $composition['qty'],
-                            'f_unit_id' => $product_data->f_unit_id,
+                            'f_unit_id' => $composition['unit_id'],
                         ]);
 
                         $submitted_composition_ids[] = $composition['composition_id'];
@@ -57,7 +62,7 @@ class UpdateProductAction
                                 'f_product_id' => $product_id,
                                 'f_product_composition_product_id' => $composition['product_id'],
                                 'qty' => $composition['qty'],
-                                'f_unit_id' => $product_data->f_unit_id,
+                                'f_unit_id' => $composition['unit_id'],
                             ],
                         ]);
                     }
@@ -79,7 +84,6 @@ class UpdateProductAction
             if (isset($data['cost'])) {
                 $submitted_composition_ids = [];
                 foreach ($data['cost'] as $row) {
-                    $product_data = app(ProductService::class)->findOne($product_id);
                     if (isset($row['id'])) {
 
                         app(ProductCostCompositionService::class)->update($row['id'], [
@@ -136,6 +140,11 @@ class UpdateProductAction
                 foreach ($account_ids_to_delete as $delete_id) {
                     app(ProductExpenseService::class)->delete($product_id, $delete_id);
                 }
+            }
+
+            // Handle Product Units
+            if (isset($data['product_units'])) {
+                app(ProductUnitService::class)->updateProductUnits($product_id, $data['product_units']);
             }
 
             $this->insertAuditLog($product_id, $old_data, $data, $new_data_master);

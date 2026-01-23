@@ -192,8 +192,12 @@
                                         <td><input type="text" class="form-control numeric-input quantity-input"
                                                 name="products[0][quantity]" min="1" step="1"
                                                 value="{{ $line['quantity'] }}" /></td>
-                                        <td><input type="text" class="form-control unit-display"
-                                                name="products[0][unit]" value="{{ $line['unit_name'] }}" disabled />
+                                        <td>
+                                            <select class="select2Unit form-select unit-select"
+                                                name="products[0][unit_id]" data-allow-clear="false"
+                                                data-selected-unit="{{ $line['f_unit_id'] }}" disabled>
+                                                <option value="">Pilih Satuan</option>
+                                            </select>
                                         </td>
                                         <td>
                                             <input type="text"
@@ -233,8 +237,12 @@
                                 <td><input type="number" class="form-control quantity-input"
                                         name="products[0][quantity]" min="1" step="1" value="1" />
                                 </td>
-                                <td><input type="text" class="form-control unit-display" name="products[0][unit]"
-                                        disabled /></td>
+                                <td>
+                                    <select class="select2Unit form-select unit-select"
+                                        name="products[0][unit_id]" data-allow-clear="false" disabled>
+                                        <option value="">Pilih Satuan</option>
+                                    </select>
+                                </td>
                                 <td>
                                     <input type="text" class="form-control currency-input unit-price unit-price-input"
                                         name="products[0][unit_price]" />
@@ -530,7 +538,11 @@
 
                 // formData.append('products', productLines);
                 productLines.forEach(function(line, idx) {
+                    if (line.id) {
+                        formData.append(`products[${idx}][id]`, line.id);
+                    }
                     formData.append(`products[${idx}][product_id]`, line.product_id);
+                    formData.append(`products[${idx}][unit_id]`, line.unit_id);
                     formData.append(`products[${idx}][quantity]`, line.quantity);
                     formData.append(`products[${idx}][unit_price]`, line.unit_price);
                     formData.append(`products[${idx}][total]`, line.line_total);
@@ -663,10 +675,21 @@
                                     );
                                 });
 
-                                const selectedProductId = productSelect.data(
-                                    'selected-product');
+                                const selectedProductId = productSelect.data('selected-product');
+                                const selectedUnitId = $(this).find('.unit-select').data('selected-unit');
+
                                 if (selectedProductId) {
                                     productSelect.val(selectedProductId).trigger('change');
+
+                                    // After product is loaded, set the unit if it was selected
+                                    if (selectedUnitId) {
+                                        setTimeout(function() {
+                                            const $unitSelect = $(this).find('.unit-select');
+                                            if ($unitSelect.find(`option[value="${selectedUnitId}"]`).length > 0) {
+                                                $unitSelect.val(selectedUnitId).trigger('change');
+                                            }
+                                        }.bind(this), 500);
+                                    }
                                 }
                             });
                         } else {
@@ -681,16 +704,53 @@
 
             $(document).on('change', '.product-select', function() {
                 const selectedOption = $(this).find(':selected');
-
-                const unit = selectedOption.data('unit') || '';
+                const productId = $(this).val();
                 const perPrice = selectedOption.data('price');
                 const row = $(this).closest('tr');
+                const $unitSelect = row.find('.unit-select');
 
-                if (unit) {
-                    row.find('.unit-display').val(unit).prop('disabled', true);
-                } else {
-                    row.find('.unit-display').val('').prop('disabled', true);
+                // Clear unit select
+                $unitSelect.html('<option value="">Pilih Satuan</option>').prop('disabled', true);
+
+                if (!productId) {
+                    calculateTotals();
+                    return;
                 }
+
+                // Fetch units for this product
+                $.ajax({
+                    url: `/master_data/product/${productId}/units`,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success && response.data.length > 0) {
+                            let options = '<option value="">Pilih Satuan</option>';
+                            response.data.forEach(function(unit) {
+                                const badge = unit.is_default == 1 ? ' (Default)' : '';
+                                options += `<option value="${unit.f_unit_id}">${unit.unit_name}${badge}</option>`;
+                            });
+
+                            if ($unitSelect.data('select2')) {
+                                $unitSelect.select2('destroy');
+                            }
+
+                            $unitSelect.html(options);
+
+                            $unitSelect.select2({
+                                placeholder: "Pilih Satuan",
+                                allowClear: true,
+                                dropdownParent: $unitSelect.parent(),
+                                width: '100%'
+                            });
+
+                            const defaultUnit = response.data.find(u => u.is_default == 1);
+                            if (defaultUnit) {
+                                $unitSelect.val(defaultUnit.f_unit_id).trigger('change');
+                            }
+
+                            $unitSelect.prop('disabled', false);
+                        }
+                    }
+                });
 
                 if (perPrice) {
                     const unitPriceInput = row.find('.unit-price')[0];
@@ -737,6 +797,7 @@
                 $('#products-tbody tr').each(function() {
                     const productRowId = $(this).find('.product-id').val();
                     const productId = $(this).find('.product-select').val();
+                    const unitId = $(this).find('.unit-select').val();
                     const quantity = parseCurrency($(this).find('.quantity-input').val()) || 0;
                     const unitPrice = parseCurrency($(this).find('.unit-price').val()) || 0;
                     const lineTotal = parseCurrency($(this).find('input[name*="[total]"]').val()) || 0;
@@ -745,6 +806,7 @@
                         productLines.push({
                             id: productRowId || null,
                             product_id: productId,
+                            unit_id: unitId,
                             quantity: quantity,
                             unit_price: unitPrice,
                             line_total: lineTotal,

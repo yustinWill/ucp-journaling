@@ -89,6 +89,7 @@ class CreateSalesOrderAction
                 'company_code' => session('user_company_code'),
                 'f_sales_order_id' => $salesOrderId,
                 'f_product_id' => $product['product_id'],
+                'f_unit_id' => $product['unit_id'] ?? null,
                 'quantity' => $product['quantity'],
                 'delivered_qty' => 0,
                 'remaining_qty' => $product['quantity'],

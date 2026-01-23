@@ -159,11 +159,42 @@
                                 @foreach ($purchaseOrderProducts as $product)
                                     <tr>
                                         <td>{{ $product->product_code }} - {{ $product->product_name }}</td>
-                                        <td>{{ number_format($product->qty, 4, ',', '.') }} {{ $product->unit_name }}</td>
-                                        <td>{{ number_format($product->invoiced_qty, 4, ',', '.') }}
-                                            {{ $product->unit_name }}</td>
-                                        <td>{{ number_format($product->remaining_qty_for_invoice ?? $product->qty, 4, ',', '.') }}
-                                            {{ $product->unit_name }}</td>
+                                        <td>
+                                            @php
+                                                $qty = $product->qty;
+                                                if ($qty == floor($qty)) {
+                                                    $formattedQty = number_format($qty, 0, ',', '.');
+                                                } else {
+                                                    $formatted = number_format($qty, 4, ',', '.');
+                                                    $formattedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                }
+                                            @endphp
+                                            {{ $formattedQty }} {{ $product->unit_name }}
+                                        </td>
+                                        <td>
+                                            @php
+                                                $invoicedQty = $product->invoiced_qty;
+                                                if ($invoicedQty == floor($invoicedQty)) {
+                                                    $formattedInvoicedQty = number_format($invoicedQty, 0, ',', '.');
+                                                } else {
+                                                    $formatted = number_format($invoicedQty, 4, ',', '.');
+                                                    $formattedInvoicedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                }
+                                            @endphp
+                                            {{ $formattedInvoicedQty }} {{ $product->unit_name }}
+                                        </td>
+                                        <td>
+                                            @php
+                                                $remainingQty = $product->remaining_qty_for_invoice ?? $product->qty;
+                                                if ($remainingQty == floor($remainingQty)) {
+                                                    $formattedRemainingQty = number_format($remainingQty, 0, ',', '.');
+                                                } else {
+                                                    $formatted = number_format($remainingQty, 4, ',', '.');
+                                                    $formattedRemainingQty = rtrim(rtrim($formatted, '0'), ',');
+                                                }
+                                            @endphp
+                                            {{ $formattedRemainingQty }} {{ $product->unit_name }}
+                                        </td>
                                         <td>
                                             <input type="hidden"
                                                 name="products[{{ $counter }}][product_order_product_id]"
@@ -184,7 +215,17 @@
                                                 name="products[{{ $counter }}][invoice_qty]" min="0"
                                                 max="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
                                         </td>
-                                        <td>{{ number_format($product->price_per_qty ?? 0, 4, ',', '.') }}
+                                        <td>
+                                            @php
+                                                $pricePerQty = $product->price_per_qty ?? 0;
+                                                if ($pricePerQty == floor($pricePerQty)) {
+                                                    $formattedPricePerQty = number_format($pricePerQty, 0, ',', '.');
+                                                } else {
+                                                    $formatted = number_format($pricePerQty, 4, ',', '.');
+                                                    $formattedPricePerQty = rtrim(rtrim($formatted, '0'), ',');
+                                                }
+                                            @endphp
+                                            {{ $formattedPricePerQty }}
                                             <input type="hidden" name="products[{{ $counter }}][unit_price]"
                                                 value="{{ $product->price_per_qty ?? 0 }}" />
                                         </td>

@@ -52,7 +52,7 @@
                                 data-allow-clear="false" required>
                                 <option value="">Pilih Bundle Product</option>
                                 @foreach ($bundleProducts as $product)
-                                    <option data-bundle-batch-qty="{{$product->bundle_batch_qty}}" value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
+                                    <option data-bundle-batch-qty="{{$product->bundle_batch_qty}}" data-unit-name="{{$product->unit_name}}" value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -150,7 +150,7 @@
             <!-- Quantity Planned (Always Visible) -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Quantity Planned <span style="color: red;">*</span></label>
+                    <label class="form-label" id="quantity-planned-label">Quantity Planned <span style="color: red;">*</span></label>
                     <input type="number" class="form-control" id="quantity-planned" name="quantity_planned"
                         placeholder="0" min="1" step="1" required disabled />
                     <small class="form-text text-muted" id="quantity-planned-note"><span style="color: #ff6b6b;">Dihitung otomatis dari material input</span></small>
@@ -576,10 +576,18 @@
                 const bundleProductId = $('#bundle-product').val();
                 const warehouseId = $('#warehouse').val();
 
-                // Get batch-bundle-qty from selected option's data attribute
+                // Get batch-bundle-qty and unit-name from selected option's data attribute
                 const selectedOption = $(this).find('option:selected');
                 productBundleBatchQty = parseFloat(selectedOption.data('bundle-batch-qty')) || 0;
+                const unitName = selectedOption.data('unit-name') || '';
                 console.log(productBundleBatchQty);
+
+                // Update quantity planned label with unit name
+                if (unitName) {
+                    $('#quantity-planned-label').html('Quantity Planned (' + unitName + ') <span style="color: red;">*</span>');
+                } else {
+                    $('#quantity-planned-label').html('Quantity Planned <span style="color: red;">*</span>');
+                }
 
                 // Reset batch-multiplier field to 1 (for Quantity Planned mode)
                 $('#batch-multiplier').val(1);
@@ -741,15 +749,17 @@
                 components.forEach(component => {
                     const qtyPlanned = $('#quantity-planned').val() || 0;
                     const totalRequired = component.quantity_required * qtyPlanned;
-                    const isAvailable = totalRequired <= component.stock_available;
+                    // Check availability using base unit (stock_available)
+                    const totalRequiredInBaseUnit = totalRequired * component.conversion_factor;
+                    const isAvailable = totalRequiredInBaseUnit <= component.stock_available;
 
                     componentsHtml += `
                 <tr>
                     <td data-product-id="${component.id}">${component.product_name}</td>
                     <td class="text-center">${component.unit}</td>
                     <td class="text-center">${formatNumber(component.quantity_required)}</td>
-                    <td class="text-center total-required" data-stock-available="${component.stock_available}" data-qty-per-bundle="${component.quantity_required}">${formatNumber(totalRequired)}</td>
-                    <td class="text-center">${formatNumber(component.stock_available)}</td>
+                    <td class="text-center total-required" data-stock-available="${component.stock_available}" data-conversion-factor="${component.conversion_factor}" data-qty-per-bundle="${component.quantity_required}">${formatNumber(totalRequired)}</td>
+                    <td class="text-center">${formatNumber(component.stock_available_display)}</td>
                     <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}">Rp. ${formatNumber(component.purchase_price)}</td>
                     <td class="text-center">
                         ${isAvailable
@@ -773,11 +783,12 @@
                     data-product-id="${component.id}"
                     data-qty-per-bundle="${component.quantity_required}"
                     data-stock-available="${component.stock_available}"
+                    data-conversion-factor="${component.conversion_factor}"
                     data-price-per-unit="${component.purchase_price}">
                     <td>${component.product_name}</td>
                     <td class="text-center">${component.unit}</td>
                     <td class="text-center" >${formatNumber(component.quantity_required)}</td>
-                    <td class="text-center stock-available" >${formatNumber(component.stock_available)}</td>
+                    <td class="text-center stock-available" >${formatNumber(component.stock_available_display)}</td>
                     <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}">Rp. ${formatNumber(component.purchase_price)}</td>
                     <td>
                         <input type="text"
@@ -821,12 +832,14 @@
 
                     $(this).text(formatNumber(totalRequired));
 
-                    // Update status based on availability
+                    // Update status based on availability (convert to base unit for checking)
                     const row = $(this).closest('tr');
                     const stockAvailable = $(this).data('stock-available');
+                    const conversionFactor = $(this).data('conversion-factor') || 1;
+                    const totalRequiredInBaseUnit = totalRequired * conversionFactor;
                     const statusCell = row.find('td').eq(6);
 
-                    if (totalRequired <= stockAvailable) {
+                    if (totalRequiredInBaseUnit <= stockAvailable) {
                         statusCell.html('<span class="badge bg-label-success">Available</span>');
                     } else {
                         statusCell.html('<span class="badge bg-label-danger">Insufficient Stock</span>');
@@ -848,6 +861,10 @@
                     const materialInputRaw = $row.find('.material-input').val();
                     const materialInput = parseCurrency(materialInputRaw) || 0;
                     const stockAvailable = parseFloat($row.data('stock-available'));
+                    const conversionFactor = parseFloat($row.data('conversion-factor')) || 1;
+
+                    // Convert material input to base unit for stock checking
+                    const materialInputInBaseUnit = materialInput * conversionFactor;
 
                     // Calculate required material for the planned batch qty
                     const requiredMaterial = batchBundleQty * qtyPerBundle;
@@ -865,7 +882,7 @@
                     if (materialInput === 0) {
                         $statusCell.html('<span class="badge bg-label-secondary">Waiting Input</span>');
                         $row.find('.leftover-material').text('-');
-                    } else if (materialInput > stockAvailable) {
+                    } else if (materialInputInBaseUnit > stockAvailable) {
                         $statusCell.html('<span class="badge bg-label-danger">Exceeds Stock</span>');
                         $row.find('.leftover-material').text('-');
                     } else if (materialInput < requiredMaterial) {
@@ -903,7 +920,11 @@
                     const materialInput = parseCurrency(materialInputRaw) || 0;
                     const componentIndex = $row.data('component-index');
                     const stockAvailable = parseFloat($row.data('stock-available'));
+                    const conversionFactor = parseFloat($row.data('conversion-factor')) || 1;
                     const productName = bundleComponents[componentIndex].product_name;
+
+                    // Convert material input to base unit for stock checking
+                    const materialInputInBaseUnit = materialInput * conversionFactor;
 
                     if (materialInput === 0) {
                         allInputsFilled = false;
@@ -928,6 +949,10 @@
                     const materialInput = parseCurrency(materialInputRaw) || 0;
                     const componentIndex = $row.data('component-index');
                     const stockAvailable = parseFloat($row.data('stock-available'));
+                    const conversionFactor = parseFloat($row.data('conversion-factor')) || 1;
+
+                    // Convert material input to base unit for stock checking
+                    const materialInputInBaseUnit = materialInput * conversionFactor;
 
                     // Update status
                     const $statusCell = $row.find('.material-status');
@@ -935,7 +960,7 @@
                     if (materialInput === 0) {
                         $statusCell.html('<span class="badge bg-label-secondary">Waiting Input</span>');
                         $row.find('.leftover-material').text('-');
-                    } else if (materialInput > stockAvailable) {
+                    } else if (materialInputInBaseUnit > stockAvailable) {
                         $statusCell.html('<span class="badge bg-label-danger">Exceeds Stock</span>');
                         $row.find('.leftover-material').text('-');
                     } else {
@@ -1165,7 +1190,7 @@
                             qty_per_bundle: bundleComponents[componentIndex].quantity_required,
                             material_input: materialInput,
                             leftover: leftover,
-                            unit: bundleComponents[componentIndex].unit
+                            unit_code: bundleComponents[componentIndex].unit_code
                         });
                     });
                     formData.append('material_inputs', JSON.stringify(materialData));

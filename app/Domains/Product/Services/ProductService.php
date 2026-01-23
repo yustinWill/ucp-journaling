@@ -85,6 +85,11 @@ class ProductService
             ->groupBy('m_products.id')
             ->first();
 
+        // Return null if product not found
+        if (!$data) {
+            return null;
+        }
+
         if ($data->tags) {
             $data->tags = json_decode($data->tags);
         }

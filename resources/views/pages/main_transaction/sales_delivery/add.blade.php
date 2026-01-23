@@ -226,18 +226,50 @@
                                     <tr>
                                         <td>{{ $row->product_code }} -
                                             {{ $row->product_name }}</td>
-                                        <td>{{ number_format($row->quantity, 4, ',', '.') }}
-                                            {{ $row->unit_name }}</td>
-                                        <td>{{ number_format($row->delivered_qty, 4, ',', '.') }}
-                                            {{ $row->unit_name }}</td>
-                                        <td>{{ number_format($row->remaining_qty, 4, ',', '.') }}
-                                            {{ $row->unit_name }}</td>
+                                        <td>
+                                            @php
+                                                $quantity = $row->quantity;
+                                                if ($quantity == floor($quantity)) {
+                                                    $formattedQuantity = number_format($quantity, 0, ',', '.');
+                                                } else {
+                                                    $formatted = number_format($quantity, 4, ',', '.');
+                                                    $formattedQuantity = rtrim(rtrim($formatted, '0'), ',');
+                                                }
+                                            @endphp
+                                            {{ $formattedQuantity }} {{ $row->unit_name }}
+                                        </td>
+                                        <td>
+                                            @php
+                                                $deliveredQty = $row->delivered_qty;
+                                                if ($deliveredQty == floor($deliveredQty)) {
+                                                    $formattedDeliveredQty = number_format($deliveredQty, 0, ',', '.');
+                                                } else {
+                                                    $formatted = number_format($deliveredQty, 4, ',', '.');
+                                                    $formattedDeliveredQty = rtrim(rtrim($formatted, '0'), ',');
+                                                }
+                                            @endphp
+                                            {{ $formattedDeliveredQty }} {{ $row->unit_name }}
+                                        </td>
+                                        <td>
+                                            @php
+                                                $remainingQty = $row->remaining_qty;
+                                                if ($remainingQty == floor($remainingQty)) {
+                                                    $formattedRemainingQty = number_format($remainingQty, 0, ',', '.');
+                                                } else {
+                                                    $formatted = number_format($remainingQty, 4, ',', '.');
+                                                    $formattedRemainingQty = rtrim(rtrim($formatted, '0'), ',');
+                                                }
+                                            @endphp
+                                            {{ $formattedRemainingQty }} {{ $row->unit_name }}
+                                        </td>
                                         <td>
                                             <input type="hidden"
                                                 name="products[{{ $counter }}][sales_order_product_id]"
                                                 value="{{ $row->id }}" />
                                             <input type="hidden" name="products[{{ $counter }}][product_id]"
                                                 value="{{ $row->f_product_id }}" />
+                                            <input type="hidden" name="products[{{ $counter }}][unit_id]"
+                                                value="{{ $row->f_unit_id }}" />
                                             <input type="hidden" name="products[{{ $counter }}][so_qty]"
                                                 value="{{ $row->quantity }}" />
                                             <input type="hidden"

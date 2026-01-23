@@ -234,8 +234,11 @@
                                 </td>
                                 <td><input type="text" class="form-control numeric-input" name="products[0][quantity]"
                                          /></td>
-                                <td><input type="text" class="form-control unit-input-box" name="products[0][unit]"
-                                        disabled /></td>
+                                <td>
+                                    <select class="form-select unit-select" name="products[0][unit_id]" disabled>
+                                        <option value="">Pilih Satuan</option>
+                                    </select>
+                                </td>
                                 <td>
                                     <input type="text" class="form-control currency-input"
                                         name="products[0][unit_price]" disabled />
@@ -497,7 +500,9 @@
                     // Enable product table
                     $('#product-disabled-message').hide();
                     $('#product-table tbody tr').each(function() {
-                        $(this).find('input:not(.unit-input-box), select, button').prop('disabled', false);
+                        $(this).find('input, select, button').prop('disabled', false);
+                        // Unit select will be enabled after product selection
+                        $(this).find('.unit-select').prop('disabled', true);
                     });
                     $('#add-product-row').prop('disabled', false);
 
@@ -507,7 +512,7 @@
                     // Disable product table
                     $('#product-disabled-message').show();
                     $('#product-table tbody tr').each(function() {
-                        $(this).find('input:not(.unit-input-box), select, button').prop('disabled', true);
+                        $(this).find('input, select, button').prop('disabled', true);
                     });
                     $('#add-product-row').prop('disabled', true);
                 }
@@ -538,16 +543,60 @@
             // Product selection handler
             $(document).on('change', '.product-select', function() {
                 const selectedOption = $(this).find('option:selected');
-                const unit = selectedOption.data('unit');
-
+                const productId = $(this).val();
                 const purchasePerPrice = selectedOption.data('purchase-per-price');
                 const row = $(this).closest('tr');
+                const $unitSelect = row.find('.unit-select');
 
-                if (unit) {
-                    row.find('input[name*="[unit]"]').val(unit).prop('disabled', true);
-                } else {
-                    row.find('input[name*="[unit]"]').val('').prop('disabled', true);
+                // Clear unit select
+                $unitSelect.html('<option value="">Pilih Satuan</option>').prop('disabled', true);
+
+                if (!productId) {
+                    return;
                 }
+
+                // Load product units via AJAX
+                $.ajax({
+                    url: `/master_data/product/${productId}/units`,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success && response.data.length > 0) {
+                            let options = '<option value="">Pilih Satuan</option>';
+                            response.data.forEach(function(unit) {
+                                const badge = unit.is_default == 1 ? ' (Default)' : '';
+                                options += `<option value="${unit.f_unit_id}">${unit.unit_name}${badge}</option>`;
+                            });
+
+                            // Destroy Select2 if exists
+                            if ($unitSelect.data('select2')) {
+                                $unitSelect.select2('destroy');
+                            }
+
+                            $unitSelect.html(options);
+
+                            // Initialize Select2
+                            $unitSelect.select2({
+                                placeholder: "Pilih Satuan",
+                                allowClear: true,
+                                dropdownParent: $unitSelect.parent(),
+                                width: '100%'
+                            });
+
+                            // Auto-select default unit
+                            const defaultUnit = response.data.find(u => u.is_default == 1);
+                            if (defaultUnit) {
+                                $unitSelect.val(defaultUnit.f_unit_id).trigger('change');
+                            }
+
+                            $unitSelect.prop('disabled', false);
+                        } else {
+                            $unitSelect.html('<option value="">No units available</option>');
+                        }
+                    },
+                    error: function() {
+                        $unitSelect.html('<option value="">Error loading units</option>');
+                    }
+                });
 
                 if (purchasePerPrice) {
                     const unitPriceInput = row.find('input[name*="[unit_price]"]')[0];
@@ -808,7 +857,7 @@
                 $('#products-tbody tr[data-repeater-item]').each(function(index) {
                     const productId = $(this).find('.product-select').val();
                     const quantity = parseCurrency($(this).find('input[name*="[quantity]"]').val());
-                    const unit = $(this).find('input[name*="[unit]"]').val();
+                    const unitId = $(this).find('.unit-select').val();
                     const unitPrice = parseCurrency($(this).find('input[name*="[unit_price]"]').val());
                     const taxId = $(this).find('select[name*="[tax_id]"]').val();
                     const total = parseCurrency($(this).find('input[name*="[total]"]').val());
@@ -816,7 +865,7 @@
                     // Append each product field to FormData
                     formData.append(`products[${index}][product_id]`, productId);
                     formData.append(`products[${index}][quantity]`, quantity);
-                    formData.append(`products[${index}][unit]`, unit);
+                    formData.append(`products[${index}][unit_id]`, unitId);
                     formData.append(`products[${index}][unit_price]`, unitPrice);
                     formData.append(`products[${index}][tax_id]`, taxId);
                     formData.append(`products[${index}][total]`, total);

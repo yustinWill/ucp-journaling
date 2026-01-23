@@ -155,14 +155,14 @@
 
                             <div class="row g-6">
                                 <div class="col-md-6">
-                                    <label class="form-label">Quantity Planned</label>
+                                    <label class="form-label">Quantity Planned ({{ $production->bundle_product_unit_name ?? 'Unit' }})</label>
                                     <input type="text" class="form-control"
-                                        value="{{ $production->quantity_planned }} pcs" disabled />
+                                        value="{{ number_format($production->quantity_planned, 0, ',', '.') }}" disabled />
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Quantity Produced</label>
+                                    <label class="form-label">Quantity Produced ({{ $production->bundle_product_unit_name ?? 'Unit' }})</label>
                                     <input type="text" class="form-control"
-                                        value="{{ $production->quantity_produced }} pcs" disabled />
+                                        value="{{ number_format($production->quantity_produced, 0, ',', '.') }}" disabled />
                                 </div>
                             </div>
 

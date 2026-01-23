@@ -68,6 +68,13 @@ class PurchaseOrderProductService
             ->delete();
     }
 
+    public function findOne($id)
+    {
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->first();
+    }
+
     public function findAllBasedOnPOId($po_id)
     {
         return DB::table($this->table_name.' as pop')

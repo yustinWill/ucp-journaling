@@ -76,22 +76,37 @@ class CreatePurchaseDeliveryAction
                 $this->createProductBatches($deliveryId, $data);
 
                 foreach ($data['products'] as $product) {
+                    // Get PO product to retrieve the unit_id
+                    $poProduct = app(PurchaseOrderProductService::class)->findOne($product['product_order_product_id']);
+
+                    // Get conversion factor for the unit
+                    $productUnit = DB::table('m_product_units')
+                        ->where('f_product_id', $product['product_id'])
+                        ->where('f_unit_id', $poProduct->f_unit_id)
+                        ->first();
+
+                    $conversionFactor = $productUnit->conversion_factor ?? 1;
+
+                    // Convert delivery quantity to base unit
+                    // Example: If delivering 10 BOX and 1 BOX = 100 KG, stock increases by 1000 KG
+                    $deliveryQtyInBaseUnit = $product['delivery_qty'] * $conversionFactor;
+
                     app(PurchaseOrderProductService::class)->updateDeliveredQuantities($data['purchase_order_id'], $product['product_order_product_id'], $product['delivery_qty']);
 
 
-                    // Record stock movement
+                    // Record stock movement in base unit
                     app(StockMovementLogService::class)->recordMovement(
                         $data['warehouse_id'],
                         $product['product_id'],
                         'PURCHASE_IN',
                         'PURCHASE_DELIVERY',
                         $data['reference_no'],
-                        $product['delivery_qty'],
+                        $deliveryQtyInBaseUnit,
                         'Purchase Delivery: '.($data['reference_no']),
                         $data['delivery_date'] ?? now()
                     );
 
-                    app(ProductService::class)->updateStock($product['product_id'], '+', $product['delivery_qty']);
+                    app(ProductService::class)->updateStock($product['product_id'], '+', $deliveryQtyInBaseUnit);
                 }
             }
 
@@ -120,9 +135,9 @@ class CreatePurchaseDeliveryAction
             return;
         }
 
-        // Get PO products with pricing information
+        // Get PO products with pricing information and unit_id
         $poProducts = DB::table('t_purchase_order_products as pop')
-            ->select('pop.f_product_id', 'pop.price_per_qty')
+            ->select('pop.f_product_id', 'pop.price_per_qty', 'pop.f_unit_id')
             ->where('pop.f_purchase_order_id', $data['purchase_order_id'])
             ->get()
             ->keyBy('f_product_id');
@@ -143,9 +158,20 @@ class CreatePurchaseDeliveryAction
 
             $purchasePrice = (float) $poProduct->price_per_qty;
 
+            // Get conversion factor for the unit
+            $productUnit = DB::table('m_product_units')
+                ->where('f_product_id', $productId)
+                ->where('f_unit_id', $poProduct->f_unit_id)
+                ->first();
+
+            $conversionFactor = $productUnit->conversion_factor ?? 1;
+
+            // Convert delivery quantity to base unit
+            $deliveryQtyInBaseUnit = $deliveryQty * $conversionFactor;
+
             // Update product average price using weighted average formula
             // Formula: ((harga beli × qty beli) + (harga stock sebelumnya × qty sisa stock sebelumnya)) / (stock beli + stock sisa)
-            app(ProductService::class)->updateAveragePriceWeighted($productId, $purchasePrice, $deliveryQty);
+            app(ProductService::class)->updateAveragePriceWeighted($productId, $purchasePrice, $deliveryQtyInBaseUnit);
         }
     }
 
@@ -159,9 +185,9 @@ class CreatePurchaseDeliveryAction
             return;
         }
 
-        // Get PO products with pricing information
+        // Get PO products with pricing information and unit_id
         $poProducts = DB::table('t_purchase_order_products as pop')
-            ->select('pop.f_product_id', 'pop.price_per_qty', 'pop.qty as ordered_qty')
+            ->select('pop.f_product_id', 'pop.price_per_qty', 'pop.qty as ordered_qty', 'pop.f_unit_id')
             ->where('pop.f_purchase_order_id', $data['purchase_order_id'])
             ->get()
             ->keyBy('f_product_id');
@@ -182,6 +208,17 @@ class CreatePurchaseDeliveryAction
 
             $purchasePrice = (float) $poProduct->price_per_qty;
 
+            // Get conversion factor for the unit
+            $productUnit = DB::table('m_product_units')
+                ->where('f_product_id', $productId)
+                ->where('f_unit_id', $poProduct->f_unit_id)
+                ->first();
+
+            $conversionFactor = $productUnit->conversion_factor ?? 1;
+
+            // Convert delivery quantity to base unit
+            $deliveryQtyInBaseUnit = $deliveryQty * $conversionFactor;
+
             // Get the updated weighted average HPP from product
             $productData = DB::table('m_products')
                 ->where('id', $productId)
@@ -189,11 +226,12 @@ class CreatePurchaseDeliveryAction
             $weightedAverageHPP = (float) ($productData->average_price ?? $purchasePrice);
 
             // Use BatchManagementService to create batch with weighted average HPP
+            // IMPORTANT: quantity must be in base unit
             app(BatchManagementService::class)->createBatch([
                 'f_product_id' => $productId,
                 'source_type' => 'PURCHASE', // Use valid enum value
                 'f_source_transaction_id' => $deliveryId,
-                'quantity' => $deliveryQty,
+                'quantity' => $deliveryQtyInBaseUnit, // Converted to base unit
                 'purchase_price' => $purchasePrice,
                 'estimated_hpp' => $weightedAverageHPP, // Use weighted average HPP
                 'final_hpp' => $weightedAverageHPP, // Use weighted average HPP

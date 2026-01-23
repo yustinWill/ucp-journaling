@@ -224,17 +224,66 @@
                                     @forelse($purchaseDeliveryProducts ?? [] as $product)
                                         <tr>
                                             <td>{{ $product->product_name }}</td>
-                                            <td class="text-end">{{ number_format($product->ordered_qty, 4, ',', '.') }} {{ $product->unit_name }}</td>
                                             <td class="text-end">
-                                                {{ number_format($product->delivered_qty_before , 4, ',', '.') }} {{ $product->unit_name }}
-                                            </td>
-                                            <td class="text-end">{{ number_format($product->qty, 4, ',', '.') }} {{ $product->unit_name }}</td>
+                                                @php
+                                                    $orderedQty = $product->ordered_qty;
+                                                    if ($orderedQty == floor($orderedQty)) {
+                                                        $formattedOrderedQty = number_format($orderedQty, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($orderedQty, 4, ',', '.');
+                                                        $formattedOrderedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                                {{ $formattedOrderedQty }} {{ $product->unit_name }}
                                             </td>
                                             <td class="text-end">
-                                                {{ number_format($product->remaining_qty_after, 4, ',', '.') }} {{ $product->unit_name }}
+                                                @php
+                                                    $deliveredQtyBefore = $product->delivered_qty_before;
+                                                    if ($deliveredQtyBefore == floor($deliveredQtyBefore)) {
+                                                        $formattedDeliveredQtyBefore = number_format($deliveredQtyBefore, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($deliveredQtyBefore, 4, ',', '.');
+                                                        $formattedDeliveredQtyBefore = rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                                {{ $formattedDeliveredQtyBefore }} {{ $product->unit_name }}
                                             </td>
                                             <td class="text-end">
-                                                {{ number_format($product->price_per_qty, 4, ',', '.') }}</td>
+                                                @php
+                                                    $qty = $product->qty;
+                                                    if ($qty == floor($qty)) {
+                                                        $formattedQty = number_format($qty, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($qty, 4, ',', '.');
+                                                        $formattedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                                {{ $formattedQty }} {{ $product->unit_name }}
+                                            </td>
+                                            <td class="text-end">
+                                                @php
+                                                    $remainingQtyAfter = $product->remaining_qty_after;
+                                                    if ($remainingQtyAfter == floor($remainingQtyAfter)) {
+                                                        $formattedRemainingQtyAfter = number_format($remainingQtyAfter, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($remainingQtyAfter, 4, ',', '.');
+                                                        $formattedRemainingQtyAfter = rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                                {{ $formattedRemainingQtyAfter }} {{ $product->unit_name }}
+                                            </td>
+                                            <td class="text-end">
+                                                @php
+                                                    $pricePerQty = $product->price_per_qty;
+                                                    if ($pricePerQty == floor($pricePerQty)) {
+                                                        $formattedPricePerQty = number_format($pricePerQty, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($pricePerQty, 4, ',', '.');
+                                                        $formattedPricePerQty = rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                                {{ $formattedPricePerQty }}
+                                            </td>
                                             <td>
                                                 {{ $product->product_delivery_note ?? '-' }}
                                             </td>

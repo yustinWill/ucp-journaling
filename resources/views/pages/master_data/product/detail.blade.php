@@ -163,6 +163,71 @@
                                     </div>
                                 </div>
 
+                                <!-- Product Units Section -->
+                                <div class="section-header mt-12">
+                                    <h6>Unit Produk</h6>
+                                    <hr class="mx-n6">
+                                </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-12">
+                                        @if(count($productUnits) > 0)
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="width: 50%">Unit</th>
+                                                            <th style="width: 30%">Konversi</th>
+                                                            <th style="width: 20%">Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($productUnits as $productUnit)
+                                                            <tr>
+                                                                <td>
+                                                                    <strong>{{ $productUnit->unit_name }}</strong>
+                                                                    @if($productUnit->is_default == 1)
+                                                                        <span class="badge bg-primary ms-2">Unit Dasar</span>
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($productUnit->is_default == 1)
+                                                                        1 {{ $productUnit->unit_name }} = 1 {{ $productUnit->unit_name }}
+                                                                    @else
+                                                                        @php
+                                                                            $baseUnit = collect($productUnits)->firstWhere('is_default', 1);
+                                                                            // Smart decimal formatting for conversion factor
+                                                                            if ($productUnit->conversion_factor == floor($productUnit->conversion_factor)) {
+                                                                                $formattedFactor = number_format($productUnit->conversion_factor, 0, ',', '.');
+                                                                            } else {
+                                                                                $formatted = number_format($productUnit->conversion_factor, 4, ',', '.');
+                                                                                $formattedFactor = rtrim(rtrim($formatted, '0'), ',');
+                                                                            }
+                                                                        @endphp
+                                                                        1 {{ $productUnit->unit_name }} = {{ $formattedFactor }} {{ $baseUnit->unit_name ?? 'Unit Dasar' }}
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($productUnit->status == 'ACTIVE')
+                                                                        <span class="badge bg-success">Aktif</span>
+                                                                    @else
+                                                                        <span class="badge bg-secondary">Tidak Aktif</span>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        @else
+                                            <div class="alert alert-info">
+                                                <i class="ti ti-info-circle me-2"></i>
+                                                Tidak ada unit tambahan. Produk menggunakan unit dasar: <strong>{{ $product->unit_name }}</strong>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
                                 <!-- Product Type Section -->
                                 <div class="section-header mt-12">
                                     <h6>Tipe Produk</h6>

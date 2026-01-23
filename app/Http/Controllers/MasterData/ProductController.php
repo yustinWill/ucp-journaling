@@ -406,6 +406,7 @@ class ProductController extends Controller
                 ],
                 'bundle_components' => 'required_if:type,"bundle"|array',
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
+                'bundle_components.*.unit_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer|exists:m_units,id',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
 
                 //cost components
@@ -438,6 +439,12 @@ class ProductController extends Controller
                 'bundle_accounts.*.cost' => [
                     'nullable'
                 ],
+                'product_units' => 'nullable|array',
+                'product_units.*.unit_id' => 'required|integer|exists:m_units,id',
+                'product_units.*.is_default' => 'required|integer|in:0,1',
+                'product_units.*.conversion_factor' => 'required|numeric|min:0.0001',
+                'product_units.*.status' => 'required|in:ACTIVE,INACTIVE',
+                'product_units.*.note' => 'nullable|string',
             ], [], [
                 'name' => 'Nama Produk',
                 'unit_id' => 'Unit',
@@ -479,14 +486,21 @@ class ProductController extends Controller
                 'bundle_batch_qty' => 'Qty Batch Bundle',
                 'bundle_components' => 'Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',
+                'bundle_components.*.unit_id' => 'Unit Komponen Bundle',
                 'bundle_components.*.qty' => 'Qty Komponen Bundle',
                 'cost.*.coa' => 'Akun Komponen Bundle',
                 'cost.*.value' => 'Harga Biaya Bundle',
                 'bundle_accounts' => 'Akun Bundle',
                 'bundle_accounts.*.account' => 'Akun Bundle',
                 'bundle_accounts.*.cost' => 'Biaya Bundle',
+                'product_units' => 'Unit Produk',
+                'product_units.*.unit_id' => 'Unit',
+                'product_units.*.is_default' => 'Unit Default',
+                'product_units.*.conversion_factor' => 'Faktor Konversi',
+                'product_units.*.status' => 'Status Unit',
+                'product_units.*.note' => 'Catatan Unit',
             ]);
-
+            
             app(CreateProductAction::class)->execute($validated);
 
             return response()->json([
@@ -560,6 +574,10 @@ class ProductController extends Controller
         if ($product->type === 'bundle') {
             $bundleComponents = app(ProductCompositionService::class)->findAllBasedOnProductIdOld($id);
         }
+
+        // Get product units
+        $productUnits = app(\App\Domains\Product\Services\ProductUnitService::class)->findByProduct($id);
+
         // Get latest batch's final_hpp (batches are in ASC order, so get the last one)
         $latestBatch = $batchData['batches'] && count($batchData['batches']) > 0
             ? end($batchData['batches'])
@@ -583,6 +601,7 @@ class ProductController extends Controller
             'batchData' => $batchData,
             'bundleComponents' => $bundleComponents,
             'productCompositionCost' => $productCompositionCost,
+            'productUnits' => $productUnits,
         ]);
     }
 
@@ -597,6 +616,7 @@ class ProductController extends Controller
         $productCompositions = app(ProductCompositionService::class)->findAllBasedOnProductIdOld($id);
         $productCompositionCost = app(ProductCostCompositionService::class)->findAllBasedOnProductId($id);
         $productExpenses = app(ProductExpenseService::class)->findAllBasedOnProductId($id);
+        $productUnits = app(\App\Domains\Product\Services\ProductUnitService::class)->findByProduct($id);
 
         $categories = app(CategoryService::class)->findAll();
         $tags = app(TagService::class)->findAll();
@@ -645,6 +665,7 @@ class ProductController extends Controller
             'productCompositions' => $productCompositions,
             'productCompositionCost' => $productCompositionCost,
             'productExpenses' => $productExpenses,
+            'productUnits' => $productUnits,
             'defaultNoTaxId' => $defaultNoTaxId,
             'coaList' => $coaList,
         ]);
@@ -915,6 +936,7 @@ class ProductController extends Controller
                     },
                 ],
                 'bundle_components.*.product_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer',
+                'bundle_components.*.unit_id' => 'required_if:type,"bundle"|required_with:bundle_components|integer|exists:m_units,id',
                 'bundle_components.*.qty' => 'required_if:type,"bundle"|required_with:bundle_components|numeric',
                 'cost.*.id' => [
                     'nullable',
@@ -960,6 +982,12 @@ class ProductController extends Controller
                 'bundle_accounts.*.cost' => [
                     'nullable'
                 ],
+                'product_units' => 'nullable|array',
+                'product_units.*.unit_id' => 'required|integer|exists:m_units,id',
+                'product_units.*.is_default' => 'required|integer|in:0,1',
+                'product_units.*.conversion_factor' => 'required|numeric|min:0.0001',
+                'product_units.*.status' => 'required|in:ACTIVE,INACTIVE',
+                'product_units.*.note' => 'nullable|string',
             ], [], [
                 'id' => 'ID Produk',
                 'name' => 'Nama Produk',
@@ -1003,6 +1031,7 @@ class ProductController extends Controller
                 'bundle_components' => 'Komponen Bundle',
                 'bundle_components.*.composition_id' => 'ID Komposisi Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',
+                'bundle_components.*.unit_id' => 'Unit Komponen Bundle',
                 'bundle_components.*.qty' => 'Qty Komponen Bundle',
                 'cost.*.id' => 'ID Biaya Komponen Bundle',
                 'cost.*.coa' => 'Akun Biaya Bundle',
@@ -1011,6 +1040,12 @@ class ProductController extends Controller
                 'bundle_accounts.*.expense_id' => 'ID Biaya Bundle',
                 'bundle_accounts.*.account' => 'Akun Bundle',
                 'bundle_accounts.*.cost' => 'Biaya Bundle',
+                'product_units' => 'Unit Produk',
+                'product_units.*.unit_id' => 'Unit',
+                'product_units.*.is_default' => 'Unit Default',
+                'product_units.*.conversion_factor' => 'Faktor Konversi',
+                'product_units.*.status' => 'Status Unit',
+                'product_units.*.note' => 'Catatan Unit',
             ]);
             app(UpdateProductAction::class)->execute($validated);
 
@@ -1035,6 +1070,24 @@ class ProductController extends Controller
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
                 'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
+    public function getProductUnits($productId)
+    {
+        try {
+            $productUnits = app(\App\Domains\Product\Services\ProductUnitService::class)->findByProduct($productId);
+
+            return response()->json([
+                'success' => true,
+                'data' => $productUnits
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch product units',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

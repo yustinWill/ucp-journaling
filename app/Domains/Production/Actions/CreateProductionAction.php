@@ -265,21 +265,37 @@ class CreateProductionAction
     public function prepareItemsFromFormula(int $bundleProductId, int $quantityPlanned): array
     {
         // Get product compositions using correct table and field names
+        // Join with product_units to get conversion factor for unit conversion
         $compositions = DB::table('m_product_compositions as pc')
             ->join('m_products as p', 'pc.f_product_composition_product_id', '=', 'p.id')
             ->join('m_units as u', 'pc.f_unit_id', '=', 'u.id')
+            ->leftJoin('m_product_units as pu', function($join) {
+                $join->on('pu.f_product_id', '=', 'pc.f_product_composition_product_id')
+                     ->on('pu.f_unit_id', '=', 'pc.f_unit_id');
+            })
             ->where('pc.f_product_id', $bundleProductId)
             ->select(
                 'pc.f_product_composition_product_id as raw_material_product_id',
                 'pc.qty as quantity_per_unit',
                 'p.name as product_name',
                 'p.average_price',
-                'u.code as unit_code'
+                'u.code as unit_code',
+                'pu.conversion_factor'
             )
             ->get();
 
         return $compositions->map(function ($element) use ($quantityPlanned) {
-            $quantityRequired = $element->quantity_per_unit * $quantityPlanned;
+            // Convert quantity to base unit using conversion factor
+            // If no conversion factor found (shouldn't happen), default to 1
+            $conversionFactor = $element->conversion_factor ?? 1;
+
+            // quantity_per_unit is in the component's selected unit
+            // We need to convert it to base unit for stock checking
+            // Example: If component needs 10 BOX and 1 BOX = 100 KG, then we need 10 * 100 = 1000 KG
+            $quantityPerUnitInBaseUnit = $element->quantity_per_unit * $conversionFactor;
+
+            // Calculate total quantity required in base unit
+            $quantityRequired = $quantityPerUnitInBaseUnit * $quantityPlanned;
             $unitCost = $element->average_price ?? 0;
 
             return [
@@ -303,7 +319,7 @@ class CreateProductionAction
         $items = [];
 
         foreach ($materialInputs as $input) {
-            // Get product details
+            // Get product details and unit conversion factor
             $product = DB::table('m_products')
                 ->where('id', $input['product_id'])
                 ->first();
@@ -312,34 +328,44 @@ class CreateProductionAction
                 continue;
             }
 
-            // Calculate quantity consumed based on actual production
-            $qtyPerBundle = $input['qty_per_bundle'];
-            $quantityConsumed = $qtyPerBundle * $quantityProduced;
+            // Get the unit conversion factor to convert to base unit
+            // The unit_code in the input is the component's selected unit
+            $productUnit = DB::table('m_product_units as pu')
+                ->join('m_units as u', 'pu.f_unit_id', '=', 'u.id')
+                ->where('pu.f_product_id', $input['product_id'])
+                ->where('u.code', $input['unit_code'])
+                ->select('pu.conversion_factor', 'pu.is_default')
+                ->first();
 
-            // Note: material_input might be higher than quantity_consumed
-            // The difference is the leftover (already calculated in frontend with 4 decimals)
+            $conversionFactor = $productUnit->conversion_factor ?? 1;
+            $isDefaultUnit = $productUnit->is_default ?? false;
+
+            // Material input from user is in component's unit
+            // We need to convert it to base unit for stock operations
+            $materialInput = $input['material_input'];
+
+            // If not default unit, convert to base unit
+            // Example: 10 BOX * 100 (conversion factor) = 1000 KG (base unit)
+            $materialInputInBaseUnit = $isDefaultUnit ? $materialInput : ($materialInput * $conversionFactor);
+
+            // Calculate quantity consumed based on actual production (in component's unit)
+            $qtyPerBundle = $input['qty_per_bundle'];
+            $quantityConsumedInComponentUnit = $qtyPerBundle * $quantityProduced;
+
+            // Convert quantity consumed to base unit for stock deduction
+            $quantityConsumedInBaseUnit = $isDefaultUnit ? $quantityConsumedInComponentUnit : ($quantityConsumedInComponentUnit * $conversionFactor);
 
             $unitCost = $product->average_price ?? 0;
 
-            // In Material-Based mode, we validate against material_input (what user inputs)
-            // But we only consume quantityConsumed (what's needed for production)
-            $materialInput = $input['material_input'];
-
-            if (isset($input['material_input'])) {
-                $neededQuantity = $materialInput;
-            }else {
-                $neededQuantity = $quantityRequired;
-            }
-
             $items[] = [
                 'raw_material_product_id' => $input['product_id'],
-                'quantity_required' => $neededQuantity, // For stock validation - what user is providing
-                'quantity_consumed' => $neededQuantity, // What's actually used in production
-                'unit_code' => $input['unit'],
+                'quantity_required' => $materialInputInBaseUnit, // For stock validation - converted to base unit
+                'quantity_consumed' => $materialInputInBaseUnit, // What's actually used in production - in base unit
+                'unit_code' => $input['unit_code'],
                 'unit_cost' => $unitCost,
-                'total_cost' => $quantityConsumed * $unitCost,
+                'total_cost' => $materialInputInBaseUnit * $unitCost, // Calculate cost based on base unit quantity
                 'product_name' => $input['product_name'],
-                // Store original material input and leftover for audit trail
+                // Store original material input and leftover for audit trail (in component's unit)
                 'material_input' => $materialInput,
                 'leftover' => $input['leftover'],
             ];

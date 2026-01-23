@@ -47,23 +47,43 @@ class ConfirmSalesDeliveryAction
                 $productId = $product->product_id;
                 $deliveryQty = $product->qty;
                 $warehouseId = $salesDelivery->warehouse_id;
+                $unitId = $product->f_unit_id ?? null;
 
-                // Record stock movement (OUT)
+                // Convert delivery quantity to base unit for stock operations
+                // If unit_id is provided, check if it's the default unit
+                $deliveryQtyInBaseUnit = $deliveryQty;
+
+                if ($unitId) {
+                    $productUnit = DB::table('m_product_units as pu')
+                        ->where('pu.f_product_id', $productId)
+                        ->where('pu.f_unit_id', $unitId)
+                        ->select('pu.conversion_factor', 'pu.is_default')
+                        ->first();
+
+                    if ($productUnit && !$productUnit->is_default) {
+                        // Not default unit, convert to base unit
+                        // Example: 10 BOX * 100 (conversion factor) = 1000 KG (base unit)
+                        $conversionFactor = $productUnit->conversion_factor ?? 1;
+                        $deliveryQtyInBaseUnit = $deliveryQty * $conversionFactor;
+                    }
+                }
+
+                // Record stock movement (OUT) - use base unit quantity
                 app(StockMovementLogService::class)->recordMovement(
                     $warehouseId,
                     $productId,
                     'SALES_OUT',
                     'SALES_DELIVERY',
                     $salesDelivery->delivery_number ?? 'Unknown',
-                    $deliveryQty,
+                    $deliveryQtyInBaseUnit,
                     'Sales Delivery Confirmed: ' . ($salesDelivery->delivery_number ?? 'Unknown'),
                     $salesDelivery->delivery_date ?? now()
                 );
-                
-                // Update product stock (decrease)
-                app(ProductService::class)->updateStock($productId, '-', $deliveryQty);
 
-                // Update delivered quantities in sales order
+                // Update product stock (decrease) - use base unit quantity
+                app(ProductService::class)->updateStock($productId, '-', $deliveryQtyInBaseUnit);
+
+                // Update delivered quantities in sales order - use original quantity (in sales unit)
                 if ($salesDelivery->sales_order_id && $product->sales_order_product_id) {
                     app(SalesOrderService::class)->updateDeliveredQuantities(
                         $salesDelivery->sales_order_id,
@@ -72,8 +92,8 @@ class ConfirmSalesDeliveryAction
                     );
                 }
 
-                // Consume stock batches (FIFO)
-                $this->consumeStockBatches($productId, $deliveryQty, $salesDeliveryId);
+                // Consume stock batches (FIFO) - use base unit quantity
+                $this->consumeStockBatches($productId, $deliveryQtyInBaseUnit, $salesDeliveryId);
             }
 
             // Update sales delivery status to CONFIRMED

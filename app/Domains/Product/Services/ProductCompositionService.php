@@ -59,6 +59,7 @@ class ProductCompositionService
                 DB::raw('COALESCE(stock.total_stock, 0) as total_stock'),
                 'prd.name as product_name',
                 'unt.name as unit_name',
+                'unt.code as unit_code',
                 DB::raw('COALESCE((
                     SELECT final_hpp
                     FROM t_product_stock_batches

@@ -107,10 +107,11 @@ class SalesDeliveryService
                 'sdp.*',
                 'p.code as product_code',
                 'p.name as product_name',
-                'u.name as unit_name',
+                DB::raw('COALESCE(u.name, u_default.name) as unit_name'),
             ])
             ->join('m_products as p', 'sdp.product_id', '=', 'p.id')
-            ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
+            ->leftJoin('m_units as u', 'sdp.f_unit_id', '=', 'u.id')
+            ->leftJoin('m_units as u_default', 'p.f_unit_id', '=', 'u_default.id')
             ->where('sdp.sales_delivery_id', $salesDeliveryId)
             ->get()->toArray();
     }
@@ -230,6 +231,7 @@ class SalesDeliveryService
                 'sales_delivery_id' => $deliveryId,
                 'sales_order_product_id' => $product['sales_order_product_id'],
                 'product_id' => $product['product_id'],
+                'f_unit_id' => $product['unit_id'] ?? null,
                 'delivered_qty_before' => $product['delivered_qty_before'],
                 'remaining_qty_before' => $product['remaining_qty_before'],
                 'qty' => $product['delivery_qty'],

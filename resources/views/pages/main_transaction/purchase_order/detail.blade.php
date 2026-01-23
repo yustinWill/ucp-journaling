@@ -250,19 +250,46 @@
                                                         @endif
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control" value="{{ number_format($line['quantity'], 4, ',', '.') }}" disabled />
+                                                        @php
+                                                            // Smart decimal formatting for quantity
+                                                            if ($line['quantity'] == floor($line['quantity'])) {
+                                                                $formattedQty = number_format($line['quantity'], 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($line['quantity'], 4, ',', '.');
+                                                                $formattedQty = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        <input type="text" class="form-control" value="{{ $formattedQty }}" disabled />
                                                     </td>
                                                     <td>
                                                         <input type="text" class="form-control" value="{{ $line['unit'] }}" disabled />
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control" value="Rp {{ number_format($line['unit_price'], 4, ',', '.') }}" disabled />
+                                                        @php
+                                                            // Smart decimal formatting for price
+                                                            if ($line['unit_price'] == floor($line['unit_price'])) {
+                                                                $formattedPrice = number_format($line['unit_price'], 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($line['unit_price'], 4, ',', '.');
+                                                                $formattedPrice = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        <input type="text" class="form-control" value="Rp {{ $formattedPrice }}" disabled />
                                                     </td>
                                                     {{-- <td>
                                                         <input type="text" class="form-control" value="{{ $line['tax_name'] ?: 'Tanpa Pajak' }}" disabled />
                                                     </td> --}}
                                                     <td>
-                                                        <input type="text" class="form-control" value="Rp {{ number_format($line['total'], 4, ',', '.') }}" disabled />
+                                                        @php
+                                                            // Smart decimal formatting for total
+                                                            if ($line['total'] == floor($line['total'])) {
+                                                                $formattedTotal = number_format($line['total'], 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($line['total'], 4, ',', '.');
+                                                                $formattedTotal = rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                        <input type="text" class="form-control" value="Rp {{ $formattedTotal }}" disabled />
                                                     </td>
                                                 </tr>
                                                 @endforeach
@@ -425,9 +452,39 @@
                                                     {{ $delivery['product_name'] }}
                                                 @endif
                                             </td>
-                                            <td class="text-end">{{ number_format($delivery['total_qty'], 4, ',', '.') }}</td>
-                                            <td class="text-end">{{ number_format($delivery['qty_delivered'], 4, ',', '.') }}</td>
-                                            <td class="text-end">{{ number_format($delivery['remaining_qty'], 4, ',', '.') }}</td>
+                                            <td class="text-end">
+                                                @php
+                                                    // Smart decimal formatting
+                                                    if ($delivery['total_qty'] == floor($delivery['total_qty'])) {
+                                                        echo number_format($delivery['total_qty'], 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($delivery['total_qty'], 4, ',', '.');
+                                                        echo rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                            </td>
+                                            <td class="text-end">
+                                                @php
+                                                    // Smart decimal formatting
+                                                    if ($delivery['qty_delivered'] == floor($delivery['qty_delivered'])) {
+                                                        echo number_format($delivery['qty_delivered'], 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($delivery['qty_delivered'], 4, ',', '.');
+                                                        echo rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                            </td>
+                                            <td class="text-end">
+                                                @php
+                                                    // Smart decimal formatting
+                                                    if ($delivery['remaining_qty'] == floor($delivery['remaining_qty'])) {
+                                                        echo number_format($delivery['remaining_qty'], 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($delivery['remaining_qty'], 4, ',', '.');
+                                                        echo rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                            </td>
                                             <td class="text-start">
                                                 @if($delivery['remaining_qty'] == 0)
                                                     <span class="badge bg-label-success">Complete</span>
