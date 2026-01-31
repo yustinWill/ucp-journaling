@@ -244,7 +244,7 @@ class PurchaseOrderController extends Controller
                 'products.*.unit_price' => 'required|string|max:50',
                 // 'products.*.tax_id' => 'required|string|max:50',
                 'products.*.total' => 'required|string|max:50',
-                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
             ], [], [
                 'date' => 'Tanggal PO',
                 'reference_no' => 'Nomor Referensi',
@@ -708,7 +708,7 @@ class PurchaseOrderController extends Controller
                 'products.*.unit_price' => 'required|string|max:50',
                 // 'products.*.tax_id' => 'required|string|max:50',
                 'products.*.total' => 'required|string|max:50',
-                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
             ], [], [
                 'id' => 'ID PO',
                 'date' => 'Tanggal PO',

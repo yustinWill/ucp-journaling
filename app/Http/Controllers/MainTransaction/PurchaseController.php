@@ -456,7 +456,7 @@ class PurchaseController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
         ]);
 
         // Mock validation response

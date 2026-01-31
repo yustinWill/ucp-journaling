@@ -124,7 +124,7 @@ class SalesDeliveryController extends Controller
                 'sales_order_id' => 'nullable|integer|exists:t_sales_orders,id',
                 'customer_id' => 'required|integer|exists:m_contacts,id',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
-                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
                 'products' => 'required|array',
                 'products.*.sales_order_product_id' => 'required|integer|exists:t_sales_order_products,id',
                 'products.*.product_id' => 'required|integer|exists:m_products,id',

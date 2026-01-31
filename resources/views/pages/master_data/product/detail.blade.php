@@ -546,9 +546,11 @@
                                     <table class="table table-bordered" id="bundle-composition-table">
                                         <thead>
                                             <tr>
-                                                <th style="width: 40%;">Nama Produk</th>
-                                                <th style="width: 20%;">Qty</th>
-                                                <th style="width: 20%;">Satuan</th>
+                                                <th style="width: 35%;">Nama Produk</th>
+                                                <th style="width: 15%;">Qty</th>
+                                                <th style="width: 15%;">Satuan</th>
+                                                <th style="width: 20%;">HPP</th>
+                                                <th style="width: 15%;">Total HPP</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -578,11 +580,13 @@
                                                             @endphp
                                                         </td>
                                                         <td class="text-center">{{ $component->unit_name }}</td>
+                                                        <td class="text-end">Rp {{ number_format($component->hpp ?? 0, 0, ',', '.') }}</td>
+                                                        <td class="text-end">Rp {{ number_format(($component->hpp ?? 0) * $component->qty, 0, ',', '.') }}</td>
                                                     </tr>
                                                 @endforeach
                                             @else
                                                 <tr>
-                                                    <td colspan="3" class="text-center text-muted">Tidak ada komponen
+                                                    <td colspan="5" class="text-center text-muted">Tidak ada komponen
                                                         bundle</td>
                                                 </tr>
                                             @endif

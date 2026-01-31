@@ -555,7 +555,7 @@ class StockOpnameController extends Controller
     public function validateImport(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
         ]);
 
         try {

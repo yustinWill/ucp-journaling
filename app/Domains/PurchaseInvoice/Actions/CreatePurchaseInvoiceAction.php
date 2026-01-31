@@ -31,13 +31,18 @@ class CreatePurchaseInvoiceAction
             ];
             $dbStatus = $statusMapping[$data['invoice_status']] ?? 'UNPAID';
 
+            // Get purchase order data for due_date and payment_terms if not provided
+            $purchaseOrder = DB::table('t_purchase_orders')
+                ->where('id', $data['purchase_order_id'])
+                ->first();
+
             // Create invoice data
             $invoiceData = [
                 'purchase_order_id' => $data['purchase_order_id'],
                 'invoice_number' => $data['invoice_number'],
                 'invoice_date' => $data['invoice_date'],
                 'transaction_date' => $data['transaction_date'],
-                // 'due_date' => $data['due_date'],
+                'due_date' => $data['due_date'] ?? $purchaseOrder->payment_term_due_date ?? now()->addDays(30),
                 'payment_terms' => $purchaseOrder->payment_term_name ?? 'NET 30',
                 'description' => $data['description'] ?? null,
                 'internal_memo' => $data['internal_memo'] ?? null,

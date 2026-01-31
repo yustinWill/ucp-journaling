@@ -110,9 +110,9 @@ class ProductCompositionService
     public function findAllBasedOnProductIdOld($product_id)
     {
         return DB::table($this->table_name.' as t')
-            ->select('t.*', 'prd.total_stock', 'prd.name as product_name', 'unt.name as unit_name')
+            ->select('t.*', 'prd.total_stock', 'prd.name as product_name', 'prd.average_price as hpp', 'unt.name as unit_name')
             ->join('m_products as prd', 'prd.id', '=', 't.f_product_composition_product_id')
-            
+
             ->join('m_units as unt', 'unt.id', '=', 't.f_unit_id')
             ->where('t.f_product_id', $product_id)
             ->get();

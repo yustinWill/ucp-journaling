@@ -135,7 +135,7 @@ class ReturnManagementController extends Controller
                 'description' => 'nullable|string',
                 'internal_memo' => 'nullable|string',
                 'tags' => 'nullable|array',
-                'attachment' => 'nullable|file|max:10240|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip',
+                'attachment' => 'nullable|file|max:5120|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip',
                 'products' => 'required|array',
                 'products.*.f_product_id' => 'required|integer',
                 'products.*.f_source_invoice_product_id' => 'required|integer',

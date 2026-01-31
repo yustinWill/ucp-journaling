@@ -181,7 +181,7 @@ class SalesOrderController extends Controller
                 // 'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
                 'products.*.total' => 'required|string',
                 'products.*.is_bonus' => 'nullable|boolean',
-                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
             ], [], [
                 'reference_no' => 'Nomor Referensi',
                 'date' => 'Tanggal',
@@ -407,7 +407,7 @@ class SalesOrderController extends Controller
                 // 'products.*.tax_id' => 'nullable|integer|exists:m_taxes,id',
                 'products.*.total' => 'required|string',
                 'products.*.is_bonus' => 'nullable|boolean',
-                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:10240',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
             ], [], [
                 'id' => 'ID Sales Order',
                 'date' => 'Tanggal',
