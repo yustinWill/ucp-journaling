@@ -154,7 +154,6 @@ class StockMovementLogsService
         return DB::table('t_stock_movement_logs as inlog')
             ->join('t_stock_movement_logs as outlog', function ($join) {
                 $join->on('outlog.company_code', '=', 'inlog.company_code')
-                    ->on('outlog.reference_number', '=', 'inlog.reference_number')
                     ->on('outlog.product_id', '=', 'inlog.product_id')
                     ->whereColumn('outlog.id', '<>', 'inlog.id')
                     ->whereColumn('outlog.stock_after', '<', 'outlog.stock_before'); // OUT
@@ -191,5 +190,6 @@ class StockMovementLogsService
                 'inlog.warehouse_name as warehouse_to',
             ])
             ->get();
+        
     }
 }
