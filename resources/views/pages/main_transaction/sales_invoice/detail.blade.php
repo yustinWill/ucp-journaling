@@ -931,7 +931,16 @@
         // Utility Functions
         function formatNumberInvoice(value) {
             if (!value || value === 0) return '0';
-            return parseInt(value).toLocaleString('id-ID');
+            let num = parseFloat(value);
+            if (isNaN(num)) return '0';
+            // Smart formatting - only show decimals if necessary
+            if (num % 1 === 0) {
+                return Math.floor(num).toLocaleString('id-ID');
+            } else {
+                // Has decimals - format with up to 4 decimals and strip trailing zeros
+                let formatted = num.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 4 });
+                return formatted;
+            }
         }
 
         function parseNumberInvoice(value) {

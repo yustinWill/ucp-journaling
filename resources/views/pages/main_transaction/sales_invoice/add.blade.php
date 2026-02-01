@@ -327,7 +327,7 @@
                             <input type="hidden" name="products[${item.id}][product_id]" value="${item.f_product_id}">
                         </td>
                         <td class="text-end">
-                            ${convertToIndonesianFormat(qty)}
+                            ${toIndonesianNumberFormat(qty)}
                             <input type="hidden" name="products[${item.id}][po_qty]" value="${item.quantity}">
                         </td>
                         <td>
