@@ -258,7 +258,8 @@ class ProductService
                 't.f_category_id',
                 'mc.name AS category_name',
                 't.total_stock',
-                't.qty_available',
+                // Calculate qty_available from batch remaining_qty
+                DB::raw('(SELECT COALESCE(SUM(psb.remaining_qty), 0) FROM t_product_stock_batches psb WHERE psb.f_product_id = t.id AND psb.status = "ACTIVE") AS qty_available'),
                 't.minimum_stock',
                 't.f_unit_id',
                 'mu.name AS unit_name',
