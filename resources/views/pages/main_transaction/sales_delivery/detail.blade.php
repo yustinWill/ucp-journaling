@@ -12,7 +12,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="d-flex gap-2 justify-content-end">
-                        @if ($salesDelivery->is_confirmed !== 1)
+                        @if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
                             <button type="button" id="btn-confirm-delivery" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-check me-2"></i>
                                 Konfirm

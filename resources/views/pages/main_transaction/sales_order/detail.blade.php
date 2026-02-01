@@ -12,27 +12,44 @@
                 </div>
                 <div class="col-md-4">
                     <!-- Show buttons directly -->
-                    <div class="d-flex gap-2 justify-content-end">
-                        <button type="button" class="btn btn-primary btn-md waves-effect waves-light"
+                    <div class="d-flex gap-2 justify-content-end flex-wrap">
+                        <button type="button" class="btn btn-primary btn-sm waves-effect waves-light text-nowrap"
                             onclick="window.print()">
-                            <i class="icon-base ti tabler-printer me-2"></i>Print
+                            <i class="icon-base ti tabler-printer me-1"></i>Print
                         </button>
-                        @if ($canCreateSalesDelivery && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
+                        @php
+                            // Check if there's any confirmed/complete delivery
+                            $hasConfirmedDelivery = isset($salesDeliveries) && $salesDeliveries->contains(function($delivery) {
+                                return $delivery->is_confirmed == '1' || in_array($delivery->status, ['CONFIRMED', 'COMPLETE']);
+                            });
+                        @endphp
+                        @if ($canCreateSalesDelivery && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']) && !$hasConfirmedDelivery)
                             <a href="{{ route('main_transaction.sales_delivery.add', ['so_id' => $salesOrder['id']]) }}"
-                                class="btn btn-warning btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-truck-delivery me-2"></i>Buat Delivery
+                                class="btn btn-warning btn-sm waves-effect waves-light text-nowrap">
+                                <i class="icon-base ti tabler-truck-delivery me-1"></i>Buat Delivery
                             </a>
                         @endif
-                        @if ($canCreateSalesInvoice && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
+                        @php
+                            // Check if there's any completed (PAID) invoice
+                            $hasCompletedInvoice = isset($salesInvoices) && $salesInvoices->contains(function($invoice) {
+                                return in_array($invoice->status, ['PAID', 'COMPLETE']);
+                            });
+                        @endphp
+                        @if ($canCreateSalesInvoice && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']) && !$hasCompletedInvoice)
                             <a href="{{ route('main_transaction.sales_invoice.add', ['so_id' => $salesOrder['id']]) }}"
-                                class="btn btn-info btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-file-invoice me-2"></i>Buat Invoice
+                                class="btn btn-info btn-sm waves-effect waves-light text-nowrap">
+                                <i class="icon-base ti tabler-file-invoice me-1"></i>Buat Invoice
                             </a>
                         @endif
-                        @if ($canEdit)
+                        @php
+                            // Check if there's any SD or SI available
+                            $hasAnyDelivery = isset($salesDeliveries) && count($salesDeliveries) > 0;
+                            $hasAnyInvoice = isset($salesInvoices) && count($salesInvoices) > 0;
+                        @endphp
+                        @if ($canEdit && !$hasAnyDelivery && !$hasAnyInvoice)
                             <a href="{{ route('main_transaction.sales_order.edit', $salesOrder['id']) }}"
-                                class="btn btn-success btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-edit me-2"></i>Edit
+                                class="btn btn-success btn-sm waves-effect waves-light text-nowrap">
+                                <i class="icon-base ti tabler-edit me-1"></i>Edit
                             </a>
                         @endif
                     </div>
@@ -471,7 +488,7 @@
                                                         <i class="icon-base ti tabler-truck-delivery mb-2 text-muted"
                                                             style="font-size: 2rem;"></i>
                                                         <span class="mb-2">Belum ada Sales Delivery yang dibuat</span>
-                                                        @if ($canCreateSalesDelivery && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']))
+                                                        @if ($canCreateSalesDelivery && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']) && !$hasConfirmedDelivery)
                                                             <a href="{{ route('main_transaction.sales_delivery.add', ['so_id' => $salesOrder['id']]) }}"
                                                                 class="btn btn-warning btn-sm">
                                                                 <i class="icon-base ti tabler-truck-delivery me-1"></i>Buat

@@ -22,14 +22,46 @@ class SalesInvoiceService
 
     public function create(array $data)
     {
+        // Get sales order data for due_date fallback if not provided
+        $dueDate = $data['due_date'] ?? null;
+        $paymentTerms = $data['payment_terms'] ?? null;
+
+        if (empty($dueDate) && !empty($data['sales_order_id'])) {
+            $salesOrder = DB::table('t_sales_orders')
+                ->where('id', $data['sales_order_id'])
+                ->first(['payment_term_due_date', 'f_payment_term_id']);
+
+            if ($salesOrder) {
+                $dueDate = $salesOrder->payment_term_due_date;
+
+                // If still no due date, get from payment term
+                if (empty($dueDate) && $salesOrder->f_payment_term_id) {
+                    $paymentTerm = DB::table('m_payment_terms')
+                        ->where('id', $salesOrder->f_payment_term_id)
+                        ->first(['name', 'day_count']);
+
+                    if ($paymentTerm) {
+                        $paymentTerms = $paymentTerm->name;
+                        $dayCount = $paymentTerm->day_count ?? 30;
+                        $dueDate = now()->addDays($dayCount)->format('Y-m-d');
+                    }
+                }
+            }
+        }
+
+        // Final fallback: 30 days from invoice date
+        if (empty($dueDate)) {
+            $dueDate = now()->addDays(30)->format('Y-m-d');
+        }
+
         return DB::table($this->table_name)->insertGetId([
             'company_code' => session('user_company_code'),
             'transaction_code' => $data['invoice_number'],
             'f_sales_order_id' => $data['sales_order_id'],
             'invoice_date' => $data['invoice_date'],
             'transaction_date' => $data['transaction_date'],
-            'due_date' => $data['due_date'],
-            'payment_terms' => $data['payment_terms'] ?? null,
+            'due_date' => $dueDate,
+            'payment_terms' => $paymentTerms,
             'description' => $data['description'] ?? null,
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'internal_memo' => $data['memo'] ?? null,
