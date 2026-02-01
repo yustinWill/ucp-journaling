@@ -151,45 +151,62 @@ class StockMovementLogsService
 
     public function findAllLogBasedOnWarehouseId($warehouseId)
     {
-        return DB::table('t_stock_movement_logs as inlog')
-            ->join('t_stock_movement_logs as outlog', function ($join) {
-                $join->on('outlog.company_code', '=', 'inlog.company_code')
-                    ->on('outlog.product_id', '=', 'inlog.product_id')
-                    ->whereColumn('outlog.id', '<>', 'inlog.id')
-                    ->whereColumn('outlog.stock_after', '<', 'outlog.stock_before'); // OUT
-            })
-            ->whereColumn('inlog.stock_after', '>', 'inlog.stock_before')            // IN
-            ->where(function ($q) use ($warehouseId) {
-                $q->where('inlog.warehouse_id', $warehouseId)
-                ->orWhere('outlog.warehouse_id', $warehouseId);
-            })
-            ->orderBy('inlog.movement_date')
-            ->orderBy('inlog.id')
+        $companyCode = session('user_company_code');
+
+        return DB::table('t_stock_movement_logs as sml')
             ->select([
-                'inlog.movement_date as movement_date',
-                'inlog.product_id as product_id',
-                'inlog.product_code as product_code',
-                'inlog.movement_qty as qty',
+                'sml.id',
+                'sml.movement_date',
+                'sml.product_id',
+                'sml.product_code',
+                'sml.product_name',
+                'sml.movement_qty as qty',
+                'sml.movement_type',
+                'sml.reference_type',
+                'sml.reference_number',
+                'sml.stock_before',
+                'sml.stock_after',
+                'sml.warehouse_id',
+                'sml.warehouse_code',
+                'sml.warehouse_name',
+                'sml.unit',
+                'sml.unit_cost',
+                'sml.notes',
+                // Get paired warehouse info for transfers (warehouse_from for IN movements)
+                DB::raw("(
+                    SELECT paired.warehouse_name
+                    FROM t_stock_movement_logs paired
+                    WHERE paired.reference_number = sml.reference_number
+                    AND paired.product_id = sml.product_id
+                    AND paired.company_code = sml.company_code
+                    AND paired.id <> sml.id
+                    AND paired.movement_type LIKE '%_OUT'
+                    LIMIT 1
+                ) AS warehouse_from"),
+                // Get paired warehouse info for transfers (warehouse_to for OUT movements)
+                DB::raw("(
+                    SELECT paired.warehouse_name
+                    FROM t_stock_movement_logs paired
+                    WHERE paired.reference_number = sml.reference_number
+                    AND paired.product_id = sml.product_id
+                    AND paired.company_code = sml.company_code
+                    AND paired.id <> sml.id
+                    AND paired.movement_type LIKE '%_IN'
+                    LIMIT 1
+                ) AS warehouse_to"),
+                // Direction indicator based on stock change
                 DB::raw("
                     CASE
-                        WHEN inlog.warehouse_id = $warehouseId
-                            THEN inlog.stock_before
-                        ELSE outlog.stock_before
-                    END as stock_before
+                        WHEN sml.stock_after > sml.stock_before THEN 'IN'
+                        WHEN sml.stock_after < sml.stock_before THEN 'OUT'
+                        ELSE 'NO_CHANGE'
+                    END AS direction
                 "),
-                DB::raw("
-                    CASE
-                        WHEN inlog.warehouse_id = $warehouseId
-                            THEN inlog.stock_after
-                        ELSE outlog.stock_after
-                    END as stock_after
-                "),
-                'outlog.warehouse_id as warehouse_id_from',
-                'outlog.warehouse_name as warehouse_from',
-                'inlog.warehouse_id as warehouse_id_to',
-                'inlog.warehouse_name as warehouse_to',
             ])
+            ->where('sml.company_code', $companyCode)
+            ->where('sml.warehouse_id', $warehouseId)
+            ->orderBy('sml.movement_date', 'desc')
+            ->orderBy('sml.id', 'desc')
             ->get();
-        
     }
 }

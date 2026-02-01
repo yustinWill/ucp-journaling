@@ -282,27 +282,45 @@
                                         <tr>
                                             <th>Tanggal</th>
                                             <th>Produk</th>
+                                            <th>Tipe</th>
+                                            <th>Referensi</th>
                                             <th>Qty</th>
                                             <th>Stok Sebelum</th>
                                             <th>Stok Setelah</th>
-                                            <th>Dari Gudang</th>
-                                            <th>Ke Gudang</th>
+                                            <th>Keterangan</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @forelse($StockMovementLogs as $stock)
                                             <tr>
-                                                <td>{{ $stock->movement_date; }}</td>
-                                                <td><a href="{{ route('master_data.product.detail', ['id' => $stock->product_id]) }}" class="text-primary fw-semibold">{{ $stock->product_code; }}</a></td>
-                                                <td class="text-end">{{ number_format($stock->qty ?? 0, 0, ',', '.'); }}</td>
-                                                <td class="text-end">{{ number_format($stock->stock_before ?? 0, 0, ',', '.'); }}</td>
-                                                <td class="text-end">{{ number_format($stock->stock_after ?? 0, 0, ',', '.'); }}</td>
-                                                <td><a href="{{ route('master_data.warehouse.detail', ['id' => $stock->warehouse_id_from]) }}" class="text-primary fw-semibold">{{ $stock->warehouse_from; }} </a> </td>
-                                                <td><a href="{{ route('master_data.warehouse.detail', ['id' => $stock->warehouse_id_to]) }}" class="text-primary fw-semibold">{{ $stock->warehouse_to; }}</a></td>    
+                                                <td>{{ $stock->movement_date }}</td>
+                                                <td><a href="{{ route('master_data.product.detail', ['id' => $stock->product_id]) }}" class="text-primary fw-semibold">{{ $stock->product_code }}</a><br><small class="text-muted">{{ $stock->product_name }}</small></td>
+                                                <td>
+                                                    @if($stock->direction === 'IN')
+                                                        <span class="badge bg-success">{{ $stock->movement_type }}</span>
+                                                    @elseif($stock->direction === 'OUT')
+                                                        <span class="badge bg-danger">{{ $stock->movement_type }}</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">{{ $stock->movement_type }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $stock->reference_number }}</td>
+                                                <td class="text-end">{{ number_format($stock->qty ?? 0, 0, ',', '.') }}</td>
+                                                <td class="text-end">{{ number_format($stock->stock_before ?? 0, 0, ',', '.') }}</td>
+                                                <td class="text-end">{{ number_format($stock->stock_after ?? 0, 0, ',', '.') }}</td>
+                                                <td>
+                                                    @if($stock->warehouse_from)
+                                                        Dari: {{ $stock->warehouse_from }}
+                                                    @elseif($stock->warehouse_to)
+                                                        Ke: {{ $stock->warehouse_to }}
+                                                    @else
+                                                        {{ $stock->notes ?? '-' }}
+                                                    @endif
+                                                </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="4" class="text-center">Tidak ada log audit yang tersedia</td>
+                                                <td colspan="8" class="text-center">Tidak ada log pergerakan stok yang tersedia</td>
                                             </tr>
                                         @endforelse
                                     </tbody>

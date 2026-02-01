@@ -577,7 +577,7 @@
                             </div>
 
                             <!-- Transaction Summary -->
-                            @if (isset($batchData['transaction_summary']))
+                            {{-- @if (isset($batchData['transaction_summary']))
                             <div class="section-header mt-6">
                                 <h6>Ringkasan Transaksi</h6>
                             </div>
@@ -607,7 +607,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @endif
+                            @endif --}}
                         </div>
 
                         <!-- Bundle Composition Tab -->

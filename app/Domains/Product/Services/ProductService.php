@@ -258,8 +258,14 @@ class ProductService
                 't.f_category_id',
                 'mc.name AS category_name',
                 't.total_stock',
-                // Calculate qty_available from batch remaining_qty
-                DB::raw('(SELECT COALESCE(SUM(psb.remaining_qty), 0) FROM t_product_stock_batches psb WHERE psb.f_product_id = t.id AND psb.status = "ACTIVE") AS qty_available'),
+                // Calculate qty_available from stock movement logs (same logic as Persediaan tab)
+                DB::raw('(SELECT COALESCE(SUM(
+                    CASE
+                        WHEN sml.movement_type LIKE "%_IN" THEN sml.movement_qty
+                        WHEN sml.movement_type LIKE "%_OUT" THEN -sml.movement_qty
+                        ELSE 0
+                    END
+                ), 0) FROM t_stock_movement_logs sml WHERE sml.product_id = t.id AND sml.company_code = "'.session('user_company_code').'") AS qty_available'),
                 't.minimum_stock',
                 't.f_unit_id',
                 'mu.name AS unit_name',
