@@ -320,7 +320,7 @@ class CreatePackingAction
         );
     }
 
-    private function createPackagingMapping(int $transactionnumber,int $productionId, int $sourceBundleProductId, array $packaging): void
+    private function createPackagingMapping(string $transactionnumber, int $productionId, int $sourceBundleProductId, array $packaging): void
     {
         $companyCode = session('user_company_code');
 
