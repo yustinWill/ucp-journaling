@@ -479,61 +479,135 @@
                                 <table class="table table-bordered" id="batch-table">
                                     <thead>
                                         <tr>
-                                            <th>Tanggal Batch</th>
+                                            <th>Tanggal</th>
+                                            <th>Tipe</th>
                                             <th>Kode Batch</th>
-                                            <th>Referensi Batch</th>
+                                            <th>Referensi</th>
                                             <th>Sumber</th>
-                                            <th>Qty Awal</th>
+                                            <th>Qty IN</th>
+                                            <th>Qty OUT</th>
                                             <th>Qty Tersisa</th>
-                                            {{-- <th>HPP</th>
-                                            <th>Status HPP</th> --}}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if (count($batchData['batches']) === 0)
+                                        @php
+                                            // Build combined list of IN (batch creation) and OUT (transactions)
+                                            $combinedHistory = [];
+
+                                            // Add batch creations as IN
+                                            foreach ($batchData['batches'] as $batch) {
+                                                $combinedHistory[] = [
+                                                    'date' => $batch['batch_date'],
+                                                    'type' => 'IN',
+                                                    'batch_reference' => $batch['batch_reference'],
+                                                    'reference_code' => $batch['batch_reference'],
+                                                    'source_type' => $batch['source_type'],
+                                                    'qty_in' => $batch['initial_qty'],
+                                                    'qty_out' => 0,
+                                                    'remaining_qty' => $batch['remaining_qty'],
+                                                ];
+
+                                                // Add transactions (OUT) for this batch
+                                                if (isset($batch['transactions']) && count($batch['transactions']) > 0) {
+                                                    foreach ($batch['transactions'] as $transaction) {
+                                                        $combinedHistory[] = [
+                                                            'date' => \Carbon\Carbon::parse($transaction['transaction_date'])->format('Y-m-d'),
+                                                            'type' => $transaction['transaction_type'],
+                                                            'batch_reference' => $batch['batch_reference'],
+                                                            'reference_code' => $transaction['reference_code'],
+                                                            'source_type' => $transaction['source_type'],
+                                                            'qty_in' => $transaction['transaction_type'] === 'IN' ? $transaction['qty_moved'] : 0,
+                                                            'qty_out' => $transaction['transaction_type'] === 'OUT' ? $transaction['qty_moved'] : 0,
+                                                            'remaining_qty' => null,
+                                                        ];
+                                                    }
+                                                }
+                                            }
+
+                                            // Sort by date descending
+                                            usort($combinedHistory, function($a, $b) {
+                                                return strtotime($b['date']) - strtotime($a['date']);
+                                            });
+                                        @endphp
+
+                                        @if (count($combinedHistory) === 0)
                                             <tr>
-                                                <td colspan="8" class="text-center">Belum ada data batch untuk produk
-                                                    ini</td>
+                                                <td colspan="8" class="text-center">Belum ada data batch untuk produk ini</td>
                                             </tr>
                                         @else
-                                            @foreach ($batchData['batches'] as $batch)
+                                            @foreach ($combinedHistory as $history)
                                                 <tr>
-                                                    <td>{{ \Carbon\Carbon::parse($batch['batch_date'])->format('d/m/Y') }}
-                                                    </td>
-                                                    <td><span
-                                                            class="badge bg-label-info">{{ $batch['batch_reference'] }}</span>
-                                                    </td>
-                                                    <td>{{ $batch['batch_reference'] }}</td>
-                                                    <td><span
-                                                            class="badge bg-label-primary">{{ $batch['source_type'] }}</span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        {{ number_format($batch['initial_qty'], 0, ',', '.') }}</td>
-                                                    <td class="text-end">
-                                                        {{ number_format($batch['remaining_qty'], 0, ',', '.') }}</td>
-                                                    {{-- <td class="text-end">Rp
-                                                        @if ($batch['hpp_status'] === 'SETTLED')
-                                                            {{ number_format($batch['final_hpp'], 0, ',', '.') }}
-                                                        
-                                                        @else
-                                                            {{ number_format($batch['estimated_hpp'], 0, ',', '.') }}
-                                                        
-                                                        @endif</td>
+                                                    <td>{{ \Carbon\Carbon::parse($history['date'])->format('d/m/Y') }}</td>
                                                     <td>
-                                                        @if ($batch['hpp_status'] === 'SETTLED')
-                                                            <span class="badge bg-label-success">SETTLED</span>
-                                                        @elseif($batch['hpp_status'] === 'UNSETTLED')
-                                                            <span class="badge bg-label-warning">UNSETTLED</span>
+                                                        @if ($history['type'] === 'IN')
+                                                            <span class="badge bg-label-success">IN</span>
                                                         @else
-                                                            <span class="badge bg-label-secondary">UNKNOWN</span>
+                                                            <span class="badge bg-label-danger">OUT</span>
                                                         @endif
-                                                    </td> --}}
+                                                    </td>
+                                                    <td><span class="badge bg-label-info">{{ $history['batch_reference'] }}</span></td>
+                                                    <td>{{ $history['reference_code'] }}</td>
+                                                    <td><span class="badge bg-label-primary">{{ $history['source_type'] }}</span></td>
+                                                    <td class="text-end">
+                                                        @if ($history['qty_in'] > 0)
+                                                            <span class="text-success">+{{ number_format($history['qty_in'], 0, ',', '.') }}</span>
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-end">
+                                                        @if ($history['qty_out'] > 0)
+                                                            <span class="text-danger">-{{ number_format($history['qty_out'], 0, ',', '.') }}</span>
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-end">
+                                                        @if ($history['remaining_qty'] !== null)
+                                                            {{ number_format($history['remaining_qty'], 0, ',', '.') }}
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         @endif
                                     </tbody>
                                 </table>
                             </div>
+
+                            <!-- Transaction Summary -->
+                            @if (isset($batchData['transaction_summary']))
+                            <div class="section-header mt-6">
+                                <h6>Ringkasan Transaksi</h6>
+                            </div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <div class="card bg-light-success">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-success">Total Masuk (IN)</h6>
+                                            <h4 class="text-success">{{ number_format($batchData['transaction_summary']['total_in'], 0, ',', '.') }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light-danger">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-danger">Total Keluar (OUT)</h6>
+                                            <h4 class="text-danger">{{ number_format($batchData['transaction_summary']['total_out'], 0, ',', '.') }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light-primary">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-primary">Sisa Stock</h6>
+                                            <h4 class="text-primary">{{ number_format($batchData['total_quantity'], 0, ',', '.') }}</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                         </div>
 
                         <!-- Bundle Composition Tab -->

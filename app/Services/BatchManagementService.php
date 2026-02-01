@@ -143,6 +143,24 @@ class BatchManagementService
             $totalQuantity += $remainingQty;
             $totalValue += $batchValue;
 
+            // Get transactions for this batch
+            $transactions = DB::table($this->transaction_table)
+                ->where('f_product_batch_id', $batch->id)
+                ->orderBy('transaction_date', 'asc')
+                ->get()
+                ->map(function ($transaction) {
+                    return [
+                        'transaction_id' => $transaction->id,
+                        'transaction_type' => $transaction->transaction_type,
+                        'source_type' => $transaction->source_type,
+                        'transaction_date' => $transaction->transaction_date,
+                        'qty_moved' => $transaction->qty_moved,
+                        'reference_code' => $transaction->reference_code,
+                        'notes' => $transaction->notes,
+                    ];
+                })
+                ->toArray();
+
             $batchDetails[] = [
                 'batch_id' => $batch->id,
                 'batch_reference' => $batch->batch_reference_code,
@@ -156,8 +174,40 @@ class BatchManagementService
                 'final_hpp' => $batch->final_hpp,
                 'hpp_status' => $batch->hpp_status,
                 'batch_value' => $batchValue,
+                'transactions' => $transactions,
             ];
         }
+
+        // Get all transactions for this product (including from consumed batches)
+        $allTransactions = DB::table($this->transaction_table)
+            ->where('f_product_id', $productId)
+            ->orderBy('transaction_date', 'desc')
+            ->get()
+            ->map(function ($transaction) {
+                return [
+                    'transaction_id' => $transaction->id,
+                    'batch_id' => $transaction->f_product_batch_id,
+                    'transaction_type' => $transaction->transaction_type,
+                    'source_type' => $transaction->source_type,
+                    'transaction_date' => $transaction->transaction_date,
+                    'qty_moved' => $transaction->qty_moved,
+                    'reference_code' => $transaction->reference_code,
+                    'notes' => $transaction->notes,
+                ];
+            })
+            ->toArray();
+
+        // Calculate total IN from batches initial_qty (batch creation = stock IN)
+        $totalIn = DB::table($this->batch_table)
+            ->where('f_product_id', $productId)
+            ->where('status', 'ACTIVE')
+            ->sum('initial_qty');
+
+        // Calculate total OUT from transactions
+        $totalOut = DB::table($this->transaction_table)
+            ->where('f_product_id', $productId)
+            ->where('transaction_type', 'OUT')
+            ->sum('qty_moved');
 
         return [
             'product_id' => $productId,
@@ -166,6 +216,12 @@ class BatchManagementService
             'total_value' => $totalValue,
             'weighted_average_cost' => $totalQuantity > 0 ? $totalValue / $totalQuantity : 0,
             'batches' => $batchDetails,
+            'transaction_summary' => [
+                'total_in' => $totalIn,
+                'total_out' => $totalOut,
+                'net_movement' => $totalIn - $totalOut,
+            ],
+            'all_transactions' => $allTransactions,
         ];
     }
 
