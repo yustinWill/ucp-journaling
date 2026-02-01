@@ -164,8 +164,28 @@
                                             <td class="text-center">{{ $itemIndex + 1 }}</td>
                                             <td>{{ $item->product_code }} - {{ $item->product_name }}</td>
                                             <td class="text-center">{{ $item->unit_code }}</td>
-                                            <td class="text-end">{{ number_format($item->quantity_required, 2, ',', '.') }}</td>
-                                            <td class="text-end">{{ number_format($item->quantity_consumed, 2, ',', '.') }}</td>
+                                            <td class="text-end">
+                                                @php
+                                                    $qtyRequired = $item->quantity_required;
+                                                    if ($qtyRequired == floor($qtyRequired)) {
+                                                        echo number_format($qtyRequired, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($qtyRequired, 4, ',', '.');
+                                                        echo rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                            </td>
+                                            <td class="text-end">
+                                                @php
+                                                    $qtyConsumed = $item->quantity_consumed;
+                                                    if ($qtyConsumed == floor($qtyConsumed)) {
+                                                        echo number_format($qtyConsumed, 0, ',', '.');
+                                                    } else {
+                                                        $formatted = number_format($qtyConsumed, 4, ',', '.');
+                                                        echo rtrim(rtrim($formatted, '0'), ',');
+                                                    }
+                                                @endphp
+                                            </td>
                                             <td class="text-muted small">{{ $item->notes ?? '-' }}</td>
                                         </tr>
                                     @endforeach

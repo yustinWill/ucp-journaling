@@ -89,23 +89,23 @@
                             <tbody>
                                 <tr>
                                     <td><b>Pendapatan</b></td>
-                                    <td dir="rtl">Rp. {{ number_format($revenue_amount, 2, '.', ',') }}</td>
+                                    <td dir="rtl">Rp. @php echo $revenue_amount == floor($revenue_amount) ? number_format($revenue_amount, 0, '.', ',') : rtrim(rtrim(number_format($revenue_amount, 2, '.', ','), '0'), '.'); @endphp</td>
                                 </tr>
                                 <tr>
                                     <td><b>Beban</b></td>
-                                    <td dir="rtl">Rp. {{ number_format($expense_amount, 2, '.', ',') }}</td>
+                                    <td dir="rtl">Rp. @php echo $expense_amount == floor($expense_amount) ? number_format($expense_amount, 0, '.', ',') : rtrim(rtrim(number_format($expense_amount, 2, '.', ','), '0'), '.'); @endphp</td>
                                 </tr>
                                 @if ($variance_amount >= 0)
                                     <tr>
                                         <td><b>Laba</b></td>
                                         <td dir="rtl"><b><u>Rp.
-                                                    {{ number_format($variance_amount, 2, '.', ',') }}</u></b></td>
+                                                    @php echo $variance_amount == floor($variance_amount) ? number_format($variance_amount, 0, '.', ',') : rtrim(rtrim(number_format($variance_amount, 2, '.', ','), '0'), '.'); @endphp</u></b></td>
                                     </tr>
                                 @else
                                     <tr>
                                         <td><b>Rugi</b></td>
                                         <td dir="rtl"><b><u>Rp.
-                                                    {{ number_format($variance_amount, 2, '.', ',') }}</u></b></td>
+                                                    @php echo $variance_amount == floor($variance_amount) ? number_format($variance_amount, 0, '.', ',') : rtrim(rtrim(number_format($variance_amount, 2, '.', ','), '0'), '.'); @endphp</u></b></td>
                                     </tr>
                                 @endif
 

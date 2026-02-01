@@ -64,7 +64,18 @@
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td><strong>{{ $product->product_code ?? '' }}</strong><br>{{ $product->product_name ?? '' }}</td>
-                    <td class="text-center">{{ number_format($product->qty, 2, ',', '.') }}</td>
+                    <td class="text-center">
+                        @php
+                            $qty = $product->qty;
+                            if ($qty == floor($qty)) {
+                                $formattedQty = number_format($qty, 0, ',', '.');
+                            } else {
+                                $formatted = number_format($qty, 4, ',', '.');
+                                $formattedQty = rtrim(rtrim($formatted, '0'), ',');
+                            }
+                        @endphp
+                        {{ $formattedQty }}
+                    </td>
                     <td class="text-center">{{ $product->unit_code ?? '' }}</td>
                     <td class="text-right">Rp {{ number_format($product->unit_price ?? 0, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($product->line_total ?? 0, 0, ',', '.') }}</td>

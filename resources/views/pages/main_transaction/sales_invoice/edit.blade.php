@@ -153,7 +153,16 @@
                         <tr>
                             <td><strong>{{ $product->product_name }}</strong></td>
                             <td class="text-center">
-                                <span class="badge bg-label-info">{{ number_format($product->qty, 0, ',', '.') }}</span>
+                                @php
+                                    $qty = $product->qty;
+                                    if ($qty == floor($qty)) {
+                                        $formattedQty = number_format($qty, 0, ',', '.');
+                                    } else {
+                                        $formatted = number_format($qty, 4, ',', '.');
+                                        $formattedQty = rtrim(rtrim($formatted, '0'), ',');
+                                    }
+                                @endphp
+                                <span class="badge bg-label-info">{{ $formattedQty }}</span>
                             </td>
                             <td class="text-center">{{ $product->unit_code ?: '-' }}</td>
                             <td class="text-end">Rp {{ number_format($product->unit_price, 0, ',', '.') }}</td>

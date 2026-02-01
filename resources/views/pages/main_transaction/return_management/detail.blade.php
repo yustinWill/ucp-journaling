@@ -317,9 +317,30 @@
                                                         <strong>{{ $product->product_code ?? '' }} - {{ $product->product_name ?? '' }}</strong>
                                                     @endif
                                                 </td>
-                                                <td class="text-center">{{ number_format($product->original_qty ?? 0, 3) }} {{ $product->unit_code ?? '' }}</td>
                                                 <td class="text-center">
-                                                    <span class="badge bg-label-info">{{ number_format($product->return_qty ?? 0, 3) }}</span> {{ $product->unit_code ?? '' }}
+                                                    @php
+                                                        $originalQty = $product->original_qty ?? 0;
+                                                        if ($originalQty == floor($originalQty)) {
+                                                            echo number_format($originalQty, 0, ',', '.');
+                                                        } else {
+                                                            $formatted = number_format($originalQty, 4, ',', '.');
+                                                            echo rtrim(rtrim($formatted, '0'), ',');
+                                                        }
+                                                    @endphp
+                                                    {{ $product->unit_code ?? '' }}
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-label-info">
+                                                        @php
+                                                            $returnQty = $product->return_qty ?? 0;
+                                                            if ($returnQty == floor($returnQty)) {
+                                                                echo number_format($returnQty, 0, ',', '.');
+                                                            } else {
+                                                                $formatted = number_format($returnQty, 4, ',', '.');
+                                                                echo rtrim(rtrim($formatted, '0'), ',');
+                                                            }
+                                                        @endphp
+                                                    </span> {{ $product->unit_code ?? '' }}
                                                 </td>
                                                 <td class="text-center">{{ $product->unit_code ?? '-' }}</td>
                                                 <td class="text-end">Rp {{ number_format($product->return_unit_price ?? 0, 0, ',', '.') }}</td>

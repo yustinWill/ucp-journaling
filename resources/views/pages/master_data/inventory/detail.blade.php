@@ -102,7 +102,7 @@
                                     <label class="form-label">Nilai Pembelian</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="text" class="form-control" value="{{ number_format($asset->acquisition_value ?? 0, 2, ',', '.') }}" disabled />
+                                        <input type="text" class="form-control" value="@php $val = $asset->acquisition_value ?? 0; echo $val == floor($val) ? number_format($val, 0, ',', '.') : rtrim(rtrim(number_format($val, 2, ',', '.'), '0'), ','); @endphp" disabled />
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -157,14 +157,14 @@
                                     <label class="form-label">Total Penyusutan</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="text" class="form-control" value="{{ number_format($asset->total_depreciation ?? 0, 2, ',', '.') }}" disabled />
+                                        <input type="text" class="form-control" value="@php $val = $asset->total_depreciation ?? 0; echo $val == floor($val) ? number_format($val, 0, ',', '.') : rtrim(rtrim(number_format($val, 2, ',', '.'), '0'), ','); @endphp" disabled />
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Nilai Buku</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="text" class="form-control" value="{{ number_format($asset->net_book_value ?? ($asset->acquisition_value ?? 0), 2, ',', '.') }}" disabled />
+                                        <input type="text" class="form-control" value="@php $val = $asset->net_book_value ?? ($asset->acquisition_value ?? 0); echo $val == floor($val) ? number_format($val, 0, ',', '.') : rtrim(rtrim(number_format($val, 2, ',', '.'), '0'), ','); @endphp" disabled />
                                     </div>
                                 </div>
                             </div>
@@ -239,7 +239,7 @@
                                         <td>Pembelian</td>
                                         <td>{{ $asset->code ?? '-' }}</td>
                                         <td>{{ $assetAccount ? $assetAccount->code . ' - ' . $assetAccount->name : '-' }}</td>
-                                        <td>Rp {{ number_format($asset->acquisition_value ?? 0, 2, ',', '.') }}</td>
+                                        <td>Rp @php $val = $asset->acquisition_value ?? 0; echo $val == floor($val) ? number_format($val, 0, ',', '.') : rtrim(rtrim(number_format($val, 2, ',', '.'), '0'), ','); @endphp</td>
                                         <td>-</td>
                                         <td><a href="#" class="link-primary">view</a></td>
                                     </tr>
@@ -250,7 +250,7 @@
                                         <td>{{ $accumulatedDepreciationAccount ? $accumulatedDepreciationAccount->code : '-' }}</td>
                                         <td>{{ $accumulatedDepreciationAccount ? $accumulatedDepreciationAccount->code . ' - ' . $accumulatedDepreciationAccount->name : '-' }}</td>
                                         <td>-</td>
-                                        <td>Rp {{ number_format(($asset->acquisition_value ?? 0) * ($asset->depreciation_rate ?? 0) / 100, 2, ',', '.') }}</td>
+                                        <td>Rp @php $val = ($asset->acquisition_value ?? 0) * ($asset->depreciation_rate ?? 0) / 100; echo $val == floor($val) ? number_format($val, 0, ',', '.') : rtrim(rtrim(number_format($val, 2, ',', '.'), '0'), ','); @endphp</td>
                                         <td><a href="#" class="link-primary">view</a></td>
                                     </tr>
                                     @endif

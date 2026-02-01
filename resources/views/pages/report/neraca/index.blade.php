@@ -87,19 +87,19 @@
                                 <tbody>
                                     <tr>
                                         <td><b>Asset</b></td>
-                                        <td dir="rtl">Rp. {{ number_format($asset_amount, 2, '.', ',') }}</td>
+                                        <td dir="rtl">Rp. @php echo $asset_amount == floor($asset_amount) ? number_format($asset_amount, 0, '.', ',') : rtrim(rtrim(number_format($asset_amount, 2, '.', ','), '0'), '.'); @endphp</td>
                                     </tr>
                                     <tr>
                                         <td><b>Kewajiban</b></td>
-                                        <td dir="rtl">Rp. {{ number_format($liability_amount, 2, '.', ',') }}</td>
+                                        <td dir="rtl">Rp. @php echo $liability_amount == floor($liability_amount) ? number_format($liability_amount, 0, '.', ',') : rtrim(rtrim(number_format($liability_amount, 2, '.', ','), '0'), '.'); @endphp</td>
                                     </tr>
                                     <tr>
                                         <td><b>Ekuitas</b></td>
-                                        <td dir="rtl">Rp. {{ number_format($equity_amount, 2, '.', ',') }}</td>
+                                        <td dir="rtl">Rp. @php echo $equity_amount == floor($equity_amount) ? number_format($equity_amount, 0, '.', ',') : rtrim(rtrim(number_format($equity_amount, 2, '.', ','), '0'), '.'); @endphp</td>
                                     </tr>
                                     <tr>
                                         <td><b>Selisih</b></td>
-                                        <td dir="rtl">Rp. {{ number_format($variance_amount, 2, '.', ',') }}</td>
+                                        <td dir="rtl">Rp. @php echo $variance_amount == floor($variance_amount) ? number_format($variance_amount, 0, '.', ',') : rtrim(rtrim(number_format($variance_amount, 2, '.', ','), '0'), '.'); @endphp</td>
                                     </tr>
                                 </tbody>
                             </table>
