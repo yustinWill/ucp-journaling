@@ -12,7 +12,7 @@ class PaymentMethodService
     {
         return DB::table($this->table_name)
             ->where('status', 'ACTIVE')
-            ->orderBy('name', 'asc')
+            ->orderByRaw("CASE WHEN code = 'Other' THEN 1 ELSE 0 END, name ASC")
             ->get();
     }
 }

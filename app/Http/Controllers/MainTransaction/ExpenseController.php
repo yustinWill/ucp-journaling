@@ -80,7 +80,6 @@ class ExpenseController extends Controller
             'paymentMethods' => $paymentMethods,
             'coa_accounts' => $coa_accounts,
             'activeBudgets' => $activeBudgets,
-
         ]);
     }
 

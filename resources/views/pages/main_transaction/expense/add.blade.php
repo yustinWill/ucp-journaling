@@ -23,7 +23,7 @@
                         <select id="payment-method" name="payment_method" class="global-select2 form-select" required>
                             <option value="">Pilih Metode Pembayaran</option>
                             @foreach ($paymentMethods as $method)
-                                <option value="{{ $method->id }}">{{ $method->code }} - {{ $method->name }}</option>
+                                <option value="{{ $method->code }}">{{ $method->name }}</option>
                             @endforeach
                         </select>
                     </div>
