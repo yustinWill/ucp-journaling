@@ -123,7 +123,7 @@ class SalesInvoiceController extends Controller
                 'invoice_number' => 'required|string|max:50|unique:t_sales_invoices,transaction_code',
                 'invoice_date' => 'required|date',
                 'transaction_date' => 'required|date',
-                'due_date' => 'required|date',
+                'due_date' => 'nullable|date',
                 'description' => 'nullable|string|max:255',
                 'memo' => 'nullable|string|max:255',
                 'tags' => 'nullable|array',
