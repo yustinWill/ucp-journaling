@@ -28,18 +28,18 @@
                 <div data-i18n="Pencatatan Keuangan">Pencatatan Keuangan</div>
             </a>
         </li>
-        <li class="menu-item">
+        {{-- <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-file-analytics"></i>
                 <div data-i18n="Chat">Laporan - wip</div>
             </a>
-        </li>
-        <li class="menu-item">
+        </li> --}}
+        {{-- <li class="menu-item">
             <a href="app-chat.html" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-wallet"></i>
                 <div data-i18n="Chat">Anggaran - wip</div>
             </a>
-        </li>
+        </li> --}}
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Transaksi</span>
         </li>
@@ -105,12 +105,12 @@
                 </li>
             </ul>
         </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.journal.*'])) active @endif">
+        {{-- <li class="menu-item @if (request()->routeIs(['main_transaction.journal.*'])) active @endif">
             <a href="{{ route('main_transaction.journal.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-receipt-2"></i>
                 <div data-i18n="Chat">Jurnal</div>
             </a>
-        </li>
+        </li> --}}
         {{-- @if (session('CLIENT_CODE') == '001') --}}
             <li class="menu-item @if (request()->routeIs(['main_transaction.expense.*'])) active @endif">
                 <a href="{{ route('main_transaction.expense.index') }}" class="menu-link">
@@ -172,12 +172,12 @@
                 <div data-i18n="Packing Produk">Packing Produk</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.overhead_absorption.*'])) active @endif">
+        {{-- <li class="menu-item @if (request()->routeIs(['main_transaction.overhead_absorption.*'])) active @endif">
             <a href="{{ route('main_transaction.overhead_absorption.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-chart-dots"></i>
                 <div data-i18n="Absorpsi Overhead">Absorpsi Overhead</div>
             </a>
-        </li>
+        </li> --}}
         <li class="menu-item @if (request()->routeIs(['main_transaction.topup.*'])) active @endif">
             <a href="{{ route('main_transaction.topup.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-cash"></i>
@@ -211,12 +211,12 @@
                 <div data-i18n="Chat">Asset / Inventaris</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">
+        {{-- <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">
             <a href="{{ route('master_data.coa.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-notebook"></i>
                 <div data-i18n="Chat">Daftar Akun</div>
             </a>
-        </li>
+        </li> --}}
         <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*', 'report.buku_besar.*', 'report.laba_rugi.*', 'report.neraca.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
