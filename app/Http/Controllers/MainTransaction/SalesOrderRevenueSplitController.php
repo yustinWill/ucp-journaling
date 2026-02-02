@@ -125,7 +125,7 @@ class SalesOrderRevenueSplitController extends Controller
     {
         try {
             // Get current product info from sales order
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
             
             $soProduct = \DB::table('t_sales_order_products as sop')
                 ->where('sop.f_sales_order_id', $salesOrderId)

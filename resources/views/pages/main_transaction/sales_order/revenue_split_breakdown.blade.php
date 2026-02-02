@@ -1,3 +1,11 @@
+@php
+    // Calculate percentages for the entire view
+    $totalRevenue = $summary->total_amount ?? 1;
+    $pabrikPercentage = $totalRevenue > 0 ? ($summary->total_pabrik / $totalRevenue) * 100 : 0;
+    $ownerPercentage = $totalRevenue > 0 ? ($summary->total_owner / $totalRevenue) * 100 : 0;
+    $perusahaanPercentage = $totalRevenue > 0 ? ($summary->total_perusahaan / $totalRevenue) * 100 : 0;
+@endphp
+
 @if($splits && count($splits) > 0)
     <!-- Action Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -21,7 +29,7 @@
         <hr class="mx-n6">
     </div>
 
-    <!-- Summary Cards -->
+    <!-- Summary Cards with % and Amount -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card bg-label-primary">
@@ -34,6 +42,8 @@
                         </div>
                         <div>
                             <h6 class="mb-0">Porsi Pabrik</h6>
+                            <small class="text-primary fw-bold">{{ number_format($pabrikPercentage, 1) }}%</small>
+                            <br>
                             <small class="text-primary">Rp {{ number_format($summary->total_pabrik ?? 0, 0, ',', '.') }}</small>
                         </div>
                     </div>
@@ -51,6 +61,8 @@
                         </div>
                         <div>
                             <h6 class="mb-0">Porsi Owner</h6>
+                            <small class="text-warning fw-bold">{{ number_format($ownerPercentage, 1) }}%</small>
+                            <br>
                             <small class="text-warning">Rp {{ number_format($summary->total_owner ?? 0, 0, ',', '.') }}</small>
                         </div>
                     </div>
@@ -68,6 +80,8 @@
                         </div>
                         <div>
                             <h6 class="mb-0">Porsi Perusahaan</h6>
+                            <small class="text-success fw-bold">{{ number_format($perusahaanPercentage, 1) }}%</small>
+                            <br>
                             <small class="text-success">Rp {{ number_format($summary->total_perusahaan ?? 0, 0, ',', '.') }}</small>
                         </div>
                     </div>
@@ -85,6 +99,8 @@
                         </div>
                         <div>
                             <h6 class="mb-0">Total Revenue</h6>
+                            <small class="text-info fw-bold">100%</small>
+                            <br>
                             <small class="text-info">Rp {{ number_format($summary->total_amount ?? 0, 0, ',', '.') }}</small>
                         </div>
                     </div>
@@ -116,6 +132,13 @@
                 </thead>
                 <tbody>
                     @foreach($splits as $split)
+                        @php
+                            // Calculate percentages per product
+                            $productTotal = $split->product_total_amount > 0 ? $split->product_total_amount : 1;
+                            $pabrikPct = ($split->porsi_pabrik / $productTotal) * 100;
+                            $ownerPct = ($split->porsi_owner / $productTotal) * 100;
+                            $perusahaanPct = ($split->porsi_perusahaan / $productTotal) * 100;
+                        @endphp
                         <tr>
                             <td>
                                 <div>
@@ -129,18 +152,24 @@
                                 <strong>Rp {{ number_format($split->product_total_amount, 0, ',', '.') }}</strong>
                             </td>
                             <td class="text-end">
+                                <span class="badge bg-label-primary mb-1">{{ number_format($pabrikPct, 1) }}%</span>
+                                <br>
                                 <span class="text-primary">Rp {{ number_format($split->porsi_pabrik, 0, ',', '.') }}</span>
                                 @if($split->remaining_allocation === 'pabrik')
                                     <br><small class="text-success"><i class="icon-base ti tabler-plus"></i> Dapat sisa</small>
                                 @endif
                             </td>
                             <td class="text-end">
+                                <span class="badge bg-label-warning mb-1">{{ number_format($ownerPct, 1) }}%</span>
+                                <br>
                                 <span class="text-warning">Rp {{ number_format($split->porsi_owner, 0, ',', '.') }}</span>
                                 @if($split->remaining_allocation === 'owner')
                                     <br><small class="text-success"><i class="icon-base ti tabler-plus"></i> Dapat sisa</small>
                                 @endif
                             </td>
                             <td class="text-end">
+                                <span class="badge bg-label-success mb-1">{{ number_format($perusahaanPct, 1) }}%</span>
+                                <br>
                                 <span class="text-success">Rp {{ number_format($split->porsi_perusahaan, 0, ',', '.') }}</span>
                                 @if($split->remaining_allocation === 'perusahaan')
                                     <br><small class="text-success"><i class="icon-base ti tabler-plus"></i> Dapat sisa</small>
@@ -170,20 +199,20 @@
                             </td>
                             <td>
                                 <div class="dropdown">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
                                         data-bs-toggle="dropdown">
                                         <i class="icon-base ti tabler-dots-vertical"></i>
                                     </button>
                                     <ul class="dropdown-menu">
                                         <li>
-                                            <a class="dropdown-item" href="javascript:void(0)" 
+                                            <a class="dropdown-item" href="javascript:void(0)"
                                                 onclick="editRevenueSplit({{ $split->f_product_id }}, '{{ $split->product_name }}', {{ json_encode($split) }})">
                                                 <i class="icon-base ti tabler-edit me-2"></i>Edit Split
                                             </a>
                                         </li>
                                         @if($split->is_custom_split)
                                             <li>
-                                                <a class="dropdown-item" href="javascript:void(0)" 
+                                                <a class="dropdown-item" href="javascript:void(0)"
                                                     onclick="resetRevenueSplit({{ $split->f_product_id }}, '{{ $split->product_name }}')">
                                                     <i class="icon-base ti tabler-refresh me-2"></i>Reset to Default
                                                 </a>
@@ -204,13 +233,6 @@
         <h6>Distribusi Persentase Revenue Split</h6>
         <hr class="mx-n6">
     </div>
-
-    @php
-        $totalRevenue = $summary->total_amount ?? 1;
-        $pabrikPercentage = ($summary->total_pabrik / $totalRevenue) * 100;
-        $ownerPercentage = ($summary->total_owner / $totalRevenue) * 100;
-        $perusahaanPercentage = ($summary->total_perusahaan / $totalRevenue) * 100;
-    @endphp
 
     <div class="row g-3 mb-4">
         <div class="col-md-4">

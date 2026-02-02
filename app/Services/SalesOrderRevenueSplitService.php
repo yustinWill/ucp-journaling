@@ -17,7 +17,7 @@ class SalesOrderRevenueSplitService
     public function createRevenueSplitsForSalesOrder($salesOrderId, $salesOrderProducts)
     {
         try {
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
             $userId = Auth::id();
 
             // Delete existing splits if any
@@ -135,7 +135,7 @@ class SalesOrderRevenueSplitService
     public function getRevenueSplitsForSalesOrder($salesOrderId)
     {
         try {
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
 
             return DB::table($this->tableName . ' as rs')
                 ->leftJoin('m_products as p', 'rs.f_product_id', '=', 'p.id')
@@ -163,7 +163,7 @@ class SalesOrderRevenueSplitService
     public function updateRevenueSplit($salesOrderId, $productId, $splitData)
     {
         try {
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
             $userId = Auth::id();
 
             // Validate that split totals match product total
@@ -202,7 +202,7 @@ class SalesOrderRevenueSplitService
     public function deleteRevenueSplitsForSalesOrder($salesOrderId)
     {
         try {
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
 
             DB::table($this->tableName)
                 ->where('company_code', $companyCode)
@@ -221,7 +221,7 @@ class SalesOrderRevenueSplitService
     public function getRevenueSplitSummary($salesOrderId)
     {
         try {
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
 
             $summary = DB::table($this->tableName)
                 ->where('company_code', $companyCode)
@@ -255,7 +255,7 @@ class SalesOrderRevenueSplitService
             // Delete all existing splits
             $this->deleteRevenueSplitsForSalesOrder($salesOrderId);
 
-            $companyCode = session('selected_company_code');
+            $companyCode = session('user_company_code');
             $userId = Auth::id();
 
             // Recreate splits, preserving custom ones
