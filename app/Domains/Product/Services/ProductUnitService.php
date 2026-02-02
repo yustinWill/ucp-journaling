@@ -52,10 +52,11 @@ class ProductUnitService
 
     /**
      * Get all units for a specific product
+     * If no units in m_product_units, returns the base unit from m_products
      */
     public function findByProduct(int $productId)
     {
-        return DB::table($this->table_name . ' as pu')
+        $units = DB::table($this->table_name . ' as pu')
             ->select([
                 'pu.*',
                 'u.code as unit_code',
@@ -68,6 +69,36 @@ class ProductUnitService
             ->orderBy('pu.is_default', 'desc')
             ->orderBy('pu.created_at', 'asc')
             ->get();
+
+        // If no units configured, return the base unit from m_products
+        if ($units->isEmpty()) {
+            $baseUnit = DB::table('m_products as p')
+                ->select([
+                    DB::raw('NULL as id'),
+                    DB::raw("'" . session('user_company_code') . "' as company_code"),
+                    DB::raw("$productId as f_product_id"),
+                    'p.f_unit_id',
+                    DB::raw('1 as is_default'),
+                    DB::raw('1.0000 as conversion_factor'),
+                    DB::raw("'ACTIVE' as status"),
+                    DB::raw('NULL as notes'),
+                    DB::raw('NULL as created_at'),
+                    DB::raw('NULL as updated_at'),
+                    DB::raw('NULL as created_by'),
+                    DB::raw('NULL as updated_by'),
+                    'u.code as unit_code',
+                    'u.name as unit_name',
+                    DB::raw('CONCAT(u.name, " (", u.code, ")") as unit_display'),
+                ])
+                ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
+                ->where('p.id', $productId)
+                ->where('p.company_code', session('user_company_code'))
+                ->get();
+
+            return $baseUnit;
+        }
+
+        return $units;
     }
 
     /**
