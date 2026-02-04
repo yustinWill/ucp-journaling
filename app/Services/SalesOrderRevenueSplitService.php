@@ -174,11 +174,13 @@ class SalesOrderRevenueSplitService
                 throw new Exception('Total revenue split must equal product total amount');
             }
 
-            DB::table($this->tableName)
-                ->where('company_code', $companyCode)
-                ->where('f_sales_order_id', $salesOrderId)
-                ->where('f_product_id', $productId)
-                ->update([
+            DB::table($this->tableName)->updateOrInsert(
+                [
+                    'company_code' => $companyCode,
+                    'f_sales_order_id' => $salesOrderId,
+                    'f_product_id' => $productId
+                ],
+                [
                     'porsi_perusahaan' => $splitData['porsi_perusahaan'],
                     'porsi_owner' => $splitData['porsi_owner'],
                     'porsi_pabrik' => $splitData['porsi_pabrik'],
@@ -187,8 +189,10 @@ class SalesOrderRevenueSplitService
                     'is_custom_split' => true,
                     'split_notes' => $splitData['split_notes'] ?? null,
                     'updated_by' => $userId,
-                    'updated_at' => now()
-                ]);
+                    'updated_at' => now(),
+                    'created_at' => now()
+                ]
+            );
 
             return true;
         } catch (Exception $e) {
