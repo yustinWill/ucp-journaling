@@ -234,8 +234,7 @@
                                                 name="products[{{ $index }}][quantity]"
                                                 value="{{ $line['quantity'] }}"  /></td>
                                         <td><input type="text" class="form-control"
-                                                name="products[{{ $index }}][unit]" value="{{ $line['unit'] }}"
-                                                disabled /></td>
+                                                name="products[{{ $index }}][unit]" value="{{ $line['unit'] }}" /></td>
                                         <td><input type="text" class="form-control currency-input"
                                                 name="products[{{ $index }}][unit_price]"
                                                 value="{{ $line['unit_price'] }}"
@@ -278,7 +277,7 @@
                                 </td>
                                 <td><input type="text" class="form-control numeric-input" name="products[0][quantity]"
                                         disabled /></td>
-                                <td><input type="text" class="form-control" name="products[0][unit]" disabled />
+                                <td><input type="text" class="form-control" name="products[0][unit]" />
                                 </td>
                                 <td>
                                     <input type="text" class="form-control currency-input"

@@ -235,7 +235,7 @@
                                 <td><input type="text" class="form-control numeric-input" name="products[0][quantity]"
                                          /></td>
                                 <td>
-                                    <select class="form-select unit-select" name="products[0][unit_id]" disabled>
+                                    <select class="form-select unit-select" name="products[0][unit_id]">
                                         <option value="">Pilih Satuan</option>
                                     </select>
                                 </td>
@@ -501,8 +501,6 @@
                     $('#product-disabled-message').hide();
                     $('#product-table tbody tr').each(function() {
                         $(this).find('input, select, button').prop('disabled', false);
-                        // Unit select will be enabled after product selection
-                        $(this).find('.unit-select').prop('disabled', true);
                     });
                     $('#add-product-row').prop('disabled', false);
 
@@ -548,8 +546,8 @@
                 const row = $(this).closest('tr');
                 const $unitSelect = row.find('.unit-select');
 
-                // Clear unit select
-                $unitSelect.html('<option value="">Pilih Satuan</option>').prop('disabled', true);
+                // Clear unit select but keep it enabled
+                $unitSelect.html('<option value="">Pilih Satuan</option>');
 
                 if (!productId) {
                     return;
@@ -587,8 +585,6 @@
                             if (defaultUnit) {
                                 $unitSelect.val(defaultUnit.f_unit_id).trigger('change');
                             }
-
-                            $unitSelect.prop('disabled', false);
                         } else {
                             $unitSelect.html('<option value="">No units available</option>');
                         }
