@@ -17,6 +17,11 @@ class CreateProductionAction
     {
         return DB::transaction(function () use ($data) {
 
+            // Decode JSON strings to arrays
+            if (!empty($data['items']) && is_string($data['items'])) {
+                $data['items'] = json_decode($data['items'], true);
+            }
+
             // 1. Validate stock availability before creating production
             $this->validateStockAvailability($data);
 
@@ -69,12 +74,19 @@ class CreateProductionAction
         if (empty($data['items'])) {
             return;
         }
+
+        // Decode JSON if items is a string
+        $items = is_string($data['items']) ? json_decode($data['items'], true) : $data['items'];
+
+        if (empty($items) || !is_array($items)) {
+            return;
+        }
+
         $itemService = app(ProductionItemService::class);
         $validationResult = $itemService->validateStockAvailability(
-            $data['items'],
+            $items,
             $data['warehouse_id']
         );
-
         $insufficientItems = array_filter($validationResult, function ($item) {
             return ! $item['is_available'];
         });
@@ -216,12 +228,16 @@ class CreateProductionAction
                 $errors[] = 'Selected warehouse is not found or inactive';
             }
         }
-
         // Validate items
         if (! empty($data['items'])) {
-            foreach ($data['items'] as $index => $item) {
-                $itemErrors = $this->validateItemData($item, $index);
-                $errors = array_merge($errors, $itemErrors);
+            // Decode JSON if items is a string
+            $items = is_string($data['items']) ? json_decode($data['items'], true) : $data['items'];
+
+            if ($items && is_array($items)) {
+                foreach ($items as $index => $item) {
+                    $itemErrors = $this->validateItemData($item, $index);
+                    $errors = array_merge($errors, $itemErrors);
+                }
             }
         }
 
@@ -265,7 +281,7 @@ class CreateProductionAction
     public function prepareItemsFromFormula(int $bundleProductId, int $quantityPlanned): array
     {
         // Get product compositions using correct table and field names
-        // Join with product_units to get conversion factor for unit conversion
+        // Join with product_units to get conversion factor and is_default flag
         $compositions = DB::table('m_product_compositions as pc')
             ->join('m_products as p', 'pc.f_product_composition_product_id', '=', 'p.id')
             ->join('m_units as u', 'pc.f_unit_id', '=', 'u.id')
@@ -280,28 +296,19 @@ class CreateProductionAction
                 'p.name as product_name',
                 'p.average_price',
                 'u.code as unit_code',
-                'pu.conversion_factor'
+                'pu.conversion_factor',
+                'pu.is_default'
             )
             ->get();
-
         return $compositions->map(function ($element) use ($quantityPlanned) {
-            // Convert quantity to base unit using conversion factor
-            // If no conversion factor found (shouldn't happen), default to 1
-            $conversionFactor = $element->conversion_factor ?? 1;
-
-            // quantity_per_unit is in the component's selected unit
-            // We need to convert it to base unit for stock checking
-            // Example: If component needs 10 BOX and 1 BOX = 100 KG, then we need 10 * 100 = 1000 KG
-            $quantityPerUnitInBaseUnit = $element->quantity_per_unit * $conversionFactor;
-
-            // Calculate total quantity required in base unit
-            $quantityRequired = $quantityPerUnitInBaseUnit * $quantityPlanned;
+            // Keep quantity in component's unit (same as page display)
+            // Conversion to base unit will happen in validateStockAvailability and stock movement
+            $quantityRequired = $element->quantity_per_unit * $quantityPlanned;
             $unitCost = $element->average_price ?? 0;
 
             return [
                 'raw_material_product_id' => $element->raw_material_product_id,
                 'quantity_required' => $quantityRequired,
-                // IMPORTANT
                 'quantity_consumed' => $quantityRequired,
                 'unit_code' => $element->unit_code,
                 'unit_cost' => $unitCost,
@@ -315,11 +322,13 @@ class CreateProductionAction
     {
         // Material-Based mode: Use actual material inputs provided by user
         // This mode is used when user inputs available materials and system calculates max production
+        // Keep quantities in component's unit (same as page display)
+        // Conversion to base unit will happen in validateStockAvailability and stock movement
 
         $items = [];
 
         foreach ($materialInputs as $input) {
-            // Get product details and unit conversion factor
+            // Get product details
             $product = DB::table('m_products')
                 ->where('id', $input['product_id'])
                 ->first();
@@ -328,44 +337,19 @@ class CreateProductionAction
                 continue;
             }
 
-            // Get the unit conversion factor to convert to base unit
-            // The unit_code in the input is the component's selected unit
-            $productUnit = DB::table('m_product_units as pu')
-                ->join('m_units as u', 'pu.f_unit_id', '=', 'u.id')
-                ->where('pu.f_product_id', $input['product_id'])
-                ->where('u.code', $input['unit_code'])
-                ->select('pu.conversion_factor', 'pu.is_default')
-                ->first();
-
-            $conversionFactor = $productUnit->conversion_factor ?? 1;
-            $isDefaultUnit = $productUnit->is_default ?? false;
-
-            // Material input from user is in component's unit
-            // We need to convert it to base unit for stock operations
+            // Material input from user is in component's unit - keep it as is
             $materialInput = $input['material_input'];
-
-            // If not default unit, convert to base unit
-            // Example: 10 BOX * 100 (conversion factor) = 1000 KG (base unit)
-            $materialInputInBaseUnit = $isDefaultUnit ? $materialInput : ($materialInput * $conversionFactor);
-
-            // Calculate quantity consumed based on actual production (in component's unit)
-            $qtyPerBundle = $input['qty_per_bundle'];
-            $quantityConsumedInComponentUnit = $qtyPerBundle * $quantityProduced;
-
-            // Convert quantity consumed to base unit for stock deduction
-            $quantityConsumedInBaseUnit = $isDefaultUnit ? $quantityConsumedInComponentUnit : ($quantityConsumedInComponentUnit * $conversionFactor);
-
             $unitCost = $product->average_price ?? 0;
 
             $items[] = [
                 'raw_material_product_id' => $input['product_id'],
-                'quantity_required' => $materialInputInBaseUnit, // For stock validation - converted to base unit
-                'quantity_consumed' => $materialInputInBaseUnit, // What's actually used in production - in base unit
+                'quantity_required' => $materialInput, // Keep in component's unit
+                'quantity_consumed' => $materialInput, // Keep in component's unit
                 'unit_code' => $input['unit_code'],
                 'unit_cost' => $unitCost,
-                'total_cost' => $materialInputInBaseUnit * $unitCost, // Calculate cost based on base unit quantity
+                'total_cost' => $materialInput * $unitCost,
                 'product_name' => $input['product_name'],
-                // Store original material input and leftover for audit trail (in component's unit)
+                // Store original material input and leftover for audit trail
                 'material_input' => $materialInput,
                 'leftover' => $input['leftover'],
             ];
