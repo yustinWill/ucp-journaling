@@ -201,7 +201,6 @@ class ProductionController extends Controller
 
         try {
             $data = $request->all();
-
             // Validate input data
             $createAction = app(CreateProductionAction::class);
             $validation = $createAction->validateProductionData($data);
@@ -216,24 +215,31 @@ class ProductionController extends Controller
             // Handle production mode
             $productionMode = $data['production_mode'] ?? 'QUANTITY_PLANNED';
 
-            // Prepare items based on production mode
-            if (! empty($data['bundle_product_id']) && ! empty($data['quantity_planned'])) {
-                if ($productionMode === 'MATERIAL_BASED') {
-                    // Material-Based mode: Use actual material inputs
-                    $materialInputs = json_decode($data['material_inputs'] ?? '[]', true);
-                    $data['items'] = $createAction->prepareItemsFromMaterialInputs(
-                        $data['bundle_product_id'],
-                        $data['quantity_planned'],
-                        $materialInputs
-                    );
-                    // Store leftover materials for stock opname tracking
-                    $data['leftover_materials'] = json_encode($materialInputs);
-                } else {
-                    // Quantity Planned mode: Calculate from formula
-                    $data['items'] = $createAction->prepareItemsFromFormula(
-                        $data['bundle_product_id'],
-                        $data['quantity_planned']
-                    );
+            // Get items from frontend if provided, otherwise prepare from backend
+            if (!empty($data['items'])) {
+                // Items already provided from frontend (preferred method)
+                // Items are already in component's unit as displayed on page
+                $data['items'] = is_string($data['items']) ? json_decode($data['items'], true) : $data['items'];
+            } else {
+                // Fallback: Prepare items based on production mode (legacy method)
+                if (! empty($data['bundle_product_id']) && ! empty($data['quantity_planned'])) {
+                    if ($productionMode === 'MATERIAL_BASED') {
+                        // Material-Based mode: Use actual material inputs
+                        $materialInputs = json_decode($data['material_inputs'] ?? '[]', true);
+                        $data['items'] = $createAction->prepareItemsFromMaterialInputs(
+                            $data['bundle_product_id'],
+                            $data['quantity_planned'],
+                            $materialInputs
+                        );
+                        // Store leftover materials for stock opname tracking
+                        $data['leftover_materials'] = json_encode($materialInputs);
+                    } else {
+                        // Quantity Planned mode: Calculate from formula
+                        $data['items'] = $createAction->prepareItemsFromFormula(
+                            $data['bundle_product_id'],
+                            $data['quantity_planned']
+                        );
+                    }
                 }
             }
 
@@ -333,18 +339,23 @@ class ProductionController extends Controller
 
         $components = [];
         foreach ($data as $row) {
-            // Get conversion factor for the component's unit
+            // Get conversion factor and is_default for the component's unit
             $productUnit = DB::table('m_product_units')
                 ->where('f_product_id', $row->f_product_composition_product_id)
                 ->where('f_unit_id', $row->f_unit_id)
                 ->first();
 
             $conversionFactor = $productUnit->conversion_factor ?? 1;
+            $isDefaultUnit = (bool) ($productUnit->is_default ?? true);
 
-            // Stock available is in base unit, convert to component's unit for display
-            // Example: stock_available = 1000 KG (base unit), conversion_factor = 100 (1 BOX = 100 KG)
-            // stock_available_in_component_unit = 1000 / 100 = 10 BOX
-            $stockAvailableInComponentUnit = ($row->total_stock ?? 0) / $conversionFactor;
+            // Stock available is in base unit
+            // Only convert to component's unit if NOT using default unit
+            // Example: stock = 1000 Gram (base), component uses KG (not default), factor = 1000
+            // stock_in_KG = 1000 / 1000 = 1 KG
+            // If component uses Gram (default), no conversion: stock = 1000 Gram
+            $stockAvailableInComponentUnit = $isDefaultUnit
+                ? ($row->total_stock ?? 0)
+                : (($row->total_stock ?? 0) / $conversionFactor);
 
             $components[] = [
                 'id' => $row->f_product_composition_product_id,
@@ -353,6 +364,7 @@ class ProductionController extends Controller
                 'stock_available' => $row->total_stock ?? 0, // Base unit - for availability checking
                 'stock_available_display' => $stockAvailableInComponentUnit, // Component unit - for display
                 'conversion_factor' => $conversionFactor,
+                'is_default_unit' => $isDefaultUnit,
                 'unit' => $row->unit_name,
                 'unit_code' => $row->unit_code, // Unit code for database insertion
                 'purchase_price' => $row->purchase_price,
