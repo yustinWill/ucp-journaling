@@ -186,14 +186,13 @@
                                         </small>
                                     @endif
                                 @else
+                                    <span class="badge bg-label-success">
+                                        <i class="icon-base ti tabler-settings me-1"></i>Auto
+                                    </span>
                                     @if($split->f_revenue_split_config_id)
-                                        <span class="badge bg-label-success">
-                                            <i class="icon-base ti tabler-settings me-1"></i>Auto
-                                        </span>
+                                        <br><small class="text-muted">Dari konfigurasi</small>
                                     @else
-                                        <span class="badge bg-label-secondary">
-                                            <i class="icon-base ti tabler-question-mark me-1"></i>Default
-                                        </span>
+                                        <br><small class="text-muted">Default sistem</small>
                                     @endif
                                 @endif
                             </td>
