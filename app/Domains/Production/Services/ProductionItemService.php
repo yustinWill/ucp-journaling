@@ -141,42 +141,74 @@ class ProductionItemService
     public function validateStockAvailability(array $items, int $warehouseId): array
     {
         $validation = [];
-
         foreach ($items as $item) {
             $product = DB::table('m_products')
                 ->where('id', $item['raw_material_product_id'])
                 ->first();
-            // dd($product->total_stock);
-            // Check total stock
-            $isAvailable = $product && $product->total_stock >= $item['quantity_required'];
-            // Get available batches for this product in the warehouse
-            // $availableBatches = DB::table('t_product_stock_batches')
-            //     ->where('f_product_id', $item['raw_material_product_id'])
-            //     // warehouse tidak ada
-            //     // ->where('warehouse_id', $warehouseId)
-            //     ->where('remaining_qty', '>', 0)
-            //     ->where('status', 'ACTIVE')
-            //     ->orderBy('created_at', 'ASC') // FIFO order
-            //     ->get();
-            $availableBatches = DB::table('t_stock_movement_logs')
+
+            // Get unit conversion info if unit_code is provided
+            $conversionFactor = 1;
+            $isDefaultUnit = true;
+
+            if (!empty($item['unit_code'])) {
+                $productUnit = DB::table('m_product_units as pu')
+                    ->join('m_units as u', 'pu.f_unit_id', '=', 'u.id')
+                    ->where('pu.f_product_id', $item['raw_material_product_id'])
+                    ->where('u.code', $item['unit_code'])
+                    ->select('pu.conversion_factor', 'pu.is_default')
+                    ->first();
+
+                if ($productUnit) {
+                    $conversionFactor = $productUnit->conversion_factor ?? 1;
+                    $isDefaultUnit = (bool) ($productUnit->is_default ?? true);
+                }
+            }
+
+            // Calculate stock available in warehouse using the same logic as page display
+            // Sum movement_qty: IN adds, OUT subtracts (stock is always in base unit)
+            $warehouseStock = DB::table('t_stock_movement_logs')
                 ->where('product_id', $item['raw_material_product_id'])
-                // warehouse tidak ada
                 ->where('warehouse_id', $warehouseId)
-                ->where('stock_after', '>', 0)
-                ->orderBy('created_at', 'ASC') // FIFO order
+                ->selectRaw('SUM(
+                    CASE
+                        WHEN movement_type LIKE "%_IN" THEN movement_qty
+                        WHEN movement_type LIKE "%_OUT" THEN -movement_qty
+                        ELSE 0
+                    END
+                ) as total_stock')
+                ->value('total_stock') ?? 0;
+
+            // Convert quantity_required to base unit if not using default unit
+            // quantity_required is in component's unit, need to convert for stock comparison
+            $quantityRequiredInBaseUnit = $isDefaultUnit
+                ? $item['quantity_required']
+                : ($item['quantity_required'] * $conversionFactor);
+
+            // Check availability based on warehouse stock (both in base unit now)
+            $isAvailable = $warehouseStock >= $quantityRequiredInBaseUnit;
+
+            // Get available batches for FIFO consumption
+            $availableBatches = DB::table('t_product_stock_batches')
+                ->where('f_product_id', $item['raw_material_product_id'])
+                ->where('remaining_qty', '>', 0)
+                ->where('status', 'ACTIVE')
+                ->orderBy('batch_date', 'ASC')
+                ->orderBy('id', 'ASC')
                 ->get();
-            $totalAvailableInBatches = $availableBatches->sum('stock_after');
+
             $validation[] = [
                 'raw_material_product_id' => $item['raw_material_product_id'],
                 'product_name' => $product->name ?? 'Unknown',
                 'quantity_required' => $item['quantity_required'],
+                'quantity_required_base_unit' => $quantityRequiredInBaseUnit,
                 'total_stock' => $product->total_stock ?? 0,
-                'available_in_warehouse' => $totalAvailableInBatches,
-                'is_available' => $isAvailable && $totalAvailableInBatches >= $item['quantity_required'],
+                'available_in_warehouse' => $warehouseStock,
+                'conversion_factor' => $conversionFactor,
+                'is_default_unit' => $isDefaultUnit,
+                'is_available' => $isAvailable,
                 'available_batches' => $availableBatches->toArray(),
             ];
         }
-
         return $validation;
     }
 }
