@@ -50,8 +50,8 @@ class PaymentSalesInvoiceAction
                     if (!$config) {
                         // No split exists and no config available - cannot settle
                         throw new AppException(
-                            ErrorCodes::VALIDATION_ERROR,
-                            'Please setup revenue settlement config for all products before settling the invoice'
+                            ErrorCodes::FORM_VALIDATION_ERROR,
+                            'Please setup revenue settlement config'
                         );
                     }
                 }
