@@ -31,7 +31,7 @@ class RoleService
                 't.description',
                 't.f_tag_codes',
                 DB::raw('COUNT(DISTINCT u.id) as user_count'),
-                DB::raw('COUNT(DISTINCT rp.id) as permission_count'),
+                // DB::raw('COUNT(DISTINCT rp.id) as permission_count'),
                 // DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
                 't.is_active',
             ])
@@ -44,11 +44,11 @@ class RoleService
                     ->where('uc.status', '=', GeneralStatuses::ACTIVE)
                     ->where('uc.f_company_code', '=', session('user_company_code'));
             })
-            ->leftJoin('role_permissions as rp', function ($join) {
-                $join->on('t.id', '=', 'rp.role_id')
-                    ->where('rp.status', '=', GeneralStatuses::ACTIVE)
-                    ->where('rp.company_code', '=', session('user_company_code'));
-            })
+            // ->leftJoin('role_permissions as rp', function ($join) {
+            //     $join->on('t.id', '=', 'rp.role_id')
+            //         ->where('rp.status', '=', GeneralStatuses::ACTIVE)
+            //         ->where('rp.company_code', '=', session('user_company_code'));
+            // })
             // ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
             //     $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
             // })
@@ -80,7 +80,7 @@ class RoleService
                 't.name',
                 't.description',
                 DB::raw('COUNT(DISTINCT u.id) as user_count'),
-                DB::raw('COUNT(DISTINCT rp.id) as permission_count'),
+                // DB::raw('COUNT(DISTINCT rp.id) as permission_count'),
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
                 't.is_active',
             ])
@@ -93,11 +93,11 @@ class RoleService
                     ->where('uc.status', '=', GeneralStatuses::ACTIVE)
                     ->where('uc.f_company_code', '=', session('user_company_code'));
             })
-            ->leftJoin('role_permissions as rp', function ($join) {
-                $join->on('t.id', '=', 'rp.role_id')
-                    ->where('rp.status', '=', GeneralStatuses::ACTIVE)
-                    ->where('rp.company_code', '=', session('user_company_code'));
-            })
+            // ->leftJoin('role_permissions as rp', function ($join) {
+            //     $join->on('t.id', '=', 'rp.role_id')
+            //         ->where('rp.status', '=', GeneralStatuses::ACTIVE)
+            //         ->where('rp.company_code', '=', session('user_company_code'));
+            // })
             ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
             })

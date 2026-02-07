@@ -26,7 +26,7 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            @if ($canShowAddButton)
+                            @if (true)
                                 <button type="button" id="btn-add-budged"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Periode & Anggaran</button>
@@ -58,11 +58,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = @json($canRead);
-            const canWrite = @json($canWrite);
-            const canDelete = @json($canDelete);
-            const canShowEditButton = @json($canShowEditButton);
-            const canShowDeleteButton = @json($canShowDeleteButton);
+            const canRead = true;
+            const canWrite = true;
+            const canDelete = true;
+            const canShowEditButton = true;
+            const canShowDeleteButton = true;
 
             let dt_adv_filter;
 

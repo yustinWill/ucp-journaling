@@ -151,11 +151,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = @json($canRead);
-            const canWrite = @json($canWrite);
-            const canDelete = @json($canDelete);
-            const canShowEditButton = @json($canShowEditButton);
-            const canShowDeleteButton = @json($canShowDeleteButton);
+            const canRead = true;
+            const canWrite = true;
+            const canDelete = true;
+            const canShowEditButton = true;
+            const canShowDeleteButton = true;
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');

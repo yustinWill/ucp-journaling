@@ -111,7 +111,7 @@
                                 <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
                             </a>
                         @endif --}}
-                            @if ($canShowAddButton)
+                            @if (true)
                                 <a href="{{ route('main_transaction.expense.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light">
                                     <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
@@ -147,11 +147,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = @json($canRead);
-            const canWrite = @json($canWrite);
-            const canDelete = @json($canDelete);
-            const canShowEditButton = @json($canShowEditButton);
-            const canShowDeleteButton = @json($canShowDeleteButton);
+            const canRead = true;
+            const canWrite = true;
+            const canDelete = true;
+            const canShowEditButton = true;
+            const canShowDeleteButton = true;
 
             // DataTable initialization
             const main_table = document.querySelector('#main-table');

@@ -127,24 +127,13 @@
                                     @foreach ($permission_types as $type)
                                         @php
                                             $permissionId = $module->id . '-' . $type['value'];
-                                            $isChecked = false;
-                                            foreach ($permissions as $permission) {
-                                                if (
-                                                    $permission->module_id == $module->id &&
-                                                    $permission->type == $type['value']
-                                                ) {
-                                                    $isChecked = in_array($permission->id, $role_permissions);
-                                                    break;
-                                                }
-                                            }
                                         @endphp
                                         <div class="col-md-3">
                                             <div class="form-check">
                                                 <input class="form-check-input permission-checkbox" type="checkbox"
                                                     id="permission-{{ $permissionId }}"
                                                     data-module="{{ $module->id }}" data-type="{{ $type['value'] }}"
-                                                    value="{{ $permissionId }}"
-                                                    @if ($isChecked) checked @endif>
+                                                    value="{{ $permissionId }}">
                                                 <label class="form-check-label" for="permission-{{ $permissionId }}">
                                                     <i
                                                         class="icon-base ti tabler-{{ $type['value'] == 'read' ? 'eye' : ($type['value'] == 'write' ? 'edit' : ($type['value'] == 'delete' ? 'trash' : 'check')) }} me-1"></i>

@@ -89,7 +89,7 @@
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
                             @endif --}}
-                            @if ($canShowAddButton)
+                            @if (true)
                                 <a href="{{ route('master_data.revenue_split.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Cycle</a>
@@ -137,11 +137,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = @json($canRead);
-            const canWrite = @json($canWrite);
-            const canDelete = @json($canDelete);
-            const canShowEditButton = @json($canShowEditButton);
-            const canShowDeleteButton = @json($canShowDeleteButton);
+            const canRead = true;
+            const canWrite = true;
+            const canDelete = true;
+            const canShowEditButton = true;
+            const canShowDeleteButton = true;
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');
