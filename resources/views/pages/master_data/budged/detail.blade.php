@@ -123,13 +123,48 @@
                 <hr class="mx-n6">
             </div>
 
-            @forelse ($periodData->budgets as $index => $budget)
+            @php
+                // Check if period has type property, default to showing all budgets in both tabs if not
+                $periodType = $periodData->type ?? null;
+
+                // If period type is owner, show all budgets in owner tab
+                // If period type is kingdom, show all budgets in kingdom tab
+                $ownerBudgets = collect($periodData->budgets);
+                $kingdomBudgets = collect($periodData->budgets);
+
+                if ($periodType === 'owner') {
+                    $kingdomBudgets = collect([]);
+                } elseif ($periodType === 'kingdom') {
+                    $ownerBudgets = collect([]);
+                }
+            @endphp
+
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs mb-4" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button type="button" class="nav-link {{ $periodType !== 'kingdom' ? 'active' : '' }}" role="tab" data-bs-toggle="tab" data-bs-target="#tab-owner-budgets" aria-controls="tab-owner-budgets" aria-selected="{{ $periodType !== 'kingdom' ? 'true' : 'false' }}">
+                         Owner
+                        <span class="badge bg-label-primary ms-1">{{ $ownerBudgets->count() }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button type="button" class="nav-link {{ $periodType === 'kingdom' ? 'active' : '' }}" role="tab" data-bs-toggle="tab" data-bs-target="#tab-kingdom-budgets" aria-controls="tab-kingdom-budgets" aria-selected="{{ $periodType === 'kingdom' ? 'true' : 'false' }}" tabindex="-1">
+                        Kingdom
+                        <span class="badge bg-label-primary ms-1">{{ $kingdomBudgets->count() }}</span>
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Owner Tab -->
+                <div class="tab-pane fade {{ $periodType !== 'kingdom' ? 'show active' : '' }}" id="tab-owner-budgets" role="tabpanel">
+                    @forelse ($ownerBudgets as $index => $budget)
                 <div class="card mb-4">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h5 class="mb-1">
-                                    <i class="icon-base ti tabler-wallet me-2"></i>
+                                    <i class="icon-base ti tabler-file-text me-2"></i>
                                     {{ $budget->budged_name }}
                                 </h5>
                                 <small class="text-muted">
@@ -259,9 +294,154 @@
             @empty
                 <div class="alert alert-info">
                     <i class="icon-base ti tabler-info-circle me-2"></i>
-                    Belum ada anggaran dalam periode ini
+                    Belum ada anggaran Owner dalam periode ini
                 </div>
             @endforelse
+                </div>
+
+                <!-- Kingdom Tab -->
+                <div class="tab-pane fade {{ $periodType === 'kingdom' ? 'show active' : '' }}" id="tab-kingdom-budgets" role="tabpanel">
+                    @forelse ($kingdomBudgets as $index => $budget)
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">
+                                    <i class="icon-base ti tabler-file-text me-2"></i>
+                                    {{ $budget->budged_name }}
+                                </h5>
+                                <small class="text-muted">
+                                    <span class="badge bg-label-info">{{ count($budget->expenses) }} Transaksi</span>
+                                </small>
+                            </div>
+                            @php
+                                $budgetUsed = $budget->budged_limit_value - $budget->budged_remaining_value;
+                                $percentage = $budget->budged_limit_value > 0 ? ($budgetUsed / $budget->budged_limit_value) * 100 : 0;
+                                $remainingClass = $budget->budged_remaining_value < 0 ? 'text-danger' : 'text-success';
+                            @endphp
+                            <div class="text-end">
+                                <div class="mb-1">
+                                    <small class="text-muted">Limit:</small>
+                                    <strong>Rp {{ number_format($budget->budged_limit_value, 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="mb-1">
+                                    <small class="text-muted">Terpakai:</small>
+                                    <strong class="text-danger">Rp {{ number_format($budgetUsed, 0, ',', '.') }}</strong>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Sisa:</small>
+                                    <strong class="{{ $remainingClass }}">Rp {{ number_format($budget->budged_remaining_value, 0, ',', '.') }}</strong>
+                                    @if($budget->budged_remaining_value < 0)
+                                        <small class="d-block text-danger">(Over Budget)</small>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Penggunaan Budget</span>
+                                <span class="text-muted small">{{ number_format($percentage, 1) }}%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar {{ $percentage > 100 ? 'bg-danger' : ($percentage > 75 ? 'bg-warning' : 'bg-success') }}"
+                                    role="progressbar"
+                                    style="width: {{ min($percentage, 100) }}%;"
+                                    aria-valuenow="{{ $percentage }}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if(count($budget->expenses) > 0)
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="15%">No. Transaksi</th>
+                                            <th width="10%">Tanggal</th>
+                                            <th width="10%">Tipe</th>
+                                            <th width="15%">Penerima</th>
+                                            <th width="25%">Deskripsi</th>
+                                            <th width="13%">Status Pembayaran</th>
+                                            <th width="12%" class="text-end">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($budget->expenses as $expense)
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ route('main_transaction.expense.detail', $expense->id) }}"
+                                                        class="text-primary fw-semibold">
+                                                        {{ $expense->transaction_no }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ \Carbon\Carbon::parse($expense->transaction_date)->format('d/m/Y') }}</td>
+                                                <td>
+                                                    @if($expense->type == 'PURCHASE')
+                                                        <span class="badge bg-label-primary">Pembelian</span>
+                                                    @elseif($expense->type == 'EXPENSE')
+                                                        <span class="badge bg-label-warning">Biaya</span>
+                                                    @else
+                                                        <span class="badge bg-label-secondary">{{ $expense->type }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $expense->receiver_name ?? '-' }}</td>
+                                                <td>
+                                                    <small>{{ $expense->description ? \Illuminate\Support\Str::limit($expense->description, 50) : '-' }}</small>
+                                                </td>
+                                                <td>
+                                                    @if($expense->to_be_paid_later)
+                                                        @if($expense->total_remaining_amount > 0)
+                                                            <span class="badge bg-label-warning">Belum Lunas</span>
+                                                            <small class="d-block text-muted mt-1">
+                                                                Sisa: Rp {{ number_format($expense->total_remaining_amount, 0, ',', '.') }}
+                                                            </small>
+                                                        @else
+                                                            <span class="badge bg-label-success">Lunas</span>
+                                                        @endif
+                                                    @else
+                                                        <span class="badge bg-label-success">Tunai</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-end">
+                                                    <strong>Rp {{ number_format($expense->total_amount, 0, ',', '.') }}</strong>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th colspan="6" class="text-end">Total Pengeluaran:</th>
+                                            <th class="text-end">
+                                                <strong class="text-danger">Rp {{ number_format($budget->expenses->sum('total_amount'), 0, ',', '.') }}</strong>
+                                            </th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    @else
+                        <div class="card-body">
+                            <div class="text-center py-4">
+                                <i class="icon-base ti tabler-inbox text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-2 mb-0">Belum ada transaksi untuk anggaran ini</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            @empty
+                <div class="alert alert-info">
+                    <i class="icon-base ti tabler-info-circle me-2"></i>
+                    Belum ada anggaran Kingdom dalam periode ini
+                </div>
+            @endforelse
+                </div>
+            </div>
         </div>
     </div>
 @stop
