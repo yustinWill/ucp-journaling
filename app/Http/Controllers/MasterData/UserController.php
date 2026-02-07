@@ -16,7 +16,6 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 // Services
 use App\Helpers\DiscordNotifier;
-use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -52,8 +51,8 @@ class UserController extends Controller
         $tags = app(TagService::class)->findAll();
 
         // Permission checks for add buttons
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
-        $canAddRoles = PermissionHelper::canWrite('master_data_role');
+        $canAddTags = true;
+        $canAddRoles = true;
 
         return view('pages.master_data.user.add', [
             'roles' => $roles,
@@ -127,8 +126,8 @@ class UserController extends Controller
         $tags = app(TagService::class)->findAll();
 
         // Permission checks for add buttons
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
-        $canAddRoles = PermissionHelper::canWrite('master_data_role');
+        $canAddTags = true;
+        $canAddRoles = true;
 
         return view('pages.master_data.user.edit', [
             'user' => $user,

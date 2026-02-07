@@ -19,7 +19,6 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
-use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -30,21 +29,13 @@ class StockAdjustmentController extends Controller
 {
     public function index()
     {
-        // Check read permission for stock adjustment module
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
-        // Get permission data for view
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_stock_adjustment');
-
         // Map permissions to view variables
-        $canAddStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
-        $canImportStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
-        $canExportStockAdjustment = PermissionHelper::canRead('main_transaction_stock_adjustment');
-        $canViewDetails = PermissionHelper::canRead('main_transaction_stock_adjustment');
-        $canEditStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
-        $canDeleteStockAdjustment = PermissionHelper::canDelete('main_transaction_stock_adjustment');
+        $canAddStockAdjustment = true;
+        $canImportStockAdjustment = true;
+        $canExportStockAdjustment = true;
+        $canViewDetails = true;
+        $canEditStockAdjustment = true;
+        $canDeleteStockAdjustment = true;
 
         // Adjustment types for stock adjustment workflow
         $adjustmentTypes = [
@@ -95,16 +86,11 @@ class StockAdjustmentController extends Controller
             'canDeleteStockAdjustment' => $canDeleteStockAdjustment,
         ];
 
-        return view('pages.main_transaction.stock_adjustment.index', array_merge($data, $permissionData));
+        return view('pages.main_transaction.stock_adjustment.index', array_merge($data));
     }
 
     public function index_data_table(Request $request)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $data = app(StockAdjustmentService::class)->findAllDatatable();
 
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
@@ -112,10 +98,6 @@ class StockAdjustmentController extends Controller
 
     public function add(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
         // Adjustment types
         if (isset($request->id) && isset($request->type)) {
             $adjustmentTypes = [
@@ -178,10 +160,10 @@ class StockAdjustmentController extends Controller
         }
 
         // Permission checks for add buttons
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
-        $canAddWarehouses = PermissionHelper::canWrite('master_data_warehouse');
-        $canAddContacts = PermissionHelper::canWrite('master_data_contact');
-        $canAddCategories = PermissionHelper::canWrite('master_data_category');
+        $canAddTags = true;
+        $canAddWarehouses = true;
+        $canAddContacts = true;
+        $canAddCategories = true;
 
         $header_data = [];
         $items = [];
@@ -266,11 +248,6 @@ class StockAdjustmentController extends Controller
 
     public function edit($id)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
-        }
-
         // Get stock adjustment data from service
         $stockAdjustment = app(StockAdjustmentService::class)->findOne($id);
         if (! $stockAdjustment) {
@@ -339,10 +316,10 @@ class StockAdjustmentController extends Controller
         // }
 
         // Permission checks for add buttons
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
-        $canAddWarehouses = PermissionHelper::canWrite('master_data_warehouse');
-        $canAddContacts = PermissionHelper::canWrite('master_data_contact');
-        $canAddCategories = PermissionHelper::canWrite('master_data_category');
+        $canAddTags = true;
+        $canAddWarehouses = true;
+        $canAddContacts = true;
+        $canAddCategories = true;
 
         return view('pages.main_transaction.stock_adjustment.edit', [
             'stockAdjustment' => $stockAdjustment,
@@ -362,16 +339,11 @@ class StockAdjustmentController extends Controller
 
     public function detail($id)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
-        }
-
         // Permission checks for detail page actions
-        $canEditStockAdjustment = PermissionHelper::canWrite('main_transaction_stock_adjustment');
-        $canApproveStockAdjustment = PermissionHelper::canApprove('main_transaction_stock_adjustment');
-        $canRejectStockAdjustment = PermissionHelper::canApprove('main_transaction_stock_adjustment');
-        $canApplyStockAdjustment = PermissionHelper::canApprove('main_transaction_stock_adjustment');
+        $canEditStockAdjustment = true;
+        $canApproveStockAdjustment = true;
+        $canRejectStockAdjustment = true;
+        $canApplyStockAdjustment = true;
 
         // Get stock adjustment data from service
         $stockAdjustment = app(StockAdjustmentService::class)->findOne($id);
@@ -396,10 +368,6 @@ class StockAdjustmentController extends Controller
 
     public function export()
     {
-        // Check read permission for export
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
-        }
         // Export columns configuration
         $exportColumns = [
             ['field' => 'adjustment_number', 'label' => 'Nomor Adjustment', 'export_name' => 'Nomor Adjustment'],
@@ -453,10 +421,6 @@ class StockAdjustmentController extends Controller
 
     public function processExport(Request $request)
     {
-        // Check read permission for export
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
         $format = $request->input('format');
         $columns = json_decode($request->input('columns'), true);
         $filters = json_decode($request->input('filters'), true);
@@ -544,20 +508,11 @@ class StockAdjustmentController extends Controller
 
     public function import()
     {
-        // Check write permission for import
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
-        }
-
         return view('pages.main_transaction.stock_adjustment.import');
     }
 
     public function downloadTemplate()
     {
-        // Check write permission for import template
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
-        }
         $filename = 'stock_adjustment_import_template.xlsx';
         $content = 'Mock Excel template for Stock Adjustment import';
 
@@ -568,10 +523,6 @@ class StockAdjustmentController extends Controller
 
     public function validateImport(Request $request)
     {
-        // Check write permission for import
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
         ]);
@@ -636,10 +587,6 @@ class StockAdjustmentController extends Controller
 
     public function processImport(Request $request)
     {
-        // Check write permission for import
-        if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
         try {
             $data = $request->input('data');
             $importedCount = count($data);
@@ -799,11 +746,6 @@ class StockAdjustmentController extends Controller
     public function getWarehouseProducts(Request $request)
     {
         try {
-            // Check read permission
-            if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-
             $warehouse = $request->query('warehouse_id');
             $category = $request->query('category_filter');
             $search_filter = $request->query('search_filter');
@@ -846,11 +788,6 @@ class StockAdjustmentController extends Controller
     public function generateTransactionNumber()
     {
         try {
-            // Check read permission
-            if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'read')) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-
             // Generate transaction number based on current date and sequence
             $currentDate = date('Y-m-d');
             $year = date('Y');

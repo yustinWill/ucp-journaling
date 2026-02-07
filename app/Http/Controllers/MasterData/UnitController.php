@@ -15,7 +15,6 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
 // Services
-use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -32,13 +31,8 @@ class UnitController extends Controller
 
     public function index()
     {
-        if (! PermissionHelper::hasPermission('master_data_unit', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
         $statuses = $this->statuses;
         $unitTypes = app(UnitTypeService::class)->findAll();
-        $permissionData = PermissionHelper::getViewPermissions('master_data_unit');
 
         return view('pages.master_data.unit.index', array_merge(
             compact('unitTypes', 'statuses'),
@@ -55,29 +49,17 @@ class UnitController extends Controller
 
     public function add()
     {
-        if (! PermissionHelper::hasPermission('master_data_unit', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
-
         $unitTypes = app(UnitTypeService::class)->findAll();
         $statuses = $this->statuses;
-        $permissionData = PermissionHelper::getViewPermissions('master_data_unit');
 
         return view('pages.master_data.unit.add', array_merge([
             'unitTypes' => $unitTypes,
             'statuses' => $statuses,
-        ], $permissionData));
+        ]));
     }
 
     public function save(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk menyimpan data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'code' => 'required|string|max:255|unique:m_units,code',
@@ -124,10 +106,6 @@ class UnitController extends Controller
 
     public function edit($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
-        }
-
         $unit = app(UnitService::class)->findOne($id);
 
         if ($unit == null) {
@@ -136,24 +114,16 @@ class UnitController extends Controller
 
         $unitTypes = app(UnitTypeService::class)->findAll();
         $statuses = $this->statuses;
-        $permissionData = PermissionHelper::getViewPermissions('master_data_unit');
 
         return view('pages.master_data.unit.edit', array_merge([
             'unitTypes' => $unitTypes,
             'statuses' => $statuses,
             'unit' => $unit,
-        ], $permissionData));
+        ]));
     }
 
     public function update(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_units,id',
@@ -202,10 +172,6 @@ class UnitController extends Controller
 
     public function detail($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail data.');
-        }
-
         $unit = app(UnitService::class)->findOne($id);
 
         if ($unit == null) {
@@ -213,21 +179,15 @@ class UnitController extends Controller
         }
 
         $auditLogs = app(UnitAuditLogService::class)->findAllBasedOnTagId($id);
-        $permissionData = PermissionHelper::getViewPermissions('master_data_unit');
 
         return view('pages.master_data.unit.detail', array_merge(
             compact('unit', 'auditLogs'),
-            $permissionData,
             ['auditLogType' => AuditLogTypes::MASTER_DATA_UNIT->code()]
         ));
     }
 
     public function export()
     {
-        if (! PermissionHelper::hasPermission('master_data_unit', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk export data.');
-        }
-
         $data = [
             ['no' => 1, 'value' => 'Kode Unit'],
             ['no' => 2, 'value' => 'Nama Unit'],
@@ -241,10 +201,6 @@ class UnitController extends Controller
 
     public function import()
     {
-        if (! PermissionHelper::hasPermission('master_data_unit', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk import data.');
-        }
-
         return view('pages.master_data.unit.import', []);
     }
 }

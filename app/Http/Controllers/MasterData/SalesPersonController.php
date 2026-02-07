@@ -14,7 +14,6 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 // Actions
 use App\Helpers\DiscordNotifier;
-use App\Helpers\PermissionHelper;
 // Services
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
@@ -32,16 +31,10 @@ class SalesPersonController extends Controller
 
     public function index()
     {
-        if (! PermissionHelper::hasPermission('master_data_sales_person', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
         $statuses = $this->statuses;
-        $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
 
         return view('pages.master_data.sales_person.index', array_merge(
             compact('statuses'),
-            $permissionData
         ));
     }
 
@@ -54,29 +47,17 @@ class SalesPersonController extends Controller
 
     public function add()
     {
-        if (! PermissionHelper::hasPermission('master_data_sales_person', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
-
         $statuses = $this->statuses;
         $employees = app(ContactService::class)->findAllByFlag('employee');
-        $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
 
         return view('pages.master_data.sales_person.add', array_merge([
             'statuses' => $statuses,
             'employees' => $employees,
-        ], $permissionData));
+        ]));
     }
 
     public function save(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_sales_person', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk menyimpan data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'f_employee_contact_id' => [
@@ -129,10 +110,6 @@ class SalesPersonController extends Controller
 
     public function edit($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_sales_person', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
-        }
-
         $salesPerson = app(SalesPersonService::class)->findOne($id);
 
         if ($salesPerson == null) {
@@ -141,24 +118,16 @@ class SalesPersonController extends Controller
 
         $statuses = $this->statuses;
         $employees = app(ContactService::class)->findAllByFlag('employee');
-        $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
 
         return view('pages.master_data.sales_person.edit', array_merge([
             'statuses' => $statuses,
             'employees' => $employees,
             'salesPerson' => $salesPerson,
-        ], $permissionData));
+        ]));
     }
 
     public function update(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_sales_person', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_sales_persons,id',
@@ -215,10 +184,6 @@ class SalesPersonController extends Controller
 
     public function detail($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_sales_person', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail data.');
-        }
-
         $salesPerson = app(SalesPersonService::class)->findOne($id);
 
         if ($salesPerson == null) {
@@ -226,7 +191,6 @@ class SalesPersonController extends Controller
         }
 
         $auditLogs = app(SalesPersonAuditLogService::class)->findAllBasedOnTagId($id);
-        $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
 
         // Convert to array for consistency
         $salesPersonArray = (array) $salesPerson;
@@ -235,15 +199,11 @@ class SalesPersonController extends Controller
             'salesPerson' => $salesPersonArray,
             'auditLogs' => $auditLogs,
             'auditLogType' => AuditLogTypes::MASTER_DATA_SALES_PERSON->code(),
-        ], $permissionData));
+        ]));
     }
 
     public function export()
     {
-        if (! PermissionHelper::hasPermission('master_data_sales_person', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk export data.');
-        }
-
         $data = [
             ['no' => 1, 'value' => 'Kode Sales Person'],
             ['no' => 2, 'value' => 'Nama Karyawan'],
@@ -259,10 +219,6 @@ class SalesPersonController extends Controller
 
     public function import()
     {
-        if (! PermissionHelper::hasPermission('master_data_sales_person', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk import data.');
-        }
-
         return view('pages.master_data.sales_person.import', []);
     }
 }

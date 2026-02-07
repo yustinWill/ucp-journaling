@@ -14,7 +14,6 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
-use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -50,11 +49,10 @@ class JournalController extends Controller
         $tags = app(TagService::class)->findAll();
         $coas = app(CoaService::class)->findAll();
         $referenceNo = app(AccountingJournalService::class)->generateReferenceNo(date('Y-m-d'));
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
         return view('pages.main_transaction.journal.add', [
             'today' => date('Y-m-d'),
-            'canAddTags' => $canAddTags,
+            'canAddTags' => true,
             'tags' => $tags,
             'coas' => $coas,
             'referenceNo' => $referenceNo,
@@ -192,7 +190,6 @@ class JournalController extends Controller
             abort(404);
         }
 
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
         $tags = app(TagService::class)->findAll();
         $coas = app(CoaService::class)->findAll();
 
@@ -235,7 +232,7 @@ class JournalController extends Controller
             'journal' => $journal,
             'coas' => $coas,
             'tags' => $tags,
-            'canAddTags' => $canAddTags,
+            'canAddTags' => true,
         ]);
     }
 

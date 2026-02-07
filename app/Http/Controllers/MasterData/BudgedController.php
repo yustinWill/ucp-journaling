@@ -10,7 +10,6 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
-use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -21,8 +20,6 @@ class BudgedController extends Controller
 {
     public function index()
     {
-        // $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
-        
         $permissionData =  [
             "permissions" => [
                 "read" => true,
@@ -54,7 +51,6 @@ class BudgedController extends Controller
     {
         $budgedlist = app(BudgedService::class)->findAllDatatable();
         $budgetCategories = app(BudgetCategoryService::class)->findAllActive();
-        // dd($budgedlist["data"]);
         return view('pages.master_data.budged.add',["budgedlist" => $budgedlist["data"], "budgetCategories" => $budgetCategories]);
     }
 
@@ -116,11 +112,9 @@ class BudgedController extends Controller
     {
         // $id is now the period_id
         $periodData = app(BudgedService::class)->getPeriodWithBudgetsAndExpenses($id);
-        $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
 
         return view('pages.master_data.budged.detail', array_merge(
             compact('periodData'),
-            $permissionData
         ));
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\MasterData;
 
-use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
@@ -21,19 +20,11 @@ class TransactionNumberController extends Controller
 
     public function index()
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk melihat data ini.');
-        }
-
         return view('pages.master_data.transaction_number.index');
     }
 
     public function indexDataTable()
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $data = DB::table($this->table_name)
             ->select([
                 'id',
@@ -79,10 +70,6 @@ class TransactionNumberController extends Controller
 
     public function detail($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk melihat data ini.');
-        }
-
         $transactionNumber = DB::table($this->table_name)->where('id', $id)->first();
 
         if (! $transactionNumber) {
@@ -97,16 +84,12 @@ class TransactionNumberController extends Controller
             'transactionNumber' => $transactionNumber,
             'previews' => $previews,
             'placeholders' => $placeholders,
-            'canEdit' => PermissionHelper::hasPermission('master_data_transaction_number', 'write'),
+            'canEdit' => true,
         ]);
     }
 
     public function edit($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
-            return redirect()->back()->with('error', 'Anda tidak memiliki akses untuk mengedit data ini.');
-        }
-
         $transactionNumber = DB::table($this->table_name)->where('id', $id)->first();
 
         if (! $transactionNumber) {
@@ -130,10 +113,6 @@ class TransactionNumberController extends Controller
 
     public function update(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
-            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengedit data.', 'error' => 'PERMISSION_DENIED'], 403);
-        }
-
         $request->validate([
             'id' => 'required|exists:m_transaction_numbers,id',
             'format_template' => 'required|string|max:500',
@@ -179,10 +158,6 @@ class TransactionNumberController extends Controller
 
     public function previewFormat(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $request->validate([
             'template' => 'required|string',
             'module_initial' => 'required|string|max:2',
@@ -223,10 +198,6 @@ class TransactionNumberController extends Controller
 
     public function generateNumber(Request $request, $module)
     {
-        // if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
-        //     return response()->json(['error' => 'Unauthorized'], 403);
-        // }
-
         try {
             $number = $this->transactionNumberService->generateNumber($module);
 
@@ -244,10 +215,6 @@ class TransactionNumberController extends Controller
 
     public function checkDuplicate(Request $request, $module)
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $request->validate([
             'number' => 'required|string',
         ]);
@@ -261,10 +228,6 @@ class TransactionNumberController extends Controller
 
     public function resetCounter(Request $request, $id)
     {
-        if (! PermissionHelper::hasPermission('master_data_transaction_number', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $request->validate([
             'counter' => 'required|integer',
         ]);

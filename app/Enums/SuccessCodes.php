@@ -51,6 +51,7 @@ enum SuccessCodes: string
     case CREATE_EXPENSE_SUCCESS = 'CREATE_EXPENSE_SUCCESS';
     case CREATE_EXPENSE_PAYMENT_SUCCESS = 'CREATE_EXPENSE_PAYMENT_SUCCESS';
     case CREATE_SALES_INVOICE_PAYMENT_SUCCESS = 'CREATE_SALES_INVOICE_PAYMENT_SUCCESS';
+    case CREATE_UNIT_CONVERSION_SUCCESS = 'CREATE_UNIT_CONVERSION_SUCCESS';
 
     public function message(): string
     {
@@ -100,6 +101,7 @@ enum SuccessCodes: string
             self::CREATE_EXPENSE_SUCCESS => 'Expense berhasil dibuat.',
             self::CREATE_EXPENSE_PAYMENT_SUCCESS => 'Payment pengeluaran berhasil diterima.',
             self::CREATE_SALES_INVOICE_PAYMENT_SUCCESS => 'Payment berhasil diterima.',
+            self::CREATE_UNIT_CONVERSION_SUCCESS => 'Konversi Satuan berhasil dibuat.',
         };
     }
 
@@ -151,6 +153,7 @@ enum SuccessCodes: string
             self::CREATE_EXPENSE_SUCCESS => self::OK,
             self::CREATE_EXPENSE_PAYMENT_SUCCESS => self::OK,
             self::CREATE_SALES_INVOICE_PAYMENT_SUCCESS => self::OK,
+            self::CREATE_UNIT_CONVERSION_SUCCESS => self::OK,
         };
     }
 

@@ -17,7 +17,6 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
 // Actions
-use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -59,10 +58,6 @@ class RoleController extends Controller
         $tags = app(TagService::class)->findAll();
         $modules = app(ModuleService::class)->findAll();
         $permissions = app(PermissionService::class)->findAll();
-
-        // Permission checks for add buttons
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
-        $canAddRoles = PermissionHelper::canWrite('master_data_role');
 
         return view('pages.master_data.role.add', [
             'roles' => $roles,
