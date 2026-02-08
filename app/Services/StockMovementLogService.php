@@ -116,11 +116,20 @@ class StockMovementLogService
      */
     public function recordMovement($warehouseId, $productId, $movementType, $referenceType, $referenceNumber, $movementQty, $notes = null, $movementDate = null, $unitCost = 0)
     {
-        // Get current stock from product table
-        $product = DB::table('m_products')->where('id', $productId)->first();
-        $currentStock = $product ? $product->total_stock : 0;
+        $companyCode = session('user_company_code');
 
-        // Get warehouse and product details
+        // Get current stock from latest movement log's stock_after (not from m_products.total_stock)
+        $latestMovement = DB::table('t_stock_movement_logs')
+            ->where('product_id', $productId)
+            ->where('warehouse_id', $warehouseId)
+            ->where('company_code', $companyCode)
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        $currentStock = $latestMovement ? $latestMovement->stock_after : 0;
+
+        // Get product and warehouse details
+        $product = DB::table('m_products')->where('id', $productId)->first();
         $warehouse = DB::table('m_warehouses')->where('id', $warehouseId)->first();
         $unit = DB::table('m_units as u')
             ->join('m_products as p', 'p.f_unit_id', '=', 'u.id')
@@ -128,7 +137,7 @@ class StockMovementLogService
             ->first();
 
         // Calculate new stock
-        $isInMovement = in_array($movementType, ['PURCHASE_IN', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_IN']);
+        $isInMovement = in_array($movementType, ['PURCHASE_IN', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_IN', 'PRODUCTION_IN', 'PRODUCTION_REVERSAL_IN']);
         $newStock = $isInMovement ? $currentStock + $movementQty : $currentStock - $movementQty;
 
         return $this->create([

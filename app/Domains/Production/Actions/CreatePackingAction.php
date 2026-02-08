@@ -457,20 +457,15 @@ class CreatePackingAction
             ->select('code as warehouse_code', 'name as warehouse_name')
             ->first();
 
-        // Get current stock AFTER the packing operations
-        $stockBefore = DB::table('t_stock_movement_logs')
+        // Get current stock AFTER the packing operations from latest movement log
+        $latestMovement = DB::table('t_stock_movement_logs')
             ->where('product_id', $bundleProductId)
             ->where('warehouse_id', $warehouseId)
-            ->select(
-                DB::raw('SUM(
-                    CASE
-                        WHEN movement_type LIKE "%_IN" THEN movement_qty
-                        WHEN movement_type LIKE "%_OUT" THEN -movement_qty
-                        ELSE 0
-                    END
-                ) as total_stock')
-            )
-            ->value('total_stock') ?? 0;
+            ->where('company_code', $companyCode)
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        $stockBefore = $latestMovement ? $latestMovement->stock_after : 0;
 
         // Calculate the adjustment needed: current_stock - desired_remaining_stock
         // If adjustment is positive: we have excess (need to remove stock)
