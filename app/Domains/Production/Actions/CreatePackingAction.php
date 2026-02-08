@@ -98,6 +98,12 @@ class CreatePackingAction
 
     private function validateStockAvailability(array $data): void
     {
+        // Stock validation disabled for repacking
+        // Allows negative stock for flexibility in packing adjustments
+        return;
+
+        // Previous validation code kept for reference but disabled:
+        /*
         if (empty($data['packaging_products'])) {
             return;
         }
@@ -163,6 +169,7 @@ class CreatePackingAction
                 }
             }
         }
+        */
     }
 
     private function calculateTotalsForSinglePackaging(array $data, array $packaging): array
