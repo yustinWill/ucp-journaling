@@ -34,6 +34,22 @@ class ProductionStockService
         // Fetch warehouse once
         $warehouse = DB::table('m_warehouses')->where('id', $productionData['warehouse_id'])->first();
 
+        // Get latest stock_after values from stock movement logs for each product
+        $latestStocks = DB::table('t_stock_movement_logs as sml1')
+            ->select('sml1.product_id', 'sml1.stock_after')
+            ->whereIn('sml1.product_id', $productIds)
+            ->where('sml1.warehouse_id', $productionData['warehouse_id'])
+            ->where('sml1.company_code', session('user_company_code'))
+            ->whereRaw('sml1.id = (
+                SELECT MAX(sml2.id)
+                FROM t_stock_movement_logs sml2
+                WHERE sml2.product_id = sml1.product_id
+                  AND sml2.warehouse_id = sml1.warehouse_id
+                  AND sml2.company_code = sml1.company_code
+            )')
+            ->get()
+            ->keyBy('product_id');
+
         // 1. Consume raw materials (decrease stock) - Update all stocks at once
         $stockUpdates = [];
         foreach ($items as $item) {
@@ -54,8 +70,8 @@ class ProductionStockService
         foreach ($items as $item) {
             $product = $products[$item['raw_material_product_id']];
 
-            // Calculate stock before/after for movement log
-            $stockBefore = $product->total_stock;
+            // Get stock_before from latest movement log, default to 0 if no movements exist
+            $stockBefore = $latestStocks[$item['raw_material_product_id']]->stock_after ?? 0;
             $stockAfter = $stockBefore - $item['quantity_consumed'];
 
             // Prepare stock movement data (will be bulk inserted later)
@@ -99,6 +115,10 @@ class ProductionStockService
 
         // Prepare bundle product movement
         $bundleProduct = $products[$productionData['bundle_product_id']];
+
+        // Get stock_before from latest movement log for bundle product
+        $bundleStockBefore = $latestStocks[$productionData['bundle_product_id']]->stock_after ?? 0;
+
         $stockMovements[] = [
             'company_code' => session('user_company_code'),
             'movement_date' => $productionData['production_date'],
@@ -112,9 +132,9 @@ class ProductionStockService
             'product_code' => $bundleProduct->code,
             'product_name' => $bundleProduct->name,
             'unit' => $bundleProduct->unit_code,
-            'stock_before' => $bundleProduct->total_stock,
+            'stock_before' => $bundleStockBefore,
             'movement_qty' => $productionData['quantity_produced'],
-            'stock_after' => $bundleProduct->total_stock + $productionData['quantity_produced'],
+            'stock_after' => $bundleStockBefore + $productionData['quantity_produced'],
             'unit_cost' => 0,
             'total_value' => 0,
             'notes' => "Bundle product created from production {$productionData['production_number']}",
