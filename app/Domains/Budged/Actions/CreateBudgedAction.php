@@ -14,14 +14,12 @@ class CreateBudgedAction
             $budgedService = app(BudgedService::class);
             $periodStartDate = $data['period_start_date'];
             $periodEndDate = $data['period_end_date'];
-            $type = $data['type'] ?? 'kingdom';
             $budgets = $data['budgets'];
 
             // Step 1: Create the period first
             $periodId = $budgedService->createPeriod([
                 'period_start_date' => $periodStartDate,
                 'period_end_date' => $periodEndDate,
-                'type' => $type,
             ]);
 
             $createdBudgets = [];
