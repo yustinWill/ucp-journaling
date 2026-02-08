@@ -19,6 +19,7 @@ class BudgedService
         return DB::table($this->period_table)->insertGetId([
             'period_start_date' => $data['period_start_date'],
             'period_end_date' => $data['period_end_date'],
+            'type' => $data['type'] ?? 'kingdom',
             'created_by' => Auth::id(),
             'created_at' => now(),
         ]);
@@ -155,15 +156,21 @@ class BudgedService
     // ACTIVE BUDGETS (for expense tracking)
     // ========================================================================
 
-    public function getActiveBudgets()
+    public function getActiveBudgets($entityType = null)
     {
         $currentDate = now()->toDateString();
 
-        return DB::table($this->table_name . ' as b')
+        $query = DB::table($this->table_name . ' as b')
             ->join($this->period_table . ' as bp', 'b.f_budget_period_id', '=', 'bp.id')
             ->where('bp.period_start_date', '<=', $currentDate)
-            ->where('bp.period_end_date', '>=', $currentDate)
-            ->select([
+            ->where('bp.period_end_date', '>=', $currentDate);
+
+        // Filter by entity type if provided
+        if ($entityType) {
+            $query->where('bp.type', $entityType);
+        }
+
+        return $query->select([
                 'b.id as budget_id',
                 'b.budged_name',
                 'b.budged_limit_value',
@@ -171,7 +178,9 @@ class BudgedService
                 'bp.id as period_id',
                 'bp.period_start_date',
                 'bp.period_end_date',
+                'bp.type as entity_type',
             ])
+            ->orderBy('bp.type')
             ->orderBy('b.budged_name')
             ->get();
     }

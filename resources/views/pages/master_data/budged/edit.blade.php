@@ -16,17 +16,22 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Tanggal Mulai Periode <span style="color: red;">*</span></label>
                     <input type="text" class="form-control global-single-date-picker" id="period_start_date"
                            name="period_start_date" value="{{ $period_start_date }}" placeholder="yyyy-mm-dd" required readonly>
                     <small class="text-muted">Periode tidak dapat diubah</small>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Tanggal Akhir Periode <span style="color: red;">*</span></label>
                     <input type="text" class="form-control global-single-date-picker" id="period_end_date"
                            name="period_end_date" value="{{ $period_end_date }}" placeholder="yyyy-mm-dd" required readonly>
                     <small class="text-muted">Periode tidak dapat diubah</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tipe</label>
+                    <input type="text" class="form-control" value="{{ ucfirst($period_type ?? 'kingdom') }}" readonly>
+                    <small class="text-muted">Tipe tidak dapat diubah</small>
                 </div>
             </div>
 
