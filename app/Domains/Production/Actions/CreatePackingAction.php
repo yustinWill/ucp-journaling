@@ -493,6 +493,7 @@ class CreatePackingAction
             'company_code' => $companyCode,
             'movement_date' => $data['production_date'],
             'movement_type' => $movementType,
+            'reference_type' => 'PACKING_ADJUSTMENT',
             'reference_number' => $adjustmentNumber,
             'warehouse_id' => $warehouseId,
             'warehouse_code' => $warehouse->warehouse_code ?? '',
