@@ -202,6 +202,39 @@
                 @endif
             @endforeach
 
+            <!-- Stock Adjustment Section (if exists) -->
+            @if($stockAdjustment)
+            <div class="section-header mt-12">
+                <h6>Stock Adjustment</h6>
+                <hr class="mx-n6">
+            </div>
+
+            <div class="alert {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'alert-success' : 'alert-warning' }} mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="icon-base ti {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'tabler-arrow-up-circle' : 'tabler-arrow-down-circle' }} icon-24px me-3"></i>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">
+                            {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'Excess Stock (Kelebihan)' : 'Stock Shortage (Kekurangan)' }}
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <small class="text-muted">Adjustment Number:</small>
+                                <div><strong>{{ $stockAdjustment->reference_number }}</strong></div>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">Quantity Adjusted:</small>
+                                <div><strong>{{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? '+' : '-' }}{{ number_format($stockAdjustment->movement_qty, 2, ',', '.') }} {{ $sourceBundleProduct->unit_code ?? '' }}</strong></div>
+                            </div>
+                            <div class="col-md-4">
+                                <small class="text-muted">Reason:</small>
+                                <div><strong>{{ str_replace('Packing adjustment - ', '', $stockAdjustment->notes) }}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Informasi Tambahan Section -->
             <div class="section-header mt-12">
                 <h6>Informasi Tambahan</h6>

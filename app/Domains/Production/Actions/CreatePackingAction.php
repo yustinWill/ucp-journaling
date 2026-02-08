@@ -89,6 +89,9 @@ class CreatePackingAction
                 );
             }
 
+            // 7. Create stock adjustment for remaining bundle product (if any)
+            $this->createRemainingBundleAdjustment($data, $productionIds);
+
             return $productionIds;
         });
     }
@@ -421,5 +424,106 @@ class CreatePackingAction
             'is_valid' => empty($errors),
             'errors' => $errors,
         ];
+    }
+
+    private function createRemainingBundleAdjustment(array $data, array $productionIds): void
+    {
+        // Check if there's a remaining bundle adjustment
+        $remainingAdjustment = floatval($data['remaining_bundle_adjustment'] ?? 0);
+
+        if ($remainingAdjustment == 0) {
+            return; // No adjustment needed
+        }
+
+        $companyCode = session('user_company_code');
+        $warehouseId = $data['warehouse_id'];
+        $bundleProductId = $data['bundle_product_id'];
+        $adjustmentReason = $data['adjustment_reason'] ?? 'Stock adjustment after packing';
+
+        // Generate stock adjustment number
+        $year = date('Y');
+        $month = date('m');
+        $adjustmentNumber = "ADJ-PACK-{$year}{$month}-" . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+        // Determine movement type based on positive or negative adjustment
+        $movementType = $remainingAdjustment > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
+        $absoluteQty = abs($remainingAdjustment);
+
+        // Get product details for unit code
+        $product = DB::table('m_products as p')
+            ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
+            ->where('p.id', $bundleProductId)
+            ->select('u.code as unit_code', 'p.name as product_name')
+            ->first();
+
+        // Create stock movement log entry
+        DB::table('t_stock_movement_logs')->insert([
+            'company_code' => $companyCode,
+            'movement_date' => $data['production_date'],
+            'movement_type' => $movementType,
+            'reference_number' => $adjustmentNumber,
+            'product_id' => $bundleProductId,
+            'warehouse_id' => $warehouseId,
+            'movement_qty' => $absoluteQty,
+            'unit_code' => $product->unit_code ?? '',
+            'notes' => "Packing adjustment - {$adjustmentReason}",
+            'source_type' => 'PACKING_ADJUSTMENT',
+            'source_transaction_id' => $productionIds[0] ?? null, // Link to first production ID
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // If positive adjustment (excess stock), create a stock batch
+        if ($remainingAdjustment > 0) {
+            // Get latest HPP from existing batches for this product
+            $latestBatch = DB::table('t_product_stock_batches')
+                ->where('f_product_id', $bundleProductId)
+                ->where('status', 'ACTIVE')
+                ->orderBy('batch_date', 'DESC')
+                ->first();
+
+            $estimatedHpp = $latestBatch->estimated_hpp ?? $latestBatch->purchase_price ?? 0;
+
+            DB::table('t_product_stock_batches')->insert([
+                'company_code' => $companyCode,
+                'f_product_id' => $bundleProductId,
+                'batch_date' => $data['production_date'],
+                'batch_number' => $adjustmentNumber,
+                'initial_qty' => $absoluteQty,
+                'remaining_qty' => $absoluteQty,
+                'purchase_price' => 0,
+                'estimated_hpp' => $estimatedHpp,
+                'final_hpp' => null,
+                'hpp_status' => 'ESTIMATED',
+                'source_type' => 'PACKING_ADJUSTMENT',
+                'f_source_transaction_id' => $productionIds[0] ?? null,
+                'status' => 'ACTIVE',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        // If negative adjustment (shortage), deduct from existing batches using FIFO
+        else {
+            $remainingToDeduct = $absoluteQty;
+            $batches = DB::table('t_product_stock_batches')
+                ->where('f_product_id', $bundleProductId)
+                ->where('status', 'ACTIVE')
+                ->where('remaining_qty', '>', 0)
+                ->orderBy('batch_date', 'ASC')
+                ->orderBy('id', 'ASC')
+                ->get();
+
+            foreach ($batches as $batch) {
+                if ($remainingToDeduct <= 0) break;
+
+                $qtyToDeduct = min($batch->remaining_qty, $remainingToDeduct);
+
+                DB::table('t_product_stock_batches')
+                    ->where('id', $batch->id)
+                    ->decrement('remaining_qty', $qtyToDeduct);
+
+                $remainingToDeduct -= $qtyToDeduct;
+            }
+        }
     }
 }

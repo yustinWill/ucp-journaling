@@ -269,10 +269,18 @@ class PackingController extends Controller
             ->select('p.code', 'p.name', 'u.code as unit_code')
             ->first();
 
+        // Get stock adjustment if any (from packing adjustment)
+        $stockAdjustment = DB::table('t_stock_movement_logs')
+            ->where('source_type', 'PACKING_ADJUSTMENT')
+            ->where('source_transaction_id', $id)
+            ->select('movement_type', 'movement_qty', 'notes', 'reference_number', 'movement_date')
+            ->first();
+
         return view('pages.main_transaction.packing.detail', [
             'production' => $production,
             'packagingProducts' => $packagingProducts,
             'sourceBundleProduct' => $sourceBundleProduct,
+            'stockAdjustment' => $stockAdjustment,
         ]);
     }
 

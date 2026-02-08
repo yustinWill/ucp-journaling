@@ -155,6 +155,27 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
+                    <label class="form-label">Sisa Bundle Product</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" id="remaining-bundle-adjustment"
+                            name="remaining_bundle_adjustment" value="0" placeholder="0">
+                        <span class="input-group-text" id="adjustment-unit-label">-</span>
+                    </div>
+                    <small class="form-text text-muted">
+                        Sisa bundle setelah packing selesai. Positif (+) untuk kelebihan, Negatif (-) untuk kekurangan.
+                        Akan otomatis membuat stock adjustment.
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Alasan Penyesuaian Stock</label>
+                    <textarea class="form-control" id="adjustment-reason" name="adjustment_reason" rows="2"
+                        placeholder="Jelaskan alasan penyesuaian stock (jika ada)..." maxlength="500"></textarea>
+                    <small class="form-text text-muted">Wajib diisi jika ada sisa bundle product</small>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
                     <label class="form-label">Memo <small class="text-muted">(Internal)</small></label>
                     <textarea class="form-control" id="production-memo" name="memo" rows="3"
                         placeholder="Catatan internal untuk packing..." maxlength="500"></textarea>
@@ -258,6 +279,7 @@
                             $('#available-bundle-qty').val(formatNumber(availableBundleQty));
                             $('#bundle-unit-label').text(bundleUnitCode);
                             $('#remaining-unit-label').text(bundleUnitCode);
+                            $('#adjustment-unit-label').text(bundleUnitCode);
                             $('#bundle-stock-container').show();
 
                             updateRemainingBundleQty();
@@ -643,6 +665,25 @@
                     return;
                 }
 
+                // Validate adjustment reason if there's a remaining bundle adjustment
+                const remainingAdjustment = parseFloat($('#remaining-bundle-adjustment').val()) || 0;
+                if (remainingAdjustment !== 0) {
+                    const adjustmentReason = $('#adjustment-reason').val().trim();
+                    if (!adjustmentReason) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Alasan Penyesuaian Diperlukan',
+                            text: 'Silakan isi alasan penyesuaian stock untuk sisa bundle product.',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            },
+                            buttonsStyling: false
+                        });
+                        $('#adjustment-reason').focus();
+                        return;
+                    }
+                }
+
                 // Check component stock
                 const hasInsufficientStock = $('#packaging-table .badge.bg-label-danger').length > 0;
                 if (hasInsufficientStock) {
@@ -698,6 +739,8 @@
                 formData.append('pic_id', $('#pic-user').val());
                 formData.append('description', $('#description').val());
                 formData.append('memo', $('#production-memo').val());
+                formData.append('remaining_bundle_adjustment', $('#remaining-bundle-adjustment').val());
+                formData.append('adjustment_reason', $('#adjustment-reason').val());
 
                 // Collect packaging products data (only those with qty > 0)
                 const packagingData = [];
