@@ -29,13 +29,18 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Tanggal Transaksi</label>
                     <input type="text" class="form-control" value="{{ \Carbon\Carbon::parse($production->production_date)->format('d F Y') }}" readonly />
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Nomor Transaksi</label>
                     <input type="text" class="form-control" value="{{ $production->production_number }}" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Transaction Number</label>
+                    <input type="text" class="form-control" value="{{ $packagingProducts->first()->transaction_number ?? '-' }}" readonly />
+                    <small class="form-text text-muted">Groups all packaging products from this packing</small>
                 </div>
             </div>
 
@@ -205,29 +210,59 @@
             <!-- Stock Adjustment Section (if exists) -->
             @if($stockAdjustment)
             <div class="section-header mt-12">
-                <h6>Stock Adjustment</h6>
+                <h6>
+                    <i class="icon-base ti tabler-adjustments me-2"></i>Stock Adjustment
+                    <span class="badge {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'bg-label-success' : 'bg-label-warning' }} ms-2">
+                        {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'EXCESS' : 'SHORTAGE' }}
+                    </span>
+                </h6>
                 <hr class="mx-n6">
             </div>
 
-            <div class="alert {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'alert-success' : 'alert-warning' }} mb-4">
-                <div class="d-flex align-items-center">
-                    <i class="icon-base ti {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'tabler-arrow-up-circle' : 'tabler-arrow-down-circle' }} icon-24px me-3"></i>
-                    <div class="flex-grow-1">
-                        <h6 class="mb-1">
-                            {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'Excess Stock (Kelebihan)' : 'Stock Shortage (Kekurangan)' }}
-                        </h6>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <small class="text-muted">Adjustment Number:</small>
-                                <div><strong>{{ $stockAdjustment->reference_number }}</strong></div>
+            <div class="card border-{{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'success' : 'warning' }} shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="avatar flex-shrink-0 me-3">
+                            <span class="avatar-initial rounded bg-label-{{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'success' : 'warning' }}">
+                                <i class="icon-base ti {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'tabler-arrow-up-circle' : 'tabler-arrow-down-circle' }} icon-24px"></i>
+                            </span>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-3">
+                                {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'Excess Stock (Kelebihan)' : 'Stock Shortage (Kekurangan)' }}
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Adjustment Number</small>
+                                    <strong class="d-block">{{ $stockAdjustment->reference_number }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Adjustment Date</small>
+                                    <strong class="d-block">{{ \Carbon\Carbon::parse($stockAdjustment->movement_date)->format('d/m/Y') }}</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Quantity Adjusted</small>
+                                    <strong class="d-block text-{{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'success' : 'warning' }}">
+                                        {{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? '+' : '-' }}{{ number_format($stockAdjustment->movement_qty, 2, ',', '.') }} {{ $sourceBundleProduct->unit_code ?? '' }}
+                                    </strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">Affected Product</small>
+                                    <strong class="d-block">{{ $sourceBundleProduct->name ?? '-' }}</strong>
+                                    <small class="text-muted">{{ $sourceBundleProduct->code ?? '' }}</small>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <small class="text-muted">Quantity Adjusted:</small>
-                                <div><strong>{{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? '+' : '-' }}{{ number_format($stockAdjustment->movement_qty, 2, ',', '.') }} {{ $sourceBundleProduct->unit_code ?? '' }}</strong></div>
+                            <hr class="my-3">
+                            <div>
+                                <small class="text-muted d-block mb-1">Adjustment Reason:</small>
+                                <p class="mb-0"><strong>{{ str_replace('Packing adjustment - ', '', $stockAdjustment->notes) }}</strong></p>
                             </div>
-                            <div class="col-md-4">
-                                <small class="text-muted">Reason:</small>
-                                <div><strong>{{ str_replace('Packing adjustment - ', '', $stockAdjustment->notes) }}</strong></div>
+                            <div class="alert alert-info mt-3 mb-0">
+                                <i class="icon-base ti tabler-info-circle me-2"></i>
+                                <small>
+                                    This adjustment was created automatically after completing the packing process for transaction
+                                    <strong>{{ $packagingProducts->first()->transaction_number ?? '-' }}</strong>
+                                </small>
                             </div>
                         </div>
                     </div>

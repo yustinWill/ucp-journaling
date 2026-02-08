@@ -52,7 +52,9 @@ class PackingController extends Controller
                 DB::raw('MIN(w.code) as warehouse_code'),
                 DB::raw('MIN(u.name) as pic_name'),
                 DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = MIN(p.id) LIMIT 1) as unit_code'),
-                DB::raw("(SELECT AVG(CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END) FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id IN (SELECT tp.id FROM t_productions tp WHERE tp.id IN (SELECT pkg2.production_id FROM t_packaging pkg2 WHERE pkg2.transaction_number = pkg.transaction_number)) AND psb.source_type = 'PRODUCTION') as hpp_packing")
+                DB::raw("(SELECT AVG(CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END) FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id IN (SELECT tp.id FROM t_productions tp WHERE tp.id IN (SELECT pkg2.production_id FROM t_packaging pkg2 WHERE pkg2.transaction_number = pkg.transaction_number)) AND psb.source_type = 'PRODUCTION') as hpp_packing"),
+                DB::raw("(SELECT sml.movement_type FROM t_stock_movement_logs as sml WHERE sml.source_type = 'PACKING_ADJUSTMENT' AND sml.source_transaction_id = MIN(p.id) LIMIT 1) as adjustment_type"),
+                DB::raw("(SELECT sml.movement_qty FROM t_stock_movement_logs as sml WHERE sml.source_type = 'PACKING_ADJUSTMENT' AND sml.source_transaction_id = MIN(p.id) LIMIT 1) as adjustment_qty")
             )
             ->leftJoin('t_productions as p', 'pkg.production_id', '=', 'p.id')
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
