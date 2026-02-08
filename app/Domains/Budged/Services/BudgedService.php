@@ -249,4 +249,93 @@ class BudgedService
         $period->budgets = $budgets;
         return $period;
     }
+
+    // ========================================================================
+    // BUDGET HISTORY/PERIOD MANAGEMENT METHODS
+    // ========================================================================
+
+    public function validatePeriodOverlap($budgedId, $periodStartDate, $periodEndDate, $excludeHistoryId = null)
+    {
+        $query = DB::table('m_budgeds_history')
+            ->where('budged_id', $budgedId)
+            ->where(function ($q) use ($periodStartDate, $periodEndDate) {
+                $q->whereBetween('period_start_date', [$periodStartDate, $periodEndDate])
+                  ->orWhereBetween('period_end_date', [$periodStartDate, $periodEndDate])
+                  ->orWhere(function ($q2) use ($periodStartDate, $periodEndDate) {
+                      $q2->where('period_start_date', '<=', $periodStartDate)
+                         ->where('period_end_date', '>=', $periodEndDate);
+                  });
+            });
+
+        if ($excludeHistoryId) {
+            $query->where('id', '!=', $excludeHistoryId);
+        }
+
+        $overlapping = $query->first();
+
+        if ($overlapping) {
+            return [
+                'valid' => false,
+                'message' => 'Periode anggaran tumpang tindih dengan periode yang sudah ada: ' .
+                            date('d/m/Y', strtotime($overlapping->period_start_date)) . ' - ' .
+                            date('d/m/Y', strtotime($overlapping->period_end_date))
+            ];
+        }
+
+        return ['valid' => true];
+    }
+
+    public function createHistory($budgedId, array $data)
+    {
+        return DB::table('m_budgeds_history')->insertGetId([
+            'budged_id' => $budgedId,
+            'period_start_date' => $data['period_start_date'],
+            'period_end_date' => $data['period_end_date'],
+            'budged_limit_value' => $data['budged_limit_value'],
+            'budged_remaining_value' => $data['budged_limit_value'],
+            'created_by' => Auth::id(),
+            'created_at' => now(),
+        ]);
+    }
+
+    public function findHistoryOne($historyId)
+    {
+        $history = DB::table('m_budgeds_history')
+            ->where('id', $historyId)
+            ->first();
+
+        if ($history == null) {
+            abort(404);
+        }
+
+        return $history;
+    }
+
+    public function updateHistory($historyId, array $data)
+    {
+        return DB::table('m_budgeds_history')
+            ->where('id', $historyId)
+            ->update([
+                'period_start_date' => $data['period_start_date'],
+                'period_end_date' => $data['period_end_date'],
+                'budged_limit_value' => $data['budged_limit_value'],
+                'updated_by' => Auth::id(),
+                'updated_at' => now(),
+            ]);
+    }
+
+    public function deleteHistory($historyId)
+    {
+        return DB::table('m_budgeds_history')
+            ->where('id', $historyId)
+            ->delete();
+    }
+
+    public function findHistoryByBudgedId($budgedId)
+    {
+        return DB::table('m_budgeds_history')
+            ->where('budged_id', $budgedId)
+            ->orderBy('period_start_date', 'DESC')
+            ->get();
+    }
 }
