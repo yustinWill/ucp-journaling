@@ -8,6 +8,7 @@ use App\Domains\Production\Services\ProductionService;
 use App\Domains\Production\Services\ProductionStockService;
 use App\Enums\ErrorCodes;
 use App\Exceptions\AppException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CreatePackingAction
@@ -545,6 +546,7 @@ class CreatePackingAction
                 'hpp_status' => 'UNSETTLED',
                 'status' => 'ACTIVE',
                 'created_at' => now(),
+                'created_by' => Auth::id(),
                 'updated_at' => now(),
             ]);
         }
