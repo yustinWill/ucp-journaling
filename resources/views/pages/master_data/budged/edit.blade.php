@@ -29,9 +29,12 @@
                     <small class="text-muted">Periode tidak dapat diubah</small>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Tipe</label>
-                    <input type="text" class="form-control" value="{{ ucfirst($period_type ?? 'kingdom') }}" readonly>
-                    <small class="text-muted">Tipe tidak dapat diubah</small>
+                    <label class="form-label">Tipe <span style="color: red;">*</span></label>
+                    <select class="form-select" id="type" name="type" required>
+                        <option value="">Pilih Tipe</option>
+                        <option value="kingdom" {{ ($period_type ?? 'kingdom') === 'kingdom' ? 'selected' : '' }}>Kingdom</option>
+                        <option value="owner" {{ ($period_type ?? 'kingdom') === 'owner' ? 'selected' : '' }}>Owner</option>
+                    </select>
                 </div>
             </div>
 
@@ -362,6 +365,7 @@
                             data: {
                                 _token: '{{ csrf_token() }}',
                                 period_id: periodId,
+                                type: $('#type').val(),
                                 budgets: budgets
                             },
                             success: function(response) {

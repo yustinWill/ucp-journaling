@@ -7,10 +7,13 @@ use Illuminate\Support\Facades\DB;
 
 class UpdateBudgedAction
 {
-    public function execute(int $periodId, array $budgets): array
+    public function execute(int $periodId, string $type, array $budgets): array
     {
-        return DB::transaction(function () use ($periodId, $budgets) {
+        return DB::transaction(function () use ($periodId, $type, $budgets) {
             $budgedService = app(BudgedService::class);
+
+            // Update period type
+            $budgedService->updatePeriodType($periodId, $type);
 
             $updatedCount = 0;
             $createdCount = 0;

@@ -38,6 +38,16 @@ class BudgedService
         return $period;
     }
 
+    public function updatePeriodType(int $periodId, string $type)
+    {
+        return DB::table($this->period_table)
+            ->where('id', $periodId)
+            ->update([
+                'type' => $type,
+                'updated_at' => now(),
+            ]);
+    }
+
     public function findAllDatatable()
     {
         // Get periods with their budget counts and totals
