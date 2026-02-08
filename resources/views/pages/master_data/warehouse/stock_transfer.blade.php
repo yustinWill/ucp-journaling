@@ -485,12 +485,16 @@
                     const sisaStok = product.current_stock - qtyTransfer;
                     const reason = existingProduct ? existingProduct.reason : '';
 
+                    // Format stock: remove trailing zeros (0.500000 → 0.5), keep meaningful decimals (0.5 → 0.5)
+                    const formattedStock = parseFloat(product.current_stock.toFixed(2));
+                    const formattedSisaStok = parseFloat(sisaStok.toFixed(2));
+
                     rows += `
                         <tr data-product-code="${product.code}" data-product-id="${product.id}">
                             <td><strong>${product.code}</strong></td>
                             <td>${product.name}</td>
                             <td>${product.unit}</td>
-                            <td><span class="text-info">${Math.floor(product.current_stock)}</span></td>
+                            <td><span class="text-info">${formattedStock}</span></td>
                             <td>
                                 <input type="number" class="form-control form-control-sm qty-transfer-input"
                                     value="${qtyTransfer}"
@@ -502,10 +506,11 @@
                                     data-unit-cost="${product.unit_cost}"
                                     min="0"
                                     max="${product.current_stock}"
+                                    step="0.01"
                                     placeholder="0">
                             </td>
                             <td class="sisa-stok-display">
-                                <span class="text-${sisaStok < 0 ? 'danger' : 'info'}">${Math.floor(sisaStok)}</span>
+                                <span class="text-${sisaStok < 0 ? 'danger' : 'info'}">${formattedSisaStok}</span>
                             </td>
                             <td>
                                 <input type="text" class="form-control form-control-sm reason-input"
@@ -525,8 +530,8 @@
             // Handle qty transfer input changes
             $(document).on('input', '.qty-transfer-input', function() {
                 const $input = $(this);
-                const qtyTransfer = parseInt($input.val()) || 0;
-                const currentStock = parseInt($input.data('current-stock')) || 0;
+                const qtyTransfer = parseFloat($input.val()) || 0;
+                const currentStock = parseFloat($input.data('current-stock')) || 0;
                 const productCode = $input.data('product-code');
                 const productId = $input.data('product-id');
                 const productName = $input.data('product-name');
@@ -535,9 +540,10 @@
                 const row = $input.closest('tr');
                 const sisaStok = currentStock - qtyTransfer;
 
-                // Update sisa stok display
+                // Update sisa stok display: remove trailing zeros
+                const formattedSisaStok = parseFloat(sisaStok.toFixed(2));
                 row.find('.sisa-stok-display').html(
-                    `<span class="text-${sisaStok < 0 ? 'danger' : 'info'}">${Math.floor(sisaStok)}</span>`
+                    `<span class="text-${sisaStok < 0 ? 'danger' : 'info'}">${formattedSisaStok}</span>`
                 );
 
                 // Update or add to selectedProducts array
@@ -624,23 +630,23 @@
                     }
                 });
 
-                // Update summary display
-                $('#total-items-summary').text(totalItems.toLocaleString('id-ID'));
+                // Update summary display (without thousand separators)
+                $('#total-items-summary').text(totalItems);
 
                 // Update qty card styling based on positive/negative
                 // const qtyCard = $('#total-qty-card');
                 // if (totalQty > 0) {
                 //     qtyCard.removeClass('danger').addClass('success');
-                //     $('#total-qty-summary').text('+' + totalQty.toLocaleString('id-ID'));
+                //     $('#total-qty-summary').text('+' + totalQty);
                 // } else if (totalQty < 0) {
                 //     qtyCard.removeClass('success').addClass('danger');
-                //     $('#total-qty-summary').text(totalQty.toLocaleString('id-ID'));
+                //     $('#total-qty-summary').text(totalQty);
                 // } else {
                 //     qtyCard.removeClass('success danger');
                 //     $('#total-qty-summary').text('0');
                 // }
 
-                $('#total-qty-summary').text(totalQty.toLocaleString('id-ID'));
+                $('#total-qty-summary').text(totalQty);
 
                 // Update value card styling
                 const valueCard = $('#total-value-card');
