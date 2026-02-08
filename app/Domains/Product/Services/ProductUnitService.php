@@ -22,9 +22,35 @@ class ProductUnitService
 
     /**
      * Create a single product unit
+     * This method is used both for creating new products and updating existing ones
      */
     public function create(int $productId, array $data): int
     {
+        // Check if this unit already exists for this product (handles both create and update scenarios)
+        $existing = DB::table($this->table_name)
+            ->where('company_code', session('user_company_code'))
+            ->where('f_product_id', $productId)
+            ->where('f_unit_id', $data['unit_id'])
+            ->first();
+
+        if ($existing) {
+            // Update existing record instead of inserting duplicate
+            // This handles the case where product is being updated or unit data is being refreshed
+            DB::table($this->table_name)
+                ->where('id', $existing->id)
+                ->update([
+                    'is_default' => $data['is_default'] ?? false,
+                    'conversion_factor' => $data['conversion_factor'] ?? 1,
+                    'status' => $data['status'] ?? GeneralStatuses::ACTIVE->value,
+                    'notes' => isset($data['note']) && $data['note'] !== '' ? $data['note'] : null,
+                    'updated_at' => now(),
+                    'updated_by' => Auth::id(),
+                ]);
+
+            return $existing->id;
+        }
+
+        // Insert new record only if it doesn't exist
         return DB::table($this->table_name)->insertGetId([
             'company_code' => session('user_company_code'),
             'f_product_id' => $productId,
