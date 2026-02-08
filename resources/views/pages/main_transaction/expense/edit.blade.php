@@ -176,17 +176,6 @@
             <div class="row">
                 <!-- Left Side: Tag, Memo and Attachment -->
                 <div class="col-md-6 mb-4">
-                    <div class="mb-3">
-                        <label class="form-label">Entitas <span class="text-danger">*</span></label>
-                        <select id="expense-entity" name="entity_type" class="global-select2 form-select" required data-allow-clear="false">
-                            <option value="">Pilih Entitas</option>
-                            <option value="KINGDOM" {{ $expense->entity_type == 'KINGDOM' ? 'selected' : '' }}>Kingdom</option>
-                            <option value="OWNER" {{ $expense->entity_type == 'OWNER' ? 'selected' : '' }}>Owner</option>
-                            <option value="PABRIK" {{ $expense->entity_type == 'PABRIK' ? 'selected' : '' }}>Pabrik</option>
-                        </select>
-                        <small class="form-text text-muted">Pilih kategori pengeluaran untuk klasifikasi biaya</small>
-                    </div>
-                    {{-- @if(session('user_company_code') !== '001') --}}
                     @php
                         $currentEntityType = null;
                         if ($currentBudget) {
@@ -194,29 +183,30 @@
                             $currentEntityType = $currentBudgetData->entity_type ?? null;
                         }
                     @endphp
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Entity Type</label>
-                            <select id="entity-type" name="entity_type" class="form-select">
-                                <option value="">Pilih Entity Type</option>
-                                <option value="kingdom" {{ $currentEntityType === 'kingdom' ? 'selected' : '' }}>Kingdom</option>
-                                <option value="owner" {{ $currentEntityType === 'owner' ? 'selected' : '' }}>Owner</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Anggaran</label>
-                            <select id="budget" name="budged_history_id" class="global-select2 form-select"
-                                data-allow-clear="true">
-                                <option value="">Pilih Entity Type terlebih dahulu</option>
-                                @foreach ($activeBudgets as $budget)
-                                    <option value="{{ $budget->budget_id }}"
-                                        data-entity-type="{{ $budget->entity_type }}"
-                                        {{ $currentBudget && $currentBudget->budged_history_id == $budget->budget_id ? 'selected' : '' }}>
-                                        {{ $budget->budged_name }}
-                                        ({{ date('d/m/Y', strtotime($budget->period_start_date)) }} - {{ date('d/m/Y', strtotime($budget->period_end_date)) }})
-                                    </option>
-                                @endforeach
-                            </select>
+                    <div class="mb-3">
+                        <label class="form-label">Entity Type <span class="text-danger">*</span></label>
+                        <select id="entity-type" name="entity_type" class="global-select2 form-select" required data-allow-clear="false">
+                            <option value="">Pilih Entity Type</option>
+                            <option value="kingdom" {{ $currentEntityType === 'kingdom' ? 'selected' : '' }}>Kingdom</option>
+                            <option value="owner" {{ $currentEntityType === 'owner' ? 'selected' : '' }}>Owner</option>
+                        </select>
+                        <small class="form-text text-muted">Pilih entity type untuk pemetaan anggaran</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Anggaran</label>
+                        <select id="budget" name="budged_history_id" class="global-select2 form-select"
+                            data-allow-clear="true">
+                            <option value="">Pilih Entity Type terlebih dahulu</option>
+                            @foreach ($activeBudgets as $budget)
+                                <option value="{{ $budget->budget_id }}"
+                                    data-entity-type="{{ $budget->entity_type }}"
+                                    {{ $currentBudget && $currentBudget->budged_history_id == $budget->budget_id ? 'selected' : '' }}>
+                                    {{ $budget->budged_name }}
+                                    ({{ date('d/m/Y', strtotime($budget->period_start_date)) }} - {{ date('d/m/Y', strtotime($budget->period_end_date)) }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">Anggaran akan difilter berdasarkan entity type yang dipilih</small>
                         </div>
                     </div>
                     {{-- @else
@@ -365,15 +355,16 @@
                 // Trigger change on page load to filter budgets
                 const initialType = $('#entity-type').val();
                 if (initialType) {
-                    filterBudgetsByType(initialType, false);
+                    filterBudgetsByEntityType(initialType, false);
                 }
 
+                // Listen to entity type changes only
                 $('#entity-type').on('change', function() {
                     const selectedType = $(this).val();
-                    filterBudgetsByType(selectedType, true);
+                    filterBudgetsByEntityType(selectedType, true);
                 });
 
-                function filterBudgetsByType(selectedType, clearSelection) {
+                function filterBudgetsByEntityType(selectedType, clearSelection) {
                     const budgetSelect = $('#budget');
 
                     // Clear and reset budget dropdown
@@ -388,22 +379,29 @@
                         return;
                     }
 
-                    // Filter budgets by selected entity type
-                    const filteredBudgets = allBudgets.filter(budget => budget.entity_type === selectedType);
+                    // Filter budgets by entity type only
+                    const filteredBudgets = allBudgets.filter(budget => {
+                        return budget.entity_type === selectedType;
+                    });
 
                     budgetSelect.append('<option value="">Pilih Anggaran</option>');
-                    filteredBudgets.forEach(budget => {
-                        const startDate = new Date(budget.period_start_date).toLocaleDateString('id-ID');
-                        const endDate = new Date(budget.period_end_date).toLocaleDateString('id-ID');
 
-                        const isSelected = !clearSelection && {{ $currentBudget ? $currentBudget->budged_history_id : 'null' }} == budget.budget_id;
+                    if (filteredBudgets.length === 0) {
+                        budgetSelect.append('<option value="" disabled>Tidak ada anggaran yang sesuai</option>');
+                    } else {
+                        filteredBudgets.forEach(budget => {
+                            const startDate = new Date(budget.period_start_date).toLocaleDateString('id-ID');
+                            const endDate = new Date(budget.period_end_date).toLocaleDateString('id-ID');
 
-                        budgetSelect.append(
-                            `<option value="${budget.budget_id}" ${isSelected ? 'selected' : ''}>
-                                ${budget.budged_name} (${startDate} - ${endDate})
-                            </option>`
-                        );
-                    });
+                            const isSelected = !clearSelection && {{ $currentBudget ? $currentBudget->budged_history_id : 'null' }} == budget.budget_id;
+
+                            budgetSelect.append(
+                                `<option value="${budget.budget_id}" ${isSelected ? 'selected' : ''}>
+                                    ${budget.budged_name} (${startDate} - ${endDate})
+                                </option>`
+                            );
+                        });
+                    }
 
                     // Reinitialize select2
                     if (budgetSelect.hasClass('select2-hidden-accessible')) {
