@@ -127,19 +127,6 @@
             </li>
         {{-- @endif --}}
 
-        
-        <li class="menu-item @if (request()->routeIs(['main_transaction.stock_adjustment.*'])) active @endif">
-            <a href="{{ route('main_transaction.stock_adjustment.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-adjustments"></i>
-                <div data-i18n="Chat">Stock Adjustment</div>
-            </a>
-        </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.return_management.*'])) active @endif">
-            <a href="{{ route('main_transaction.return_management.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-arrow-back-up"></i>
-                <div data-i18n="Chat">Return Management</div>
-            </a>
-        </li>
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Finansial</span>
         </li>
@@ -157,7 +144,47 @@
         </li>
 
         <li class="menu-header small">
-            <span class="menu-header-text" data-i18n="Apps & Pages">Master Data & Operasional</span>
+            <span class="menu-header-text" data-i18n="Apps & Pages">Operasional</span>
+        </li>
+
+        <li class="menu-item @if (request()->routeIs(['main_transaction.production.*'])) active @endif">
+            <a href="{{ route('main_transaction.production.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-tools"></i>
+                <div data-i18n="Produksi">Produksi</div>
+            </a>
+        </li>
+
+        <li class="menu-item @if (request()->routeIs(['main_transaction.packing.*'])) active @endif">
+            <a href="{{ route('main_transaction.packing.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-package"></i>
+                <div data-i18n="Packing Produk">Packing Produk</div>
+            </a>
+        </li>
+
+        <li class="menu-item @if (request()->routeIs(['main_transaction.stock_adjustment.*'])) active @endif">
+            <a href="{{ route('main_transaction.stock_adjustment.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-adjustments"></i>
+                <div data-i18n="Chat">Stock Adjustment</div>
+            </a>
+        </li>
+
+        <li class="menu-item @if (request()->routeIs(['main_transaction.return_management.*'])) active @endif">
+            <a href="{{ route('main_transaction.return_management.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-arrow-back-up"></i>
+                <div data-i18n="Chat">Return Management</div>
+            </a>
+        </li>
+
+        <li class="menu-item @if (request()->routeIs(['master_data.stock_opname.*'])) active @endif">
+            <a href="{{ route('master_data.stock_opname.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-clipboard-check"></i>
+                <div data-i18n="Chat">Stock Opname</div>
+            </a>
+        </li>
+        
+
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Apps & Pages">Master Data</span>
         </li>
         
         <li class="menu-item @if (request()->routeIs(['master_data.contact.*'])) active @endif">
@@ -178,12 +205,6 @@
                 <div data-i18n="Warehouse">Warehouse</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.production.*'])) active @endif">
-            <a href="{{ route('main_transaction.production.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-tools"></i>
-                <div data-i18n="Produksi">Produksi</div>
-            </a>
-        </li>
         {{-- <li class="menu-item @if (request()->routeIs(['main_transaction.overhead_absorption.*'])) active @endif">
             <a href="{{ route('main_transaction.overhead_absorption.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-chart-dots"></i>
@@ -199,12 +220,6 @@
             </li>
         @endif
 
-        <li class="menu-item @if (request()->routeIs(['master_data.stock_opname.*'])) active @endif">
-            <a href="{{ route('master_data.stock_opname.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-clipboard-check"></i>
-                <div data-i18n="Chat">Stock Opname</div>
-            </a>
-        </li>
         <li class="menu-item @if (request()->routeIs(['master_data.inventory.*'])) active @endif">
             <a href="{{ route('master_data.inventory.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-factory"></i>
