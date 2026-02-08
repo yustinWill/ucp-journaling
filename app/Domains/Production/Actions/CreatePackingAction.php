@@ -435,26 +435,14 @@ class CreatePackingAction
 
     private function createRemainingBundleAdjustment(array $data, array $productionIds): void
     {
-        // Check if there's a remaining bundle adjustment
-        $remainingAdjustment = floatval($data['remaining_bundle_adjustment'] ?? 0);
-
-        if ($remainingAdjustment == 0) {
-            return; // No adjustment needed
-        }
+        // Get the inputted remaining stock (what should remain after packing)
+        // This can be negative to allow negative stock levels
+        $inputRemainingStock = floatval($data['remaining_bundle_adjustment'] ?? 0);
 
         $companyCode = session('user_company_code');
         $warehouseId = $data['warehouse_id'];
         $bundleProductId = $data['bundle_product_id'];
         $adjustmentReason = $data['adjustment_reason'] ?? 'Stock adjustment after packing';
-
-        // Generate stock adjustment number
-        $year = date('Y');
-        $month = date('m');
-        $adjustmentNumber = "ADJ-PACK-{$year}{$month}-" . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-
-        // Determine movement type based on positive or negative adjustment
-        $movementType = $remainingAdjustment > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
-        $absoluteQty = abs($remainingAdjustment);
 
         // Get product and warehouse details
         $product = DB::table('m_products as p')
@@ -468,7 +456,7 @@ class CreatePackingAction
             ->select('code as warehouse_code', 'name as warehouse_name')
             ->first();
 
-        // Get current stock before movement
+        // Get current stock AFTER the packing operations
         $stockBefore = DB::table('t_stock_movement_logs')
             ->where('product_id', $bundleProductId)
             ->where('warehouse_id', $warehouseId)
@@ -483,10 +471,30 @@ class CreatePackingAction
             )
             ->value('total_stock') ?? 0;
 
-        // Calculate stock after
-        $stockAfter = $movementType === 'ADJUSTMENT_IN'
-            ? $stockBefore + $absoluteQty
-            : $stockBefore - $absoluteQty;
+        // Calculate the adjustment needed: current_stock - desired_remaining_stock
+        // If adjustment is positive: we have excess (need to remove stock)
+        // If adjustment is negative: we have shortage (need to add stock)
+        // The input can be negative, allowing final stock to be negative
+        $calculatedAdjustment = $stockBefore - $inputRemainingStock;
+
+        // If no adjustment needed (current stock already matches desired remaining stock)
+        if ($calculatedAdjustment == 0) {
+            return;
+        }
+
+        // Generate stock adjustment number
+        $year = date('Y');
+        $month = date('m');
+        $adjustmentNumber = "ADJ-PACK-{$year}{$month}-" . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+        // Determine movement type based on calculated adjustment
+        // Positive adjustment = excess stock = need to remove = ADJUSTMENT_OUT
+        // Negative adjustment = shortage = need to add = ADJUSTMENT_IN
+        $movementType = $calculatedAdjustment > 0 ? 'ADJUSTMENT_OUT' : 'ADJUSTMENT_IN';
+        $absoluteQty = abs($calculatedAdjustment);
+
+        // Stock after should equal the inputted remaining stock
+        $stockAfter = $inputRemainingStock;
 
         // Create stock movement log entry
         DB::table('t_stock_movement_logs')->insert([
@@ -510,8 +518,8 @@ class CreatePackingAction
             'updated_at' => now(),
         ]);
 
-        // If positive adjustment (excess stock), create a stock batch
-        if ($remainingAdjustment > 0) {
+        // If ADJUSTMENT_IN (shortage - need to add stock), create a stock batch
+        if ($movementType === 'ADJUSTMENT_IN') {
             // Get latest HPP from existing batches for this product
             $latestBatch = DB::table('t_product_stock_batches')
                 ->where('f_product_id', $bundleProductId)
@@ -539,7 +547,7 @@ class CreatePackingAction
                 'updated_at' => now(),
             ]);
         }
-        // If negative adjustment (shortage), deduct from existing batches using FIFO
+        // If ADJUSTMENT_OUT (excess - need to remove stock), deduct from existing batches using FIFO
         else {
             $remainingToDeduct = $absoluteQty;
             $batches = DB::table('t_product_stock_batches')
