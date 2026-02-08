@@ -109,7 +109,7 @@
                                 <option value="">Pilih Payment Terms</option>
                                 @foreach ($paymentTerms as $term)
                                     <option value="{{ $term->id }}" data-days="{{ $term->days }}"
-                                        data-type="{{ $term->type }}"  {{ $term->code == "NET_15" ? 'selected' : '' }}>{{ $term->name }}</option>
+                                        data-type="{{ $term->type }}"  {{ $term->code == "IMMEDIATE" ? 'selected' : '' }}>{{ $term->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -766,13 +766,10 @@
                 // Validation
                 const requiredFields = [
                     'purchase-order-supplier',
-                    'purchase-order-email',
-                    'purchase-order-address',
                     'purchase-order-date',
                     'purchase-order-warehouse',
                     'purchase-order-payment-terms',
                     'purchase-order-customer'
-                    // 'purchase-order-due-date'
                 ];
 
                 let isValid = true;
