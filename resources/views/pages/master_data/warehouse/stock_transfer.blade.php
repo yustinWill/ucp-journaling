@@ -747,7 +747,7 @@
                     const qtyTransferInput = $row.find('.qty-transfer-input');
 
                     if (qtyTransferInput.length) {
-                        const qtyTransfer = parseInt(qtyTransferInput.val()) || 0;
+                        const qtyTransfer = parseFloat(qtyTransferInput.val()) || 0;
 
                         // Only include products with qty_transfer > 0
                         if (qtyTransfer > 0) {
