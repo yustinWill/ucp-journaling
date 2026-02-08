@@ -456,12 +456,37 @@ class CreatePackingAction
         $movementType = $remainingAdjustment > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
         $absoluteQty = abs($remainingAdjustment);
 
-        // Get product details for unit code
+        // Get product and warehouse details
         $product = DB::table('m_products as p')
             ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
             ->where('p.id', $bundleProductId)
-            ->select('u.code as unit_code', 'p.name as product_name')
+            ->select('p.code as product_code', 'p.name as product_name', 'u.code as unit_code', 'u.name as unit_name')
             ->first();
+
+        $warehouse = DB::table('m_warehouses')
+            ->where('id', $warehouseId)
+            ->select('code as warehouse_code', 'name as warehouse_name')
+            ->first();
+
+        // Get current stock before movement
+        $stockBefore = DB::table('t_stock_movement_logs')
+            ->where('product_id', $bundleProductId)
+            ->where('warehouse_id', $warehouseId)
+            ->select(
+                DB::raw('SUM(
+                    CASE
+                        WHEN movement_type LIKE "%_IN" THEN movement_qty
+                        WHEN movement_type LIKE "%_OUT" THEN -movement_qty
+                        ELSE 0
+                    END
+                ) as total_stock')
+            )
+            ->value('total_stock') ?? 0;
+
+        // Calculate stock after
+        $stockAfter = $movementType === 'ADJUSTMENT_IN'
+            ? $stockBefore + $absoluteQty
+            : $stockBefore - $absoluteQty;
 
         // Create stock movement log entry
         DB::table('t_stock_movement_logs')->insert([
@@ -469,13 +494,17 @@ class CreatePackingAction
             'movement_date' => $data['production_date'],
             'movement_type' => $movementType,
             'reference_number' => $adjustmentNumber,
-            'product_id' => $bundleProductId,
             'warehouse_id' => $warehouseId,
+            'warehouse_code' => $warehouse->warehouse_code ?? '',
+            'warehouse_name' => $warehouse->warehouse_name ?? '',
+            'product_id' => $bundleProductId,
+            'product_code' => $product->product_code ?? '',
+            'product_name' => $product->product_name ?? '',
+            'unit' => $product->unit_name ?? '',
+            'stock_before' => $stockBefore,
             'movement_qty' => $absoluteQty,
-            'unit_code' => $product->unit_code ?? '',
+            'stock_after' => $stockAfter,
             'notes' => "Packing adjustment - {$adjustmentReason}",
-            'source_type' => 'PACKING_ADJUSTMENT',
-            'source_transaction_id' => $productionIds[0] ?? null, // Link to first production ID
             'created_at' => now(),
             'updated_at' => now(),
         ]);
