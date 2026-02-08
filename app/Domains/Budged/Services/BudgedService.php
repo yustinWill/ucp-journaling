@@ -57,11 +57,12 @@ class BudgedService
                 'bp.id as period_id',
                 'bp.period_start_date',
                 'bp.period_end_date',
+                'bp.type',
                 DB::raw('COUNT(b.id) as budget_count'),
                 DB::raw('COALESCE(SUM(b.budged_limit_value), 0) as total_limit'),
                 DB::raw('COALESCE(SUM(b.budged_remaining_value), 0) as total_remaining'),
             ])
-            ->groupBy('bp.id', 'bp.period_start_date', 'bp.period_end_date');
+            ->groupBy('bp.id', 'bp.period_start_date', 'bp.period_end_date', 'bp.type');
 
         // Search filter
         if ($search = request()->input('search')) {
