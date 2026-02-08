@@ -106,7 +106,7 @@ class CreatePurchaseDeliveryAction
                         $data['delivery_date'] ?? now()
                     );
 
-                    app(ProductService::class)->updateStock($product['product_id'], '+', $deliveryQtyInBaseUnit);
+                    app(ProductService::class)->updateStock($product['product_id']);
                 }
             }
 

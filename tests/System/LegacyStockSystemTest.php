@@ -102,7 +102,7 @@ function runStockTests()
         ]);
 
         // Update stock to reflect the new batch
-        $productService->updateStock($productId, '+', 50);
+        $productService->updateStock($productId);
 
         echo "✅ Created batch ID: {$batchId} (50 units @ 8000 each)\n";
 
@@ -163,7 +163,7 @@ function runStockTests()
         ]);
 
         // Update product stock
-        $productService->updateStock($productId, '-', 25);
+        $productService->updateStock($productId);
 
         echo "✅ Consumed 25 units using FIFO\n";
         echo 'Batches consumed: '.count($consumedBatches)."\n";

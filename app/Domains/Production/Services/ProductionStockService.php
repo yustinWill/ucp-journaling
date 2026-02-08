@@ -50,20 +50,7 @@ class ProductionStockService
             ->get()
             ->keyBy('product_id');
 
-        // 1. Consume raw materials (decrease stock) - Update all stocks at once
-        $stockUpdates = [];
-        foreach ($items as $item) {
-            $productId = $item['raw_material_product_id'];
-            $stockUpdates[] = "WHEN id = {$productId} THEN total_stock - {$item['quantity_consumed']}";
-        }
-
-        if (! empty($stockUpdates)) {
-            DB::table('m_products')
-                ->whereIn('id', array_column($items, 'raw_material_product_id'))
-                ->update([
-                    'total_stock' => DB::raw('CASE '.implode(' ', $stockUpdates).' ELSE total_stock END'),
-                ]);
-        }
+        // 1. Consume raw materials (decrease stock) - will recalculate from movement logs after movements are inserted
 
         // 2. Process each item for FIFO and prepare stock movements
         $stockMovements = [];
@@ -110,8 +97,7 @@ class ProductionStockService
             $processedItems[] = $item;
         }
 
-        // 3. Create bundle product (increase stock)
-        app(ProductService::class)->updateStock($productionData['bundle_product_id'], '+', $productionData['quantity_produced']);
+        // 3. Create bundle product (increase stock) - will recalculate after movements are inserted
 
         // Prepare bundle product movement
         $bundleProduct = $products[$productionData['bundle_product_id']];
@@ -147,6 +133,15 @@ class ProductionStockService
             DB::table('t_stock_movement_logs')->insert($stockMovements);
         }
 
+        // Recalculate total_stock from movement logs for all affected products
+        $allAffectedProductIds = array_merge(
+            array_column($items, 'raw_material_product_id'),
+            [$productionData['bundle_product_id']]
+        );
+        foreach (array_unique($allAffectedProductIds) as $affectedProductId) {
+            app(ProductService::class)->updateStock($affectedProductId);
+        }
+
         // 4. Create new batch for bundle product
         $this->createProductionBatch(
             $productionData['bundle_product_id'],
@@ -169,10 +164,7 @@ class ProductionStockService
         $production = $reversalData['production'];
         $items = $reversalData['items'];
 
-        // 1. Remove bundle product (decrease stock)
-        app(ProductService::class)->updateStock($production['bundle_product_id'], '-', $reversalData['quantity_to_reverse']);
-
-        // Record bundle product removal movement
+        // 1. Record bundle product removal movement
         app(StockMovementLogService::class)->recordMovement(
             $production['warehouse_id'],
             $production['bundle_product_id'],
@@ -184,6 +176,9 @@ class ProductionStockService
             now()->format('Y-m-d')
         );
 
+        // Recalculate bundle product stock from movement logs
+        app(ProductService::class)->updateStock($production['bundle_product_id']);
+
         // Remove bundle product batch
         $bundleBatch = $this->removeBundleProductFIFO(
             $production['bundle_product_id'],
@@ -194,8 +189,6 @@ class ProductionStockService
 
         // 2. Restore raw materials (increase stock)
         foreach ($items as $item) {
-            app(ProductService::class)->updateStock($item['raw_material_product_id'], '+', $item['quantity_consumed']);
-
             // Record raw material restoration movement
             app(StockMovementLogService::class)->recordMovement(
                 $production['warehouse_id'],
@@ -207,6 +200,9 @@ class ProductionStockService
                 "Raw material restored from production reversal {$production['production_number']}",
                 now()->format('Y-m-d')
             );
+
+            // Recalculate raw material stock from movement logs
+            app(ProductService::class)->updateStock($item['raw_material_product_id']);
 
             // Restore raw material batch
             $restoredBatch = $this->restoreRawMaterialBatch(

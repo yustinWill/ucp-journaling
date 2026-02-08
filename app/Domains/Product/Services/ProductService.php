@@ -189,23 +189,25 @@ class ProductService
             ->update($update_data);
     }
 
-    public function updateStock(int $id, $type, $qty): int
+    public function updateStock(int $id): int
     {
-        if ($type === '+') {
-            return DB::table($this->table_name)
-                ->where('id', $id)
-                ->update([
-                    'total_stock' => DB::raw("total_stock + {$qty}"),
-                ]);
-        } elseif ($type === '-') {
-            return DB::table($this->table_name)
-                ->where('id', $id)
-                ->update([
-                    'total_stock' => DB::raw("total_stock - {$qty}"),
-                ]);
-        } else {
-            throw new \InvalidArgumentException("Invalid stock update type: {$type}");
-        }
+        $totalStock = DB::table('t_stock_movement_logs as sml1')
+            ->where('sml1.product_id', $id)
+            ->where('sml1.company_code', session('user_company_code'))
+            ->whereRaw('sml1.id = (
+                SELECT MAX(sml2.id)
+                FROM t_stock_movement_logs sml2
+                WHERE sml2.product_id = sml1.product_id
+                  AND sml2.warehouse_id = sml1.warehouse_id
+                  AND sml2.company_code = sml1.company_code
+            )')
+            ->sum('sml1.stock_after');
+
+        return DB::table($this->table_name)
+            ->where('id', $id)
+            ->update([
+                'total_stock' => $totalStock,
+            ]);
     }
 
     /**
