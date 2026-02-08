@@ -542,7 +542,7 @@ class CreatePackingAction
                 'production_cost' => 0,
                 'purchase_price' => 0,
                 'estimated_hpp' => $estimatedHpp,
-                'hpp_status' => 'ESTIMATED',
+                'hpp_status' => 'UNSETTLED',
                 'status' => 'ACTIVE',
                 'created_at' => now(),
                 'updated_at' => now(),
