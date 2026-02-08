@@ -187,19 +187,37 @@
                         <small class="form-text text-muted">Pilih kategori pengeluaran untuk klasifikasi biaya</small>
                     </div>
                     {{-- @if(session('user_company_code') !== '001') --}}
-                    <div class="mb-3">
-                        <label class="form-label">Anggaran</label>
-                        <select id="budget" name="budged_history_id" class="global-select2 form-select"
-                            data-allow-clear="true">
-                            <option value="">Pilih Anggaran</option>
-                            @foreach ($activeBudgets as $budget)
-                                <option value="{{ $budget->budget_id }}"
-                                    {{ $currentBudget && $currentBudget->budged_history_id == $budget->history_id ? 'selected' : '' }}>
-                                    {{ $budget->budged_name }}
-                                    ({{ date('d/m/Y', strtotime($budget->period_start_date)) }} - {{ date('d/m/Y', strtotime($budget->period_end_date)) }})
-                                </option>
-                            @endforeach
-                        </select>
+                    @php
+                        $currentEntityType = null;
+                        if ($currentBudget) {
+                            $currentBudgetData = $activeBudgets->firstWhere('budget_id', $currentBudget->budged_history_id);
+                            $currentEntityType = $currentBudgetData->entity_type ?? null;
+                        }
+                    @endphp
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Entity Type</label>
+                            <select id="entity-type" name="entity_type" class="form-select">
+                                <option value="">Pilih Entity Type</option>
+                                <option value="kingdom" {{ $currentEntityType === 'kingdom' ? 'selected' : '' }}>Kingdom</option>
+                                <option value="owner" {{ $currentEntityType === 'owner' ? 'selected' : '' }}>Owner</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Anggaran</label>
+                            <select id="budget" name="budged_history_id" class="global-select2 form-select"
+                                data-allow-clear="true">
+                                <option value="">Pilih Entity Type terlebih dahulu</option>
+                                @foreach ($activeBudgets as $budget)
+                                    <option value="{{ $budget->budget_id }}"
+                                        data-entity-type="{{ $budget->entity_type }}"
+                                        {{ $currentBudget && $currentBudget->budged_history_id == $budget->budget_id ? 'selected' : '' }}>
+                                        {{ $budget->budged_name }}
+                                        ({{ date('d/m/Y', strtotime($budget->period_start_date)) }} - {{ date('d/m/Y', strtotime($budget->period_end_date)) }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     {{-- @else
                     <div class="mb-3">
@@ -328,6 +346,12 @@
 @section('js_script')
     <script>
         $(function() {
+            // Budget data from backend
+            const allBudgets = @json($activeBudgets);
+
+            // Initialize entity type filter
+            initializeEntityTypeFilter();
+
             // Initialize form functionality
             initializeFormLogic();
 
@@ -336,6 +360,58 @@
 
             // Initialize calculations
             initializeCalculations();
+
+            function initializeEntityTypeFilter() {
+                // Trigger change on page load to filter budgets
+                const initialType = $('#entity-type').val();
+                if (initialType) {
+                    filterBudgetsByType(initialType, false);
+                }
+
+                $('#entity-type').on('change', function() {
+                    const selectedType = $(this).val();
+                    filterBudgetsByType(selectedType, true);
+                });
+
+                function filterBudgetsByType(selectedType, clearSelection) {
+                    const budgetSelect = $('#budget');
+
+                    // Clear and reset budget dropdown
+                    budgetSelect.empty();
+
+                    if (!selectedType) {
+                        budgetSelect.append('<option value="">Pilih Entity Type terlebih dahulu</option>');
+                        if (budgetSelect.hasClass('select2-hidden-accessible')) {
+                            budgetSelect.select2('destroy');
+                            budgetSelect.select2({ allowClear: true });
+                        }
+                        return;
+                    }
+
+                    // Filter budgets by selected entity type
+                    const filteredBudgets = allBudgets.filter(budget => budget.entity_type === selectedType);
+
+                    budgetSelect.append('<option value="">Pilih Anggaran</option>');
+                    filteredBudgets.forEach(budget => {
+                        const startDate = new Date(budget.period_start_date).toLocaleDateString('id-ID');
+                        const endDate = new Date(budget.period_end_date).toLocaleDateString('id-ID');
+
+                        const isSelected = !clearSelection && {{ $currentBudget ? $currentBudget->budged_history_id : 'null' }} == budget.budget_id;
+
+                        budgetSelect.append(
+                            `<option value="${budget.budget_id}" ${isSelected ? 'selected' : ''}>
+                                ${budget.budged_name} (${startDate} - ${endDate})
+                            </option>`
+                        );
+                    });
+
+                    // Reinitialize select2
+                    if (budgetSelect.hasClass('select2-hidden-accessible')) {
+                        budgetSelect.select2('destroy');
+                    }
+                    budgetSelect.select2({ allowClear: true });
+                }
+            }
 
             function initializeFormLogic() {
                 // Pay Later checkbox logic

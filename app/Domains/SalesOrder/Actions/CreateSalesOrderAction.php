@@ -7,6 +7,8 @@ use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\GlobalConfig\Services\GlobalConfigService;
 use App\Domains\SalesInvoice\Actions\CreateSalesInvoiceAction;
 use App\Services\TransactionNumberService;
+use App\Enums\ErrorCodes;
+use App\Exceptions\AppException;
 use Illuminate\Support\Facades\DB;
 
 class CreateSalesOrderAction
@@ -14,6 +16,24 @@ class CreateSalesOrderAction
     public function execute(array $data): int
     {
         return DB::transaction(function () use ($data) {
+            // Validate revenue split config exists for all products
+            if (!empty($data['products'])) {
+                foreach ($data['products'] as $product) {
+                    $config = DB::table('m_product_revenue_split_configs')
+                        ->where('company_code', session('user_company_code'))
+                        ->where('f_product_id', $product['product_id'])
+                        ->where('status', 'ACTIVE')
+                        ->first();
+
+                    if (!$config) {
+                        throw new AppException(
+                            ErrorCodes::FORM_VALIDATION_ERROR,
+                            'Please setup revenue settlement config'
+                        );
+                    }
+                }
+            }
+
             // Generate transaction number if not provided
             if (! isset($data['reference_no']) || empty($data['reference_no'])) {
                 $data['reference_no'] = app(TransactionNumberService::class)->generateNumber('sales_order');

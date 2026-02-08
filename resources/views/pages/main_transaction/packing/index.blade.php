@@ -65,6 +65,7 @@
                             <th style="width: 100px;">Jumlah Packing</th>
                             <th style="width: 120px;">Unit</th>
                             <th style="width: 100px;">HPP</th>
+                            <th style="width: 130px;">Adjustment</th>
                              <th style="width: 100px;">Aksi</th>
                         </tr>
                     </thead>
@@ -157,6 +158,29 @@
                             className: 'text-end',
                             render: function(data, type, row) {
                                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);
+                            }
+                        },
+                        {
+                            data: null,
+                            className: 'text-center',
+                            orderable: false,
+                            render: function(data, type, row) {
+                                if (row.adjustment_type && row.adjustment_qty) {
+                                    const isIncrease = row.adjustment_type === 'ADJUSTMENT_IN';
+                                    const badgeClass = isIncrease ? 'bg-label-success' : 'bg-label-warning';
+                                    const icon = isIncrease ? 'tabler-arrow-up' : 'tabler-arrow-down';
+                                    const sign = isIncrease ? '+' : '-';
+                                    const qty = new Intl.NumberFormat('id-ID', {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2
+                                    }).format(row.adjustment_qty);
+
+                                    return `<span class="badge ${badgeClass}" title="${isIncrease ? 'Excess Stock' : 'Stock Shortage'}">
+                                        <i class="icon-base ti ${icon} icon-sm"></i> ${sign}${qty}
+                                    </span>`;
+                                } else {
+                                    return '<span class="text-muted">-</span>';
+                                }
                             }
                         },
                         {

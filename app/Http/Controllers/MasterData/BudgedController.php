@@ -65,12 +65,14 @@ class BudgedController extends Controller
             $validated = $request->validate([
                 'period_start_date' => 'required|date',
                 'period_end_date' => 'required|date|after_or_equal:period_start_date',
+                'type' => 'required|in:kingdom,owner',
                 'budgets' => 'required|array|min:1',
                 'budgets.*.f_budget_category_id' => 'required|exists:m_budget_categories,id',
                 'budgets.*.budged_limit_value' => 'required|numeric|min:0',
             ], [], [
                 'period_start_date' => 'Tanggal Mulai Periode',
                 'period_end_date' => 'Tanggal Akhir Periode',
+                'type' => 'Tipe',
                 'budgets' => 'Daftar Anggaran',
                 'budgets.*.f_budget_category_id' => 'Kategori Anggaran',
                 'budgets.*.budged_limit_value' => 'Nilai Limit Anggaran',
@@ -135,6 +137,7 @@ class BudgedController extends Controller
             'period_id' => $period->id,
             'period_start_date' => $period->period_start_date,
             'period_end_date' => $period->period_end_date,
+            'period_type' => $period->type ?? 'kingdom',
             'budgetCategories' => $budgetCategories,
             'canWrite' => $canWrite,
         ]);
@@ -416,6 +419,7 @@ class BudgedController extends Controller
         try {
             $validated = $request->validate([
                 'period_id' => 'required|exists:m_budget_periods,id',
+                'type' => 'required|in:kingdom,owner',
                 'budgets' => 'required|array|min:1',
                 'budgets.*.id' => 'nullable|exists:m_budgeds,id',
                 'budgets.*.f_budget_category_id' => 'required|exists:m_budget_categories,id',
@@ -423,6 +427,7 @@ class BudgedController extends Controller
                 'budgets.*.budged_remaining_value' => 'nullable|numeric',
             ], [], [
                 'period_id' => 'ID Periode',
+                'type' => 'Tipe',
                 'budgets' => 'Daftar Anggaran',
                 'budgets.*.f_budget_category_id' => 'Kategori Anggaran',
                 'budgets.*.budged_limit_value' => 'Nilai Limit Anggaran',
@@ -430,10 +435,11 @@ class BudgedController extends Controller
             ]);
 
             $periodId = $validated['period_id'];
+            $type = $validated['type'];
             $budgets = $validated['budgets'];
 
             // Use UpdateBudgedAction to handle the update logic
-            app(UpdateBudgedAction::class)->execute($periodId, $budgets);
+            app(UpdateBudgedAction::class)->execute($periodId, $type, $budgets);
 
             return response()->json([
                 'success' => true,

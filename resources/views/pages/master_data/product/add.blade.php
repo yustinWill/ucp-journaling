@@ -1158,11 +1158,12 @@
                 $('#purchase-fields, #sales-fields, #inventory-fields').hide();
                 $('#bundle-purchase-fields, #bundle-sales-fields, #bundle-inventory-fields').hide();
 
-                // Reset form values
+                // Reset form values but preserve Info Produk section and Unit Produk section
+                // Preserve: product-name, product-code, category-select, product-status, product-description, product-image, unit-select, unit conversion table
                 $('#productForm input[type="text"], #productForm input[type="number"]').not(
-                    '#product-code, #product-name, #product-status').val(
-                    '');
-                $('#productForm select').not('#unit-select,#category-select, #product-status').val('').trigger('change');
+                    '#product-name, #product-code, #product-description, #product-units-table .conversion-factor').val('');
+                $('#productForm select').not(
+                    '#category-select, #product-status, #unit-select, #product-units-table .unit-select').val('').trigger('change');
 
                 $('#sales-tax').val('5').trigger('change');
                 $('#bundle-sales-tax').val('5').trigger('change');
