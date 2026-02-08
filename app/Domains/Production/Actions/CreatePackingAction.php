@@ -533,7 +533,7 @@ class CreatePackingAction
                 'company_code' => $companyCode,
                 'f_product_id' => $bundleProductId,
                 'batch_reference_code' => $adjustmentNumber,
-                'source_type' => 'PACKING_ADJUSTMENT',
+                'source_type' => 'STOCK_ADJUSTMENT',
                 'f_source_transaction_id' => $productionIds[0] ?? null,
                 'batch_date' => $data['production_date'],
                 'initial_qty' => $absoluteQty,

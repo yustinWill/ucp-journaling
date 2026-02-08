@@ -169,8 +169,8 @@
                 <div class="col-md-6">
                     <label class="form-label">Alasan Penyesuaian Stock</label>
                     <textarea class="form-control" id="adjustment-reason" name="adjustment_reason" rows="2"
-                        placeholder="Jelaskan alasan penyesuaian stock (jika ada)..." maxlength="500"></textarea>
-                    <small class="form-text text-muted">Wajib diisi jika ada sisa bundle product</small>
+                        placeholder="Jelaskan alasan penyesuaian stock (opsional)..." maxlength="500"></textarea>
+                    <small class="form-text text-muted">Opsional - Jelaskan jika ada sisa bundle product</small>
                 </div>
             </div>
 
@@ -571,8 +571,15 @@
                 }
                 if (isNaN(num)) return '0';
 
+                // Handle negative numbers - preserve the minus sign
+                const isNegative = num < 0;
+                const absNum = Math.abs(num);
+
                 // Use toIndonesianNumberFormat which already handles decimal formatting correctly
-                return toIndonesianNumberFormat(num.toString());
+                const formatted = toIndonesianNumberFormat(absNum.toString());
+
+                // Add minus sign back if negative
+                return isNegative ? '-' + formatted : formatted;
             }
 
             // Format batch bundle qty - remove trailing zeros and unnecessary decimals
@@ -665,24 +672,8 @@
                     return;
                 }
 
-                // Validate adjustment reason if there's a remaining bundle adjustment
-                const remainingAdjustment = parseFloat($('#remaining-bundle-adjustment').val()) || 0;
-                if (remainingAdjustment !== 0) {
-                    const adjustmentReason = $('#adjustment-reason').val().trim();
-                    if (!adjustmentReason) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Alasan Penyesuaian Diperlukan',
-                            text: 'Silakan isi alasan penyesuaian stock untuk sisa bundle product.',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
-                            buttonsStyling: false
-                        });
-                        $('#adjustment-reason').focus();
-                        return;
-                    }
-                }
+                // Note: Adjustment reason is optional now
+                // Users can provide a reason if needed, but it's not mandatory
 
                 // Check component stock
                 const hasInsufficientStock = $('#packaging-table .badge.bg-label-danger').length > 0;
