@@ -19,11 +19,15 @@ class CreateStockTransferAction
         return DB::transaction(function () use ($data) {
             // Create main stock adjustment record
             $adjustment_type = 'WAREHOUSE_TRANSFER';
+
+            // Use authenticated user if pic_id is not provided or invalid
+            $picId = $data['pic_id'] ?? Auth::id();
+
             $stockAdjustmentId = app(StockAdjustmentService::class)->create([
                 'adjustment_date' => $data['adjustment_date'],
                 'adjustment_type' => $adjustment_type,
                 'warehouse_id' => $data['warehouse_id'],
-                'pic_id' => $data['pic_id'],
+                'pic_id' => $picId,
                 'status' => 'APPROVED',
                 'description' => $data['description'],
                 'memo' => $data['memo'] ?? null,
