@@ -620,7 +620,7 @@
 
                 // Loop through all qty-transfer-input fields in the table
                 $('#available-products-tbody .qty-transfer-input').each(function() {
-                    const qtyTransfer = parseInt($(this).val()) || 0;
+                    const qtyTransfer = parseFloat($(this).val()) || 0;
                     const unitCost = parseFloat($(this).data('unit-cost')) || 0;
 
                     // Add to total qty (sum of all qty transfer inputs)
@@ -633,23 +633,24 @@
                     }
                 });
 
-                // Update summary display (without thousand separators)
+                // Update summary display (without thousand separators, with decimals)
                 $('#total-items-summary').text(totalItems);
 
                 // Update qty card styling based on positive/negative
                 // const qtyCard = $('#total-qty-card');
                 // if (totalQty > 0) {
                 //     qtyCard.removeClass('danger').addClass('success');
-                //     $('#total-qty-summary').text('+' + totalQty);
+                //     $('#total-qty-summary').text('+' + parseFloat(totalQty.toFixed(2)));
                 // } else if (totalQty < 0) {
                 //     qtyCard.removeClass('success').addClass('danger');
-                //     $('#total-qty-summary').text(totalQty);
+                //     $('#total-qty-summary').text(parseFloat(totalQty.toFixed(2)));
                 // } else {
                 //     qtyCard.removeClass('success danger');
                 //     $('#total-qty-summary').text('0');
                 // }
 
-                $('#total-qty-summary').text(totalQty);
+                // Format total qty: remove trailing zeros
+                $('#total-qty-summary').text(parseFloat(totalQty.toFixed(2)));
 
                 // Update value card styling
                 const valueCard = $('#total-value-card');
