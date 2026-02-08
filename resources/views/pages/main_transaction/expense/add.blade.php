@@ -171,32 +171,21 @@
                     <!-- Left Side: Tag, Memo and Attachment -->
                     <div class="col-md-6 mb-4">
                         <div class="mb-3">
-                            <label class="form-label">Entitas <span class="text-danger">*</span></label>
-                            <select id="expense-entity" name="entity_type" class="global-select2 form-select" required data-allow-clear="false">
-                                <option value="">Pilih Entitas</option>
-                                <option value="KINGDOM">Kingdom</option>
-                                <option value="OWNER">Owner</option>
-                                <option value="PABRIK">Pabrik</option>
+                            <label class="form-label">Entity Type <span class="text-danger">*</span></label>
+                            <select id="entity-type" name="entity_type" class="global-select2 form-select" required data-allow-clear="false">
+                                <option value="">Pilih Entity Type</option>
+                                <option value="kingdom">Kingdom</option>
+                                <option value="owner">Owner</option>
                             </select>
-                            <small class="form-text text-muted">Pilih kategori pengeluaran untuk klasifikasi biaya</small>
+                            <small class="form-text text-muted">Pilih entity type untuk pemetaan anggaran</small>
                         </div>
-                        {{-- @if(session('user_company_code') !== "001") --}}
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Entity Type</label>
-                                <select id="entity-type" name="entity_type" class="form-select">
-                                    <option value="">Pilih Entity Type</option>
-                                    <option value="kingdom">Kingdom</option>
-                                    <option value="owner">Owner</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Anggaran</label>
-                                <select id="budget" name="budged_history_id" class="global-select2 form-select"
-                                    data-allow-clear="true">
-                                    <option value="">Pilih Entity Type terlebih dahulu</option>
-                                </select>
-                            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Anggaran</label>
+                            <select id="budget" name="budged_history_id" class="global-select2 form-select"
+                                data-allow-clear="true">
+                                <option value="">Pilih Entity Type terlebih dahulu</option>
+                            </select>
+                            <small class="form-text text-muted">Anggaran akan difilter berdasarkan entity type yang dipilih</small>
                         </div>
                         {{-- @else
                         <div class="mb-3">
@@ -339,14 +328,15 @@
             initializeCalculations();
 
             function initializeEntityTypeFilter() {
+                // Listen to entity type changes only
                 $('#entity-type').on('change', function() {
-                    const selectedType = $(this).val();
+                    const selectedEntityType = $(this).val();
                     const budgetSelect = $('#budget');
 
                     // Clear and reset budget dropdown
                     budgetSelect.empty();
 
-                    if (!selectedType) {
+                    if (!selectedEntityType) {
                         budgetSelect.append('<option value="">Pilih Entity Type terlebih dahulu</option>');
                         if (budgetSelect.hasClass('select2-hidden-accessible')) {
                             budgetSelect.select2('destroy');
@@ -355,19 +345,26 @@
                         return;
                     }
 
-                    // Filter budgets by selected entity type
-                    const filteredBudgets = allBudgets.filter(budget => budget.entity_type === selectedType);
+                    // Filter budgets by entity type only
+                    const filteredBudgets = allBudgets.filter(budget => {
+                        return budget.entity_type === selectedEntityType;
+                    });
 
                     budgetSelect.append('<option value="">Pilih Anggaran</option>');
-                    filteredBudgets.forEach(budget => {
-                        const startDate = new Date(budget.period_start_date).toLocaleDateString('id-ID');
-                        const endDate = new Date(budget.period_end_date).toLocaleDateString('id-ID');
-                        budgetSelect.append(
-                            `<option value="${budget.budget_id}">
-                                ${budget.budged_name} (${startDate} - ${endDate})
-                            </option>`
-                        );
-                    });
+
+                    if (filteredBudgets.length === 0) {
+                        budgetSelect.append('<option value="" disabled>Tidak ada anggaran yang sesuai</option>');
+                    } else {
+                        filteredBudgets.forEach(budget => {
+                            const startDate = new Date(budget.period_start_date).toLocaleDateString('id-ID');
+                            const endDate = new Date(budget.period_end_date).toLocaleDateString('id-ID');
+                            budgetSelect.append(
+                                `<option value="${budget.budget_id}">
+                                    ${budget.budged_name} (${startDate} - ${endDate})
+                                </option>`
+                            );
+                        });
+                    }
 
                     // Reinitialize select2
                     if (budgetSelect.hasClass('select2-hidden-accessible')) {
