@@ -482,11 +482,14 @@
                 availableProducts.forEach(function(product) {
                     const existingProduct = selectedProducts.find(p => p.product_code === product.code);
                     const qtyTransfer = existingProduct ? existingProduct.adjustment_qty : 0;
-                    const sisaStok = product.current_stock - qtyTransfer;
+
+                    // Ensure current_stock is a number
+                    const currentStock = parseFloat(product.current_stock) || 0;
+                    const sisaStok = currentStock - qtyTransfer;
                     const reason = existingProduct ? existingProduct.reason : '';
 
                     // Format stock: remove trailing zeros (0.500000 → 0.5), keep meaningful decimals (0.5 → 0.5)
-                    const formattedStock = parseFloat(product.current_stock.toFixed(2));
+                    const formattedStock = parseFloat(currentStock.toFixed(2));
                     const formattedSisaStok = parseFloat(sisaStok.toFixed(2));
 
                     rows += `
@@ -502,10 +505,10 @@
                                     data-product-id="${product.id}"
                                     data-product-name="${product.name}"
                                     data-unit="${product.unit}"
-                                    data-current-stock="${product.current_stock}"
+                                    data-current-stock="${currentStock}"
                                     data-unit-cost="${product.unit_cost}"
                                     min="0"
-                                    max="${product.current_stock}"
+                                    max="${currentStock}"
                                     step="0.01"
                                     placeholder="0">
                             </td>

@@ -211,8 +211,8 @@
                                                 <td>{{ $product->code }}</td>
                                                 <td>{{ $product->name }}</td>
                                                 <td>{{ $product->category_name }}</td>
-                                                <td class="text-end">{{ number_format($product->system_stock ?? 0, 0, ',', '.') }}</td>
-                                                <td class="text-end">{{ number_format($product->minimum_stock ?? 0, 0, ',', '.') }}</td>
+                                                <td class="text-end">{{ rtrim(rtrim(number_format($product->system_stock ?? 0, 2, ',', ''), '0'), ',') }}</td>
+                                                <td class="text-end">{{ rtrim(rtrim(number_format($product->minimum_stock ?? 0, 2, ',', ''), '0'), ',') }}</td>
                                                 <td>{{ $product->unit }}</td>
                                                 <td class="text-end">Rp {{ number_format($product->latest_purchase_price ?? 0, 0, ',', '.') }}</td>
                                                 <td class="text-end">Rp {{ number_format($product->unit_purchase_price ?? 0, 0, ',', '.') }}</td>
