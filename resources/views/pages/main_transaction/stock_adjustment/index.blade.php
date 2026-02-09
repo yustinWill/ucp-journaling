@@ -365,6 +365,11 @@
                                             "{{ route('master_data.stock_opname.detail', ':ref') }}"
                                             .replace(':ref', data);
                                         break;
+                                    case 'WAREHOUSE_TRANSFER':
+                                        detailUrl =
+                                            "{{ route('master_data.warehouse.stock_transfer_detail', ':id') }}"
+                                            .replace(':id', row.id);
+                                        break;
                                     case 'PRODUCT_RETURN':
                                         // Link to Product Return detail page (when implemented)
                                         break;
@@ -382,6 +387,7 @@
                                 const typeLabels = {
                                     'MANUAL_ADJUSTMENT': 'Penyesuaian Manual',
                                     'STOCK_OPNAME': 'Hasil Stock Opname',
+                                    'WAREHOUSE_TRANSFER': 'Transfer Antar Gudang',
                                     'PRODUCT_RETURN': 'Retur Produk',
                                     'DAMAGE_LOSS': 'Kerusakan/Kehilangan',
                                     'EXPIRY_DISPOSAL': 'Produk Kadaluarsa'
