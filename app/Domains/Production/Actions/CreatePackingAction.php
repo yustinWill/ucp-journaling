@@ -587,7 +587,8 @@ class CreatePackingAction
             }
         }
 
-        // Recalculate total_stock after adjustment
-        app(\App\Domains\Product\Services\ProductService::class)->updateStock($bundleProductId);
+        // Update total_stock in m_products to match the adjustment
+        $adjustmentType = $movementType === 'ADJUSTMENT_IN' ? '+' : '-';
+        app(\App\Domains\Product\Services\ProductService::class)->updateStock($bundleProductId, $adjustmentType, $absoluteQty);
     }
 }
