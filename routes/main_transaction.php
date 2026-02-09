@@ -324,6 +324,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$packing_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.packing.generate_transaction_number');
         Route::get($base_segment.$packing_segment.'/calculate_fifo_prices', 'calculateFifoPrices')->name('main_transaction.packing.calculate_fifo_prices');
         Route::get($base_segment.$packing_segment.'/get_bundle_price', 'getBundlePrice')->name('main_transaction.packing.get_bundle_price');
+        Route::get($base_segment.$packing_segment.'/get_available_productions', 'getAvailableProductions')->name('main_transaction.packing.get_available_productions');
     });
 
     // Return Management Routes

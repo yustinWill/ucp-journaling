@@ -29,6 +29,16 @@ class CreatePackingAction
             $productionIds = [];
             $productionService = app(ProductionService::class);
 
+            // Capture stock BEFORE packing operations for adjustment calculation
+            $stockBeforePacking = 0;
+            $latestMovementBeforePacking = DB::table('t_stock_movement_logs')
+                ->where('product_id', $data['bundle_product_id'])
+                ->where('warehouse_id', $data['warehouse_id'])
+                ->where('company_code', session('user_company_code'))
+                ->orderBy('id', 'DESC')
+                ->first();
+            $stockBeforePacking = $latestMovementBeforePacking ? $latestMovementBeforePacking->stock_after : 0;
+
             // 2. Create separate production record for each packaging product
             foreach ($data['packaging_products'] as $index => $packaging) {
                 // Calculate HPP for this specific packaging product
@@ -91,7 +101,15 @@ class CreatePackingAction
             }
 
             // 7. Create stock adjustment for remaining bundle product (if any)
-            $this->createRemainingBundleAdjustment($data, $productionIds);
+            $this->createRemainingBundleAdjustment($data, $productionIds, $stockBeforePacking);
+
+            // 8. Mark source production as packed
+            if (!empty($data['source_production_id'])) {
+                DB::table('t_productions')
+                    ->where('id', $data['source_production_id'])
+                    ->where('company_code', session('user_company_code'))
+                    ->update(['is_packed' => true, 'updated_at' => now()]);
+            }
 
             return $productionIds;
         });
@@ -355,6 +373,7 @@ class CreatePackingAction
         $requiredFields = [
             'production_date' => 'Production date is required',
             'production_number' => 'Production number is required',
+            'source_production_id' => 'Source production is required',
             'bundle_product_id' => 'Bundle product is required',
             'warehouse_id' => 'Warehouse is required',
             'pic_id' => 'PIC is required',
@@ -434,16 +453,23 @@ class CreatePackingAction
         ];
     }
 
-    private function createRemainingBundleAdjustment(array $data, array $productionIds): void
+    private function createRemainingBundleAdjustment(array $data, array $productionIds, float $stockBeforePacking): void
     {
-        // Get the inputted remaining stock (what should remain after packing)
-        // This can be negative to allow negative stock levels
-        $inputRemainingStock = floatval($data['remaining_bundle_adjustment'] ?? 0);
+        // "Sisa" = remaining qty from the production that wasn't consumed by packing
+        $sisaInput = floatval($data['remaining_bundle_adjustment'] ?? 0);
 
         $companyCode = session('user_company_code');
         $warehouseId = $data['warehouse_id'];
         $bundleProductId = $data['bundle_product_id'];
         $adjustmentReason = $data['adjustment_reason'] ?? 'Stock adjustment after packing';
+
+        // Get the production qty from the source production
+        $productionQty = 0;
+        if (!empty($data['source_production_id'])) {
+            $productionQty = (float) DB::table('t_productions')
+                ->where('id', $data['source_production_id'])
+                ->value('quantity_produced') ?? 0;
+        }
 
         // Get product and warehouse details
         $product = DB::table('m_products as p')
@@ -457,7 +483,12 @@ class CreatePackingAction
             ->select('code as warehouse_code', 'name as warehouse_name')
             ->first();
 
-        // Get current stock AFTER the packing operations from latest movement log
+        // Calculate desired final stock
+        // Formula: stock_before_packing - production_qty + sisa_input
+        // This is the stock level we want AFTER all adjustments
+        $desiredFinalStock = $stockBeforePacking - $productionQty + $sisaInput;
+
+        // Get current stock AFTER packing operations
         $latestMovement = DB::table('t_stock_movement_logs')
             ->where('product_id', $bundleProductId)
             ->where('warehouse_id', $warehouseId)
@@ -465,16 +496,13 @@ class CreatePackingAction
             ->orderBy('id', 'DESC')
             ->first();
 
-        $stockBefore = $latestMovement ? $latestMovement->stock_after : 0;
+        $stockAfterPacking = $latestMovement ? $latestMovement->stock_after : 0;
 
-        // Calculate the adjustment needed: current_stock - desired_remaining_stock
-        // If adjustment is positive: we have excess (need to remove stock)
-        // If adjustment is negative: we have shortage (need to add stock)
-        // The input can be negative, allowing final stock to be negative
-        $calculatedAdjustment = $stockBefore - $inputRemainingStock;
+        // Calculate the actual adjustment needed: how much to add/remove to reach desired final stock
+        $adjustmentNeeded = $desiredFinalStock - $stockAfterPacking;
 
-        // If no adjustment needed (current stock already matches desired remaining stock)
-        if ($calculatedAdjustment == 0) {
+        // If no adjustment needed, skip
+        if ($adjustmentNeeded == 0) {
             return;
         }
 
@@ -483,14 +511,9 @@ class CreatePackingAction
         $month = date('m');
         $adjustmentNumber = "ADJ-PACK-{$year}{$month}-" . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
 
-        // Determine movement type based on calculated adjustment
-        // Positive adjustment = excess stock = need to remove = ADJUSTMENT_OUT
-        // Negative adjustment = shortage = need to add = ADJUSTMENT_IN
-        $movementType = $calculatedAdjustment > 0 ? 'ADJUSTMENT_OUT' : 'ADJUSTMENT_IN';
-        $absoluteQty = abs($calculatedAdjustment);
-
-        // Stock after should equal the inputted remaining stock
-        $stockAfter = $inputRemainingStock;
+        // Positive = need to add stock, Negative = need to remove stock
+        $movementType = $adjustmentNeeded > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
+        $absoluteQty = abs($adjustmentNeeded);
 
         // Create stock movement log entry
         DB::table('t_stock_movement_logs')->insert([
@@ -506,9 +529,9 @@ class CreatePackingAction
             'product_code' => $product->product_code ?? '',
             'product_name' => $product->product_name ?? '',
             'unit' => $product->unit_name ?? '',
-            'stock_before' => $stockBefore,
+            'stock_before' => $stockAfterPacking,
             'movement_qty' => $absoluteQty,
-            'stock_after' => $stockAfter,
+            'stock_after' => $desiredFinalStock,
             'notes' => "Packing adjustment - {$adjustmentReason}",
             'created_at' => now(),
             'updated_at' => now(),
@@ -568,5 +591,8 @@ class CreatePackingAction
                 $remainingToDeduct -= $qtyToDeduct;
             }
         }
+
+        // Recalculate total_stock after adjustment
+        app(\App\Domains\Product\Services\ProductService::class)->updateStock($bundleProductId);
     }
 }

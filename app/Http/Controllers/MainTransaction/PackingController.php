@@ -402,53 +402,91 @@ class PackingController extends Controller
 
     public function getBundleStock(Request $request)
     {
-        $bundleProductId = $request->input('bundle_product_id');
-        $warehouseId = $request->input('warehouse_id');
+        $productionId = $request->input('production_id');
 
-        if (!$bundleProductId || !$warehouseId) {
+        if (!$productionId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bundle product ID and warehouse ID are required'
+                'message' => 'Production ID is required'
             ], 400);
         }
 
-        // Get available stock of the bundle product in the selected warehouse using stock movement logs
-        $stockData = DB::table('t_stock_movement_logs as sml')
-            ->join('m_products as p', 'sml.product_id', '=', 'p.id')
-            ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
-            ->where('sml.product_id', $bundleProductId)
-            ->where('sml.warehouse_id', $warehouseId)
-            ->select(
-                DB::raw('COALESCE(SUM(
-                    CASE
-                        WHEN movement_type LIKE "%_IN" THEN movement_qty
-                        WHEN movement_type LIKE "%_OUT" THEN -movement_qty
-                        ELSE 0
-                    END
-                ), 0) as available_qty'),
-                'u.code as unit_code'
-            )
-            ->groupBy('u.code')
+        // Get the production record
+        $production = DB::table('t_productions as p')
+            ->join('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
+            ->join('m_units as u', 'bp.f_unit_id', '=', 'u.id')
+            ->where('p.id', $productionId)
+            ->where('p.company_code', session('user_company_code'))
+            ->select('p.quantity_produced', 'p.bundle_product_id', 'p.warehouse_id', 'u.code as unit_code')
             ->first();
 
-        if (!$stockData) {
-            // Get unit code even when no stock
-            $unitCode = DB::table('m_products as p')
-                ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
-                ->where('p.id', $bundleProductId)
-                ->value('u.code');
-
+        if (!$production) {
             return response()->json([
                 'success' => true,
                 'available_qty' => 0,
-                'unit_code' => $unitCode ?? ''
+                'production_qty' => 0,
+                'unit_code' => ''
             ]);
         }
 
+        // Get current total stock from movement logs (latest stock_after per warehouse)
+        $latestMovement = DB::table('t_stock_movement_logs')
+            ->where('product_id', $production->bundle_product_id)
+            ->where('warehouse_id', $production->warehouse_id)
+            ->where('company_code', session('user_company_code'))
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        $currentStock = $latestMovement ? (float) $latestMovement->stock_after : 0;
+
         return response()->json([
             'success' => true,
-            'available_qty' => (float) $stockData->available_qty,
-            'unit_code' => $stockData->unit_code
+            'available_qty' => $currentStock,
+            'production_qty' => (float) $production->quantity_produced,
+            'unit_code' => $production->unit_code
+        ]);
+    }
+
+    public function getAvailableProductions(Request $request)
+    {
+        $bundleProductId = $request->input('bundle_product_id');
+        $warehouseId = $request->input('warehouse_id');
+
+        $query = DB::table('t_productions as p')
+            ->join('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
+            ->join('m_units as u', 'bp.f_unit_id', '=', 'u.id')
+            ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
+            ->where('p.company_code', session('user_company_code'))
+            ->where('p.is_packaging', false)
+            ->where('p.is_packed', false)
+            ->where('p.status', 'COMPLETED')
+            ->select(
+                'p.id',
+                'p.production_number',
+                'p.production_date',
+                'p.bundle_product_id',
+                'bp.code as bundle_product_code',
+                'bp.name as bundle_product_name',
+                'p.quantity_produced',
+                'u.code as unit_code',
+                'p.warehouse_id',
+                'w.name as warehouse_name'
+            )
+            ->orderBy('p.production_date', 'DESC');
+
+        if ($bundleProductId) {
+            $query->where('p.bundle_product_id', $bundleProductId);
+        }
+
+        if ($warehouseId) {
+            $query->where('p.warehouse_id', $warehouseId);
+        }
+
+        $productions = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $productions
         ]);
     }
 
