@@ -39,23 +39,18 @@ class CreatePackingAction
                 ->first();
             $stockBeforePacking = $latestMovementBeforePacking ? $latestMovementBeforePacking->stock_after : 0;
 
-            // 2. Create separate production record for each packaging product
+            // 2. Generate shared transaction number for all packaging products in this packing
+            $year = date('Y');
+            $month = date('m');
+            $transactionNumber = $data['production_number'] ?? "PACK-{$year}{$month}-" . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+            // 3. Create separate production record for each packaging product
             foreach ($data['packaging_products'] as $index => $packaging) {
                 // Calculate HPP for this specific packaging product
                 $totals = $this->calculateTotalsForSinglePackaging($data, $packaging);
 
-                
-                // Generate unique production number for each line
-                // TODO: Generate unique production number
-                $year = date('Y');
-                $month = date('m');
-                $day = date('d');
-                $timestamp = time();
-
-                // Mock generation - replace with proper sequence
-                $number = "PROD-{$year}-".str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
-
-                $productionNumber = $number . '-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
+                // Generate unique production number per line (shared base + index suffix)
+                $productionNumber = $transactionNumber . '-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
 
                 // Create production record with packaging product as bundle_product_id
                 $productionData = [
@@ -89,7 +84,7 @@ class CreatePackingAction
                 $this->processStockMovementsForSinglePackaging($productionId, $productionData, $data['bundle_product_id'], $packaging);
 
                 // 5. Create t_packaging mapping record
-                $this->createPackagingMapping($number,$productionId, $data['bundle_product_id'], $packaging);
+                $this->createPackagingMapping($transactionNumber, $productionId, $data['bundle_product_id'], $packaging);
 
                 // 6. Create audit log
                 app(ProductionAuditLogService::class)->logCreation(
@@ -532,7 +527,7 @@ class CreatePackingAction
             'stock_before' => $stockAfterPacking,
             'movement_qty' => $absoluteQty,
             'stock_after' => $desiredFinalStock,
-            'notes' => "Packing adjustment - {$adjustmentReason}",
+            'notes' => "Packing adjustment [sisa:{$sisaInput}] - {$adjustmentReason}",
             'created_at' => now(),
             'updated_at' => now(),
         ]);

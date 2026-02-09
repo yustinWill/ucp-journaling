@@ -230,16 +230,15 @@ class PackingController extends Controller
         }
 
         // Get all packaging products from this transaction
+        $transactionNumber = DB::table('t_packaging')
+            ->where('production_id', $id)
+            ->value('transaction_number');
+
         $packagingProducts = DB::table('t_packaging as pkg')
             ->join('t_productions as p', 'pkg.production_id', '=', 'p.id')
             ->join('m_products as prod', 'pkg.packaging_product_id', '=', 'prod.id')
             ->leftJoin('m_units as u', 'prod.f_unit_id', '=', 'u.id')
-            ->where('pkg.transaction_number', function($query) use ($id) {
-                $query->select('transaction_number')
-                    ->from('t_packaging')
-                    ->where('production_id', $id)
-                    ->limit(1);
-            })
+            ->where('pkg.transaction_number', $transactionNumber)
             ->select(
                 'pkg.*',
                 'p.id as production_id',
@@ -265,23 +264,60 @@ class PackingController extends Controller
         }
 
         // Get source bundle product info
+        $sourceBundleProductId = $packagingProducts[0]->bundle_product_id ?? null;
         $sourceBundleProduct = DB::table('m_products as p')
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
-            ->where('p.id', $packagingProducts[0]->bundle_product_id ?? null)
-            ->select('p.code', 'p.name', 'u.code as unit_code')
+            ->where('p.id', $sourceBundleProductId)
+            ->select('p.id', 'p.code', 'p.name', 'u.code as unit_code')
             ->first();
 
-        // Get stock adjustment if any (from packing adjustment)
+        // Find the source production (the one that was packed)
+        $sourceProduction = null;
+        if ($sourceBundleProductId) {
+            $sourceProduction = DB::table('t_productions')
+                ->where('bundle_product_id', $sourceBundleProductId)
+                ->where('warehouse_id', $production->warehouse_id)
+                ->where('company_code', $production->company_code)
+                ->where('is_packaging', false)
+                ->where('is_packed', true)
+                ->orderBy('updated_at', 'DESC')
+                ->select('id', 'production_number', 'quantity_produced')
+                ->first();
+        }
+
+        // Calculate total bundle qty consumed across all packaging products
+        $totalBundleConsumed = 0;
+        foreach ($packagingProducts as $packaging) {
+            $bundleItem = $packaging->items->first(function ($item) use ($sourceBundleProductId) {
+                return $item->raw_material_product_id == $sourceBundleProductId;
+            });
+            if ($bundleItem) {
+                $totalBundleConsumed += $bundleItem->quantity_consumed;
+            }
+        }
+
+        // Get stock adjustment for this specific transaction
+        $productionNumbers = $packagingProducts->pluck('production_number')->toArray();
         $stockAdjustment = DB::table('t_stock_movement_logs')
             ->where('reference_type', 'PACKING_ADJUSTMENT')
+            ->where('product_id', $sourceBundleProductId)
+            ->where('warehouse_id', $production->warehouse_id)
+            ->where('company_code', $production->company_code)
             ->where('reference_number', 'LIKE', 'ADJ-PACK-%')
-            ->select('movement_type', 'movement_qty', 'notes', 'reference_number', 'movement_date')
+            ->whereBetween('created_at', [
+                $production->created_at ? \Carbon\Carbon::parse($production->created_at)->subMinute() : now()->subYear(),
+                $production->created_at ? \Carbon\Carbon::parse($production->created_at)->addMinute() : now(),
+            ])
+            ->select('movement_type', 'movement_qty', 'stock_before', 'stock_after', 'notes', 'reference_number', 'movement_date')
             ->first();
 
         return view('pages.main_transaction.packing.detail', [
             'production' => $production,
             'packagingProducts' => $packagingProducts,
             'sourceBundleProduct' => $sourceBundleProduct,
+            'sourceProduction' => $sourceProduction,
+            'totalBundleConsumed' => $totalBundleConsumed,
+            'transactionNumber' => $transactionNumber,
             'stockAdjustment' => $stockAdjustment,
         ]);
     }
