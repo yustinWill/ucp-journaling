@@ -2,6 +2,16 @@
 @section('page_title')
     Detail Packing Produk
 @stop
+@php
+    // Helper: format number, strip trailing zeros (5,00 → 5 | 0,5000 → 0,5 | 0,501000 → 0,501)
+    function formatQty($value) {
+        if ($value == floor($value)) {
+            return number_format($value, 0, ',', '.');
+        }
+        $formatted = number_format($value, 4, ',', '.');
+        return rtrim(rtrim($formatted, '0'), ',');
+    }
+@endphp
 @section('content')
     <div class="card mb-6">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -75,7 +85,7 @@
                     <label class="form-label">Available Bundle Stock</label>
                     <div class="input-group">
                         <input type="text" class="form-control"
-                            value="{{ $sourceProduction ? number_format($sourceProduction->quantity_produced, 0, ',', '.') : '0' }}"
+                            value="{{ $sourceProduction ? formatQty($sourceProduction->quantity_produced) : '0' }}"
                             disabled />
                         <span class="input-group-text">{{ $sourceBundleProduct->unit_code ?? '-' }}</span>
                     </div>
@@ -90,7 +100,7 @@
                             $remainingBundle = $availableQty - $totalBundleConsumed;
                         @endphp
                         <input type="text" class="form-control {{ $remainingBundle < 0 ? 'is-invalid' : '' }}"
-                            value="{{ number_format($remainingBundle, 0, ',', '.') }}"
+                            value="{{ formatQty($remainingBundle) }}"
                             disabled />
                         <span class="input-group-text">{{ $sourceBundleProduct->unit_code ?? '-' }}</span>
                     </div>
@@ -128,21 +138,15 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Qty to Produce</label>
                                     <input type="text" class="form-control"
-                                        value="{{ number_format($packaging->quantity_packed, 0, ',', '.') }}"
+                                        value="{{ formatQty($packaging->quantity_packed) }}"
                                         disabled />
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Bundle Qty Needed</label>
                                     <input type="text" class="form-control text-end"
-                                        value="{{ number_format($bundleQtyConsumed, 0, ',', '.') }}"
+                                        value="{{ formatQty($bundleQtyConsumed) }}"
                                         disabled />
-                                    <small class="form-text text-muted">Qty per unit:
-                                        @if($bundleQtyPerUnit == floor($bundleQtyPerUnit))
-                                            {{ number_format($bundleQtyPerUnit, 0, ',', '.') }}
-                                        @else
-                                            {{ rtrim(rtrim(number_format($bundleQtyPerUnit, 4, ',', '.'), '0'), ',') }}
-                                        @endif
-                                    </small>
+                                    <small class="form-text text-muted">Qty per unit: {{ formatQty($bundleQtyPerUnit) }}</small>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">HPP per Unit</label>
@@ -178,26 +182,10 @@
                                             <td>{{ $item->product_code }} - {{ $item->product_name }}</td>
                                             <td class="text-center">{{ $item->unit_code }}</td>
                                             <td class="text-end">
-                                                @php
-                                                    $qtyPerUnit = $packaging->quantity_packed > 0 ? $item->quantity_consumed / $packaging->quantity_packed : 0;
-                                                    if ($qtyPerUnit == floor($qtyPerUnit)) {
-                                                        echo number_format($qtyPerUnit, 0, ',', '.');
-                                                    } else {
-                                                        $formatted = number_format($qtyPerUnit, 4, ',', '.');
-                                                        echo rtrim(rtrim($formatted, '0'), ',');
-                                                    }
-                                                @endphp
+                                                {{ formatQty($packaging->quantity_packed > 0 ? $item->quantity_consumed / $packaging->quantity_packed : 0) }}
                                             </td>
                                             <td class="text-end">
-                                                @php
-                                                    $qtyConsumed = $item->quantity_consumed;
-                                                    if ($qtyConsumed == floor($qtyConsumed)) {
-                                                        echo number_format($qtyConsumed, 0, ',', '.');
-                                                    } else {
-                                                        $formatted = number_format($qtyConsumed, 4, ',', '.');
-                                                        echo rtrim(rtrim($formatted, '0'), ',');
-                                                    }
-                                                @endphp
+                                                {{ formatQty($item->quantity_consumed) }}
                                             </td>
                                             <td class="text-muted small">{{ $item->notes ?? '-' }}</td>
                                         </tr>
@@ -235,7 +223,7 @@
                             }
                         @endphp
                         <input type="text" class="form-control"
-                            value="{{ number_format($sisaValue, 2, ',', '.') }}"
+                            value="{{ formatQty($sisaValue) }}"
                             disabled />
                         <span class="input-group-text">{{ $sourceBundleProduct->unit_code ?? '-' }}</span>
                     </div>
@@ -310,7 +298,7 @@
                     <label class="form-label">Qty Adjusted</label>
                     <div class="input-group">
                         <input type="text" class="form-control text-end text-{{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? 'success' : 'warning' }}"
-                            value="{{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? '+' : '-' }}{{ number_format($stockAdjustment->movement_qty, 2, ',', '.') }}"
+                            value="{{ $stockAdjustment->movement_type === 'ADJUSTMENT_IN' ? '+' : '-' }}{{ formatQty($stockAdjustment->movement_qty) }}"
                             disabled />
                         <span class="input-group-text">{{ $sourceBundleProduct->unit_code ?? '' }}</span>
                     </div>
@@ -318,7 +306,7 @@
                 <div class="col-md-3">
                     <label class="form-label">Stock After Adjustment</label>
                     <input type="text" class="form-control text-end"
-                        value="{{ number_format($stockAdjustment->stock_after, 0, ',', '.') }}"
+                        value="{{ formatQty($stockAdjustment->stock_after) }}"
                         disabled />
                 </div>
             </div>
