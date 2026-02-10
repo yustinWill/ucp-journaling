@@ -347,6 +347,7 @@
             initCleaveCurrency(document);
             // Initialize the form
             initializeForm();
+            updateInvoiceStatus();
 
             function initializeForm() {
                 // Generate initial invoice number

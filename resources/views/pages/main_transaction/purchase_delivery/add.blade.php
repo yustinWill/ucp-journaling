@@ -367,6 +367,7 @@
             // Generate initial transaction numbers on page load
             generateTransactionNumber();
             generateDeliveryNumber();
+            updateSummary();
 
             // Generate transaction number function
             function generateTransactionNumber() {
