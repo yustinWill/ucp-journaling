@@ -219,12 +219,7 @@
                                         <td>
                                             @php
                                                 $pricePerQty = $product->price_per_qty ?? 0;
-                                                if ($pricePerQty == floor($pricePerQty)) {
-                                                    $formattedPricePerQty = parseCurrency($pricePerQty);
-                                                } else {
-                                                    $formatted = number_format($pricePerQty, 4, ',', '.');
-                                                    $formattedPricePerQty = parseCurrency($formatted);
-                                                }
+                                                $formattedPricePerQty = 'Rp ' . number_format($pricePerQty, 0, ',', '.');
                                             @endphp
                                             {{ $formattedPricePerQty }}
                                             <input type="hidden" name="products[{{ $counter }}][unit_price]"
