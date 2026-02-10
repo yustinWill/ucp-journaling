@@ -251,7 +251,7 @@
                                         <input type="hidden" name="products[{{ $counter }}][remaining_qty_before]"
                                             value="{{ $purchaseOrderProduct->remaining_qty }}" />
                                         <input type="text" data-remaining="{{ $purchaseOrderProduct->remaining_qty }}"
-                                            value="{{ $remainingQty }}" class="form-control delivery-qty-input numeric-input"
+                                            value="{{ $formatted }}" class="form-control delivery-qty-input numeric-input"
                                             name="products[{{ $counter }}][delivery_qty]" min="1"
                                             max="{{ $purchaseOrderProduct->remaining_qty }}" />
                                     </td>

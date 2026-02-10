@@ -211,7 +211,7 @@
                                                 value="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
                                             <input type="text"
                                                 data-remaining="{{ $product->remaining_qty_for_invoice ?? $product->qty }}"
-                                                value="{{ $remainingQty }}" class="form-control invoice-qty-input numeric-input"
+                                                value="{{ $formatted }}" class="form-control invoice-qty-input numeric-input"
                                                 name="products[{{ $counter }}][invoice_qty]" min="0"
                                                 max="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
                                         </td>
