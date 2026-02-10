@@ -123,6 +123,8 @@ class SalesOrderRevenueSplitService
 
     /**
      * Calculate revenue split based on configuration
+     * Uses PRIORITY/WATERFALL logic: Pabrik → Owner → Kingdom
+     * Higher priority parties get their full share first before lower priority parties
      *
      * @param object $config Revenue split configuration
      * @param float $unitPrice Unit price of the product
@@ -135,57 +137,49 @@ class SalesOrderRevenueSplitService
     {
         // Total amount is based on regular quantity only (bonus items have 0 price)
         $totalAmount = $unitPrice * $regularQuantity;
-        $basePrice = $config->base_price;
-        $ratio = $basePrice > 0 ? $unitPrice / $basePrice : 1;
 
-        // Pabrik (factory) uses total quantity (including bonus)
-        $porsiPabrik = $config->porsi_pabrik * $ratio * $totalQuantity;
+        // Calculate target amounts per unit from config
+        $targetPabrikPerUnit = $config->porsi_pabrik;
+        $targetOwnerPerUnit = $config->porsi_owner;
+        $targetPerusahaanPerUnit = $config->porsi_perusahaan;
 
+        // PRIORITY 1: Pabrik gets full share first
+        // Pabrik uses total quantity (including bonus items)
+        $targetPorsiPabrik = $targetPabrikPerUnit * $totalQuantity;
+        $porsiPabrik = min($targetPorsiPabrik, $totalAmount);
+        $remainingAfterPabrik = $totalAmount - $porsiPabrik;
+
+        // PRIORITY 2: Owner gets from remaining after Pabrik
         // Owner uses only regular quantity (excluding bonus)
-        $porsiOwner = $config->porsi_owner * $ratio * $regularQuantity;
+        $targetPorsiOwner = $targetOwnerPerUnit * $regularQuantity;
+        $porsiOwner = min($targetPorsiOwner, $remainingAfterPabrik);
+        $remainingAfterOwner = $remainingAfterPabrik - $porsiOwner;
 
-        // Perusahaan (Kingdom) calculation depends on whether there are bonus items
-        if ($hasBonus) {
-            // When there are bonus items:
-            // - Pabrik uses total qty (including bonus)
-            // - Owner uses regular qty (excluding bonus)
-            // - Kingdom gets the remaining (total - pabrik - owner)
+        // PRIORITY 3: Kingdom (Perusahaan) gets whatever is left
+        $porsiPerusahaan = $remainingAfterOwner;
 
-            $remainingAmount = $totalAmount - $porsiPabrik - $porsiOwner;
-            $porsiPerusahaan = $remainingAmount;
-        } else {
-            // No bonus items - use original logic (Kingdom gets remaining)
-            $remainingAmount = $totalAmount - $porsiPabrik - $porsiOwner;
+        // Calculate remaining amount for tracking
+        $totalConfigured = ($targetPabrikPerUnit * $totalQuantity) +
+                          ($targetOwnerPerUnit * $regularQuantity) +
+                          ($targetPerusahaanPerUnit * $regularQuantity);
+        $remainingAmount = $totalAmount - $totalConfigured;
 
-            if ($config->remaining_allocation === 'perusahaan') {
-                // Kingdom gets the remaining
-                $porsiPerusahaan = $remainingAmount;
-            } else {
-                // Perusahaan gets fixed portion
-                $porsiPerusahaan = $config->porsi_perusahaan * $ratio * $regularQuantity;
-
-                // Recalculate remaining
-                $totalFixed = $porsiPerusahaan + $porsiOwner + $porsiPabrik;
-                $remainingAmount = $totalAmount - $totalFixed;
-
-                // Allocate remaining to specified category
-                switch ($config->remaining_allocation) {
-                    case 'owner':
-                        $porsiOwner += $remainingAmount;
-                        break;
-                    case 'pabrik':
-                        $porsiPabrik += $remainingAmount;
-                        break;
-                }
-            }
+        // Determine which party absorbed the shortfall (if any)
+        $actualRemaining = 'perusahaan'; // Default
+        if ($porsiPerusahaan < $targetPerusahaanPerUnit * $regularQuantity) {
+            $actualRemaining = 'perusahaan';
+        } elseif ($porsiOwner < $targetPorsiOwner) {
+            $actualRemaining = 'owner';
+        } elseif ($porsiPabrik < $targetPorsiPabrik) {
+            $actualRemaining = 'pabrik';
         }
 
         return [
             'porsi_perusahaan' => round($porsiPerusahaan, 2),
             'porsi_owner' => round($porsiOwner, 2),
             'porsi_pabrik' => round($porsiPabrik, 2),
-            'remaining_allocation' => $config->remaining_allocation,
-            'remaining_amount' => round($remainingAmount ?? 0, 2)
+            'remaining_allocation' => $actualRemaining,
+            'remaining_amount' => round($remainingAmount, 2)
         ];
     }
 
@@ -234,6 +228,10 @@ class SalesOrderRevenueSplitService
                 throw new Exception('Total revenue split must equal product total amount');
             }
 
+            // Calculate effective qty if return_qty is provided
+            $returnQty = $splitData['return_qty'] ?? 0;
+            $effectiveQty = $splitData['effective_qty'] ?? 0;
+
             DB::table($this->tableName)->updateOrInsert(
                 [
                     'company_code' => $companyCode,
@@ -246,6 +244,8 @@ class SalesOrderRevenueSplitService
                     'porsi_pabrik' => $splitData['porsi_pabrik'],
                     'remaining_allocation' => $splitData['remaining_allocation'],
                     'remaining_amount' => $splitData['remaining_amount'] ?? 0,
+                    'return_qty' => $returnQty,
+                    'effective_qty' => $effectiveQty,
                     'is_custom_split' => true,
                     'split_notes' => $splitData['split_notes'] ?? null,
                     'updated_by' => $userId,

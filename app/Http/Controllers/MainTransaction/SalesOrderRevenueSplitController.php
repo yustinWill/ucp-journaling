@@ -53,6 +53,8 @@ class SalesOrderRevenueSplitController extends Controller
                 'porsi_pabrik' => 'required|numeric|min:0',
                 'remaining_allocation' => 'required|in:perusahaan,owner,pabrik',
                 'product_total_amount' => 'required|numeric|min:0',
+                'return_qty' => 'nullable|numeric|min:0',
+                'effective_qty' => 'nullable|numeric|min:0',
                 'split_notes' => 'nullable|string|max:1000'
             ]);
 
@@ -66,10 +68,12 @@ class SalesOrderRevenueSplitController extends Controller
 
             $splitData = $request->only([
                 'porsi_perusahaan',
-                'porsi_owner', 
+                'porsi_owner',
                 'porsi_pabrik',
                 'remaining_allocation',
                 'product_total_amount',
+                'return_qty',
+                'effective_qty',
                 'split_notes'
             ]);
 
