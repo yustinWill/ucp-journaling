@@ -211,7 +211,7 @@
                                                 value="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
                                             <input type="text"
                                                 data-remaining="{{ $product->remaining_qty_for_invoice ?? $product->qty }}"
-                                                value="0" class="form-control invoice-qty-input numeric-input"
+                                                value="{{ $remainingQty }}" class="form-control invoice-qty-input numeric-input"
                                                 name="products[{{ $counter }}][invoice_qty]" min="0"
                                                 max="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
                                         </td>
@@ -219,10 +219,10 @@
                                             @php
                                                 $pricePerQty = $product->price_per_qty ?? 0;
                                                 if ($pricePerQty == floor($pricePerQty)) {
-                                                    $formattedPricePerQty = number_format($pricePerQty, 0, ',', '.');
+                                                    $formattedPricePerQty = parseCurrency($pricePerQty);
                                                 } else {
                                                     $formatted = number_format($pricePerQty, 4, ',', '.');
-                                                    $formattedPricePerQty = rtrim(rtrim($formatted, '0'), ',');
+                                                    $formattedPricePerQty = parseCurrency($formatted);
                                                 }
                                             @endphp
                                             {{ $formattedPricePerQty }}
