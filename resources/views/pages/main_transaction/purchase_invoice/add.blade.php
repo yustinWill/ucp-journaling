@@ -188,6 +188,7 @@
                                                 $remainingQty = $product->remaining_qty_for_invoice ?? $product->qty;
                                                 if ($remainingQty == floor($remainingQty)) {
                                                     $formattedRemainingQty = number_format($remainingQty, 0, ',', '.');
+                                                    $formatted = number_format($remainingQty, 0, ',', '.');
                                                 } else {
                                                     $formatted = number_format($remainingQty, 4, ',', '.');
                                                     $formattedRemainingQty = rtrim(rtrim($formatted, '0'), ',');
