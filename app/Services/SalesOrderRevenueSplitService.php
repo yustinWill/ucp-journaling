@@ -35,23 +35,54 @@ class SalesOrderRevenueSplitService
 
     /**
      * Create revenue split for a single product in sales order
+     * This method aggregates regular and bonus items for the same product
      */
     public function createRevenueSplitForProduct($salesOrderId, $product, $companyCode, $userId)
     {
+        $productId = $product['f_product_id'];
+
+        // Query ALL rows with the same product_id from sales order to aggregate bonus items
+        $allProductRows = DB::table('t_sales_order_products')
+            ->where('f_sales_order_id', $salesOrderId)
+            ->where('f_product_id', $productId)
+            ->select('quantity', 'unit_price', 'is_bonus', 'id')
+            ->get();
+
+        // Aggregate quantities
+        $totalQuantity = 0;
+        $regularQuantity = 0;
+        $bonusQuantity = 0;
+        $unitPrice = $product['unit_price'];
+        $firstRowId = $product['id'] ?? null;
+
+        foreach ($allProductRows as $row) {
+            $qty = $row->quantity;
+            $totalQuantity += $qty;
+
+            if ($row->is_bonus) {
+                $bonusQuantity += $qty;
+            } else {
+                $regularQuantity += $qty;
+                // Use unit price from non-bonus row (bonus has 0 price)
+                $unitPrice = $row->unit_price;
+                $firstRowId = $row->id;
+            }
+        }
+
+        // Total amount is only based on regular quantity (bonus has 0 price)
+        $totalAmount = $unitPrice * $regularQuantity;
+
         // Get product revenue split configuration
         $config = DB::table($this->configTableName)
             ->where('company_code', $companyCode)
-            ->where('f_product_id', $product['f_product_id'])
+            ->where('f_product_id', $productId)
             ->where('status', 'ACTIVE')
             ->first();
 
-        $unitPrice = $product['unit_price'];
-        $quantity = $product['quantity'];
-        $totalAmount = $unitPrice * $quantity;
-
         if ($config) {
-            // Use configuration to calculate split
-            $split = $this->calculateSplitFromConfig($config, $unitPrice, $quantity);
+            // Use configuration to calculate split with bonus consideration
+            $hasBonus = $bonusQuantity > 0;
+            $split = $this->calculateSplitFromConfig($config, $unitPrice, $totalQuantity, $regularQuantity, $hasBonus);
             $configId = $config->id;
             $isCustom = false;
         } else {
@@ -71,10 +102,10 @@ class SalesOrderRevenueSplitService
         DB::table($this->tableName)->insert([
             'company_code' => $companyCode,
             'f_sales_order_id' => $salesOrderId,
-            'f_sales_order_product_id' => $product['id'] ?? null,
-            'f_product_id' => $product['f_product_id'],
+            'f_sales_order_product_id' => $firstRowId,
+            'f_product_id' => $productId,
             'product_unit_price' => $unitPrice,
-            'product_quantity' => $quantity,
+            'product_quantity' => $totalQuantity,
             'product_total_amount' => $totalAmount,
             'porsi_perusahaan' => $split['porsi_perusahaan'],
             'porsi_owner' => $split['porsi_owner'],
@@ -92,32 +123,61 @@ class SalesOrderRevenueSplitService
 
     /**
      * Calculate revenue split based on configuration
+     *
+     * @param object $config Revenue split configuration
+     * @param float $unitPrice Unit price of the product
+     * @param int $totalQuantity Total quantity including bonus items
+     * @param int $regularQuantity Regular quantity excluding bonus items
+     * @param bool $hasBonus Whether this product has bonus items
+     * @return array
      */
-    private function calculateSplitFromConfig($config, $unitPrice, $quantity)
+    private function calculateSplitFromConfig($config, $unitPrice, $totalQuantity, $regularQuantity, $hasBonus = false)
     {
-        $totalAmount = $unitPrice * $quantity;
+        // Total amount is based on regular quantity only (bonus items have 0 price)
+        $totalAmount = $unitPrice * $regularQuantity;
         $basePrice = $config->base_price;
-        $ratio = $unitPrice / $basePrice;
-        // Calculate proportional splits
-        $porsiPerusahaan = $config->porsi_perusahaan * $ratio * $quantity;
-        $porsiOwner = $config->porsi_owner * $ratio * $quantity;
-        $porsiPabrik = $config->porsi_pabrik * $ratio * $quantity;
+        $ratio = $basePrice > 0 ? $unitPrice / $basePrice : 1;
 
-        // Calculate remaining amount
-        $totalFixed = $porsiPerusahaan + $porsiOwner + $porsiPabrik;
-        $remainingAmount = $totalAmount - $totalFixed;
+        // Pabrik (factory) uses total quantity (including bonus)
+        $porsiPabrik = $config->porsi_pabrik * $ratio * $totalQuantity;
 
-        // Allocate remaining to specified category
-        switch ($config->remaining_allocation) {
-            case 'perusahaan':
-                $porsiPerusahaan += $remainingAmount;
-                break;
-            case 'owner':
-                $porsiOwner += $remainingAmount;
-                break;
-            case 'pabrik':
-                $porsiPabrik += $remainingAmount;
-                break;
+        // Owner uses only regular quantity (excluding bonus)
+        $porsiOwner = $config->porsi_owner * $ratio * $regularQuantity;
+
+        // Perusahaan (Kingdom) calculation depends on whether there are bonus items
+        if ($hasBonus) {
+            // When there are bonus items:
+            // - Pabrik uses total qty (including bonus)
+            // - Owner uses regular qty (excluding bonus)
+            // - Kingdom gets the remaining (total - pabrik - owner)
+
+            $remainingAmount = $totalAmount - $porsiPabrik - $porsiOwner;
+            $porsiPerusahaan = $remainingAmount;
+        } else {
+            // No bonus items - use original logic (Kingdom gets remaining)
+            $remainingAmount = $totalAmount - $porsiPabrik - $porsiOwner;
+
+            if ($config->remaining_allocation === 'perusahaan') {
+                // Kingdom gets the remaining
+                $porsiPerusahaan = $remainingAmount;
+            } else {
+                // Perusahaan gets fixed portion
+                $porsiPerusahaan = $config->porsi_perusahaan * $ratio * $regularQuantity;
+
+                // Recalculate remaining
+                $totalFixed = $porsiPerusahaan + $porsiOwner + $porsiPabrik;
+                $remainingAmount = $totalAmount - $totalFixed;
+
+                // Allocate remaining to specified category
+                switch ($config->remaining_allocation) {
+                    case 'owner':
+                        $porsiOwner += $remainingAmount;
+                        break;
+                    case 'pabrik':
+                        $porsiPabrik += $remainingAmount;
+                        break;
+                }
+            }
         }
 
         return [
@@ -125,7 +185,7 @@ class SalesOrderRevenueSplitService
             'porsi_owner' => round($porsiOwner, 2),
             'porsi_pabrik' => round($porsiPabrik, 2),
             'remaining_allocation' => $config->remaining_allocation,
-            'remaining_amount' => round($remainingAmount, 2)
+            'remaining_amount' => round($remainingAmount ?? 0, 2)
         ];
     }
 
