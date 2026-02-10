@@ -694,7 +694,7 @@
 
                 // Enable Select2 for all selects
                 $('.product-row select').each(function() {
-                    if ($(this).hasClass('select2-hidden-accessible')) {
+                    if ($(this).hasClass('select2-hidden-accessible') && $(this).data('select2')) {
                         $(this).select2('enable');
                     }
                 });
@@ -712,7 +712,7 @@
 
                 // Disable Select2
                 $('.product-row select').each(function() {
-                    if ($(this).hasClass('select2-hidden-accessible')) {
+                    if ($(this).hasClass('select2-hidden-accessible') && $(this).data('select2')) {
                         $(this).select2('enable', false);
                     }
                 });
