@@ -88,10 +88,10 @@
                         <tr>
                             <th style="width: 15%;">Kode Produk</th>
                             <th style="width: 25%;">Nama Produk</th>
-                            <th style="width: 8%;">Unit</th>
                             <th style="width: 12%;">Stok Tersedia</th>
                             <th style="width: 12%;">Qty Transfer</th>
                             <th style="width: 12%;">Sisa Stok</th>
+                            <th style="width: 8%;">Unit</th>
                             <th style="width: 16%;">Alasan</th>
                         </tr>
                     </thead>
@@ -103,12 +103,12 @@
                             <tr>
                                 <td><strong>{{ $item->product_code }}</strong></td>
                                 <td>{{ $item->product_name }}</td>
-                                <td class="text-center">{{ $item->unit }}</td>
                                 <td class="text-end"><span class="text-info">{{ formatQty($item->stock_before) }}</span></td>
                                 <td class="text-end">{{ formatQty($item->adjustment_qty) }}</td>
                                 <td class="text-end">
                                     <span class="text-{{ $sisaStok < 0 ? 'danger' : 'info' }}">{{ formatQty($sisaStok) }}</span>
                                 </td>
+                                <td class="text-center">{{ $item->unit }}</td>
                                 <td class="text-muted small">{{ $item->reason ?? '-' }}</td>
                             </tr>
                         @empty

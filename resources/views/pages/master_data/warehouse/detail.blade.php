@@ -2,6 +2,16 @@
 @section('page_title')
     Detail Warehouse
 @stop
+@php
+    // Helper: format number, strip trailing zeros (5,00 → 5 | 0,5000 → 0,5 | 0,501000 → 0,501)
+    function formatQty($value) {
+        if ($value == floor($value)) {
+            return number_format($value, 0, ',', '.');
+        }
+        $formatted = number_format($value, 4, ',', '.');
+        return rtrim(rtrim($formatted, '0'), ',');
+    }
+@endphp
 @section('content')
     <div class="card mb-6">
         <div class="card-body">
@@ -201,7 +211,6 @@
                                             <th>Batas Minimum</th>
                                             <th>Unit</th>
                                             <th>Harga Beli Terakhir</th>
-                                            <th>Harga Beli</th>
                                             <th>Harga Jual</th>
                                         </tr>
                                     </thead>
@@ -211,11 +220,10 @@
                                                 <td>{{ $product->code }}</td>
                                                 <td>{{ $product->name }}</td>
                                                 <td>{{ $product->category_name }}</td>
-                                                <td class="text-end">{{ rtrim(rtrim(number_format($product->system_stock ?? 0, 2, ',', ''), '0'), ',') }}</td>
-                                                <td class="text-end">{{ rtrim(rtrim(number_format($product->minimum_stock ?? 0, 2, ',', ''), '0'), ',') }}</td>
+                                                <td class="text-end">{{ formatQty($product->system_stock) }}</td>
+                                                <td class="text-end">{{ formatQty($product->minimum_stock) }}</td>
                                                 <td>{{ $product->unit }}</td>
                                                 <td class="text-end">Rp {{ number_format($product->latest_purchase_price ?? 0, 0, ',', '.') }}</td>
-                                                <td class="text-end">Rp {{ number_format($product->unit_purchase_price ?? 0, 0, ',', '.') }}</td>
                                                 <td class="text-end">Rp {{ number_format($product->unit_sell_price ?? 0, 0, ',', '.') }}</td>
                                             </tr>
                                             @empty
