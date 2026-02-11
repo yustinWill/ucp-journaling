@@ -80,8 +80,7 @@
             <div class="card-body">
                 <div class="alert alert-warning mb-3">
                     <i class="icon-base ti tabler-alert-circle me-2"></i>
-                    <strong>Informasi Penting:</strong> Tabel di bawah menampilkan semua SO yang belum lunas, diurutkan
-                    dari tanggal tertua (paling atas akan dibayar pertama).
+                    <strong>Informasi Penting:</strong> Tabel di bawah menampilkan semua invoice yang sudah terbayar).
                 </div>
 
                 <div class="table-responsive">

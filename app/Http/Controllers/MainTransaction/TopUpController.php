@@ -176,7 +176,7 @@ class TopUpController extends Controller
 
             // Determine which field to update based on entity
             $isPaidField = $entityType === 'KINGDOM' ? 'is_paid_perusahaan' : 'is_paid_owner';
-            $porsiField = $entityType === 'KINGDOM' ? 'porsi_perusahaan' : 'porsi_owner';
+            $porsiField = $entityType === 'KINGDOM' ? 'porsi_perusahaan' : 'porsi_pabrik';
 
             // Get outstanding Sales Orders (same logic as getOutstandingSalesOrders)
             $outstandingSO = DB::table('t_sales_orders as so')
@@ -464,7 +464,7 @@ class TopUpController extends Controller
 
         // Determine which field to check based on entity
         $isPaidField = $entityType === 'KINGDOM' ? 'is_paid_perusahaan' : 'is_paid_owner';
-        $porsiField = $entityType === 'KINGDOM' ? 'porsi_perusahaan' : 'porsi_owner';
+        $porsiField = $entityType === 'KINGDOM' ? 'porsi_perusahaan' : 'porsi_pabrik';
 
         // Get outstanding Sales Orders ordered by date (FIFO)
         $outstandingSO = DB::table('t_sales_orders as so')
@@ -533,7 +533,7 @@ class TopUpController extends Controller
 
         // Determine which field to check based on entity
         $isPaidField = $entityType === 'KINGDOM' ? 'is_paid_perusahaan' : 'is_paid_owner';
-        $porsiField = $entityType === 'KINGDOM' ? 'porsi_perusahaan' : 'porsi_owner';
+        $porsiField = $entityType === 'KINGDOM' ? 'porsi_perusahaan' : 'porsi_pabrik';
 
         // Get outstanding Sales Orders ordered by date (FIFO)
         $outstandingSO = DB::table('t_sales_orders as so')
