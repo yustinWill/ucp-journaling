@@ -45,7 +45,7 @@ class PackingController extends Controller
             ->select(
                 'pkg.transaction_number',
                 DB::raw('MIN(p.production_date) as packing_date'),
-                DB::raw('MIN(p.id) as id'),
+                DB::raw('MIN(pkg.id) as id'),
                 DB::raw('GROUP_CONCAT(DISTINCT p.production_number ORDER BY p.production_number SEPARATOR ", ") as packing_number'),
                 DB::raw('GROUP_CONCAT(DISTINCT bp.name ORDER BY p.production_number SEPARATOR ", ") as bundle_product_name'),
                 DB::raw('GROUP_CONCAT(DISTINCT bp.code ORDER BY p.production_number SEPARATOR ", ") as bundle_product_code'),
