@@ -39,17 +39,7 @@
             </div>
             <div class="card-body">
                 <div class="row g-3 mb-3">
-                    {{-- <div class="col-md-6">
-                        <label class="form-label required">Entity</label>
-                        <select class="form-select" id="entity_type" name="entity_type" required>
-                            <option value="">Pilih Entity</option>
-                            <option value="KINGDOM">Kingdom (Perusahaan)</option>
-                            <option value="OWNER">Owner</option>
-                        </select>
-                        <div class="form-text">
-                            <i class="icon-base ti tabler-info-circle-filled me-1"></i> Entity yang akan melakukan pembayaran
-                        </div>
-                    </div> --}}
+                    <input type="hidden" id="entity_type" name="entity_type" value="OWNER">
                     <div class="col-md-6">
                         <label class="form-label required">Top Up Date</label>
                         <input type="date" class="form-control" id="topup_date" name="topup_date"
@@ -211,6 +201,9 @@
             $('#entity_type').on('change', function() {
                 loadOutstanding();
             });
+
+            // Auto-load outstanding on page load (default: OWNER)
+            loadOutstanding();
 
             // Load outstanding piutang
             function loadOutstanding() {
