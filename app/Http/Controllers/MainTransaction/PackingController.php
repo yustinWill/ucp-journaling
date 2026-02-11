@@ -40,23 +40,23 @@ class PackingController extends Controller
     {
         $companyCode = session('user_company_code');
 
-        // Base query grouped by transaction_number
+        /*
+        |--------------------------------------------------------------------------
+        | Base Query (Grouped by transaction_number)
+        |--------------------------------------------------------------------------
+        */
         $query = DB::table('t_packaging as pkg')
             ->select(
                 'pkg.transaction_number',
                 DB::raw('MIN(p.production_date) as packing_date'),
-                DB::raw('MIN(pkg.id) as id'),
+                DB::raw('MIN(p.id) as production_id'),
                 DB::raw('GROUP_CONCAT(DISTINCT p.production_number ORDER BY p.production_number SEPARATOR ", ") as packing_number'),
                 DB::raw('GROUP_CONCAT(DISTINCT bp.name ORDER BY p.production_number SEPARATOR ", ") as bundle_product_name'),
                 DB::raw('GROUP_CONCAT(DISTINCT bp.code ORDER BY p.production_number SEPARATOR ", ") as bundle_product_code'),
                 DB::raw('SUM(pkg.quantity_packed) as quantity_packed'),
                 DB::raw('MIN(w.name) as warehouse_name'),
                 DB::raw('MIN(w.code) as warehouse_code'),
-                DB::raw('MIN(u.name) as pic_name'),
-                DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = MIN(p.id) LIMIT 1) as unit_code'),
-                DB::raw("(SELECT AVG(CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END) FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id IN (SELECT tp.id FROM t_productions tp WHERE tp.id IN (SELECT pkg2.production_id FROM t_packaging pkg2 WHERE pkg2.transaction_number = pkg.transaction_number)) AND psb.source_type = 'PRODUCTION') as hpp_packing"),
-                DB::raw("(SELECT sml.movement_type FROM t_stock_movement_logs as sml WHERE sml.reference_type = 'PACKING_ADJUSTMENT' AND sml.reference_number LIKE CONCAT('ADJ-PACK-', '%') LIMIT 1) as adjustment_type"),
-                DB::raw("(SELECT sml.movement_qty FROM t_stock_movement_logs as sml WHERE sml.reference_type = 'PACKING_ADJUSTMENT' AND sml.reference_number LIKE CONCAT('ADJ-PACK-', '%') LIMIT 1) as adjustment_qty")
+                DB::raw('MIN(u.name) as pic_name')
             )
             ->leftJoin('t_productions as p', 'pkg.production_id', '=', 'p.id')
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
@@ -66,6 +66,11 @@ class PackingController extends Controller
             ->where('p.is_packaging', true)
             ->where('pkg.transaction_number', 'LIKE', 'PACK-%');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Filters
+        |--------------------------------------------------------------------------
+        */
         if ($date = $request->input('date')) {
             if (strpos($date, ' - ') !== false) {
                 [$dateFrom, $dateTo] = explode(' - ', $date);
@@ -84,40 +89,67 @@ class PackingController extends Controller
         }
 
         if ($packing_no = $request->input('packing_no')) {
-            $query->where(function($q) use ($packing_no) {
+            $query->where(function ($q) use ($packing_no) {
                 $q->where('p.production_number', 'like', "%{$packing_no}%")
-                  ->orWhere('pkg.transaction_number', 'like', "%{$packing_no}%");
+                ->orWhere('pkg.transaction_number', 'like', "%{$packing_no}%");
             });
         }
 
         $query->groupBy('pkg.transaction_number');
 
-        $draw = (int) $request->input('draw', 1);
+        /*
+        |--------------------------------------------------------------------------
+        | recordsTotal (Unfiltered grouped count)
+        |--------------------------------------------------------------------------
+        */
+        $totalQuery = DB::table('t_packaging as pkg')
+            ->join('t_productions as p', 'pkg.production_id', '=', 'p.id')
+            ->where('p.company_code', $companyCode)
+            ->where('p.is_packaging', true)
+            ->where('pkg.transaction_number', 'LIKE', 'PACK-%')
+            ->groupBy('pkg.transaction_number');
 
-        // recordsTotal: count distinct transaction_numbers (unfiltered)
-        $recordsTotal = DB::table('t_packaging')
-            ->join('t_productions', 't_packaging.production_id', '=', 't_productions.id')
-            ->where('t_productions.company_code', $companyCode)
-            ->where('t_productions.is_packaging', true)
-            ->where('t_packaging.transaction_number', 'LIKE', 'PACK-%')
-            ->distinct()
-            ->count('t_packaging.transaction_number');
+        $recordsTotal = DB::table(DB::raw("({$totalQuery->toSql()}) as total"))
+            ->mergeBindings($totalQuery)
+            ->count();
 
-        // recordsFiltered: wrap the grouped query to count the number of groups
+        /*
+        |--------------------------------------------------------------------------
+        | recordsFiltered
+        |--------------------------------------------------------------------------
+        */
         $filteredQuery = clone $query;
+
         $recordsFiltered = DB::table(DB::raw("({$filteredQuery->toSql()}) as filtered"))
             ->mergeBindings($filteredQuery)
             ->count();
 
-        // Order BEFORE pagination
-        $query->orderBy('packing_date', 'DESC');
+        /*
+        |--------------------------------------------------------------------------
+        | Ordering
+        |--------------------------------------------------------------------------
+        */
+        $query->orderByRaw('MIN(p.production_date) DESC');
         $query->orderBy('pkg.transaction_number', 'DESC');
 
-        // Pagination
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination
+        |--------------------------------------------------------------------------
+        */
         $start = (int) $request->input('start', 0);
         $length = (int) $request->input('length', 10);
-        $data = $query->offset($start)->limit($length)->get();
+        $draw = (int) $request->input('draw', 1);
 
+        $data = $query->offset($start)
+                    ->limit($length)
+                    ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
         return response()->json([
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,
@@ -125,6 +157,7 @@ class PackingController extends Controller
             'data' => $data,
         ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
+
 
     public function add()
     {
@@ -219,12 +252,15 @@ class PackingController extends Controller
     public function detail($id)
     {
         // Get the first production record details
+        $productionId = DB::table('t_packaging')
+            ->where('id', $id)
+            ->value('production_id');
         $production = DB::table('t_productions as p')
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
             ->leftJoin('m_units as unit', 'bp.f_unit_id', '=', 'unit.id')
-            ->where('p.id', $id)
+            ->where('p.id', $productionId)
             ->where('p.is_packaging', true)
             ->select(
                 'p.*',
@@ -243,7 +279,7 @@ class PackingController extends Controller
 
         // Get all packaging products from this transaction
         $transactionNumber = DB::table('t_packaging')
-            ->where('production_id', $id)
+            ->where('id', $id)
             ->value('transaction_number');
 
         $packagingProducts = DB::table('t_packaging as pkg')
