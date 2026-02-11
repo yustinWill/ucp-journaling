@@ -106,30 +106,43 @@ class StockMovementLogsService
 
     public function findAllLatestStockPerProduct($productId)
     {
-        $query = DB::table($this->table_name.' AS t_stock_movement_logs')
+        $companyCode = session('user_company_code');
+
+        // Subquery to get the latest stock_after for this product per warehouse
+        $latestStockSubquery = DB::table('t_stock_movement_logs as sml')
+            ->select(
+                'sml.warehouse_id',
+                'sml.stock_after'
+            )
+            ->whereRaw('sml.id = (
+                SELECT MAX(sml2.id)
+                FROM t_stock_movement_logs sml2
+                WHERE sml2.product_id = sml.product_id
+                  AND sml2.warehouse_id = sml.warehouse_id
+                  AND sml2.company_code = ?
+            )', [$companyCode])
+            ->where('sml.product_id', $productId)
+            ->where('sml.company_code', $companyCode);
+
+        $query = DB::table('m_products')
             ->select(
                 'm_products.id AS id',
                 'm_products.code AS code',
                 'm_products.name AS name',
                 'm_units.name AS unit',
-                't_stock_movement_logs.warehouse_id AS warehouse_id',
+                'latest_stock.warehouse_id AS warehouse_id',
                 'm_warehouses.code AS warehouse_code',
                 'm_warehouses.name AS warehouse_name',
                 'm_products.f_category_id AS category',
-                DB::raw('SUM(
-                    CASE 
-                        WHEN t_stock_movement_logs.movement_type LIKE "%_IN" THEN t_stock_movement_logs.movement_qty
-                        WHEN t_stock_movement_logs.movement_type LIKE "%_OUT" THEN -t_stock_movement_logs.movement_qty
-                        ELSE 0
-                    END
-                ) as system_stock')
+                DB::raw('COALESCE(latest_stock.stock_after, 0) as system_stock')
             )
-            ->join('m_products', 't_stock_movement_logs.product_id', '=', 'm_products.id')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
-            ->join('m_warehouses', 't_stock_movement_logs.warehouse_id', '=', 'm_warehouses.id')
-            ->where('t_stock_movement_logs.product_id', $productId)
-            ->where('t_stock_movement_logs.company_code', session('user_company_code'))
-            ->groupBy('t_stock_movement_logs.warehouse_id', 'm_products.id');
+            ->joinSub($latestStockSubquery, 'latest_stock', function ($join) {
+                $join->on(DB::raw('1'), '=', DB::raw('1'));
+            })
+            ->join('m_warehouses', 'latest_stock.warehouse_id', '=', 'm_warehouses.id')
+            ->where('m_products.id', $productId)
+            ->where('m_products.company_code', $companyCode);
 
         return $query->get();
     }
