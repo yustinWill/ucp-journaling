@@ -109,9 +109,13 @@ class PackingController extends Controller
             ->where('pkg.transaction_number', 'LIKE', 'PACK-%')
             ->groupBy('pkg.transaction_number');
 
-        $recordsTotal = DB::table(DB::raw("({$totalQuery->toSql()}) as total"))
-            ->mergeBindings($totalQuery)
-            ->count();
+       $recordsTotal = DB::table('t_packaging as pkg')
+            ->join('t_productions as p', 'pkg.production_id', '=', 'p.id')
+            ->where('p.company_code', $companyCode)
+            ->where('p.is_packaging', true)
+            ->where('pkg.transaction_number', 'LIKE', 'PACK-%')
+            ->distinct('pkg.transaction_number')
+            ->count('pkg.transaction_number');
 
         /*
         |--------------------------------------------------------------------------
