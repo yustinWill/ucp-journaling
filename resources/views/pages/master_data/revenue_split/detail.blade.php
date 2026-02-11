@@ -298,11 +298,11 @@
                                         <input type="text" class="form-control"
                                             value="{{ $total_so_paid ?? 0 }} SO" readonly>
                                     </div>
-                                    <div class="col-md-6">
+                                    {{-- <div class="col-md-6">
                                         <label class="form-label">Expected Revenue</label>
                                         <input type="text" class="form-control"
                                             value="Rp {{ number_format($expectedRevenue ?? 0, 0, ',', '.') }}" readonly>
-                                    </div>
+                                    </div> --}}
                                     <div class="col-md-6">
                                         <label class="form-label">Actual Revenue</label>
                                         <input type="text" class="form-control"
