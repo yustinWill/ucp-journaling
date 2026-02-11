@@ -322,6 +322,66 @@ class SalesOrderController extends Controller
         ]);
     }
 
+    public function cancel($id)
+    {
+        // Permission check
+        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+            return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses.'], 403);
+        }
+
+        $salesOrder = DB::table('t_sales_orders')
+            ->where('id', $id)
+            ->where('company_code', session('user_company_code'))
+            ->first();
+
+        if (! $salesOrder) {
+            return response()->json(['success' => false, 'message' => 'Sales Order tidak ditemukan.'], 404);
+        }
+
+        if ($salesOrder->status === 'CANCELLED') {
+            return response()->json(['success' => false, 'message' => 'Sales Order sudah dibatalkan.'], 422);
+        }
+
+        // Check if SD exists
+        $hasDelivery = DB::table('t_sales_deliveries')
+            ->where('sales_order_id', $id)
+            ->exists();
+
+        if ($hasDelivery) {
+            return response()->json(['success' => false, 'message' => 'Tidak dapat membatalkan, Sales Order sudah memiliki Sales Delivery.'], 422);
+        }
+
+        // Check if SI exists
+        $hasInvoice = DB::table('t_sales_invoices')
+            ->where('f_sales_order_id', $id)
+            ->exists();
+
+        if ($hasInvoice) {
+            return response()->json(['success' => false, 'message' => 'Tidak dapat membatalkan, Sales Order sudah memiliki Sales Invoice.'], 422);
+        }
+
+        // Update status to CANCELLED
+        DB::table('t_sales_orders')
+            ->where('id', $id)
+            ->update([
+                'status' => 'CANCELLED',
+                'updated_at' => now(),
+                'updated_by' => auth()->id(),
+            ]);
+
+        // Create audit log
+        app(SalesOrderAuditLogService::class)->create([
+            'action_type' => 'CANCEL',
+            'description' => 'Sales Order dibatalkan',
+            'metadata' => json_encode([
+                'cancelled_by' => auth()->id(),
+                'cancelled_at' => now(),
+            ]),
+        ], $id);
+
+        return response()->json(['success' => true, 'message' => 'Sales Order berhasil dibatalkan.']);
+    }
+
     public function edit($id)
     {
         // Permission check

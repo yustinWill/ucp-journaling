@@ -51,11 +51,17 @@
                             $hasAnyDelivery = isset($salesDeliveries) && count($salesDeliveries) > 0;
                             $hasAnyInvoice = isset($salesInvoices) && count($salesInvoices) > 0;
                         @endphp
-                        @if ($canEdit && !$hasAnyDelivery && !$hasAnyInvoice)
+                        @if ($canEdit && !$hasAnyDelivery && !$hasAnyInvoice && $salesOrder['status'] !== 'CANCELLED')
                             <a href="{{ route('main_transaction.sales_order.edit', $salesOrder['id']) }}"
                                 class="btn btn-success btn-sm waves-effect waves-light text-nowrap">
                                 <i class="icon-base ti tabler-edit me-1"></i>Edit
                             </a>
+                        @endif
+                        @if ($canEdit && !$hasAnyDelivery && !$hasAnyInvoice && $salesOrder['status'] !== 'CANCELLED')
+                            <button type="button" class="btn btn-danger btn-sm waves-effect waves-light text-nowrap"
+                                onclick="cancelSalesOrder({{ $salesOrder['id'] }})">
+                                <i class="icon-base ti tabler-x me-1"></i>Cancel
+                            </button>
                         @endif
                     </div>
                 </div>
@@ -1328,5 +1334,31 @@
             "positionClass": "toast-top-right",
             "timeOut": "3000"
         };
+
+        function cancelSalesOrder(id) {
+            if (!confirm('Apakah Anda yakin ingin membatalkan Sales Order ini?')) {
+                return;
+            }
+
+            $.ajax({
+                url: `/main_transaction/sales_order/cancel/${id}`,
+                type: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    const msg = xhr.responseJSON?.message || 'Terjadi kesalahan saat membatalkan Sales Order';
+                    toastr.error(msg);
+                }
+            });
+        }
     </script>
 @endsection
