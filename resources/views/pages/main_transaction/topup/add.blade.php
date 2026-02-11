@@ -56,7 +56,7 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <small class="text-muted d-block">Total Original Amount</small>
+                                    <small class="text-muted d-block">Lifetime Outstanding Amount</small>
                                     <h5 class="mb-0" id="summaryTotalOriginal">Rp 0</h5>
                                 </div>
                             </div>
@@ -69,7 +69,7 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <small class="text-muted d-block">Total Remaining Amount</small>
+                                    <small class="text-muted d-block">Lifetime Remaining Amount</small>
                                     <h5 class="mb-0 text-danger" id="summaryTotalRemaining">Rp 0</h5>
                                 </div>
                             </div>
