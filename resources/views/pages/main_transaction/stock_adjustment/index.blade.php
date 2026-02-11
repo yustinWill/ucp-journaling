@@ -144,7 +144,6 @@
                                     <th>Gudang</th>
                                     <th>Tag</th>
                                     <th>Total Item</th>
-                                    <th>Total Qty</th>
                                     <th>PIC</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -426,20 +425,8 @@
                             }
                         },
                         {
-                            data: 'total_adjustment_qty',
-                            responsivePriority: 8,
-                            render: function(data, type, row, meta) {
-                                if (data > 0) {
-                                    return `<span class="text-success">+${data.toLocaleString('id-ID')}</span>`;
-                                } else if (data < 0) {
-                                    return `<span class="text-danger">${data.toLocaleString('id-ID')}</span>`;
-                                }
-                                return `<span class="text-muted">${data}</span>`;
-                            }
-                        },
-                        {
                             data: 'pic_name',
-                            responsivePriority: 9
+                            responsivePriority: 8
                         },
                         {
                             data: null,
