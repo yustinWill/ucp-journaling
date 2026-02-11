@@ -30,6 +30,55 @@
     <form id="topupForm" method="POST">
         @csrf
 
+        <!-- Summary Section -->
+        <div id="outstandingSummary" style="display: none;">
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-primary">
+                                        <i class="icon-base ti tabler-file-invoice icon-24px"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Total SO Outstanding</small>
+                                    <h5 class="mb-0" id="summaryTotalSO">0 SO</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-warning">
+                                        <i class="icon-base ti tabler-currency-dollar icon-24px"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Total Original Amount</small>
+                                    <h5 class="mb-0" id="summaryTotalOriginal">Rp 0</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar me-3">
+                                    <span class="avatar-initial rounded bg-label-danger">
+                                        <i class="icon-base ti tabler-alert-circle icon-24px"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block">Total Remaining Amount</small>
+                                    <h5 class="mb-0 text-danger" id="summaryTotalRemaining">Rp 0</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Section 1: Input Data Top Up -->
         <div class="card mb-4">
             <div class="card-header">
@@ -218,6 +267,7 @@
                             </td>
                         </tr>
                     `);
+                    $('#outstandingSummary').hide();
                     $('#allocationSection').hide();
                     $('#submitBtn').prop('disabled', true);
                     return;
@@ -246,6 +296,7 @@
                                     </td>
                                 </tr>
                             `);
+                            $('#outstandingSummary').hide();
                             currentOutstanding = [];
                         }
                         calculateAllocation();
@@ -264,9 +315,15 @@
             // Render outstanding table
             function renderOutstandingTable(data) {
                 let html = '';
+                let totalOriginal = 0;
+                let totalRemaining = 0;
+
                 data.forEach((item, index) => {
                     const statusClass = item.remaining_amount == item.total_amount ? 'danger' : 'warning';
                     const statusText = item.remaining_amount == item.total_amount ? 'OPEN' : 'PARTIAL';
+
+                    totalOriginal += parseFloat(item.total_amount);
+                    totalRemaining += parseFloat(item.remaining_amount);
 
                     html += `
                         <tr>
@@ -283,6 +340,12 @@
                     `;
                 });
                 $('#outstandingTable').html(html);
+
+                // Update summary
+                $('#summaryTotalSO').text(data.length + ' SO');
+                $('#summaryTotalOriginal').text('Rp ' + formatNumber(totalOriginal));
+                $('#summaryTotalRemaining').text('Rp ' + formatNumber(totalRemaining));
+                $('#outstandingSummary').show();
             }
 
             // Calculate FIFO allocation
@@ -459,6 +522,7 @@
                         $('#topupForm')[0].reset();
                         $('#entity_type').val('');
                         $('#topup_amount').val('');
+                        $('#outstandingSummary').hide();
                         $('#allocationSection').hide();
                         $('#submitBtn').prop('disabled', true);
                         loadOutstanding();
