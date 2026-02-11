@@ -223,11 +223,11 @@
                         <div class="row g-4 mb-4">
                             <div class="col-md-8">
                                 {{-- <h6 class="text-primary mb-2">Cycle Q1 2025</h6> --}}
-                                <h4 class="mb-1">{{ $current_cycle->cycle_name }}</h4>
+                                {{-- <h4 class="mb-1">{{ $current_cycle->cycle_name }}</h4>
                                 <p class="text-muted mb-3">{{ $current_cycle->description }}</p>
-                                
+                                 --}}
                                 <!-- Cycle Progress Indicators -->
-                                <div class="row g-3">
+                                {{-- <div class="row g-3">
                                     <div class="col-md-4">
                                         <div class="d-flex align-items-center">
                                             <div class="avatar avatar-sm me-3">
@@ -271,13 +271,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4"> --}}
                                 <!-- Komponen Keuntungan Summary -->
-                                <div class="border rounded p-3">
-                                    <h6 class="text-center mb-3">Komponen Keuntungan</h6>
+                                {{-- <div class="border rounded p-3">
+                                    <h6 class="text-center mb-3">Komponen Keuntungan</h6> --}}
                                     
                                     <!-- Pabrik -->
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                    {{-- <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div class="d-flex align-items-center">
                                             <div class="badge bg-label-primary me-2">P</div>
                                             <small>Pabrik</small>
@@ -304,10 +304,10 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <!-- Breakdown Cards -->
-                        <div class="row g-3">
+                        {{-- <div class="row g-3">
                             <div class="col-lg-4">
                                 <div class="card bg-primary text-white">
                                     <div class="card-body text-center">
@@ -353,8 +353,8 @@
                     @endif
                 </div>
             </div>
-        </div>
-    </div> --}}
+        </div> --}}
+    {{-- </div> --}}
 
     <!-- Bottom Row -->
     {{-- <div class="row mt-6">
