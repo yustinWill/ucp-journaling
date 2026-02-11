@@ -339,7 +339,7 @@
                                         <option value="DELIVERED">DELIVERED</option>
                                     </select>
                                 </div> --}}
-                            </div> --}}
+                            {{-- </div> --}}
 
                             <!-- Sales Orders Table -->
                             <div class="table-responsive">
