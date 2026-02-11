@@ -63,7 +63,8 @@ class PackingController extends Controller
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
             ->where('p.company_code', $companyCode)
-            ->where('p.is_packaging', true);
+            ->where('p.is_packaging', true)
+            ->where('pkg.transaction_number', 'LIKE', 'PACK-%');
 
         if ($date = $request->input('date')) {
             if (strpos($date, ' - ') !== false) {
@@ -98,6 +99,7 @@ class PackingController extends Controller
             ->join('t_productions', 't_packaging.production_id', '=', 't_productions.id')
             ->where('t_productions.company_code', $companyCode)
             ->where('t_productions.is_packaging', true)
+            ->where('t_packaging.transaction_number', 'LIKE', 'PACK-%')
             ->distinct()
             ->count('t_packaging.transaction_number');
 
