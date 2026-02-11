@@ -330,7 +330,7 @@
                                         <option value="no_invoice">Belum Ada Invoice</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
+                                {{-- <div class="col-md-4">
                                     <label class="form-label">Filter Status SO</label>
                                     <select class="form-select" id="statusFilter">
                                         <option value="">Semua Status SO</option>
@@ -338,7 +338,7 @@
                                         <option value="CONFIRMED">CONFIRMED</option>
                                         <option value="DELIVERED">DELIVERED</option>
                                     </select>
-                                </div>
+                                </div> --}}
                             </div>
 
                             <!-- Sales Orders Table -->
@@ -352,7 +352,7 @@
                                             <th>PRODUK</th>
                                             <th class="text-end">TOTAL PENJUALAN</th>
                                             {{-- <th class="text-end">KEUNTUNGAN</th> --}}
-                                            <th>STATUS SO</th>
+                                            {{-- <th>STATUS SO</th> --}}
                                             <th>STATUS REVENUE</th>
                                         </tr>
                                     </thead>
@@ -407,7 +407,7 @@
                                                         <br><small
                                                             class="text-muted">{{ number_format($so['profit_margin'], 1) }}%</small>
                                                     </td> --}}
-                                                    <td>
+                                                    {{-- <td>
                                                         @php
                                                             $badgeClass =
                                                                 $so['status'] === 'DELIVERED'
@@ -418,7 +418,7 @@
                                                         @endphp
                                                         <span
                                                             class="badge {{ $badgeClass }}">{{ $so['status'] }}</span>
-                                                    </td>
+                                                    </td> --}}
                                                     <td>
                                                         <span
                                                             class="badge {{ $revenueStatusClass }}">{{ $revenueStatusLabel }}</span>
