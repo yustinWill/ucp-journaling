@@ -370,14 +370,12 @@ class SalesOrderController extends Controller
             ]);
 
         // Create audit log
-        app(SalesOrderAuditLogService::class)->create([
-            'action_type' => 'CANCEL',
-            'description' => 'Sales Order dibatalkan',
-            'metadata' => json_encode([
-                'cancelled_by' => auth()->id(),
-                'cancelled_at' => now(),
-            ]),
-        ], $id);
+        app(SalesOrderAuditLogService::class)->create(
+            $id,
+            'CANCEL',
+            ['cancelled_by' => auth()->id(), 'cancelled_at' => now()->toDateTimeString()],
+            'Sales Order dibatalkan'
+        );
 
         return response()->json(['success' => true, 'message' => 'Sales Order berhasil dibatalkan.']);
     }

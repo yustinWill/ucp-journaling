@@ -16,11 +16,13 @@
                 </span>
             @endif
         </div>
-        <div>
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshRevenueSplit()">
-                <i class="icon-base ti tabler-refresh"></i>
-            </button>
-        </div>
+        @if(empty($readonly))
+            <div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshRevenueSplit()">
+                    <i class="icon-base ti tabler-refresh"></i>
+                </button>
+            </div>
+        @endif
     </div>
 
     <!-- Summary Section -->
@@ -129,7 +131,9 @@
                         <th class="text-end">Porsi Owner</th>
                         <th class="text-end">Porsi Perusahaan</th>
                         <th>Status</th>
-                        <th>Aksi</th>
+                        @if(empty($readonly))
+                            <th>Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -212,30 +216,32 @@
                                     @endif
                                 @endif
                             </td>
-                            <td>
-                                <div class="dropdown">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                        data-bs-toggle="dropdown">
-                                        <i class="icon-base ti tabler-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a class="dropdown-item" href="javascript:void(0)"
-                                                onclick="editRevenueSplit({{ $split->f_product_id }}, '{{ $split->product_name }}', {{ json_encode($split) }})">
-                                                <i class="icon-base ti tabler-edit me-2"></i>Edit Split
-                                            </a>
-                                        </li>
-                                        @if($split->is_custom_split)
+                            @if(empty($readonly))
+                                <td>
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <i class="icon-base ti tabler-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
                                             <li>
                                                 <a class="dropdown-item" href="javascript:void(0)"
-                                                    onclick="resetRevenueSplit({{ $split->f_product_id }}, '{{ $split->product_name }}')">
-                                                    <i class="icon-base ti tabler-refresh me-2"></i>Reset to Default
+                                                    onclick="editRevenueSplit({{ $split->f_product_id }}, '{{ $split->product_name }}', {{ json_encode($split) }})">
+                                                    <i class="icon-base ti tabler-edit me-2"></i>Edit Split
                                                 </a>
                                             </li>
-                                        @endif
-                                    </ul>
-                                </div>
-                            </td>
+                                            @if($split->is_custom_split)
+                                                <li>
+                                                    <a class="dropdown-item" href="javascript:void(0)"
+                                                        onclick="resetRevenueSplit({{ $split->f_product_id }}, '{{ $split->product_name }}')">
+                                                        <i class="icon-base ti tabler-refresh me-2"></i>Reset to Default
+                                                    </a>
+                                                </li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>
@@ -280,42 +286,51 @@
     </div>
 
 @else
-    <!-- Empty State with Add Form -->
-    <div id="emptyStateContainer">
+    @if(!empty($readonly))
         <div class="text-center py-4">
             <i class="icon-base ti tabler-percentage icon-48px text-muted mb-3"></i>
             <h6 class="text-muted">Belum Ada Revenue Split</h6>
-            <p class="text-muted mb-3">Klik tombol di bawah untuk menambahkan revenue split.</p>
-            <button type="button" class="btn btn-primary" onclick="showAddRevenueSplitForm()">
-                <i class="icon-base ti tabler-plus me-2"></i>Tambah Revenue Split
-            </button>
+            <p class="text-muted mb-3">Revenue split belum dikonfigurasi. Silakan atur melalui halaman detail Sales Order.</p>
         </div>
-    </div>
-
-    <!-- Add Revenue Split Form (Hidden by default) -->
-    <div id="addRevenueSplitFormContainer" style="display: none;">
-        <div class="alert alert-info">
-            <i class="icon-base ti tabler-info-circle me-2"></i>
-            <strong>Petunjuk:</strong> Masukkan porsi revenue untuk setiap produk. Total porsi harus sama dengan total harga produk.
-        </div>
-
-        <form id="addRevenueSplitForm">
-            <div id="productSplitsList">
-                <!-- Products will be loaded here dynamically -->
-            </div>
-
-            <div class="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" class="btn btn-secondary" onclick="hideAddRevenueSplitForm()">
-                    <i class="icon-base ti tabler-x me-2"></i>Batal
-                </button>
-                <button type="submit" class="btn btn-success">
-                    <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan Semua
+    @else
+        <!-- Empty State with Add Form -->
+        <div id="emptyStateContainer">
+            <div class="text-center py-4">
+                <i class="icon-base ti tabler-percentage icon-48px text-muted mb-3"></i>
+                <h6 class="text-muted">Belum Ada Revenue Split</h6>
+                <p class="text-muted mb-3">Klik tombol di bawah untuk menambahkan revenue split.</p>
+                <button type="button" class="btn btn-primary" onclick="showAddRevenueSplitForm()">
+                    <i class="icon-base ti tabler-plus me-2"></i>Tambah Revenue Split
                 </button>
             </div>
-        </form>
-    </div>
+        </div>
+
+        <!-- Add Revenue Split Form (Hidden by default) -->
+        <div id="addRevenueSplitFormContainer" style="display: none;">
+            <div class="alert alert-info">
+                <i class="icon-base ti tabler-info-circle me-2"></i>
+                <strong>Petunjuk:</strong> Masukkan porsi revenue untuk setiap produk. Total porsi harus sama dengan total harga produk.
+            </div>
+
+            <form id="addRevenueSplitForm">
+                <div id="productSplitsList">
+                    <!-- Products will be loaded here dynamically -->
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-secondary" onclick="hideAddRevenueSplitForm()">
+                        <i class="icon-base ti tabler-x me-2"></i>Batal
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="icon-base ti tabler-device-floppy me-2"></i>Simpan Semua
+                    </button>
+                </div>
+            </form>
+        </div>
+    @endif
 @endif
 
+@if(empty($readonly))
 <!-- Edit Revenue Split Modal -->
 <div class="modal fade" id="editRevenueSplitModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -348,7 +363,7 @@
                             <input type="text" class="form-control" id="editOriginalQtyDisplay" readonly>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Qty Retur</label>
+                            <label class="form-label">Qty Anulir</label>
                             <input type="number" class="form-control" id="editReturnQty" min="0" value="0">
                         </div>
                         <div class="col-md-3">
@@ -441,3 +456,4 @@
         </div>
     </div>
 </div>
+@endif

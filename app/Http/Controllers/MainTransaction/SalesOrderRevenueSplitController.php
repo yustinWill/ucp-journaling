@@ -94,16 +94,18 @@ class SalesOrderRevenueSplitController extends Controller
     /**
      * Get revenue split breakdown view for sales order
      */
-    public function showRevenueSplitBreakdown($salesOrderId)
+    public function showRevenueSplitBreakdown(Request $request, $salesOrderId)
     {
         try {
             $splits = $this->revenueSplitService->getRevenueSplitsForSalesOrder($salesOrderId);
             $summary = $this->revenueSplitService->getRevenueSplitSummary($salesOrderId);
+            $readonly = $request->boolean('readonly', false);
 
             $html = view('pages.main_transaction.sales_order.revenue_split_breakdown', [
                 'splits' => $splits,
                 'summary' => $summary,
-                'salesOrderId' => $salesOrderId
+                'salesOrderId' => $salesOrderId,
+                'readonly' => $readonly
             ])->render();
 
             return response()->json([

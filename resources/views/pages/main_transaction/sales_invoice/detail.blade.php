@@ -642,7 +642,7 @@
 
             function loadExistingBreakdown(salesOrderId) {
                 $.ajax({
-                    url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/breakdown`,
+                    url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/breakdown?readonly=1`,
                     method: 'GET',
                     success: function(response) {
                         if (response.success && response.html) {
