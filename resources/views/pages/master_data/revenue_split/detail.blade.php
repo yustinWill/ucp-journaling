@@ -315,7 +315,7 @@
                         <!-- Sales Orders Tab -->
                         <div class="tab-pane fade" id="horizontal-sales-orders" role="tabpanel">
                             <!-- Filter Controls -->
-                            <div class="row g-3 mb-4">
+                            {{-- <div class="row g-3 mb-4">
                                 <div class="col-md-4">
                                     <label class="form-label">Cari Sales Order</label>
                                     <input type="text" class="form-control" id="searchSalesOrder"
@@ -339,7 +339,7 @@
                                         <option value="DELIVERED">DELIVERED</option>
                                     </select>
                                 </div> --}}
-                            </div>
+                            </div> --}}
 
                             <!-- Sales Orders Table -->
                             <div class="table-responsive">
