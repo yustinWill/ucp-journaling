@@ -39,7 +39,7 @@
             </div>
             <div class="card-body">
                 <div class="row g-3 mb-3">
-                    <div class="col-md-6">
+                    {{-- <div class="col-md-6">
                         <label class="form-label required">Entity</label>
                         <select class="form-select" id="entity_type" name="entity_type" required>
                             <option value="">Pilih Entity</option>
@@ -49,7 +49,7 @@
                         <div class="form-text">
                             <i class="icon-base ti tabler-info-circle-filled me-1"></i> Entity yang akan melakukan pembayaran
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="col-md-6">
                         <label class="form-label required">Top Up Date</label>
                         <input type="date" class="form-control" id="topup_date" name="topup_date"
