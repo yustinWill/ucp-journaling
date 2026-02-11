@@ -4,7 +4,7 @@
 @stop
 @section('content')
     <!-- Financial Summary Cards -->
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-lg-3 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
@@ -93,10 +93,10 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Main Content Row -->
-    <div class="row mt-6">
+    {{-- <div class="row mt-6">
         <!-- Recent Transactions -->
         <div class="col-lg-8 col-md-12">
             <div class="card h-100">
@@ -204,10 +204,10 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Dashboard Keuntungan Penjualan Section -->
-    <div class="row mt-6">
+    {{-- <div class="row mt-6">
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -354,10 +354,10 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Bottom Row -->
-    <div class="row mt-6">
+    {{-- <div class="row mt-6">
         <!-- Top Products -->
         <div class="col-lg-6 col-md-12">
             <div class="card h-100">
@@ -432,7 +432,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 @stop
 
 @section('js_script')
