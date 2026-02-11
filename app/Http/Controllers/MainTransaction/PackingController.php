@@ -38,12 +38,14 @@ class PackingController extends Controller
 
     public function index_data_table(Request $request)
     {
-        // Group by transaction_number from t_packaging
+        $companyCode = session('user_company_code');
+
+        // Base query grouped by transaction_number
         $query = DB::table('t_packaging as pkg')
             ->select(
                 'pkg.transaction_number',
                 DB::raw('MIN(p.production_date) as packing_date'),
-                DB::raw('MIN(p.id) as id'), // First production ID for the transaction
+                DB::raw('MIN(p.id) as id'),
                 DB::raw('GROUP_CONCAT(DISTINCT p.production_number ORDER BY p.production_number SEPARATOR ", ") as packing_number'),
                 DB::raw('GROUP_CONCAT(DISTINCT bp.name ORDER BY p.production_number SEPARATOR ", ") as bundle_product_name'),
                 DB::raw('GROUP_CONCAT(DISTINCT bp.code ORDER BY p.production_number SEPARATOR ", ") as bundle_product_code'),
@@ -60,10 +62,10 @@ class PackingController extends Controller
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
-            ->where('p.company_code', session('user_company_code'))
-            ->where('p.is_packaging', true);  // Filter only packing productions
+            ->where('p.company_code', $companyCode)
+            ->where('p.is_packaging', true);
 
-        if ($date = request()->input('date')) {
+        if ($date = $request->input('date')) {
             if (strpos($date, ' - ') !== false) {
                 [$dateFrom, $dateTo] = explode(' - ', $date);
                 $query->whereBetween('p.production_date', [$dateFrom, $dateTo]);
@@ -72,15 +74,15 @@ class PackingController extends Controller
             }
         }
 
-        if ($product_id = request()->input('product')) {
+        if ($product_id = $request->input('product')) {
             $query->where('p.bundle_product_id', $product_id);
         }
 
-        if ($warehouse_id = request()->input('warehouse')) {
+        if ($warehouse_id = $request->input('warehouse')) {
             $query->where('p.warehouse_id', $warehouse_id);
         }
 
-        if ($packing_no = request()->input('packing_no')) {
+        if ($packing_no = $request->input('packing_no')) {
             $query->where(function($q) use ($packing_no) {
                 $q->where('p.production_number', 'like', "%{$packing_no}%")
                   ->orWhere('pkg.transaction_number', 'like', "%{$packing_no}%");
@@ -89,22 +91,30 @@ class PackingController extends Controller
 
         $query->groupBy('pkg.transaction_number');
 
-        $draw = (int) request()->input('draw', 1);
+        $draw = (int) $request->input('draw', 1);
+
+        // recordsTotal: count distinct transaction_numbers (unfiltered)
         $recordsTotal = DB::table('t_packaging')
             ->join('t_productions', 't_packaging.production_id', '=', 't_productions.id')
+            ->where('t_productions.company_code', $companyCode)
             ->where('t_productions.is_packaging', true)
-            ->distinct('t_packaging.transaction_number')
+            ->distinct()
             ->count('t_packaging.transaction_number');
 
+        // recordsFiltered: wrap the grouped query to count the number of groups
         $filteredQuery = clone $query;
+        $recordsFiltered = DB::table(DB::raw("({$filteredQuery->toSql()}) as filtered"))
+            ->mergeBindings($filteredQuery)
+            ->count();
+
+        // Order BEFORE pagination
+        $query->orderBy('packing_date', 'DESC');
+        $query->orderBy('pkg.transaction_number', 'DESC');
 
         // Pagination
-        $start = (int) request()->input('start', 0);
-        $length = (int) request()->input('length', 10);
-        $query->skip($start)->take($length);
-        $recordsFiltered = $filteredQuery->count();
-        $query->orderBy('pkg.transaction_number', 'DESC');
-        $data = $query->get();
+        $start = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        $data = $query->offset($start)->limit($length)->get();
 
         return response()->json([
             'draw' => $draw,
