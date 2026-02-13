@@ -274,7 +274,7 @@
             </div>
 
             <!-- Stock Adjustment Detail (if exists) -->
-            @if($stockAdjustment)
+            {{-- @if($stockAdjustment)
             <div class="section-header mt-12">
                 <h6>
                     <i class="icon-base ti tabler-adjustments me-2"></i>Stock Adjustment
@@ -283,9 +283,9 @@
                     </span>
                 </h6>
                 <hr class="mx-n6">
-            </div>
+            </div> --}}
 
-            <div class="row g-3 mb-4">
+            {{-- <div class="row g-3 mb-4">
                 <div class="col-md-3">
                     <label class="form-label">Adjustment Number</label>
                     <input type="text" class="form-control" value="{{ $stockAdjustment->reference_number }}" disabled />
@@ -310,7 +310,7 @@
                         disabled />
                 </div>
             </div>
-            @endif
+            @endif --}}
 
             <!-- Action Buttons -->
             <div class="pt-6 text-end">

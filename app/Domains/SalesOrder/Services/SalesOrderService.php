@@ -94,7 +94,17 @@ class SalesOrderService
                 'so.*',
                 'mc.name AS customer_name',
                 'u.name AS created_by_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('code', m_tags.code, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("(SELECT GROUP_CONCAT(DISTINCT si.status ORDER BY si.status SEPARATOR ', ')
+                          FROM t_sales_invoices si
+                          WHERE si.f_sales_order_id = so.id) as si_statuses"),
+                DB::raw("(SELECT GROUP_CONCAT(DISTINCT sd.status ORDER BY sd.status SEPARATOR ', ')
+                          FROM t_sales_deliveries sd
+                          WHERE sd.sales_order_id = so.id) as sd_statuses"),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) as si_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) as sd_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) as si_settled_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') as sd_confirmed_count")
             )
             ->leftJoin('m_contacts as mc', 'mc.id', '=', 'so.f_customer_id')
             ->leftJoin('users as u', 'so.created_by', '=', 'u.id')

@@ -53,6 +53,8 @@ class SalesOrderRevenueSplitController extends Controller
                 'porsi_pabrik' => 'required|numeric|min:0',
                 'remaining_allocation' => 'required|in:perusahaan,owner,pabrik',
                 'product_total_amount' => 'required|numeric|min:0',
+                'return_qty' => 'nullable|numeric|min:0',
+                'effective_qty' => 'nullable|numeric|min:0',
                 'split_notes' => 'nullable|string|max:1000'
             ]);
 
@@ -66,10 +68,12 @@ class SalesOrderRevenueSplitController extends Controller
 
             $splitData = $request->only([
                 'porsi_perusahaan',
-                'porsi_owner', 
+                'porsi_owner',
                 'porsi_pabrik',
                 'remaining_allocation',
                 'product_total_amount',
+                'return_qty',
+                'effective_qty',
                 'split_notes'
             ]);
 
@@ -90,16 +94,18 @@ class SalesOrderRevenueSplitController extends Controller
     /**
      * Get revenue split breakdown view for sales order
      */
-    public function showRevenueSplitBreakdown($salesOrderId)
+    public function showRevenueSplitBreakdown(Request $request, $salesOrderId)
     {
         try {
             $splits = $this->revenueSplitService->getRevenueSplitsForSalesOrder($salesOrderId);
             $summary = $this->revenueSplitService->getRevenueSplitSummary($salesOrderId);
+            $readonly = $request->boolean('readonly', false);
 
             $html = view('pages.main_transaction.sales_order.revenue_split_breakdown', [
                 'splits' => $splits,
                 'summary' => $summary,
-                'salesOrderId' => $salesOrderId
+                'salesOrderId' => $salesOrderId,
+                'readonly' => $readonly
             ])->render();
 
             return response()->json([

@@ -278,7 +278,7 @@
             $('#so_reference_no').val(soData.reference_no);
             $('#customer_name').val(soData.customer);
             $('#so_status').val('Approved');
-            $('#so_date').val(formatDate(new Date()));
+            $('#so_date').val(soData.transaction_date);
             $('#so_total').val(formatRupiah(soData.total));
             $('#so_payment_terms').val(soData.payment_terms);
 

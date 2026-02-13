@@ -80,8 +80,8 @@ class ConfirmSalesDeliveryAction
                     $salesDelivery->delivery_date ?? now()
                 );
 
-                // Update product stock (decrease) - use base unit quantity
-                app(ProductService::class)->updateStock($productId, '-', $deliveryQtyInBaseUnit);
+                // Recalculate product total_stock from movement logs
+                app(ProductService::class)->updateStock($productId);
 
                 // Update delivered quantities in sales order - use original quantity (in sales unit)
                 if ($salesDelivery->sales_order_id && $product->sales_order_product_id) {

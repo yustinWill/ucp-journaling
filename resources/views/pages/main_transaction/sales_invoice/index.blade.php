@@ -88,9 +88,9 @@
                             <th>Customer</th>
                             <th>Referensi SO</th>
                             <th>Grand Total</th>
-                            <th>Tgl Jatuh Tempo</th>
-                            {{-- <th>Status</th> --}}
-                            <th>Diinput Oleh</th>
+                            {{-- <th>Tgl Jatuh Tempo</th> --}}
+                            <th>Status</th>
+                            {{-- <th>Diinput Oleh</th> --}}
                             <th>Tag</th>
                             <th>Aksi</th>
                         </tr>
@@ -175,45 +175,25 @@
                             }
                         },
                         {
-                            data: 'due_date',
-                        },
-                        // {
-                        //     data: 'status',
-                        //     render: function(data, type, row) {
-                        //         let badgeClass = 'bg-label-secondary';
-                        //         switch (data) {
-                        //             case 'DRAFT':
-                        //                 badgeClass = 'bg-label-secondary';
-                        //                 break;
-                        //             case 'UNPAID':
-                        //                 badgeClass = 'bg-label-warning';
-                        //                 break;
-                        //             case 'PAID':
-                        //                 badgeClass = 'bg-label-success';
-                        //                 break;
-                        //             case 'PARTIAL_PAID':
-                        //                 badgeClass = 'bg-label-info';
-                        //                 break;
-                        //             case 'OVERDUE':
-                        //                 badgeClass = 'bg-label-danger';
-                        //                 break;
-                        //             case 'CANCELLED':
-                        //                 badgeClass = 'bg-label-dark';
-                        //                 break;
-                        //         }
-                        //         return `<span class="badge ${badgeClass}">${data}</span>`;
-                        //     }
-                        // },
-                        {
-                            data: 'created_by_name',
+                            data: 'status',
                             render: function(data, type, row) {
-                                if (canViewUser && row.created_by) {
-                                    const detailUrl =
-                                        `{{ route('master_data.user.detail', ':id') }}`
-                                        .replace(':id', row.created_by);
-                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                let badgeClass = 'bg-label-secondary';
+                                let statusText = data;
+
+                                switch (data) {
+                                    case 'PAID':
+                                        badgeClass = 'bg-label-success';
+                                        statusText = 'Settled';
+                                        break;
+                                    case 'UNPAID':
+                                    case 'DRAFT':
+                                    case 'PARTIAL_PAID':
+                                    default:
+                                        badgeClass = 'bg-label-warning';
+                                        statusText = 'Not Yet Settled';
+                                        break;
                                 }
-                                return data;
+                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         },
                         {
@@ -292,7 +272,7 @@
 
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = salesInvoiceTable.column(7); // Tag column index (0-based)
+                const tagColumn = salesInvoiceTable.column(6); // Tag column index (0-based)
                 tagColumn.visible(this.checked);
             });
 

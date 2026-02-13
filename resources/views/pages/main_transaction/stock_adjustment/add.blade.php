@@ -89,8 +89,7 @@
                     <label class="form-label">Penanggung Jawab <span style="color: red;">*</span></label>
                     <div class="row g-2">
                         <div class="col">
-                            <select class="global-select2 form-select" id="pic-select"
-                                @if (isset($header_data['form_type'])) disabled @endif data-allow-clear="false">
+                            <select class="global-select2 form-select" id="pic-select" data-allow-clear="false">
                                 <option value="">Pilih PIC</option>
                                 @foreach ($picOptions as $pic)
                                     <option value="{{ $pic['value'] }}" @if (isset($header_data['pic']) && $header_data['pic'] === $pic['value']) selected @endif>

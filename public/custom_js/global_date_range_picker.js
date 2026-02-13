@@ -3,10 +3,12 @@
 $(function () {
     var bsRangePickerBasic = $('#date-range-picker');
 
-    // Basic
+    // Basic - default to last 30 days
     if (bsRangePickerBasic.length) {
         bsRangePickerBasic.daterangepicker({
             opens: isRtl ? 'left' : 'right',
+            startDate: moment().subtract(30, 'days'),
+            endDate: moment(),
             locale: {
                 format: 'YYYY-MM-DD'
             }

@@ -142,7 +142,7 @@
                                     {{ $budget->budged_name }}
                                 </h5>
                                 <small class="text-muted">
-                                    <span class="badge bg-label-info">{{ count($budget->expenses) }} Transaksi</span>
+                                    <span class="badge bg-label-info">{{ count($budget->expenses) + count($budget->reimbursements) }} Transaksi</span>
                                 </small>
                             </div>
                             @php
@@ -187,7 +187,11 @@
                         </div>
                     </div>
 
+                    <!-- Expense Table -->
                     @if(count($budget->expenses) > 0)
+                        <div class="card-header bg-light py-2">
+                            <h6 class="mb-0"><i class="icon-base ti tabler-receipt me-1"></i> Expense</h6>
+                        </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover mb-0">
@@ -247,7 +251,7 @@
                                     </tbody>
                                     <tfoot class="table-light">
                                         <tr>
-                                            <th colspan="6" class="text-end">Total Pengeluaran:</th>
+                                            <th colspan="6" class="text-end">Total Expense:</th>
                                             <th class="text-end">
                                                 <strong class="text-danger">Rp {{ number_format($budget->expenses->sum('total_amount'), 0, ',', '.') }}</strong>
                                             </th>
@@ -256,7 +260,61 @@
                                 </table>
                             </div>
                         </div>
-                    @else
+                    @endif
+
+                    <!-- Reimbursement Table -->
+                    @if(count($budget->reimbursements) > 0)
+                        <div class="card-header bg-light py-2">
+                            <h6 class="mb-0"><i class="icon-base ti tabler-receipt-refund me-1"></i> Reimbursement</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="15%">Kode Transaksi</th>
+                                            <th width="15%">Tanggal</th>
+                                            <th width="20%">Nama Reimbursement</th>
+                                            <th width="15%">Diajukan Oleh</th>
+                                            <th width="20%">Deskripsi</th>
+                                            <th width="15%" class="text-end">Jumlah</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($budget->reimbursements as $reimbursement)
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ route('main_transaction.reimbursement_approval.detail', $reimbursement->id) }}"
+                                                        class="text-primary fw-semibold">
+                                                        {{ $reimbursement->transaction_code }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ \Carbon\Carbon::parse($reimbursement->created_at)->format('d/m/Y') }}</td>
+                                                <td>{{ $reimbursement->reimbursement_name }}</td>
+                                                <td>{{ $reimbursement->creator_name ?? '-' }}</td>
+                                                <td>
+                                                    <small>{{ $reimbursement->description ? \Illuminate\Support\Str::limit($reimbursement->description, 50) : '-' }}</small>
+                                                </td>
+                                                <td class="text-end">
+                                                    <strong>Rp {{ number_format($reimbursement->amount, 0, ',', '.') }}</strong>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th colspan="5" class="text-end">Total Reimbursement:</th>
+                                            <th class="text-end">
+                                                <strong class="text-danger">Rp {{ number_format($budget->reimbursements->sum('amount'), 0, ',', '.') }}</strong>
+                                            </th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if(count($budget->expenses) == 0 && count($budget->reimbursements) == 0)
                         <div class="card-body">
                             <div class="text-center py-4">
                                 <i class="icon-base ti tabler-inbox text-muted" style="font-size: 3rem;"></i>

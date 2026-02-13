@@ -199,6 +199,15 @@ class SalesInvoiceController extends Controller
         // Get return data for this invoice (one invoice can only have one return)
         $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'SALES_RETURN');
 
+        // Check if Sales Delivery is complete (DELIVERED status)
+        $hasCompletedDelivery = false;
+        if ($invoice_data->f_sales_order_id) {
+            $hasCompletedDelivery = DB::table('t_sales_deliveries')
+                ->where('sales_order_id', $invoice_data->f_sales_order_id)
+                ->where('status', 'DELIVERED')
+                ->exists();
+        }
+
         // Get tax options for discount/tax calculations (for potential edits)
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
@@ -213,6 +222,7 @@ class SalesInvoiceController extends Controller
             'invoice_products' => $invoice_products,
             'auditLogs' => $auditLogs,
             'returnData' => $returnData,
+            'hasCompletedDelivery' => $hasCompletedDelivery,
             // 'taxOptions' => $taxOptions,
             'canEditSalesInvoice' => $canEditSalesInvoice,
             'canViewUser' => $canViewUser,

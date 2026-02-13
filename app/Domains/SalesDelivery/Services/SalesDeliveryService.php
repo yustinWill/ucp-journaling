@@ -146,6 +146,7 @@ class SalesDeliveryService
                 'sd.delivery_number',
                 'sd.delivery_date',
                 'sd.status',
+                'sd.shipping_cost',
                 'sd.is_confirmed',
                 'sd.created_at',
                 'sd.created_by',

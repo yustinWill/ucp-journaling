@@ -49,6 +49,13 @@ class UpdateStockAdjustmentAction
                 $this->processStockAdjustments($id, $data['products'], $data);
                 $this->updateAdjustmentItems($id, $data['products']);
                 $this->updateStockMovementLogs($id, $data['products'], $data, $originalData);
+
+                // Recalculate total_stock from movement logs for all affected products
+                foreach ($data['products'] as $product) {
+                    if ($product['adjustment_qty'] != 0) {
+                        app(ProductService::class)->updateStock($product['product_id']);
+                    }
+                }
             }
 
             // Create audit log
@@ -201,12 +208,10 @@ class UpdateStockAdjustmentAction
                 $previousQty = $item->adjustment_qty;
 
                 if ($previousQty > 0) {
-                    // Previous was positive - now reverse by decreasing stock and consuming batches
-                    app(ProductService::class)->updateStock($productId, '-', $previousQty);
+                    // Previous was positive - now reverse by consuming batches
                     $this->consumeStockBatches($productId, $previousQty, $stockAdjustmentId);
                 } else {
-                    // Previous was negative - now reverse by increasing stock and creating batch
-                    app(ProductService::class)->updateStock($productId, '+', abs($previousQty));
+                    // Previous was negative - now reverse by creating batch
                     $this->createReversalBatch($stockAdjustmentId, $item);
                 }
             }
@@ -221,12 +226,10 @@ class UpdateStockAdjustmentAction
                 $adjustmentQty = $product['adjustment_qty'];
 
                 if ($adjustmentQty > 0) {
-                    // Positive adjustment - increase stock and create new batch
-                    app(ProductService::class)->updateStock($productId, '+', $adjustmentQty);
+                    // Positive adjustment - create new batch
                     $this->createAdjustmentBatch($stockAdjustmentId, $product, $mainData);
                 } else {
-                    // Negative adjustment - decrease stock and consume batches (FIFO)
-                    app(ProductService::class)->updateStock($productId, '-', abs($adjustmentQty));
+                    // Negative adjustment - consume batches (FIFO)
                     $this->consumeStockBatches($productId, abs($adjustmentQty), $stockAdjustmentId);
                 }
             }

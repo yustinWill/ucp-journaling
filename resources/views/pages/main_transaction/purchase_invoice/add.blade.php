@@ -188,6 +188,7 @@
                                                 $remainingQty = $product->remaining_qty_for_invoice ?? $product->qty;
                                                 if ($remainingQty == floor($remainingQty)) {
                                                     $formattedRemainingQty = number_format($remainingQty, 0, ',', '.');
+                                                    $formatted = number_format($remainingQty, 0, ',', '.');
                                                 } else {
                                                     $formatted = number_format($remainingQty, 4, ',', '.');
                                                     $formattedRemainingQty = rtrim(rtrim($formatted, '0'), ',');
@@ -211,19 +212,14 @@
                                                 value="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
                                             <input type="text"
                                                 data-remaining="{{ $product->remaining_qty_for_invoice ?? $product->qty }}"
-                                                value="0" class="form-control invoice-qty-input numeric-input"
+                                                value="{{ $formatted }}" class="form-control invoice-qty-input numeric-input"
                                                 name="products[{{ $counter }}][invoice_qty]" min="0"
                                                 max="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
                                         </td>
                                         <td>
                                             @php
                                                 $pricePerQty = $product->price_per_qty ?? 0;
-                                                if ($pricePerQty == floor($pricePerQty)) {
-                                                    $formattedPricePerQty = number_format($pricePerQty, 0, ',', '.');
-                                                } else {
-                                                    $formatted = number_format($pricePerQty, 4, ',', '.');
-                                                    $formattedPricePerQty = rtrim(rtrim($formatted, '0'), ',');
-                                                }
+                                                $formattedPricePerQty = 'Rp ' . number_format($pricePerQty, 0, ',', '.');
                                             @endphp
                                             {{ $formattedPricePerQty }}
                                             <input type="hidden" name="products[{{ $counter }}][unit_price]"
@@ -351,6 +347,7 @@
             initCleaveCurrency(document);
             // Initialize the form
             initializeForm();
+            updateInvoiceStatus();
 
             function initializeForm() {
                 // Generate initial invoice number

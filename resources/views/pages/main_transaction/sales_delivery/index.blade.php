@@ -104,7 +104,7 @@
                             <th>No Sales Order</th>
                             <th>Customer</th>
                             <th>Gudang</th>
-                            <th>Diinput Oleh</th>
+                            <th>Ongkir</th>
                             <th>Status</th>
                             <th>Tag</th>
                             <th>Aksi</th>
@@ -207,16 +207,9 @@
                             data: 'warehouse',
                         },
                         {
-                            data: 'created_by',
+                            data: 'shipping_cost',
                             render: function(data, type, row) {
-                                if (!data) return '-';
-                                if (canViewUser && row.created_by_id) {
-                                    const detailUrl =
-                                        "{{ route('master_data.user.detail', ':id') }}"
-                                        .replace(':id', row.created_by_id);
-                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                                }
-                                return data;
+                                return `Rp ${parseInt(data || 0).toLocaleString('id-ID')}`;
                             }
                         },
                         {
