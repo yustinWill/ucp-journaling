@@ -119,7 +119,7 @@ class BudgedController extends Controller
         // $id is now the period_id
         $periodData = app(BudgedService::class)->getPeriodWithBudgetsAndExpenses($id);
         $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
-
+    
         return view('pages.master_data.budged.detail', array_merge(
             compact('periodData'),
             $permissionData

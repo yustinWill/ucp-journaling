@@ -251,7 +251,7 @@ class ExpenseController extends Controller
                 'total_before_discount' => 'required|numeric|min:0.01',
                 'final_total' => 'required|numeric|min:0.01',
                 // 'category_type' => session('user_company_code') === '001' ? 'required|string|in:ANGGARAN,OVERHEAD,LAINNYA' : 'nullable|string',
-                'entity_type' => 'required|string|in:KINGDOM,OWNER,PABRIK',
+                'entity_type' => 'required|string|in:kingdom,owner',
                 // Budget field
                 'budged_history_id' => 'nullable|string|exists:m_budgeds,id', 
 

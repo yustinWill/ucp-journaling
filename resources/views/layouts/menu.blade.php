@@ -142,6 +142,18 @@
                 <div data-i18n="Top Up">Top Up</div>
             </a>
         </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.reimbursement.*'])) active @endif">
+            <a href="{{ route('main_transaction.reimbursement.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-receipt-refund"></i>
+                <div data-i18n="Reimbursement">Reimbursement</div>
+            </a>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.reimbursement_approval.*'])) active @endif">
+            <a href="{{ route('main_transaction.reimbursement_approval.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-circle-check"></i>
+                <div data-i18n="Reimbursement Approval">Reimbursement Approval</div>
+            </a>
+        </li>
 
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Operasional</span>

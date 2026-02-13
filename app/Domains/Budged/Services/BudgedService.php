@@ -244,7 +244,7 @@ class BudgedService
         // Get all budgets for this period
         $budgets = $this->findByPeriodId($periodId);
 
-        // For each budget, get associated expenses
+        // For each budget, get associated expenses and reimbursements
         foreach ($budgets as $budget) {
             $budget->expenses = DB::table('t_budged_expenses as be')
                 ->join('t_expenses as e', 'be.expense_id', '=', 'e.id')
@@ -264,8 +264,23 @@ class BudgedService
                 ])
                 ->orderBy('e.transaction_date', 'DESC')
                 ->get();
-        }
 
+            $budget->reimbursements = DB::table('t_budged_reimbursements as br')
+                ->join('t_reimbursements as r', 'br.reimbursement_id', '=', 'r.id')
+                ->leftJoin('users as u', 'r.created_by', '=', 'u.id')
+                ->where('br.budged_history_id', $budget->id)
+                ->select([
+                    'r.id',
+                    'r.transaction_code',
+                    'r.reimbursement_name',
+                    'r.amount',
+                    'r.description',
+                    'r.created_at',
+                    'u.name as creator_name',
+                ])
+                ->orderBy('r.created_at', 'DESC')
+                ->get();
+        }
         $period->budgets = $budgets;
         return $period;
     }

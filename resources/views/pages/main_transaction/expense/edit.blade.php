@@ -725,7 +725,7 @@
                 formData.append('discount_amount', parseCurrency($('#discount-amount').val()) || 0);
                 formData.append('budged_history_id', $('#budget').val() || '');
                 formData.append('category_type', $('#expense-category').val() || '');
-                formData.append('entity_type', $('#expense-entity').val() || '');
+                formData.append('entity_type', $('#entity-type').val() || '');
 
                 // Tags
                 const tags = $('#expense-tags').val() || [];
