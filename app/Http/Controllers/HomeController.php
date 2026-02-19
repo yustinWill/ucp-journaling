@@ -171,53 +171,66 @@ class HomeController extends Controller
         }
 
         // ============================================================
-        // Section 5: Anggaran (Budget)
+        // Section 5: Anggaran (Budget) - Owner & Kingdom
         // ============================================================
-        $budgetPeriods = DB::table('m_budget_periods')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $budgedService = app(BudgedService::class);
 
-        $budgetOptions = $budgetPeriods->map(function ($p) {
-            $typeLabel = $p->type ? ' - ' . ucfirst($p->type) : '';
-            return [
-                'id' => $p->id,
-                'label' => 'Periode ' . date('d M Y', strtotime($p->period_start_date)) . ' s/d ' . date('d M Y', strtotime($p->period_end_date)) . $typeLabel,
-            ];
-        })->values()->toArray();
+        // Helper to build budget card data for a given type
+        $buildBudgetData = function ($type) use ($req, $budgedService) {
+            $paramKey = 'budget_' . $type . '_id';
+            $periods = DB::table('m_budget_periods')
+                ->where('type', $type)
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-        $selectedBudgetId = $req->input('budget_period_id', $budgetPeriods->first()->id ?? null);
-        $activeBudget = null;
-
-        if ($selectedBudgetId) {
-            $budgedService = app(BudgedService::class);
-            $budgetPeriod = $budgedService->findPeriodById($selectedBudgetId);
-            $budgets = $budgedService->findByPeriodId($selectedBudgetId);
-
-            if ($budgets->isNotEmpty()) {
-                $categories = $budgets->map(function ($b) {
-                    $used = $b->budged_limit_value - $b->budged_remaining_value;
-                    // Get category name
-                    $catName = $b->budged_name;
-                    if ($b->f_budget_category_id) {
-                        $cat = DB::table('m_budget_categories')->where('id', $b->f_budget_category_id)->first();
-                        if ($cat) $catName = $cat->category_name;
-                    }
-                    return (object) [
-                        'name' => $catName,
-                        'limit' => (float) $b->budged_limit_value,
-                        'used' => (float) $used,
-                    ];
-                })->values()->toArray();
-
-                $activeBudget = (object) [
-                    'id' => $budgetPeriod->id,
-                    'type' => $budgetPeriod->type ?? 'kingdom',
-                    'period_start_date' => $budgetPeriod->period_start_date,
-                    'period_end_date' => $budgetPeriod->period_end_date,
-                    'categories' => $categories,
+            $options = $periods->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'label' => date('d M Y', strtotime($p->period_start_date)) . ' s/d ' . date('d M Y', strtotime($p->period_end_date)),
                 ];
+            })->values()->toArray();
+
+            $selectedId = $req->input($paramKey, $periods->first()->id ?? null);
+            $data = null;
+
+            if ($selectedId) {
+                $period = $budgedService->findPeriodById($selectedId);
+                $budgets = $budgedService->findByPeriodId($selectedId);
+
+                if ($budgets->isNotEmpty()) {
+                    $categories = $budgets->map(function ($b) {
+                        $used = $b->budged_limit_value - $b->budged_remaining_value;
+                        $catName = $b->budged_name;
+                        if ($b->f_budget_category_id) {
+                            $cat = DB::table('m_budget_categories')->where('id', $b->f_budget_category_id)->first();
+                            if ($cat) $catName = $cat->category_name;
+                        }
+                        return (object) [
+                            'name' => $catName,
+                            'limit' => (float) $b->budged_limit_value,
+                            'used' => (float) $used,
+                        ];
+                    })->values()->toArray();
+
+                    $data = (object) [
+                        'id' => $period->id,
+                        'type' => $type,
+                        'period_start_date' => $period->period_start_date,
+                        'period_end_date' => $period->period_end_date,
+                        'categories' => $categories,
+                    ];
+                }
             }
-        }
+
+            return [
+                'options' => $options,
+                'selectedId' => $selectedId,
+                'data' => $data,
+            ];
+        };
+
+        $budgetOwner = $buildBudgetData('owner');
+        $budgetKingdom = $buildBudgetData('kingdom');
 
         // ============================================================
         // Section 6: Warehouse Stock
@@ -248,10 +261,10 @@ class HomeController extends Controller
             'dailySales',
             'topupBelumBayar', 'topupTerbayar',
             'revenueSplitOptions', 'activeRevenueSplit',
-            'budgetOptions', 'activeBudget',
+            'budgetOwner', 'budgetKingdom',
             'warehouseOptions', 'warehouseStock',
             'dateFrom', 'dateTo', 'isLifetime',
-            'selectedCycleId', 'selectedBudgetId', 'selectedWarehouseId'
+            'selectedCycleId', 'selectedWarehouseId'
         ));
     }
 
