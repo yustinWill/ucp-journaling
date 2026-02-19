@@ -271,56 +271,108 @@
         </div>
     </div>
 
-    <!-- Section 5: Anggaran (Budget) -->
-    @if($activeBudget)
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
+    <!-- Section 5: Pengeluaran vs Anggaran - Owner & Kingdom -->
+    @if($budgetOwner['data'] || $budgetKingdom['data'])
+    <div class="row g-4 mb-4">
+        <!-- Owner Budget -->
+        @if($budgetOwner['data'])
+        <div class="col-lg-6">
+            <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h5 class="card-title mb-0">Anggaran</h5>
-                    <div style="min-width: 300px;">
-                        <select class="form-select form-select-sm" id="budget-select">
-                            @foreach($budgetOptions as $option)
-                                <option value="{{ $option['id'] }}" {{ $option['id'] == $selectedBudgetId ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                    <h5 class="card-title mb-0">
+                        <i class="icon-base ti tabler-user-circle me-1 text-success"></i> Pengeluaran vs Anggaran Owner
+                    </h5>
+                    <div style="min-width: 220px;">
+                        <select class="form-select form-select-sm" id="budget-owner-select">
+                            @foreach($budgetOwner['options'] as $option)
+                                <option value="{{ $option['id'] }}" {{ $option['id'] == $budgetOwner['selectedId'] ? 'selected' : '' }}>{{ $option['label'] }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                        <div>
-                            <span class="badge bg-label-{{ $activeBudget->type === 'kingdom' ? 'info' : 'success' }} me-2 text-capitalize">{{ $activeBudget->type }}</span>
-                            <span class="text-muted">
-                                {{ date('d M Y', strtotime($activeBudget->period_start_date)) }} - {{ date('d M Y', strtotime($activeBudget->period_end_date)) }}
-                            </span>
-                        </div>
-                        <a href="{{ route('master_data.budged.detail', $activeBudget->id) }}" class="btn btn-sm btn-outline-primary">
-                            <i class="ti tabler-eye me-1"></i> Lihat Detail
+                        <span class="text-muted">
+                            {{ date('d M Y', strtotime($budgetOwner['data']->period_start_date)) }} - {{ date('d M Y', strtotime($budgetOwner['data']->period_end_date)) }}
+                        </span>
+                        <a href="{{ route('master_data.budged.detail', $budgetOwner['data']->id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="ti tabler-eye me-1"></i> Detail
                         </a>
                     </div>
-
-                    <div class="row g-4">
-                        @foreach($activeBudget->categories as $cat)
-                        <div class="col-lg-3 col-sm-6">
-                            <div class="border rounded p-3 h-100">
-                                <h6 class="mb-2">{{ $cat->name }}</h6>
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="text-muted">Rp {{ number_format($cat->used, 0, ',', '.') }}</small>
-                                    <small class="fw-semibold">Rp {{ number_format($cat->limit, 0, ',', '.') }}</small>
-                                </div>
-                                @php $pct = $cat->limit > 0 ? round(($cat->used / $cat->limit) * 100) : 0; @endphp
-                                <div class="progress" style="height: 6px;">
-                                    <div class="progress-bar {{ $pct >= 90 ? 'bg-danger' : ($pct >= 70 ? 'bg-warning' : 'bg-success') }}"
-                                         style="width: {{ min($pct, 100) }}%"></div>
-                                </div>
-                                <small class="text-muted mt-1 d-block">{{ $pct }}% terpakai</small>
-                            </div>
+                    @foreach($budgetOwner['data']->categories as $cat)
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold">{{ $cat->name }}</span>
                         </div>
-                        @endforeach
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Pengeluaran: <span class="text-dark fw-semibold">Rp {{ number_format($cat->used, 0, ',', '.') }}</span></small>
+                            <small class="text-muted">Anggaran: <span class="text-dark fw-semibold">Rp {{ number_format($cat->limit, 0, ',', '.') }}</span></small>
+                        </div>
+                        @php $pct = $cat->limit > 0 ? round(($cat->used / $cat->limit) * 100) : 0; @endphp
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar {{ $pct >= 90 ? 'bg-danger' : ($pct >= 70 ? 'bg-warning' : 'bg-success') }}"
+                                 style="width: {{ min($pct, 100) }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">{{ $pct }}% terpakai</small>
+                            <small class="text-muted">Sisa: Rp {{ number_format($cat->limit - $cat->used, 0, ',', '.') }}</small>
+                        </div>
                     </div>
+                    @endforeach
                 </div>
             </div>
         </div>
+        @endif
+
+        <!-- Kingdom Budget -->
+        @if($budgetKingdom['data'])
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h5 class="card-title mb-0">
+                        <i class="icon-base ti tabler-building me-1 text-info"></i> Pengeluaran vs Anggaran Kingdom
+                    </h5>
+                    <div style="min-width: 220px;">
+                        <select class="form-select form-select-sm" id="budget-kingdom-select">
+                            @foreach($budgetKingdom['options'] as $option)
+                                <option value="{{ $option['id'] }}" {{ $option['id'] == $budgetKingdom['selectedId'] ? 'selected' : '' }}>{{ $option['label'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                        <span class="text-muted">
+                            {{ date('d M Y', strtotime($budgetKingdom['data']->period_start_date)) }} - {{ date('d M Y', strtotime($budgetKingdom['data']->period_end_date)) }}
+                        </span>
+                        <a href="{{ route('master_data.budged.detail', $budgetKingdom['data']->id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="ti tabler-eye me-1"></i> Detail
+                        </a>
+                    </div>
+                    @foreach($budgetKingdom['data']->categories as $cat)
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-semibold">{{ $cat->name }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Pengeluaran: <span class="text-dark fw-semibold">Rp {{ number_format($cat->used, 0, ',', '.') }}</span></small>
+                            <small class="text-muted">Anggaran: <span class="text-dark fw-semibold">Rp {{ number_format($cat->limit, 0, ',', '.') }}</span></small>
+                        </div>
+                        @php $pct = $cat->limit > 0 ? round(($cat->used / $cat->limit) * 100) : 0; @endphp
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar {{ $pct >= 90 ? 'bg-danger' : ($pct >= 70 ? 'bg-warning' : 'bg-success') }}"
+                                 style="width: {{ min($pct, 100) }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">{{ $pct }}% terpakai</small>
+                            <small class="text-muted">Sisa: Rp {{ number_format($cat->limit - $cat->used, 0, ',', '.') }}</small>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
     </div>
     @endif
 
@@ -381,7 +433,8 @@ $(function() {
             date_to: '{{ $dateTo }}',
             lifetime: '{{ $isLifetime ? "1" : "0" }}',
             revenue_split_id: '{{ $selectedCycleId }}',
-            budget_period_id: '{{ $selectedBudgetId }}',
+            budget_owner_id: '{{ $budgetOwner['selectedId'] }}',
+            budget_kingdom_id: '{{ $budgetKingdom['selectedId'] }}',
             warehouse_id: '{{ $selectedWarehouseId }}',
         };
         Object.assign(params, overrides || {});
@@ -435,8 +488,11 @@ $(function() {
     $('#revenue-split-select').on('change', function() {
         window.location.href = buildDashboardUrl({ revenue_split_id: $(this).val() });
     });
-    $('#budget-select').on('change', function() {
-        window.location.href = buildDashboardUrl({ budget_period_id: $(this).val() });
+    $('#budget-owner-select').on('change', function() {
+        window.location.href = buildDashboardUrl({ budget_owner_id: $(this).val() });
+    });
+    $('#budget-kingdom-select').on('change', function() {
+        window.location.href = buildDashboardUrl({ budget_kingdom_id: $(this).val() });
     });
     $('#warehouse-select').on('change', function() {
         window.location.href = buildDashboardUrl({ warehouse_id: $(this).val() });
