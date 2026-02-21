@@ -79,16 +79,7 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            {{-- @if ($canShowExportButton)
-                                <a href="{{ route('master_data.revenue_split.export') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif
-                            @if ($canShowImportButton)
-                                <a href="{{ route('master_data.revenue_split.import') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                            @endif --}}
+                            
                             @can('revenue_split.create')
                                 <a href="{{ route('master_data.revenue_split.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span

@@ -100,16 +100,6 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            {{-- @if ($canImportPurchaseOrder)
-                                <a href="{{ route('main_transaction.purchase_order.import') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                            @endif
-                            @if ($canExportPurchaseOrder)
-                                <a href="{{ route('main_transaction.purchase_order.export') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif --}}
                             @can('purchase_order.create')
                                 <a href="{{ route('main_transaction.purchase_order.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span

@@ -144,16 +144,7 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            {{-- @if ($canImportSalesOrder)
-                                <a href="{{ route('main_transaction.sales_order.import') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                            @endif
-                            @if ($canExportSalesOrder)
-                                <a href="{{ route('main_transaction.sales_order.export') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif --}}
+                            
                             @can('sales_order.create')
                                 <a href="{{ route('main_transaction.sales_order.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span

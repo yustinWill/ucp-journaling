@@ -261,16 +261,7 @@
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    @can('stock_adjustment.view')
-                                        <a href="{{ route('main_transaction.stock_adjustment.import') }}"
-                                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                                class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                                    @endcan
-                                    @can('stock_adjustment.view')
-                                        <a href="{{ route('main_transaction.stock_adjustment.export') }}"
-                                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                                    @endcan
+                                    
                                     @can('stock_adjustment.create')
                                         <a href="{{ route('main_transaction.stock_adjustment.add') }}"
                                             class="btn btn-md btn-primary waves-effect waves-light"><span
