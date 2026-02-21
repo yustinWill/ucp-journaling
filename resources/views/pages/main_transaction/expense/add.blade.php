@@ -171,28 +171,21 @@
                     <!-- Left Side: Tag, Memo and Attachment -->
                     <div class="col-md-6 mb-4">
                         <div class="mb-3">
-                            <label class="form-label">Entitas <span class="text-danger">*</span></label>
-                            <select id="expense-entity" name="entity_type" class="global-select2 form-select" required data-allow-clear="false">
-                                <option value="">Pilih Entitas</option>
-                                <option value="KINGDOM">Kingdom</option>
-                                <option value="OWNER">Owner</option>
-                                <option value="PABRIK">Pabrik</option>
+                            <label class="form-label">Entity Type <span class="text-danger">*</span></label>
+                            <select id="entity-type" name="entity_type" class="global-select2 form-select" required data-allow-clear="false">
+                                <option value="">Pilih Entity Type</option>
+                                <option value="kingdom">Kingdom</option>
+                                <option value="owner">Owner</option>
                             </select>
-                            <small class="form-text text-muted">Pilih kategori pengeluaran untuk klasifikasi biaya</small>
+                            <small class="form-text text-muted">Pilih entity type untuk pemetaan anggaran</small>
                         </div>
-                        {{-- @if(session('user_company_code') !== "001") --}}
                         <div class="mb-3">
                             <label class="form-label">Anggaran</label>
                             <select id="budget" name="budged_history_id" class="global-select2 form-select"
                                 data-allow-clear="true">
-                                <option value="">Pilih Anggaran</option>
-                                @foreach ($activeBudgets as $budget)
-                                    <option value="{{ $budget->budget_id }}">
-                                        {{ $budget->budged_name }}
-                                        ({{ date('d/m/Y', strtotime($budget->period_start_date)) }} - {{ date('d/m/Y', strtotime($budget->period_end_date)) }})
-                                    </option>
-                                @endforeach
+                                <option value="">Pilih Entity Type terlebih dahulu</option>
                             </select>
+                            <small class="form-text text-muted">Anggaran akan difilter berdasarkan entity type yang dipilih</small>
                         </div>
                         {{-- @else
                         <div class="mb-3">
@@ -313,6 +306,12 @@
 @section('js_script')
     <script>
         $(function() {
+            // Budget data from backend
+            const allBudgets = @json($activeBudgets);
+
+            // Initialize entity type filter
+            initializeEntityTypeFilter();
+
             // Initialize searchable selects
             // initializeSearchableSelects();
 
@@ -327,6 +326,53 @@
 
             // Initialize calculations
             initializeCalculations();
+
+            function initializeEntityTypeFilter() {
+                // Listen to entity type changes only
+                $('#entity-type').on('change', function() {
+                    const selectedEntityType = $(this).val();
+                    const budgetSelect = $('#budget');
+
+                    // Clear and reset budget dropdown
+                    budgetSelect.empty();
+
+                    if (!selectedEntityType) {
+                        budgetSelect.append('<option value="">Pilih Entity Type terlebih dahulu</option>');
+                        if (budgetSelect.hasClass('select2-hidden-accessible')) {
+                            budgetSelect.select2('destroy');
+                            budgetSelect.select2({ allowClear: true });
+                        }
+                        return;
+                    }
+
+                    // Filter budgets by entity type only
+                    const filteredBudgets = allBudgets.filter(budget => {
+                        return budget.entity_type === selectedEntityType;
+                    });
+
+                    budgetSelect.append('<option value="">Pilih Anggaran</option>');
+
+                    if (filteredBudgets.length === 0) {
+                        budgetSelect.append('<option value="" disabled>Tidak ada anggaran yang sesuai</option>');
+                    } else {
+                        filteredBudgets.forEach(budget => {
+                            const startDate = new Date(budget.period_start_date).toLocaleDateString('id-ID');
+                            const endDate = new Date(budget.period_end_date).toLocaleDateString('id-ID');
+                            budgetSelect.append(
+                                `<option value="${budget.budget_id}">
+                                    ${budget.budged_name} (${startDate} - ${endDate})
+                                </option>`
+                            );
+                        });
+                    }
+
+                    // Reinitialize select2
+                    if (budgetSelect.hasClass('select2-hidden-accessible')) {
+                        budgetSelect.select2('destroy');
+                    }
+                    budgetSelect.select2({ allowClear: true });
+                });
+            }
 
             function initializeTransactionNumber() {
                 // Generate initial transaction number on page load
@@ -713,7 +759,7 @@
                 formData.append('discount_amount', parseCurrency($('#discount-amount').val()) || 0);
                 formData.append('budged_history_id', $('#budget').val() || '');
                 formData.append('category_type', $('#expense-category').val() || '');
-                formData.append('entity_type', $('#expense-entity').val() || '');
+                formData.append('entity_type', $('#entity-type').val() || '');
                 // Tags
                 const tags = $('#expense-tags').val() || [];
                 tags.forEach((tag, index) => {

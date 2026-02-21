@@ -39,6 +39,13 @@ class CreateStockAdjustmentAction
                 $this->processStockAdjustments($stockAdjustmentId, $data['products'], $data);
                 $this->createAdjustmentItems($stockAdjustmentId, $data['products'], $data);
                 $this->createStockMovementLogs($stockAdjustmentId, $data['products'], $data);
+
+                // Recalculate total_stock from movement logs for all affected products
+                foreach ($data['products'] as $product) {
+                    if ($product['adjustment_qty'] != 0) {
+                        app(ProductService::class)->updateStock($product['product_id']);
+                    }
+                }
             }
 
             switch ($data['adjustment_type']) {
@@ -87,10 +94,7 @@ class CreateStockAdjustmentAction
                 $adjustmentQty = $product['adjustment_qty'];
 
                 if ($adjustmentQty > 0) {
-                    // Positive adjustment - increase stock and create new batch
-                    app(ProductService::class)->updateStock($productId, '+', $adjustmentQty);
-
-                    // Create batch using global service
+                    // Positive adjustment - create new batch
                     app(BatchManagementService::class)->createBatch([
                         'f_product_id' => $productId,
                         'source_type' => 'STOCK_ADJUSTMENT',
@@ -101,10 +105,7 @@ class CreateStockAdjustmentAction
                         'hpp_status' => 'SETTLED',
                     ]);
                 } else {
-                    // Negative adjustment - decrease stock and consume batches (FIFO)
-                    app(ProductService::class)->updateStock($productId, '-', abs($adjustmentQty));
-
-                    // Consume batches using global service
+                    // Negative adjustment - consume batches (FIFO)
                     app(BatchManagementService::class)->consumeBatches($productId, abs($adjustmentQty), [
                         'source_type' => 'STOCK_ADJUSTMENT',
                         'f_source_transaction_id' => $stockAdjustmentId,

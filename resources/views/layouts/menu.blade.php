@@ -22,10 +22,17 @@
                 <div data-i18n="Dashboard">Dashboard</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['dashboard.summary'])) active @endif">
+        {{-- <li class="menu-item @if (request()->routeIs(['dashboard.summary'])) active @endif">
             <a href="{{ route('dashboard.summary') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-chart-pie"></i>
                 <div data-i18n="Pencatatan Keuangan">Pencatatan Keuangan</div>
+            </a>
+        </li> --}}
+        <!-- Temporary Hidden: ADIT ONLY -->
+        <li class="menu-item @if (request()->routeIs(['master_data.revenue_split.*'])) active @endif">
+            <a href="{{ route('master_data.revenue_split.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-chart-pie"></i>
+                <div data-i18n="RevenueSpilt">Keuntungan Penjualan</div>
             </a>
         </li>
         {{-- <li class="menu-item">
@@ -120,28 +127,78 @@
             </li>
         {{-- @endif --}}
 
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Apps & Pages">Finansial</span>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['master_data.budged.*'])) active @endif">
+            <a href="{{ route('master_data.budged.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-chart-line"></i>
+                <div data-i18n="Chat">Anggaran</div>
+            </a>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.topup.*'])) active @endif">
+            <a href="{{ route('main_transaction.topup.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-cash"></i>
+                <div data-i18n="Top Up">Top Up</div>
+            </a>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.reimbursement.*'])) active @endif">
+            <a href="{{ route('main_transaction.reimbursement.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-receipt-refund"></i>
+                <div data-i18n="Reimbursement">Reimbursement</div>
+            </a>
+        </li>
+        <li class="menu-item @if (request()->routeIs(['main_transaction.reimbursement_approval.*'])) active @endif">
+            <a href="{{ route('main_transaction.reimbursement_approval.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-circle-check"></i>
+                <div data-i18n="Reimbursement Approval">Reimbursement Approval</div>
+            </a>
+        </li>
+
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Apps & Pages">Operasional</span>
+        </li>
+
+        <li class="menu-item @if (request()->routeIs(['main_transaction.production.*'])) active @endif">
+            <a href="{{ route('main_transaction.production.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-tools"></i>
+                <div data-i18n="Produksi">Produksi</div>
+            </a>
+        </li>
+
+        <li class="menu-item @if (request()->routeIs(['main_transaction.packing.*'])) active @endif">
+            <a href="{{ route('main_transaction.packing.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-package"></i>
+                <div data-i18n="Packing Produk">Packing Produk</div>
+            </a>
+        </li>
+
         <li class="menu-item @if (request()->routeIs(['main_transaction.stock_adjustment.*'])) active @endif">
             <a href="{{ route('main_transaction.stock_adjustment.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-adjustments"></i>
                 <div data-i18n="Chat">Stock Adjustment</div>
             </a>
         </li>
+
         <li class="menu-item @if (request()->routeIs(['main_transaction.return_management.*'])) active @endif">
             <a href="{{ route('main_transaction.return_management.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-arrow-back-up"></i>
                 <div data-i18n="Chat">Return Management</div>
             </a>
         </li>
-        <li class="menu-header small">
-            <span class="menu-header-text" data-i18n="Apps & Pages">Master Data & Operasional</span>
-        </li>
-        <!-- Temporary Hidden: ADIT ONLY -->
-        <li class="menu-item @if (request()->routeIs(['master_data.revenue_split.*'])) active @endif">
-            <a href="{{ route('master_data.revenue_split.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-chart-pie"></i>
-                <div data-i18n="RevenueSpilt">Keuntungan Penjualan</div>
+
+        <li class="menu-item @if (request()->routeIs(['master_data.stock_opname.*'])) active @endif">
+            <a href="{{ route('master_data.stock_opname.index') }}" class="menu-link">
+                <i class="menu-icon icon-base ti tabler-clipboard-check"></i>
+                <div data-i18n="Chat">Stock Opname</div>
             </a>
         </li>
+        
+
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Apps & Pages">Master Data</span>
+        </li>
+        
         <li class="menu-item @if (request()->routeIs(['master_data.contact.*'])) active @endif">
             <a href="{{ route('master_data.contact.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-address-book"></i>
@@ -160,30 +217,12 @@
                 <div data-i18n="Warehouse">Warehouse</div>
             </a>
         </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.production.*'])) active @endif">
-            <a href="{{ route('main_transaction.production.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-tools"></i>
-                <div data-i18n="Produksi">Produksi</div>
-            </a>
-        </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.packing.*'])) active @endif">
-            <a href="{{ route('main_transaction.packing.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-package"></i>
-                <div data-i18n="Packing Produk">Packing Produk</div>
-            </a>
-        </li>
         {{-- <li class="menu-item @if (request()->routeIs(['main_transaction.overhead_absorption.*'])) active @endif">
             <a href="{{ route('main_transaction.overhead_absorption.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-chart-dots"></i>
                 <div data-i18n="Absorpsi Overhead">Absorpsi Overhead</div>
             </a>
         </li> --}}
-        <li class="menu-item @if (request()->routeIs(['main_transaction.topup.*'])) active @endif">
-            <a href="{{ route('main_transaction.topup.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-cash"></i>
-                <div data-i18n="Top Up">Top Up</div>
-            </a>
-        </li>
         @if (session('CLIENT_CODE') == '001')
             <li class="menu-item">
                 <a href="app-chat.html" class="menu-link">
@@ -193,18 +232,6 @@
             </li>
         @endif
 
-        <li class="menu-item @if (request()->routeIs(['master_data.stock_opname.*'])) active @endif">
-            <a href="{{ route('master_data.stock_opname.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-clipboard-check"></i>
-                <div data-i18n="Chat">Stock Opname</div>
-            </a>
-        </li>
-        <li class="menu-item @if (request()->routeIs(['master_data.budged.*'])) active @endif">
-            <a href="{{ route('master_data.budged.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-chart-line"></i>
-                <div data-i18n="Chat">Anggaran</div>
-            </a>
-        </li>
         <li class="menu-item @if (request()->routeIs(['master_data.inventory.*'])) active @endif">
             <a href="{{ route('master_data.inventory.index') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-building-factory"></i>
@@ -217,6 +244,7 @@
                 <div data-i18n="Chat">Daftar Akun</div>
             </a>
         </li> --}}
+        @if (session('CLIENT_CODE') == '001')
         <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*', 'report.buku_besar.*', 'report.laba_rugi.*', 'report.neraca.*'])) active open @endif">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-list"></i>
@@ -245,6 +273,7 @@
                 </li>
             </ul>
         </li>
+        @endif
         <li class="menu-header small">
             <span class="menu-header-text" data-i18n="Apps & Pages">Sistem & Pengaturan</span>
         </li>

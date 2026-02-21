@@ -38,11 +38,11 @@ class SalesInvoiceService
                 if (empty($dueDate) && $salesOrder->f_payment_term_id) {
                     $paymentTerm = DB::table('m_payment_terms')
                         ->where('id', $salesOrder->f_payment_term_id)
-                        ->first(['name', 'day_count']);
+                        ->first(['name', 'days']);
 
                     if ($paymentTerm) {
                         $paymentTerms = $paymentTerm->name;
-                        $dayCount = $paymentTerm->day_count ?? 30;
+                        $dayCount = $paymentTerm->days ?? 30;
                         $dueDate = now()->addDays($dayCount)->format('Y-m-d');
                     }
                 }

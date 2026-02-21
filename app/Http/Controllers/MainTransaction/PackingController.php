@@ -38,30 +38,41 @@ class PackingController extends Controller
 
     public function index_data_table(Request $request)
     {
-        // Group by transaction_number from t_packaging
+        $companyCode = session('user_company_code');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Base Query (Grouped by transaction_number)
+        |--------------------------------------------------------------------------
+        */
         $query = DB::table('t_packaging as pkg')
             ->select(
                 'pkg.transaction_number',
                 DB::raw('MIN(p.production_date) as packing_date'),
-                DB::raw('MIN(p.id) as id'), // First production ID for the transaction
+                DB::raw('MIN(p.id) as production_id'),
+                DB::raw('MIN(pkg.id) as id'),
                 DB::raw('GROUP_CONCAT(DISTINCT p.production_number ORDER BY p.production_number SEPARATOR ", ") as packing_number'),
                 DB::raw('GROUP_CONCAT(DISTINCT bp.name ORDER BY p.production_number SEPARATOR ", ") as bundle_product_name'),
                 DB::raw('GROUP_CONCAT(DISTINCT bp.code ORDER BY p.production_number SEPARATOR ", ") as bundle_product_code'),
                 DB::raw('SUM(pkg.quantity_packed) as quantity_packed'),
                 DB::raw('MIN(w.name) as warehouse_name'),
                 DB::raw('MIN(w.code) as warehouse_code'),
-                DB::raw('MIN(u.name) as pic_name'),
-                DB::raw('(SELECT tpi.unit_code FROM t_production_items as tpi WHERE tpi.production_id = MIN(p.id) LIMIT 1) as unit_code'),
-                DB::raw("(SELECT AVG(CASE WHEN psb.hpp_status = 'SETTLED' THEN psb.final_hpp ELSE psb.estimated_hpp END) FROM t_product_stock_batches as psb WHERE psb.f_source_transaction_id IN (SELECT tp.id FROM t_productions tp WHERE tp.id IN (SELECT pkg2.production_id FROM t_packaging pkg2 WHERE pkg2.transaction_number = pkg.transaction_number)) AND psb.source_type = 'PRODUCTION') as hpp_packing")
+                DB::raw('MIN(u.name) as pic_name')
             )
             ->leftJoin('t_productions as p', 'pkg.production_id', '=', 'p.id')
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
-            ->where('p.company_code', session('user_company_code'))
-            ->where('p.is_packaging', true);  // Filter only packing productions
+            ->where('p.company_code', $companyCode)
+            ->where('p.is_packaging', true)
+            ->where('pkg.transaction_number', 'LIKE', 'PACK-%');
 
-        if ($date = request()->input('date')) {
+        /*
+        |--------------------------------------------------------------------------
+        | Filters
+        |--------------------------------------------------------------------------
+        */
+        if ($date = $request->input('date')) {
             if (strpos($date, ' - ') !== false) {
                 [$dateFrom, $dateTo] = explode(' - ', $date);
                 $query->whereBetween('p.production_date', [$dateFrom, $dateTo]);
@@ -70,40 +81,80 @@ class PackingController extends Controller
             }
         }
 
-        if ($product_id = request()->input('product')) {
+        if ($product_id = $request->input('product')) {
             $query->where('p.bundle_product_id', $product_id);
         }
 
-        if ($warehouse_id = request()->input('warehouse')) {
+        if ($warehouse_id = $request->input('warehouse')) {
             $query->where('p.warehouse_id', $warehouse_id);
         }
 
-        if ($packing_no = request()->input('packing_no')) {
-            $query->where(function($q) use ($packing_no) {
+        if ($packing_no = $request->input('packing_no')) {
+            $query->where(function ($q) use ($packing_no) {
                 $q->where('p.production_number', 'like', "%{$packing_no}%")
-                  ->orWhere('pkg.transaction_number', 'like', "%{$packing_no}%");
+                ->orWhere('pkg.transaction_number', 'like', "%{$packing_no}%");
             });
         }
 
         $query->groupBy('pkg.transaction_number');
 
-        $draw = (int) request()->input('draw', 1);
-        $recordsTotal = DB::table('t_packaging')
-            ->join('t_productions', 't_packaging.production_id', '=', 't_productions.id')
-            ->where('t_productions.is_packaging', true)
-            ->distinct('t_packaging.transaction_number')
-            ->count('t_packaging.transaction_number');
+        /*
+        |--------------------------------------------------------------------------
+        | recordsTotal (Unfiltered grouped count)
+        |--------------------------------------------------------------------------
+        */
+        $totalQuery = DB::table('t_packaging as pkg')
+            ->join('t_productions as p', 'pkg.production_id', '=', 'p.id')
+            ->where('p.company_code', $companyCode)
+            ->where('p.is_packaging', true)
+            ->where('pkg.transaction_number', 'LIKE', 'PACK-%')
+            ->groupBy('pkg.transaction_number');
 
+       $recordsTotal = DB::table('t_packaging as pkg')
+            ->join('t_productions as p', 'pkg.production_id', '=', 'p.id')
+            ->where('p.company_code', $companyCode)
+            ->where('p.is_packaging', true)
+            ->where('pkg.transaction_number', 'LIKE', 'PACK-%')
+            ->distinct('pkg.transaction_number')
+            ->count('pkg.transaction_number');
+
+        /*
+        |--------------------------------------------------------------------------
+        | recordsFiltered
+        |--------------------------------------------------------------------------
+        */
         $filteredQuery = clone $query;
 
-        // Pagination
-        $start = (int) request()->input('start', 0);
-        $length = (int) request()->input('length', 10);
-        $query->skip($start)->take($length);
-        $recordsFiltered = $filteredQuery->count();
-        $query->orderBy('pkg.transaction_number', 'DESC');
-        $data = $query->get();
+        $recordsFiltered = DB::table(DB::raw("({$filteredQuery->toSql()}) as filtered"))
+            ->mergeBindings($filteredQuery)
+            ->count();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Ordering
+        |--------------------------------------------------------------------------
+        */
+        $query->orderByRaw('MIN(p.production_date) DESC');
+        $query->orderBy('pkg.transaction_number', 'DESC');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pagination
+        |--------------------------------------------------------------------------
+        */
+        $start = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 10);
+        $draw = (int) $request->input('draw', 1);
+
+        $data = $query->offset($start)
+                    ->limit($length)
+                    ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
         return response()->json([
             'draw' => $draw,
             'recordsTotal' => $recordsTotal,
@@ -111,6 +162,7 @@ class PackingController extends Controller
             'data' => $data,
         ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
+
 
     public function add()
     {
@@ -205,12 +257,15 @@ class PackingController extends Controller
     public function detail($id)
     {
         // Get the first production record details
+        $productionId = DB::table('t_packaging')
+            ->where('id', $id)
+            ->value('production_id');
         $production = DB::table('t_productions as p')
             ->leftJoin('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
             ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
             ->leftJoin('users as u', 'p.pic_id', '=', 'u.id')
             ->leftJoin('m_units as unit', 'bp.f_unit_id', '=', 'unit.id')
-            ->where('p.id', $id)
+            ->where('p.id', $productionId)
             ->where('p.is_packaging', true)
             ->select(
                 'p.*',
@@ -228,16 +283,15 @@ class PackingController extends Controller
         }
 
         // Get all packaging products from this transaction
+        $transactionNumber = DB::table('t_packaging')
+            ->where('id', $id)
+            ->value('transaction_number');
+
         $packagingProducts = DB::table('t_packaging as pkg')
             ->join('t_productions as p', 'pkg.production_id', '=', 'p.id')
             ->join('m_products as prod', 'pkg.packaging_product_id', '=', 'prod.id')
             ->leftJoin('m_units as u', 'prod.f_unit_id', '=', 'u.id')
-            ->where('pkg.transaction_number', function($query) use ($id) {
-                $query->select('transaction_number')
-                    ->from('t_packaging')
-                    ->where('production_id', $id)
-                    ->limit(1);
-            })
+            ->where('pkg.transaction_number', $transactionNumber)
             ->select(
                 'pkg.*',
                 'p.id as production_id',
@@ -263,16 +317,61 @@ class PackingController extends Controller
         }
 
         // Get source bundle product info
+        $sourceBundleProductId = $packagingProducts[0]->bundle_product_id ?? null;
         $sourceBundleProduct = DB::table('m_products as p')
             ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
-            ->where('p.id', $packagingProducts[0]->bundle_product_id ?? null)
-            ->select('p.code', 'p.name', 'u.code as unit_code')
+            ->where('p.id', $sourceBundleProductId)
+            ->select('p.id', 'p.code', 'p.name', 'u.code as unit_code')
+            ->first();
+
+        // Find the source production (the one that was packed)
+        $sourceProduction = null;
+        if ($sourceBundleProductId) {
+            $sourceProduction = DB::table('t_productions')
+                ->where('bundle_product_id', $sourceBundleProductId)
+                ->where('warehouse_id', $production->warehouse_id)
+                ->where('company_code', $production->company_code)
+                ->where('is_packaging', false)
+                ->where('is_packed', true)
+                ->orderBy('updated_at', 'DESC')
+                ->select('id', 'production_number', 'quantity_produced')
+                ->first();
+        }
+
+        // Calculate total bundle qty consumed across all packaging products
+        $totalBundleConsumed = 0;
+        foreach ($packagingProducts as $packaging) {
+            $bundleItem = $packaging->items->first(function ($item) use ($sourceBundleProductId) {
+                return $item->raw_material_product_id == $sourceBundleProductId;
+            });
+            if ($bundleItem) {
+                $totalBundleConsumed += $bundleItem->quantity_consumed;
+            }
+        }
+
+        // Get stock adjustment for this specific transaction
+        $productionNumbers = $packagingProducts->pluck('production_number')->toArray();
+        $stockAdjustment = DB::table('t_stock_movement_logs')
+            ->where('reference_type', 'PACKING_ADJUSTMENT')
+            ->where('product_id', $sourceBundleProductId)
+            ->where('warehouse_id', $production->warehouse_id)
+            ->where('company_code', $production->company_code)
+            ->where('reference_number', 'LIKE', 'ADJ-PACK-%')
+            ->whereBetween('created_at', [
+                $production->created_at ? \Carbon\Carbon::parse($production->created_at)->subMinute() : now()->subYear(),
+                $production->created_at ? \Carbon\Carbon::parse($production->created_at)->addMinute() : now(),
+            ])
+            ->select('movement_type', 'movement_qty', 'stock_before', 'stock_after', 'notes', 'reference_number', 'movement_date')
             ->first();
 
         return view('pages.main_transaction.packing.detail', [
             'production' => $production,
             'packagingProducts' => $packagingProducts,
             'sourceBundleProduct' => $sourceBundleProduct,
+            'sourceProduction' => $sourceProduction,
+            'totalBundleConsumed' => $totalBundleConsumed,
+            'transactionNumber' => $transactionNumber,
+            'stockAdjustment' => $stockAdjustment,
         ]);
     }
 
@@ -392,53 +491,91 @@ class PackingController extends Controller
 
     public function getBundleStock(Request $request)
     {
-        $bundleProductId = $request->input('bundle_product_id');
-        $warehouseId = $request->input('warehouse_id');
+        $productionId = $request->input('production_id');
 
-        if (!$bundleProductId || !$warehouseId) {
+        if (!$productionId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Bundle product ID and warehouse ID are required'
+                'message' => 'Production ID is required'
             ], 400);
         }
 
-        // Get available stock of the bundle product in the selected warehouse using stock movement logs
-        $stockData = DB::table('t_stock_movement_logs as sml')
-            ->join('m_products as p', 'sml.product_id', '=', 'p.id')
-            ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
-            ->where('sml.product_id', $bundleProductId)
-            ->where('sml.warehouse_id', $warehouseId)
-            ->select(
-                DB::raw('COALESCE(SUM(
-                    CASE
-                        WHEN movement_type LIKE "%_IN" THEN movement_qty
-                        WHEN movement_type LIKE "%_OUT" THEN -movement_qty
-                        ELSE 0
-                    END
-                ), 0) as available_qty'),
-                'u.code as unit_code'
-            )
-            ->groupBy('u.code')
+        // Get the production record
+        $production = DB::table('t_productions as p')
+            ->join('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
+            ->join('m_units as u', 'bp.f_unit_id', '=', 'u.id')
+            ->where('p.id', $productionId)
+            ->where('p.company_code', session('user_company_code'))
+            ->select('p.quantity_produced', 'p.bundle_product_id', 'p.warehouse_id', 'u.code as unit_code')
             ->first();
 
-        if (!$stockData) {
-            // Get unit code even when no stock
-            $unitCode = DB::table('m_products as p')
-                ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
-                ->where('p.id', $bundleProductId)
-                ->value('u.code');
-
+        if (!$production) {
             return response()->json([
                 'success' => true,
                 'available_qty' => 0,
-                'unit_code' => $unitCode ?? ''
+                'production_qty' => 0,
+                'unit_code' => ''
             ]);
         }
 
+        // Get current total stock from movement logs (latest stock_after per warehouse)
+        $latestMovement = DB::table('t_stock_movement_logs')
+            ->where('product_id', $production->bundle_product_id)
+            ->where('warehouse_id', $production->warehouse_id)
+            ->where('company_code', session('user_company_code'))
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        $currentStock = $latestMovement ? (float) $latestMovement->stock_after : 0;
+
         return response()->json([
             'success' => true,
-            'available_qty' => (float) $stockData->available_qty,
-            'unit_code' => $stockData->unit_code
+            'available_qty' => $currentStock,
+            'production_qty' => (float) $production->quantity_produced,
+            'unit_code' => $production->unit_code
+        ]);
+    }
+
+    public function getAvailableProductions(Request $request)
+    {
+        $bundleProductId = $request->input('bundle_product_id');
+        $warehouseId = $request->input('warehouse_id');
+
+        $query = DB::table('t_productions as p')
+            ->join('m_products as bp', 'p.bundle_product_id', '=', 'bp.id')
+            ->join('m_units as u', 'bp.f_unit_id', '=', 'u.id')
+            ->leftJoin('m_warehouses as w', 'p.warehouse_id', '=', 'w.id')
+            ->where('p.company_code', session('user_company_code'))
+            ->where('p.is_packaging', false)
+            ->where('p.is_packed', false)
+            ->where('p.status', 'COMPLETED')
+            ->select(
+                'p.id',
+                'p.production_number',
+                'p.production_date',
+                'p.bundle_product_id',
+                'bp.code as bundle_product_code',
+                'bp.name as bundle_product_name',
+                'p.quantity_produced',
+                'u.code as unit_code',
+                'p.warehouse_id',
+                'w.name as warehouse_name'
+            )
+            ->orderBy('p.production_date', 'DESC');
+
+        if ($bundleProductId) {
+            $query->where('p.bundle_product_id', $bundleProductId);
+        }
+
+        if ($warehouseId) {
+            $query->where('p.warehouse_id', $warehouseId);
+        }
+
+        $productions = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $productions
         ]);
     }
 

@@ -136,9 +136,6 @@ class DeleteSalesOrderAction
             $deliveryQty = $product->quantity_delivered;
             $warehouseId = $delivery->f_warehouse_id;
 
-            // Revert product stock (increase back)
-            app(ProductService::class)->updateStock($productId, '+', $deliveryQty);
-
             // Record reversal stock movement (IN to cancel the OUT)
             app(StockMovementLogService::class)->recordMovement(
                 $warehouseId,
@@ -150,6 +147,9 @@ class DeleteSalesOrderAction
                 'Sales Delivery Reversal: Stock returned due to Sales Order deletion',
                 $delivery->delivery_date ?? now()
             );
+
+            // Recalculate product total_stock from movement logs
+            app(ProductService::class)->updateStock($productId);
 
             // Revert stock batch consumption
             $this->revertStockBatchConsumption($productId, $deliveryQty, $salesDeliveryId);

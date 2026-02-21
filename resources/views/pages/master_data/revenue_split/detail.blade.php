@@ -35,26 +35,26 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">Nama Cycle</label>
-                    <input type="text" class="form-control" value="{{ $revenueSplt->cycle_name }}" readonly>
+                    <input type="text" class="form-control" value="{{ $revenueSplt->cycle_name }}" disabled>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <input type="text" class="form-control"
                         value="{{ $revenueSplt->status === 'ACTIVE' ? 'Sedang Berjalan' : ($revenueSplt->status === 'SELESAI' ? 'Selesai' : 'Draft') }}"
-                        readonly>
+                        disabled>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Mulai</label>
-                    <input type="date" class="form-control" value="{{ $revenueSplt->start_date }}" readonly>
+                    <input type="date" class="form-control" value="{{ $revenueSplt->start_date }}" disabled>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Selesai</label>
-                    <input type="date" class="form-control" value="{{ $revenueSplt->end_date }}" readonly>
+                    <input type="date" class="form-control" value="{{ $revenueSplt->end_date }}" disabled>
                 </div>
                 @if ($revenueSplt->description)
                     <div class="col-md-12">
                         <label class="form-label">Deskripsi</label>
-                        <textarea class="form-control" rows="2" readonly>{{ $revenueSplt->description }}</textarea>
+                        <textarea class="form-control" rows="2" disabled>{{ $revenueSplt->description }}</textarea>
                     </div>
                 @endif
             </div>
@@ -89,43 +89,11 @@
                         <!-- Informasi Detail Tab -->
                         <div class="tab-pane fade show active" id="horizontal-informasi-detail" role="tabpanel">
 
-                            <!-- Expected Revenue Progress -->
-                            <div class="col-12 mb-6">
-                                <h5 class="mb-4">Expected Revenue Progress</h5>
-                                <p class="text-muted mb-4"><small>Perhitungan berdasarkan semua Sales Order dalam periode
-                                        cycle
-                                        (yang sudah dibayar + belum dibayar + belum ada invoice). Revenue didistribusikan
-                                        sesuai
-                                        proporsi target masing-masing kategori.</small></p>
-
-                                @php
-                                    $expectedPabrikRevenue = $expected_keuntungan_parbrik;
-                                    $expectedOwnerRevenue = $expected_keuntungan_owner;
-                                    $expectedPerusahaanRevenue = $expected_keuntungan_perusahaan;
-                                    $expectedRevenue = $expectedPabrikRevenue + $expectedOwnerRevenue + $expectedPerusahaanRevenue;
-
+                            @php
                                     $actualPabrikRevenue = $actual_keuntungan_parbrik;
                                     $actualOwnerRevenue = $actual_keuntungan_owner;
                                     $actualPerusahaanRevenue = $actual_keuntungan_perusahaan;
                                     $actualRevenue = $actualPabrikRevenue + $actualOwnerRevenue + $actualPerusahaanRevenue;
-
-
-                                    $expectedPabrikAchievement =
-                                        $revenueSplt->target_pabrik > 0
-                                            ? ($expectedPabrikRevenue / $revenueSplt->target_pabrik) * 100
-                                            : 0;
-                                    $expectedOwnerAchievement =
-                                        $revenueSplt->target_owner > 0
-                                            ? ($expectedOwnerRevenue / $revenueSplt->target_owner) * 100
-                                            : 0;
-                                    $expectedPerusahaanAchievement =
-                                        $revenueSplt->target_perusahaan > 0
-                                            ? ($expectedPerusahaanRevenue / $revenueSplt->target_perusahaan) * 100
-                                            : 0;
-                                    $expectedTotalAchievement =
-                                        $revenueSplt->total_target > 0
-                                            ? (($expectedRevenue ?? 0) / $revenueSplt->total_target) * 100
-                                            : 0;
 
                                     $actualPabrikAchievement =
                                         $revenueSplt->target_pabrik > 0
@@ -143,7 +111,16 @@
                                         $revenueSplt->total_target > 0
                                             ? (($actualRevenue ?? 0) / $revenueSplt->total_target) * 100
                                             : 0;
-                                @endphp
+                            @endphp
+
+                            {{-- Expected Revenue Progress - commented out for now
+                            <div class="col-12 mb-6">
+                                <h5 class="mb-4">Expected Revenue Progress</h5>
+                                <p class="text-muted mb-4"><small>Perhitungan berdasarkan semua Sales Order dalam periode
+                                        cycle
+                                        (yang sudah dibayar + belum dibayar + belum ada invoice). Revenue didistribusikan
+                                        sesuai
+                                        proporsi target masing-masing kategori.</small></p>
 
                                 <!-- Expected Progress Bars -->
                                 <div class="row g-4 mb-4">
@@ -157,19 +134,9 @@
                                             </div>
                                             <div class="flex-grow-1">
                                                 <h6 class="mb-0">Expected Keuntungan Pabrik</h6>
-                                                <small class="text-muted">Rp
-                                                    {{ number_format($expectedPabrikRevenue, 0, ',', '.') }} / Rp
-                                                    {{ number_format($revenueSplt->target_pabrik, 0, ',', '.') }}</small>
                                             </div>
-                                            <span
-                                                class="badge bg-label-primary">{{ number_format($expectedPabrikAchievement, 1) }}%</span>
-                                        </div>
-                                        <div class="progress mb-2" style="height: 8px;">
-                                            <div class="progress-bar bg-primary"
-                                                style="width: {{ min($expectedPabrikAchievement, 100) }}%;"></div>
                                         </div>
                                     </div>
-
                                     <!-- Expected Owner Progress -->
                                     <div class="col-md-6">
                                         <div class="d-flex align-items-center mb-2">
@@ -180,19 +147,9 @@
                                             </div>
                                             <div class="flex-grow-1">
                                                 <h6 class="mb-0">Expected Keuntungan Owner</h6>
-                                                <small class="text-muted">Rp
-                                                    {{ number_format($expectedOwnerRevenue, 0, ',', '.') }} / Rp
-                                                    {{ number_format($revenueSplt->target_owner, 0, ',', '.') }}</small>
                                             </div>
-                                            <span
-                                                class="badge bg-label-warning">{{ number_format($expectedOwnerAchievement, 1) }}%</span>
-                                        </div>
-                                        <div class="progress mb-2" style="height: 8px;">
-                                            <div class="progress-bar bg-warning"
-                                                style="width: {{ min($expectedOwnerAchievement, 100) }}%;"></div>
                                         </div>
                                     </div>
-
                                     <!-- Expected Perusahaan Progress -->
                                     <div class="col-md-6">
                                         <div class="d-flex align-items-center mb-2">
@@ -203,19 +160,9 @@
                                             </div>
                                             <div class="flex-grow-1">
                                                 <h6 class="mb-0">Expected Keuntungan Perusahaan</h6>
-                                                <small class="text-muted">Rp
-                                                    {{ number_format($expectedPerusahaanRevenue, 0, ',', '.') }} / Rp
-                                                    {{ number_format($revenueSplt->target_perusahaan, 0, ',', '.') }}</small>
                                             </div>
-                                            <span
-                                                class="badge bg-label-success">{{ number_format($expectedPerusahaanAchievement, 1) }}%</span>
-                                        </div>
-                                        <div class="progress mb-2" style="height: 8px;">
-                                            <div class="progress-bar bg-success"
-                                                style="width: {{ min($expectedPerusahaanAchievement, 100) }}%;"></div>
                                         </div>
                                     </div>
-
                                     <!-- Expected Total Progress -->
                                     <div class="col-md-6">
                                         <div class="d-flex align-items-center mb-2">
@@ -226,20 +173,12 @@
                                             </div>
                                             <div class="flex-grow-1">
                                                 <h6 class="mb-0">Expected Total Achievement</h6>
-                                                <small class="text-muted">Rp
-                                                    {{ number_format($expected_total_achievement, 0, ',', '.') }} / Rp
-                                                    {{ number_format($revenueSplt->total_target, 0, ',', '.') }}</small>
                                             </div>
-                                            <span
-                                                class="badge bg-label-info">{{ number_format($expectedTotalAchievement, 1) }}%</span>
-                                        </div>
-                                        <div class="progress mb-2" style="height: 8px;">
-                                            <div class="progress-bar bg-info"
-                                                style="width: {{ min($expectedTotalAchievement, 100) }}%;"></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            --}}
 
                             <!-- Actual Revenue Progress -->
                             <div class="col-12 mb-6">
@@ -359,11 +298,11 @@
                                         <input type="text" class="form-control"
                                             value="{{ $total_so_paid ?? 0 }} SO" readonly>
                                     </div>
-                                    <div class="col-md-6">
+                                    {{-- <div class="col-md-6">
                                         <label class="form-label">Expected Revenue</label>
                                         <input type="text" class="form-control"
                                             value="Rp {{ number_format($expectedRevenue ?? 0, 0, ',', '.') }}" readonly>
-                                    </div>
+                                    </div> --}}
                                     <div class="col-md-6">
                                         <label class="form-label">Actual Revenue</label>
                                         <input type="text" class="form-control"
@@ -376,7 +315,7 @@
                         <!-- Sales Orders Tab -->
                         <div class="tab-pane fade" id="horizontal-sales-orders" role="tabpanel">
                             <!-- Filter Controls -->
-                            <div class="row g-3 mb-4">
+                            {{-- <div class="row g-3 mb-4">
                                 <div class="col-md-4">
                                     <label class="form-label">Cari Sales Order</label>
                                     <input type="text" class="form-control" id="searchSalesOrder"
@@ -391,7 +330,7 @@
                                         <option value="no_invoice">Belum Ada Invoice</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
+                                {{-- <div class="col-md-4">
                                     <label class="form-label">Filter Status SO</label>
                                     <select class="form-select" id="statusFilter">
                                         <option value="">Semua Status SO</option>
@@ -399,8 +338,8 @@
                                         <option value="CONFIRMED">CONFIRMED</option>
                                         <option value="DELIVERED">DELIVERED</option>
                                     </select>
-                                </div>
-                            </div>
+                                </div> --}}
+                            {{-- </div> --}}
 
                             <!-- Sales Orders Table -->
                             <div class="table-responsive">
@@ -413,7 +352,7 @@
                                             <th>PRODUK</th>
                                             <th class="text-end">TOTAL PENJUALAN</th>
                                             {{-- <th class="text-end">KEUNTUNGAN</th> --}}
-                                            <th>STATUS SO</th>
+                                            {{-- <th>STATUS SO</th> --}}
                                             <th>STATUS REVENUE</th>
                                         </tr>
                                     </thead>
@@ -468,7 +407,7 @@
                                                         <br><small
                                                             class="text-muted">{{ number_format($so['profit_margin'], 1) }}%</small>
                                                     </td> --}}
-                                                    <td>
+                                                    {{-- <td>
                                                         @php
                                                             $badgeClass =
                                                                 $so['status'] === 'DELIVERED'
@@ -479,7 +418,7 @@
                                                         @endphp
                                                         <span
                                                             class="badge {{ $badgeClass }}">{{ $so['status'] }}</span>
-                                                    </td>
+                                                    </td> --}}
                                                     <td>
                                                         <span
                                                             class="badge {{ $revenueStatusClass }}">{{ $revenueStatusLabel }}</span>

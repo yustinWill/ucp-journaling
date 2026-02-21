@@ -436,7 +436,7 @@
                                                         {{ $inventory->warehouse_name }}
                                                     </a>
                                                 </td>
-                                                <td class="text-end">{{ number_format($inventory->system_stock) }}
+                                                <td class="text-end">{{ rtrim(rtrim(number_format($inventory->system_stock, 2, ',', ''), '0'), ',') }}
                                                     {{ $inventory->unit }}
                                                 </td>
                                                 {{-- <td class="text-end">{{ number_format($inventory->reserved_stock) }} --}}

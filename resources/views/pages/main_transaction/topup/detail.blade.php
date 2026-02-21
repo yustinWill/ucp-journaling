@@ -32,7 +32,7 @@
                         <label class="form-label text-muted small">Nomor Top Up</label>
                         <div class="fw-bold fs-5">{{ $topup->topup_number }}</div>
                     </div>
-                    <div class="mb-3">
+                    {{-- <div class="mb-3">
                         <label class="form-label text-muted small">Entity</label>
                         <div>
                             @if ($topup->entity_type === 'KINGDOM')
@@ -45,7 +45,7 @@
                                 </span>
                             @endif
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="mb-3">
                         <label class="form-label text-muted small">Tanggal Top Up</label>
                         <div class="fw-semibold">

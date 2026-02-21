@@ -20,6 +20,7 @@ use App\Domains\Category\Services\CategoryService;
 use App\Domains\StockMovement\Services\StockMovementLogsService;
 // Enums
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class WarehouseController extends Controller
@@ -46,7 +47,71 @@ class WarehouseController extends Controller
         return response()->json(app(WarehouseService::class)->findAllDatatable(), 200);
     }
 
-    public function stock_transfer(Request $request)
+    public function stock_transfer_index()
+    {
+        return view('pages.master_data.warehouse.stock_transfer_index');
+    }
+
+    public function stock_transfer_index_data_table()
+    {
+        $query = DB::table('t_stock_adjustments as sa')
+            ->leftJoin('m_warehouses as w', 'sa.warehouse_id', '=', 'w.id')
+            ->leftJoin('m_contacts as c', 'sa.pic_id', '=', 'c.id')
+            ->where('sa.company_code', session('user_company_code'))
+            ->where('sa.adjustment_type', 'WAREHOUSE_TRANSFER')
+            ->select(
+                'sa.id',
+                'sa.adjustment_date',
+                'sa.adjustment_number',
+                'sa.warehouse_id',
+                'w.code as warehouse_code',
+                'w.name as warehouse_name',
+                'c.name as pic_name',
+                'sa.total_items',
+                'sa.total_adjustment_qty',
+                'sa.status',
+                'sa.description',
+                'sa.created_at'
+            )
+            ->orderBy('sa.created_at', 'DESC');
+
+        $draw = (int) request()->input('draw', 1);
+        $start = (int) request()->input('start', 0);
+        $length = (int) request()->input('length', 10);
+
+        $recordsTotal = DB::table('t_stock_adjustments')
+            ->where('company_code', session('user_company_code'))
+            ->where('adjustment_type', 'WAREHOUSE_TRANSFER')
+            ->count();
+
+        $recordsFiltered = clone $query;
+        $recordsFiltered = $recordsFiltered->count();
+
+        $data = $query->skip($start)->take($length)->get();
+
+        // Get destination warehouse for each transfer
+        foreach ($data as $row) {
+            $destinationWarehouse = DB::table('t_stock_movement_logs')
+                ->join('m_warehouses', 't_stock_movement_logs.warehouse_id', '=', 'm_warehouses.id')
+                ->where('reference_type', 'STOCK_TRANSFER')
+                ->where('reference_number', $row->adjustment_number)
+                ->where('movement_type', 'ADJUSTMENT_IN')
+                ->select('m_warehouses.code', 'm_warehouses.name')
+                ->first();
+
+            $row->destination_warehouse_code = $destinationWarehouse->code ?? '-';
+            $row->destination_warehouse_name = $destinationWarehouse->name ?? '-';
+        }
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ], 200);
+    }
+
+    public function stock_transfer_add(Request $request)
     {
         // Adjustment types
         if (isset($request->id) && isset($request->type)) {
@@ -199,7 +264,64 @@ class WarehouseController extends Controller
                 'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
-        
+
+    }
+
+    public function stock_transfer_detail($id)
+    {
+        // Get stock adjustment record
+        $adjustment = DB::table('t_stock_adjustments as sa')
+            ->leftJoin('m_warehouses as w', 'sa.warehouse_id', '=', 'w.id')
+            ->leftJoin('m_contacts as c', 'sa.pic_id', '=', 'c.id')
+            ->where('sa.id', $id)
+            ->where('sa.adjustment_type', 'WAREHOUSE_TRANSFER')
+            ->select(
+                'sa.*',
+                'w.code as warehouse_code',
+                'w.name as warehouse_name',
+                'c.name as pic_name'
+            )
+            ->first();
+
+        if (!$adjustment) {
+            abort(404, 'Stock transfer record not found');
+        }
+
+        // Get destination warehouse from movement logs (ADJUSTMENT_IN)
+        $destinationWarehouse = DB::table('t_stock_movement_logs')
+            ->join('m_warehouses', 't_stock_movement_logs.warehouse_id', '=', 'm_warehouses.id')
+            ->where('reference_type', 'STOCK_TRANSFER')
+            ->where('reference_number', $adjustment->adjustment_number)
+            ->where('movement_type', 'ADJUSTMENT_IN')
+            ->select('m_warehouses.id', 'm_warehouses.code', 'm_warehouses.name')
+            ->first();
+
+        // Get adjustment items (products transferred)
+        $items = DB::table('t_stock_adjustment_items')
+            ->where('stock_adjustment_id', $id)
+            ->where('adjustment_qty', '>', 0) // Only get positive adjustments (the OUT has negative qty)
+            ->get();
+
+        // Parse tags
+        $tags = [];
+        if (!empty($adjustment->f_tag_codes)) {
+            $tagCodes = json_decode($adjustment->f_tag_codes, true);
+            if (is_array($tagCodes)) {
+                $tags = DB::table('m_tags as t')
+                    ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+                    ->whereIn('t.code', $tagCodes)
+                    ->where('t.company_code', session('user_company_code'))
+                    ->select('t.code', 't.name', 'tc.code as tag_color_code')
+                    ->get();
+            }
+        }
+
+        return view('pages.master_data.warehouse.stock_transfer_detail', [
+            'adjustment' => $adjustment,
+            'destinationWarehouse' => $destinationWarehouse,
+            'items' => $items,
+            'tags' => $tags,
+        ]);
     }
 
     public function add()

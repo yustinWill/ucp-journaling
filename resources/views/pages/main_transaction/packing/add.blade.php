@@ -112,6 +112,17 @@
                 </div>
             </div>
 
+            <!-- Production Code Selection -->
+            <div class="row g-3 mb-4" id="production-select-container" style="display: none;">
+                <div class="col-md-6">
+                    <label class="form-label">Production Code <span style="color: red;">*</span></label>
+                    <select class="form-select" id="source-production" name="source_production_id" required>
+                        <option value="">Pilih Production Code</option>
+                    </select>
+                    <small class="form-text text-muted">Pilih production yang belum di-packing</small>
+                </div>
+            </div>
+
             <!-- Available Bundle Stock Section -->
             <div class="row g-3 mb-4" id="bundle-stock-container" style="display: none;">
                 <div class="col-md-6">
@@ -120,7 +131,7 @@
                         <input type="text" class="form-control" id="available-bundle-qty" disabled value="0" />
                         <span class="input-group-text" id="bundle-unit-label">-</span>
                     </div>
-                    <small class="form-text text-muted">Stock tersedia untuk bundle yang dipilih</small>
+                    <small class="form-text text-muted">Qty dari production yang dipilih</small>
                 </div>
 
                 <div class="col-md-6">
@@ -140,7 +151,7 @@
             </div>
             <div id="packaging-disabled-message" class="alert alert-info">
                 <i class="icon-base ti tabler-info-circle me-2"></i>
-                Silakan pilih <strong>Bundle Product</strong> dan <strong>Gudang</strong> terlebih dahulu untuk melihat produk packaging yang tersedia.
+                Silakan pilih <strong>Bundle Product</strong>, <strong>Gudang</strong>, dan <strong>Production Code</strong> terlebih dahulu untuk melihat produk packaging yang tersedia.
             </div>
 
             <div id="packaging-products-container" style="display: none;">
@@ -151,6 +162,26 @@
             <div class="section-header mt-12">
                 <h6>Informasi Tambahan</h6>
                 <hr class="mx-n6">
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Sisa Bundle Product</label>
+                    <div class="input-group">
+                        <input type="number" step="0.01" class="form-control" id="remaining-bundle-adjustment"
+                            name="remaining_bundle_adjustment" value="0" placeholder="0">
+                        <span class="input-group-text" id="adjustment-unit-label">-</span>
+                    </div>
+                    <small class="form-text text-muted">
+                        Sisa dari production qty setelah packing selesai. Akan otomatis membuat stock adjustment.
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Alasan Penyesuaian Stock</label>
+                    <textarea class="form-control" id="adjustment-reason" name="adjustment_reason" rows="2"
+                        placeholder="Jelaskan alasan penyesuaian stock (opsional)..." maxlength="500"></textarea>
+                    <small class="form-text text-muted">Opsional - Jelaskan jika ada sisa bundle product</small>
+                </div>
             </div>
 
             <div class="row g-3 mb-4">
@@ -228,36 +259,81 @@
             // Auto-generate number on page load
             $('#generate-number-btn').click();
 
-            // Bundle product + Warehouse change - load packaging products and bundle stock
-            function loadPackingData() {
+            // Bundle product + Warehouse change - load available productions
+            function loadAvailableProductions() {
                 const bundleProductId = $('#bundle-product').val();
                 const warehouseId = $('#warehouse').val();
 
+                // Reset downstream selections
+                $('#source-production').html('<option value="">Pilih Production Code</option>').val('');
+                $('#production-select-container').hide();
+                $('#bundle-stock-container').hide();
+                $('#packaging-disabled-message').show();
+                $('#packaging-products-container').hide();
+                packagingProducts = [];
+                availableBundleQty = 0;
+
                 if (!bundleProductId || !warehouseId) {
-                    $('#packaging-disabled-message').show();
-                    $('#packaging-section').hide();
-                    $('#bundle-stock-container').hide();
-                    $('#packaging-rows').empty();
-                    packagingProducts = [];
                     return;
                 }
 
-                // Load bundle stock
+                // Load available productions (is_packed=false, is_packaging=false)
                 $.ajax({
-                    url: "{{ route('main_transaction.packing.get_bundle_stock') }}",
+                    url: "{{ route('main_transaction.packing.get_available_productions') }}",
                     type: 'GET',
                     data: {
                         bundle_product_id: bundleProductId,
                         warehouse_id: warehouseId
                     },
                     success: function(response) {
+                        if (response.success && response.data.length > 0) {
+                            let options = '<option value="">Pilih Production Code</option>';
+                            response.data.forEach(function(prod) {
+                                options += `<option value="${prod.id}" data-qty="${prod.quantity_produced}" data-unit="${prod.unit_code}">${prod.production_number} - ${prod.bundle_product_name} (${prod.quantity_produced} ${prod.unit_code}) - ${prod.production_date}</option>`;
+                            });
+                            $('#source-production').html(options);
+                            $('#production-select-container').show();
+                        } else {
+                            $('#source-production').html('<option value="">Tidak ada production yang tersedia</option>');
+                            $('#production-select-container').show();
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to load productions:', xhr);
+                    }
+                });
+            }
+
+            // Production code change - load bundle stock from production and packaging products
+            function loadPackingData() {
+                const bundleProductId = $('#bundle-product').val();
+                const warehouseId = $('#warehouse').val();
+                const productionId = $('#source-production').val();
+
+                if (!bundleProductId || !warehouseId || !productionId) {
+                    $('#packaging-disabled-message').show();
+                    $('#bundle-stock-container').hide();
+                    $('#packaging-products-container').hide();
+                    packagingProducts = [];
+                    return;
+                }
+
+                // Load bundle stock from selected production
+                $.ajax({
+                    url: "{{ route('main_transaction.packing.get_bundle_stock') }}",
+                    type: 'GET',
+                    data: {
+                        production_id: productionId
+                    },
+                    success: function(response) {
                         if (response.success) {
-                            availableBundleQty = response.available_qty;
+                            availableBundleQty = response.production_qty;
                             bundleUnitCode = response.unit_code;
 
                             $('#available-bundle-qty').val(formatNumber(availableBundleQty));
                             $('#bundle-unit-label').text(bundleUnitCode);
                             $('#remaining-unit-label').text(bundleUnitCode);
+                            $('#adjustment-unit-label').text(bundleUnitCode);
                             $('#bundle-stock-container').show();
 
                             updateRemainingBundleQty();
@@ -293,11 +369,16 @@
 
             // Bundle product change
             $('#bundle-product').on('change', function() {
-                loadPackingData();
+                loadAvailableProductions();
             });
 
             // Warehouse change
             $('#warehouse').on('change', function() {
+                loadAvailableProductions();
+            });
+
+            // Production code change
+            $('#source-production').on('change', function() {
                 loadPackingData();
             });
 
@@ -549,8 +630,15 @@
                 }
                 if (isNaN(num)) return '0';
 
+                // Handle negative numbers - preserve the minus sign
+                const isNegative = num < 0;
+                const absNum = Math.abs(num);
+
                 // Use toIndonesianNumberFormat which already handles decimal formatting correctly
-                return toIndonesianNumberFormat(num.toString());
+                const formatted = toIndonesianNumberFormat(absNum.toString());
+
+                // Add minus sign back if negative
+                return isNegative ? '-' + formatted : formatted;
             }
 
             // Format batch bundle qty - remove trailing zeros and unnecessary decimals
@@ -581,7 +669,7 @@
                 // Validate required fields
                 let isValid = true;
                 const requiredFields = ['production-number', 'production-date', 'bundle-product',
-                    'warehouse', 'pic-user'
+                    'warehouse', 'pic-user', 'source-production'
                 ];
 
                 requiredFields.forEach(function(fieldId) {
@@ -643,6 +731,9 @@
                     return;
                 }
 
+                // Note: Adjustment reason is optional now
+                // Users can provide a reason if needed, but it's not mandatory
+
                 // Check component stock
                 const hasInsufficientStock = $('#packaging-table .badge.bg-label-danger').length > 0;
                 if (hasInsufficientStock) {
@@ -693,11 +784,14 @@
                 formData.append('_token', '{{ csrf_token() }}');
                 formData.append('production_number', $('#production-number').val());
                 formData.append('production_date', $('#production-date').val());
+                formData.append('source_production_id', $('#source-production').val());
                 formData.append('bundle_product_id', $('#bundle-product').val());
                 formData.append('warehouse_id', $('#warehouse').val());
                 formData.append('pic_id', $('#pic-user').val());
                 formData.append('description', $('#description').val());
                 formData.append('memo', $('#production-memo').val());
+                formData.append('remaining_bundle_adjustment', $('#remaining-bundle-adjustment').val());
+                formData.append('adjustment_reason', $('#adjustment-reason').val());
 
                 // Collect packaging products data (only those with qty > 0)
                 const packagingData = [];

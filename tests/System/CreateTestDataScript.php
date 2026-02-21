@@ -62,7 +62,7 @@ Artisan::call('tinker', [], [
             "hpp_status" => "SETTLED",
             "batch_date" => "2025-09-01",
         ]);
-        $productService->updateStock($productId, "+", 100);
+        $productService->updateStock($productId);
         echo "Created batch 1 ID: {$batch1Id} (100 units @ 8000)\n";
 
         // Batch 2: Purchase at 8500/unit  
@@ -76,7 +76,7 @@ Artisan::call('tinker', [], [
             "hpp_status" => "SETTLED",
             "batch_date" => "2025-09-05",
         ]);
-        $productService->updateStock($productId, "+", 75);
+        $productService->updateStock($productId);
         echo "Created batch 2 ID: {$batch2Id} (75 units @ 8500)\n";
 
         // Batch 3: Purchase at 9000/unit
@@ -90,7 +90,7 @@ Artisan::call('tinker', [], [
             "hpp_status" => "SETTLED",
             "batch_date" => "2025-09-10",
         ]);
-        $productService->updateStock($productId, "+", 50);
+        $productService->updateStock($productId);
         echo "Created batch 3 ID: {$batch3Id} (50 units @ 9000)\n";
 
         $finalStock = DB::table("m_products")->where("id", $productId)->value("total_stock");

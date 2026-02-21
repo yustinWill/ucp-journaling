@@ -8,6 +8,7 @@ use App\Domains\Production\Services\ProductionService;
 use App\Domains\Production\Services\ProductionStockService;
 use App\Enums\ErrorCodes;
 use App\Exceptions\AppException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CreatePackingAction
@@ -28,23 +29,28 @@ class CreatePackingAction
             $productionIds = [];
             $productionService = app(ProductionService::class);
 
-            // 2. Create separate production record for each packaging product
+            // Capture stock BEFORE packing operations for adjustment calculation
+            $stockBeforePacking = 0;
+            $latestMovementBeforePacking = DB::table('t_stock_movement_logs')
+                ->where('product_id', $data['bundle_product_id'])
+                ->where('warehouse_id', $data['warehouse_id'])
+                ->where('company_code', session('user_company_code'))
+                ->orderBy('id', 'DESC')
+                ->first();
+            $stockBeforePacking = $latestMovementBeforePacking ? $latestMovementBeforePacking->stock_after : 0;
+
+            // 2. Generate shared transaction number for all packaging products in this packing
+            $year = date('Y');
+            $month = date('m');
+            $transactionNumber = $data['production_number'] ?? "PACK-{$year}{$month}-" . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+            // 3. Create separate production record for each packaging product
             foreach ($data['packaging_products'] as $index => $packaging) {
                 // Calculate HPP for this specific packaging product
                 $totals = $this->calculateTotalsForSinglePackaging($data, $packaging);
 
-                
-                // Generate unique production number for each line
-                // TODO: Generate unique production number
-                $year = date('Y');
-                $month = date('m');
-                $day = date('d');
-                $timestamp = time();
-
-                // Mock generation - replace with proper sequence
-                $number = "PROD-{$year}-".str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
-
-                $productionNumber = $number . '-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
+                // Generate unique production number per line (shared base + index suffix)
+                $productionNumber = $transactionNumber . '-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
 
                 // Create production record with packaging product as bundle_product_id
                 $productionData = [
@@ -78,7 +84,7 @@ class CreatePackingAction
                 $this->processStockMovementsForSinglePackaging($productionId, $productionData, $data['bundle_product_id'], $packaging);
 
                 // 5. Create t_packaging mapping record
-                $this->createPackagingMapping($number,$productionId, $data['bundle_product_id'], $packaging);
+                $this->createPackagingMapping($transactionNumber, $productionId, $data['bundle_product_id'], $packaging);
 
                 // 6. Create audit log
                 app(ProductionAuditLogService::class)->logCreation(
@@ -89,12 +95,29 @@ class CreatePackingAction
                 );
             }
 
+            // 7. Create stock adjustment for remaining bundle product (if any)
+            $this->createRemainingBundleAdjustment($data, $productionIds, $stockBeforePacking);
+
+            // 8. Mark source production as packed
+            if (!empty($data['source_production_id'])) {
+                DB::table('t_productions')
+                    ->where('id', $data['source_production_id'])
+                    ->where('company_code', session('user_company_code'))
+                    ->update(['is_packed' => true, 'updated_at' => now()]);
+            }
+
             return $productionIds;
         });
     }
 
     private function validateStockAvailability(array $data): void
     {
+        // Stock validation disabled for repacking
+        // Allows negative stock for flexibility in packing adjustments
+        return;
+
+        // Previous validation code kept for reference but disabled:
+        /*
         if (empty($data['packaging_products'])) {
             return;
         }
@@ -160,6 +183,7 @@ class CreatePackingAction
                 }
             }
         }
+        */
     }
 
     private function calculateTotalsForSinglePackaging(array $data, array $packaging): array
@@ -344,6 +368,7 @@ class CreatePackingAction
         $requiredFields = [
             'production_date' => 'Production date is required',
             'production_number' => 'Production number is required',
+            'source_production_id' => 'Source production is required',
             'bundle_product_id' => 'Bundle product is required',
             'warehouse_id' => 'Warehouse is required',
             'pic_id' => 'PIC is required',
@@ -421,5 +446,149 @@ class CreatePackingAction
             'is_valid' => empty($errors),
             'errors' => $errors,
         ];
+    }
+
+    private function createRemainingBundleAdjustment(array $data, array $productionIds, float $stockBeforePacking): void
+    {
+        // "Sisa" = remaining qty from the production that wasn't consumed by packing
+        $sisaInput = floatval($data['remaining_bundle_adjustment'] ?? 0);
+
+        $companyCode = session('user_company_code');
+        $warehouseId = $data['warehouse_id'];
+        $bundleProductId = $data['bundle_product_id'];
+        $adjustmentReason = $data['adjustment_reason'] ?? 'Stock adjustment after packing';
+
+        // Get the production qty from the source production
+        $productionQty = 0;
+        if (!empty($data['source_production_id'])) {
+            $productionQty = (float) DB::table('t_productions')
+                ->where('id', $data['source_production_id'])
+                ->value('quantity_produced') ?? 0;
+        }
+
+        // Get product and warehouse details
+        $product = DB::table('m_products as p')
+            ->join('m_units as u', 'p.f_unit_id', '=', 'u.id')
+            ->where('p.id', $bundleProductId)
+            ->select('p.code as product_code', 'p.name as product_name', 'u.code as unit_code', 'u.name as unit_name')
+            ->first();
+
+        $warehouse = DB::table('m_warehouses')
+            ->where('id', $warehouseId)
+            ->select('code as warehouse_code', 'name as warehouse_name')
+            ->first();
+
+        // Calculate desired final stock
+        // Formula: stock_before_packing - production_qty + sisa_input
+        // This is the stock level we want AFTER all adjustments
+        $desiredFinalStock = $stockBeforePacking - $productionQty + $sisaInput;
+
+        // Get current stock AFTER packing operations
+        $latestMovement = DB::table('t_stock_movement_logs')
+            ->where('product_id', $bundleProductId)
+            ->where('warehouse_id', $warehouseId)
+            ->where('company_code', $companyCode)
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        $stockAfterPacking = $latestMovement ? $latestMovement->stock_after : 0;
+
+        // Calculate the actual adjustment needed: how much to add/remove to reach desired final stock
+        $adjustmentNeeded = $desiredFinalStock - $stockAfterPacking;
+
+        // If no adjustment needed, skip
+        if ($adjustmentNeeded == 0) {
+            return;
+        }
+
+        // Generate stock adjustment number
+        $year = date('Y');
+        $month = date('m');
+        $adjustmentNumber = "ADJ-PACK-{$year}{$month}-" . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+        // Positive = need to add stock, Negative = need to remove stock
+        $movementType = $adjustmentNeeded > 0 ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT';
+        $absoluteQty = abs($adjustmentNeeded);
+
+        // Create stock movement log entry
+        DB::table('t_stock_movement_logs')->insert([
+            'company_code' => $companyCode,
+            'movement_date' => $data['production_date'],
+            'movement_type' => $movementType,
+            'reference_type' => 'PACKING_ADJUSTMENT',
+            'reference_number' => $adjustmentNumber,
+            'warehouse_id' => $warehouseId,
+            'warehouse_code' => $warehouse->warehouse_code ?? '',
+            'warehouse_name' => $warehouse->warehouse_name ?? '',
+            'product_id' => $bundleProductId,
+            'product_code' => $product->product_code ?? '',
+            'product_name' => $product->product_name ?? '',
+            'unit' => $product->unit_name ?? '',
+            'stock_before' => $stockAfterPacking,
+            'movement_qty' => $absoluteQty,
+            'stock_after' => $desiredFinalStock,
+            'notes' => "Packing adjustment [sisa:{$sisaInput}] - {$adjustmentReason}",
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // If ADJUSTMENT_IN (shortage - need to add stock), create a stock batch
+        if ($movementType === 'ADJUSTMENT_IN') {
+            // Get latest HPP from existing batches for this product
+            $latestBatch = DB::table('t_product_stock_batches')
+                ->where('f_product_id', $bundleProductId)
+                ->where('status', 'ACTIVE')
+                ->orderBy('batch_date', 'DESC')
+                ->first();
+
+            $estimatedHpp = $latestBatch->estimated_hpp ?? $latestBatch->purchase_price ?? 0;
+
+            DB::table('t_product_stock_batches')->insert([
+                'company_code' => $companyCode,
+                'f_product_id' => $bundleProductId,
+                'batch_reference_code' => $adjustmentNumber,
+                'source_type' => 'STOCK_ADJUSTMENT',
+                'f_source_transaction_id' => $productionIds[0] ?? null,
+                'batch_date' => $data['production_date'],
+                'initial_qty' => $absoluteQty,
+                'remaining_qty' => $absoluteQty,
+                'raw_material_cost' => 0,
+                'production_cost' => 0,
+                'purchase_price' => 0,
+                'estimated_hpp' => $estimatedHpp,
+                'hpp_status' => 'UNSETTLED',
+                'status' => 'ACTIVE',
+                'created_at' => now(),
+                'created_by' => Auth::id(),
+                'updated_at' => now(),
+            ]);
+        }
+        // If ADJUSTMENT_OUT (excess - need to remove stock), deduct from existing batches using FIFO
+        else {
+            $remainingToDeduct = $absoluteQty;
+            $batches = DB::table('t_product_stock_batches')
+                ->where('f_product_id', $bundleProductId)
+                ->where('status', 'ACTIVE')
+                ->where('remaining_qty', '>', 0)
+                ->orderBy('batch_date', 'ASC')
+                ->orderBy('id', 'ASC')
+                ->get();
+
+            foreach ($batches as $batch) {
+                if ($remainingToDeduct <= 0) break;
+
+                $qtyToDeduct = min($batch->remaining_qty, $remainingToDeduct);
+
+                DB::table('t_product_stock_batches')
+                    ->where('id', $batch->id)
+                    ->decrement('remaining_qty', $qtyToDeduct);
+
+                $remainingToDeduct -= $qtyToDeduct;
+            }
+        }
+
+        // Update total_stock in m_products to match the adjustment
+        $adjustmentType = $movementType === 'ADJUSTMENT_IN' ? '+' : '-';
+        app(\App\Domains\Product\Services\ProductService::class)->updateStock($bundleProductId, $adjustmentType, $absoluteQty);
     }
 }

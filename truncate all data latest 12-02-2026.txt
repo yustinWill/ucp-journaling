@@ -1,0 +1,93 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Transaction tables
+TRUNCATE TABLE t_accounting_journals;
+TRUNCATE TABLE t_expense_audit_logs;
+TRUNCATE TABLE t_expense_coa_details;
+TRUNCATE TABLE t_expenses;
+TRUNCATE TABLE t_notification;
+TRUNCATE TABLE t_product_batch_transactions;
+TRUNCATE TABLE t_product_stock_batches;
+TRUNCATE TABLE t_production_audit_logs;
+TRUNCATE TABLE t_production_expenses;
+TRUNCATE TABLE t_production_items;
+TRUNCATE TABLE t_productions;
+TRUNCATE TABLE t_purchase_deliveries;
+TRUNCATE TABLE t_purchase_delivery_audit_logs;
+TRUNCATE TABLE t_purchase_delivery_products;
+TRUNCATE TABLE t_purchase_invoice_audit_logs;
+TRUNCATE TABLE t_purchase_invoice_products;
+TRUNCATE TABLE t_purchase_invoices;
+TRUNCATE TABLE t_purchase_order_audit_logs;
+TRUNCATE TABLE t_purchase_order_products;
+TRUNCATE TABLE t_purchase_orders;
+TRUNCATE TABLE t_return_management_audit_logs;
+TRUNCATE TABLE t_return_management_products;
+TRUNCATE TABLE t_return_managements;
+TRUNCATE TABLE t_sales_deliveries;
+TRUNCATE TABLE t_sales_delivery_audit_logs;
+TRUNCATE TABLE t_sales_delivery_products;
+TRUNCATE TABLE t_sales_invoice_audit_logs;
+TRUNCATE TABLE t_sales_invoice_payment;
+TRUNCATE TABLE t_sales_invoice_products;
+TRUNCATE TABLE t_sales_invoices;
+TRUNCATE TABLE t_sales_order_audit_logs;
+TRUNCATE TABLE t_sales_order_products;
+TRUNCATE TABLE t_sales_order_revenue_splits;
+TRUNCATE TABLE t_sales_orders;
+TRUNCATE TABLE t_stock_adjustment_audit_logs;
+TRUNCATE TABLE t_stock_adjustment_items;
+TRUNCATE TABLE t_stock_adjustments;
+TRUNCATE TABLE t_stock_movement_logs;
+TRUNCATE TABLE t_stock_opname_audit_logs;
+TRUNCATE TABLE t_stock_opname_products;
+TRUNCATE TABLE t_stock_opnames;
+
+-- System tables
+TRUNCATE TABLE telescope_entries;
+TRUNCATE TABLE telescope_entries_tags;
+TRUNCATE TABLE telescope_monitoring;
+
+-- Lookup tables
+TRUNCATE TABLE l_read_notification;
+
+-- Master tables
+TRUNCATE TABLE m_contact_addresses;
+TRUNCATE TABLE m_contact_audit_logs;
+TRUNCATE TABLE m_contact_banks;
+TRUNCATE TABLE m_contact_products;
+TRUNCATE TABLE m_contact_types;
+TRUNCATE TABLE m_contacts;
+TRUNCATE TABLE m_product_audit_logs;
+TRUNCATE TABLE m_product_composition_cost;
+TRUNCATE TABLE m_product_compositions;
+TRUNCATE TABLE m_product_expenses;
+TRUNCATE TABLE m_product_revenue_split_configs;
+TRUNCATE TABLE m_products;
+TRUNCATE TABLE m_revenue_split_audit_logs;
+TRUNCATE TABLE m_revenue_splits;
+TRUNCATE TABLE m_sales_person_audit_logs;
+TRUNCATE TABLE m_sales_persons;
+TRUNCATE TABLE m_tags;
+TRUNCATE TABLE m_warehouse_audit_logs;
+TRUNCATE TABLE m_warehouses;
+
+TRUNCATE TABLE m_inventory_asset_audit_logs;
+TRUNCATE TABLE m_inventory_assets;
+TRUNCATE TABLE m_inventory_assets_depreciation_schedule;
+
+
+-- Expense related tables
+TRUNCATE TABLE t_budged_expenses;
+TRUNCATE TABLE t_expense_payments;
+TRUNCATE TABLE t_expense_repayments;
+TRUNCATE TABLE t_expense_audit_logs;
+TRUNCATE TABLE t_expense_coa_details;
+TRUNCATE TABLE t_expenses;
+
+-- Top Up related tables
+TRUNCATE TABLE t_topup_sales_order;
+TRUNCATE TABLE t_topup;
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;

@@ -18,6 +18,8 @@ use App\Http\Controllers\MainTransaction\SalesOrderController;
 use App\Http\Controllers\MainTransaction\SalesOrderRevenueSplitController;
 use App\Http\Controllers\MainTransaction\StockAdjustmentController;
 use App\Http\Controllers\MainTransaction\TopUpController;
+use App\Http\Controllers\MainTransaction\ReimbursementController;
+use App\Http\Controllers\MainTransaction\ReimbursementApprovalController;
 use Illuminate\Support\Facades\Route;
 
 $base_segment = '/main_transaction';
@@ -36,8 +38,10 @@ $production_segment = '/production';
 $packing_segment = '/packing';
 $return_management_segment = '/return_management';
 $topup_segment = '/topup';
+$reimbursement_segment = '/reimbursement';
+$reimbursement_approval_segment = '/reimbursement_approval';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $packing_segment, $return_management_segment, $topup_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $packing_segment, $return_management_segment, $topup_segment, $reimbursement_segment, $reimbursement_approval_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment.$journal_segment.'/index', 'index')->name('main_transaction.journal.index');
         Route::get($base_segment.$journal_segment.'/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table');
@@ -163,6 +167,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         // AJAX endpoints
         Route::get($base_segment.$sales_order_segment.'/get_customer_info/{customer_id}', 'getCustomerInfo')->name('main_transaction.sales_order.get_customer_info');
         Route::get($base_segment.$sales_order_segment.'/get_warehouse_products/{customer_id}', 'getWarehouseProducts')->name('main_transaction.sales_order.get_warehouse_products');
+        Route::post($base_segment.$sales_order_segment.'/cancel/{id}', 'cancel')->name('main_transaction.sales_order.cancel');
     });
 
     // Sales Order Revenue Split Routes
@@ -324,6 +329,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$packing_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.packing.generate_transaction_number');
         Route::get($base_segment.$packing_segment.'/calculate_fifo_prices', 'calculateFifoPrices')->name('main_transaction.packing.calculate_fifo_prices');
         Route::get($base_segment.$packing_segment.'/get_bundle_price', 'getBundlePrice')->name('main_transaction.packing.get_bundle_price');
+        Route::get($base_segment.$packing_segment.'/get_available_productions', 'getAvailableProductions')->name('main_transaction.packing.get_available_productions');
     });
 
     // Return Management Routes
@@ -366,5 +372,23 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$topup_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.topup.generate_transaction_number');
         Route::get($base_segment.$topup_segment.'/get_outstanding_sales_orders', 'getOutstandingSalesOrders')->name('main_transaction.topup.get_outstanding_sales_orders');
         Route::post($base_segment.$topup_segment.'/calculate_fifo_allocation', 'calculateFifoAllocation')->name('main_transaction.topup.calculate_fifo_allocation');
+    });
+
+    // Reimbursement Routes (Staff)
+    Route::controller(ReimbursementController::class)->group(function () use ($base_segment, $reimbursement_segment) {
+        Route::get($base_segment.$reimbursement_segment.'/index', 'index')->name('main_transaction.reimbursement.index');
+        Route::get($base_segment.$reimbursement_segment.'/index_data_table', 'index_data_table')->name('main_transaction.reimbursement.index_data_table');
+        Route::get($base_segment.$reimbursement_segment.'/add', 'add')->name('main_transaction.reimbursement.add');
+        Route::post($base_segment.$reimbursement_segment.'/store', 'store')->name('main_transaction.reimbursement.store');
+        Route::get($base_segment.$reimbursement_segment.'/detail/{id}', 'detail')->name('main_transaction.reimbursement.detail');
+    });
+
+    // Reimbursement Approval Routes (Admin)
+    Route::controller(ReimbursementApprovalController::class)->group(function () use ($base_segment, $reimbursement_approval_segment) {
+        Route::get($base_segment.$reimbursement_approval_segment.'/index', 'index')->name('main_transaction.reimbursement_approval.index');
+        Route::get($base_segment.$reimbursement_approval_segment.'/index_data_table', 'index_data_table')->name('main_transaction.reimbursement_approval.index_data_table');
+        Route::get($base_segment.$reimbursement_approval_segment.'/detail/{id}', 'detail')->name('main_transaction.reimbursement_approval.detail');
+        Route::post($base_segment.$reimbursement_approval_segment.'/approve/{id}', 'approve')->name('main_transaction.reimbursement_approval.approve');
+        Route::post($base_segment.$reimbursement_approval_segment.'/reject/{id}', 'reject')->name('main_transaction.reimbursement_approval.reject');
     });
 });

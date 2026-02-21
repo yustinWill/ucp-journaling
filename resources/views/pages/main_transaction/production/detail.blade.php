@@ -241,7 +241,7 @@
                                                 <th style="width: 25%;">Komponen Product</th>
                                                 <th style="width: 10%;">Satuan</th>
                                                 <th style="width: 13%;">Qty per Bundle</th>
-                                                <th style="width: 15%;">Stock Available</th>
+                                                {{-- <th style="width: 15%;">Stock Available</th> --}}
                                                 <th style="width: 15%;">Material Input</th>
                                                 <th style="width: 12%;">Leftover Material</th>
                                                 <th style="width: 10%;">Status</th>
@@ -258,7 +258,7 @@
                                                     <td>{{ $component->product_name }}</td>
                                                     <td class="text-center">{{ $component->unit_code }}</td>
                                                     <td class="text-center">{{ $formatNumber($component->quantity_per_bundle) }}</td>
-                                                    <td class="text-center">{{ $formatNumber($component->current_stock) }}</td>
+                                                    {{-- <td class="text-center">{{ $formatNumber($component->current_stock) }}</td> --}}
                                                     <td class="text-center">
                                                         <strong>{{ $formatNumber($component->material_input ?? $component->quantity_consumed) }}</strong>
                                                     </td>
@@ -297,7 +297,7 @@
                                                 <th style="width: 10%;">Satuan</th>
                                                 <th style="width: 15%;">Qty per Bundle</th>
                                                 <th style="width: 15%;">Total Required</th>
-                                                <th style="width: 15%;">Stock Available</th>
+                                                {{-- <th style="width: 15%;">Stock Available</th> --}}
                                                 <th style="width: 15%;">Status</th>
                                             </tr>
                                         </thead>
@@ -313,7 +313,7 @@
                                                     <td class="text-center">{{ $component->unit_code }}</td>
                                                     <td class="text-center">{{ $formatNumber($component->quantity_per_bundle) }}</td>
                                                     <td class="text-center">{{ $formatNumber($component->quantity_required) }}</td>
-                                                    <td class="text-center">{{ $formatNumber($component->current_stock) }}</td>
+                                                    {{-- <td class="text-center">{{ $formatNumber($component->current_stock) }}</td> --}}
                                                     <td class="text-center">
                                                         @if ($component->current_stock >= $component->quantity_required)
                                                             <span class="badge bg-label-success">Available</span>

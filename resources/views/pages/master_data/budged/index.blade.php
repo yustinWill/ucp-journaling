@@ -42,6 +42,7 @@
                     <thead>
                         <tr>
                             <th>Periode</th>
+                            <th>Tipe Entity</th>
                             <th>Jumlah Anggaran</th>
                             <th>Total Limit</th>
                             <th>Total Sisa</th>
@@ -88,13 +89,25 @@
                         }
                     },
                     {
-                        data: 'budget_count',
+                        data: 'type',
                         responsivePriority: 3,
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            if (data === 'owner') {
+                                return '<span class="badge bg-label-primary">Owner</span>';
+                            } else {
+                                return '<span class="badge bg-label-info">Kingdom</span>';
+                            }
+                        }
+                    },
+                    {
+                        data: 'budget_count',
+                        responsivePriority: 4,
                         className: 'text-center'
                     },
                     {
                         data: 'total_limit',
-                        responsivePriority: 4,
+                        responsivePriority: 5,
                         className: 'text-end',
                         render: function(data) {
                             return data ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data) : 'Rp 0';
@@ -102,7 +115,7 @@
                     },
                     {
                         data: 'total_remaining',
-                        responsivePriority: 5,
+                        responsivePriority: 6,
                         className: 'text-end',
                         render: function(data) {
                             return data ? 'Rp ' + new Intl.NumberFormat('id-ID').format(data) : 'Rp 0';

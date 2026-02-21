@@ -60,11 +60,11 @@
                         <tr>
                             <th style="width: 100px;">Tanggal</th>
                             <th style="width: 140px;">No Transaksi</th>
-                            <th>Nama Produk</th>
+                            <th>Hasil Packing</th>
                             <th style="width: 180px;">Kode Produk</th>
+                            <th style="width: 180px;">Gudang</th>
                             <th style="width: 100px;">Jumlah Packing</th>
                             <th style="width: 120px;">Unit</th>
-                            <th style="width: 100px;">HPP</th>
                              <th style="width: 100px;">Aksi</th>
                         </tr>
                     </thead>
@@ -139,6 +139,9 @@
                             data: 'bundle_product_code',
                         },
                         {
+                            data: 'warehouse_name',
+                        },
+                        {
                             data: 'quantity_packed',
                             className: 'text-end',
                             render: function(data, type, row) {
@@ -151,13 +154,6 @@
                         {
                             data: 'unit_code',
                             className: 'text-center',
-                        },
-                        {
-                            data: 'hpp_packing',
-                            className: 'text-end',
-                            render: function(data, type, row) {
-                                return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);
-                            }
                         },
                         {
                             data: null,

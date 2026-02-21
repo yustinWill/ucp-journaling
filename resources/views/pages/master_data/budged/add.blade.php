@@ -15,15 +15,23 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Tanggal Mulai Periode <span style="color: red;">*</span></label>
                     <input type="text" class="form-control global-single-date-picker" id="period_start_date"
                            name="period_start_date" placeholder="yyyy-mm-dd" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">Tanggal Akhir Periode <span style="color: red;">*</span></label>
                     <input type="text" class="form-control global-single-date-picker" id="period_end_date"
                            name="period_end_date" placeholder="yyyy-mm-dd" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tipe <span style="color: red;">*</span></label>
+                    <select class="form-select" id="type" name="type" required>
+                        <option value="">Pilih Tipe</option>
+                        <option value="kingdom">Kingdom</option>
+                        <option value="owner">Owner</option>
+                    </select>
                 </div>
             </div>
 
@@ -302,6 +310,7 @@
                 const formData = {
                     period_start_date: periodStartDate,
                     period_end_date: periodEndDate,
+                    type: $('#type').val(),
                     budgets: budgets
                 };
 

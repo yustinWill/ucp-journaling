@@ -19,6 +19,7 @@ use App\Helpers\DiscordNotifier;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PurchaseInvoiceController extends Controller
@@ -183,6 +184,15 @@ class PurchaseInvoiceController extends Controller
         // Get return data for this invoice (one invoice can only have one return)
         $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'PURCHASE_RETURN');
 
+        // Check if Purchase Delivery is complete (DELIVERED status)
+        $hasCompletedDelivery = false;
+        if ($invoice_data->f_purchase_order_id) {
+            $hasCompletedDelivery = DB::table('t_purchase_deliveries')
+                ->where('f_purchase_order_id', $invoice_data->f_purchase_order_id)
+                ->where('status', 'DELIVERED')
+                ->exists();
+        }
+
         // Get tax options for discount/tax calculations (for potential edits)
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
@@ -198,6 +208,7 @@ class PurchaseInvoiceController extends Controller
             'invoice_products' => $invoice_products,
             'auditLogs' => $auditLogs,
             'returnData' => $returnData,
+            'hasCompletedDelivery' => $hasCompletedDelivery,
             // 'taxOptions' => $taxOptions,
             'canEditPurchaseInvoice' => $canEditPurchaseInvoice,
             'canViewUser' => $canViewUser,

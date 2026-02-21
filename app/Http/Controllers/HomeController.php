@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Budged\Services\BudgedService;
 use App\Domains\RevenueSplit\Services\RevenueSplitService;
+use App\Domains\StockMovement\Services\StockMovementLogsService;
+use App\Domains\Warehouse\Services\WarehouseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -15,94 +19,253 @@ class HomeController extends Controller
 
     public function dashboard(Request $req): View
     {
-        // Mock dashboard data for RIYO Water - Mineral Water Production Company
-        $dashboardData = [
-            'summary_cards' => [
-                'total_revenue' => [
-                    'value' => 'Rp 285.750.000',
-                    'change' => '+18.2%',
-                    'trend' => 'up',
-                ],
-                'total_expenses' => [
-                    'value' => 'Rp 142.400.000',
-                    'change' => '+12.8%',
-                    'trend' => 'up',
-                ],
-                'net_profit' => [
-                    'value' => 'Rp 143.350.000',
-                    'change' => '+23.7%',
-                    'trend' => 'up',
-                ],
-                'pending_invoices' => [
-                    'value' => '18',
-                    'change' => '-8.5%',
-                    'trend' => 'down',
-                ],
-            ],
-            'recent_transactions' => [
-                [
-                    'id' => 'INV-2025-0847',
-                    'type' => 'sales',
-                    'description' => 'Penjualan RIYO Water 600ml ke Toko Segar Mart',
-                    'amount' => 'Rp 4.850.000',
-                    'date' => '2025-07-17',
-                    'status' => 'completed',
-                ],
-                [
-                    'id' => 'PO-2025-0312',
-                    'type' => 'purchase',
-                    'description' => 'Pembelian Botol PET 600ml dari CV Plastik Prima',
-                    'amount' => 'Rp 3.200.000',
-                    'date' => '2025-07-16',
-                    'status' => 'pending',
-                ],
-                [
-                    'id' => 'INV-2025-0846',
-                    'type' => 'sales',
-                    'description' => 'Penjualan RIYO Water 1500ml ke Minimarket Berkah',
-                    'amount' => 'Rp 2.750.000',
-                    'date' => '2025-07-16',
-                    'status' => 'completed',
-                ],
-                [
-                    'id' => 'EXP-2025-0198',
-                    'type' => 'expense',
-                    'description' => 'Biaya Listrik & Mesin Produksi',
-                    'amount' => 'Rp 1.850.000',
-                    'date' => '2025-07-15',
-                    'status' => 'completed',
-                ],
-                [
-                    'id' => 'PO-2025-0311',
-                    'type' => 'purchase',
-                    'description' => 'Pembelian Label & Kemasan dari PT Grafika Mandiri',
-                    'amount' => 'Rp 2.400.000',
-                    'date' => '2025-07-15',
-                    'status' => 'completed',
-                ],
-            ],
-            'top_products' => [
-                ['name' => 'RIYO Water 600ml', 'sales' => 'Rp 85.500.000', 'qty' => 28500],
-                ['name' => 'RIYO Water 1500ml', 'sales' => 'Rp 72.000.000', 'qty' => 14400],
-                ['name' => 'RIYO Water 330ml', 'sales' => 'Rp 45.800.000', 'qty' => 22900],
-                ['name' => 'RIYO Water 19L Galon', 'sales' => 'Rp 58.200.000', 'qty' => 2910],
-                ['name' => 'RIYO Water 240ml Cup', 'sales' => 'Rp 24.250.000', 'qty' => 19400],
-            ],
-            'low_stock_items' => [
-                ['name' => 'Botol PET 600ml', 'current_stock' => 850, 'min_stock' => 2000],
-                ['name' => 'Label RIYO Water 1500ml', 'current_stock' => 320, 'min_stock' => 1000],
-                ['name' => 'Tutup Botol (Cap) 600ml', 'current_stock' => 1250, 'min_stock' => 3000],
-                ['name' => 'Kardus Kemasan 24pcs', 'current_stock' => 180, 'min_stock' => 500],
-            ],
-        ];
+        $companyCode = session('user_company_code');
 
-        // Add Revenue Split data for Dashboard Keuntungan Penjualan section
-        $revenueSplitData = [
-            'current_cycle' => app(RevenueSplitService::class)->findAll()->where('status', 'ACTIVE')->first(),
-            'revenue_split_summary' => app(RevenueSplitService::class)->getSummaryCards(),
-        ];
+        // Parse date filter (default: 30 days before)
+        $isLifetime = $req->boolean('lifetime', false);
+        $dateFrom = $req->input('date_from', now()->subDays(30)->format('Y-m-d'));
+        $dateTo = $req->input('date_to', now()->format('Y-m-d'));
 
-        return view('pages.dashboard', array_merge($dashboardData, $revenueSplitData));
+        // ============================================================
+        // Section 1: SO / SD / SI Summary Cards (filtered by period)
+        // ============================================================
+        $soQuery = DB::table('t_sales_orders')->where('company_code', $companyCode);
+        $sdQuery = DB::table('t_sales_deliveries')
+            ->join('t_sales_orders as so', 't_sales_deliveries.sales_order_id', '=', 'so.id')
+            ->where('so.company_code', $companyCode);
+        $siQuery = DB::table('t_sales_invoices as si')
+            ->join('t_sales_orders as so', 'si.f_sales_order_id', '=', 'so.id')
+            ->where('so.company_code', $companyCode);
+
+        if (!$isLifetime) {
+            $soQuery->whereBetween('transaction_date', [$dateFrom, $dateTo]);
+            $sdQuery->whereBetween('t_sales_deliveries.delivery_date', [$dateFrom, $dateTo]);
+            $siQuery->whereBetween('si.invoice_date', [$dateFrom, $dateTo]);
+        }
+
+        $soTotal = $soQuery->count();
+
+        $sdCounts = (clone $sdQuery)->selectRaw("
+            SUM(CASE WHEN t_sales_deliveries.is_confirmed = '0' OR t_sales_deliveries.is_confirmed IS NULL THEN 1 ELSE 0 END) as non_confirm,
+            SUM(CASE WHEN t_sales_deliveries.is_confirmed = '1' THEN 1 ELSE 0 END) as confirmed
+        ")->first();
+        $sdNonConfirm = (int) ($sdCounts->non_confirm ?? 0);
+        $sdConfirm = (int) ($sdCounts->confirmed ?? 0);
+
+        $siAmounts = (clone $siQuery)->selectRaw("
+            COALESCE(SUM(si.grand_total), 0) as expected,
+            COALESCE(SUM(CASE WHEN si.status = 'PAID' THEN si.grand_total ELSE 0 END), 0) as settled
+        ")->first();
+        $siExpected = 'Rp ' . number_format($siAmounts->expected ?? 0, 0, ',', '.');
+        $siSettled = 'Rp ' . number_format($siAmounts->settled ?? 0, 0, ',', '.');
+
+        // ============================================================
+        // Section 2: Daily Sales Chart (filtered by period)
+        // ============================================================
+        $chartFrom = $isLifetime
+            ? DB::table('t_sales_orders')->where('company_code', $companyCode)->min('transaction_date') ?? now()->subDays(30)->format('Y-m-d')
+            : $dateFrom;
+        $chartTo = $isLifetime ? now()->format('Y-m-d') : $dateTo;
+
+        // Get daily amounts from SO
+        $dailyAmounts = DB::table('t_sales_orders')
+            ->where('company_code', $companyCode)
+            ->whereBetween('transaction_date', [$chartFrom, $chartTo])
+            ->groupBy('transaction_date')
+            ->orderBy('transaction_date')
+            ->select([
+                'transaction_date as date',
+                DB::raw('COALESCE(SUM(grand_price), 0) as amount'),
+            ])
+            ->get()
+            ->keyBy('date');
+
+        // Get daily qty from SO products
+        $dailyQty = DB::table('t_sales_order_products as sop')
+            ->join('t_sales_orders as so', 'sop.f_sales_order_id', '=', 'so.id')
+            ->where('so.company_code', $companyCode)
+            ->whereBetween('so.transaction_date', [$chartFrom, $chartTo])
+            ->groupBy('so.transaction_date')
+            ->select([
+                'so.transaction_date as date',
+                DB::raw('COALESCE(SUM(sop.quantity), 0) as qty'),
+            ])
+            ->get()
+            ->keyBy('date');
+
+        // Build continuous date array (fill missing dates with 0)
+        $dailySales = [];
+        $period = new \DatePeriod(
+            new \DateTime($chartFrom),
+            new \DateInterval('P1D'),
+            (new \DateTime($chartTo))->modify('+1 day')
+        );
+        foreach ($period as $day) {
+            $dateKey = $day->format('Y-m-d');
+            $amountRow = $dailyAmounts->get($dateKey);
+            $qtyRow = $dailyQty->get($dateKey);
+            $dailySales[] = [
+                'date' => $dateKey,
+                'label' => $day->format('d M'),
+                'qty' => (int) ($qtyRow->qty ?? 0),
+                'amount' => (float) ($amountRow->amount ?? 0),
+            ];
+        }
+
+        // ============================================================
+        // Section 3: Top Up Cards (always lifetime)
+        // ============================================================
+        $topupStats = DB::table('t_topup')
+            ->where('company_code', $companyCode)
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN status IN ('OPEN', 'PARTIAL') THEN remaining_balance ELSE 0 END), 0) as belum_bayar,
+                COALESCE(SUM(allocated_amount), 0) as terbayar
+            ")
+            ->first();
+        $topupBelumBayar = 'Rp ' . number_format($topupStats->belum_bayar ?? 0, 0, ',', '.');
+        $topupTerbayar = 'Rp ' . number_format($topupStats->terbayar ?? 0, 0, ',', '.');
+
+        // ============================================================
+        // Section 4: Target Keuntungan (Revenue Split Cycles)
+        // ============================================================
+        $revenueSplitService = app(RevenueSplitService::class);
+        $allCycles = $revenueSplitService->findAll();
+
+        $revenueSplitOptions = $allCycles->map(function ($cycle) {
+            $statusLabel = $cycle->status === 'ACTIVE' ? ' (ACTIVE)' : '';
+            return ['id' => $cycle->id, 'label' => $cycle->cycle_name . $statusLabel];
+        })->values()->toArray();
+
+        // Default to the selected cycle or the first one
+        $selectedCycleId = $req->input('revenue_split_id', $allCycles->first()->id ?? null);
+        $selectedCycle = $selectedCycleId ? $revenueSplitService->findOne($selectedCycleId) : null;
+
+        $activeRevenueSplit = null;
+        if ($selectedCycle) {
+            // Get accumulated revenue splits within this cycle's date range
+            $accumulated = DB::table('t_sales_order_revenue_splits as rs')
+                ->join('t_sales_orders as so', 'rs.f_sales_order_id', '=', 'so.id')
+                ->where('rs.company_code', $companyCode)
+                ->whereBetween('so.transaction_date', [$selectedCycle->start_date, $selectedCycle->end_date])
+                ->selectRaw("
+                    COALESCE(SUM(rs.porsi_pabrik), 0) as current_pabrik,
+                    COALESCE(SUM(rs.porsi_owner), 0) as current_owner,
+                    COALESCE(SUM(rs.porsi_perusahaan), 0) as current_perusahaan
+                ")
+                ->first();
+
+            $activeRevenueSplit = (object) [
+                'id' => $selectedCycle->id,
+                'cycle_name' => $selectedCycle->cycle_name,
+                'start_date' => $selectedCycle->start_date,
+                'end_date' => $selectedCycle->end_date,
+                'status' => $selectedCycle->status,
+                'target_pabrik' => $selectedCycle->target_pabrik,
+                'target_owner' => $selectedCycle->target_owner,
+                'target_perusahaan' => $selectedCycle->target_perusahaan,
+                'total_target' => $selectedCycle->total_target,
+                'current_pabrik' => (float) ($accumulated->current_pabrik ?? 0),
+                'current_owner' => (float) ($accumulated->current_owner ?? 0),
+                'current_perusahaan' => (float) ($accumulated->current_perusahaan ?? 0),
+            ];
+        }
+
+        // ============================================================
+        // Section 5: Anggaran (Budget) - Owner & Kingdom
+        // ============================================================
+        $budgedService = app(BudgedService::class);
+
+        // Helper to build budget card data for a given type
+        $buildBudgetData = function ($type) use ($req, $budgedService) {
+            $paramKey = 'budget_' . $type . '_id';
+            $periods = DB::table('m_budget_periods')
+                ->where('type', $type)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $options = $periods->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'label' => date('d M Y', strtotime($p->period_start_date)) . ' s/d ' . date('d M Y', strtotime($p->period_end_date)),
+                ];
+            })->values()->toArray();
+
+            $selectedId = $req->input($paramKey, $periods->first()->id ?? null);
+            $data = null;
+
+            if ($selectedId) {
+                $period = $budgedService->findPeriodById($selectedId);
+                $budgets = $budgedService->findByPeriodId($selectedId);
+
+                if ($budgets->isNotEmpty()) {
+                    $categories = $budgets->map(function ($b) {
+                        $used = $b->budged_limit_value - $b->budged_remaining_value;
+                        $catName = $b->budged_name;
+                        if ($b->f_budget_category_id) {
+                            $cat = DB::table('m_budget_categories')->where('id', $b->f_budget_category_id)->first();
+                            if ($cat) $catName = $cat->category_name;
+                        }
+                        return (object) [
+                            'name' => $catName,
+                            'limit' => (float) $b->budged_limit_value,
+                            'used' => (float) $used,
+                        ];
+                    })->values()->toArray();
+
+                    $data = (object) [
+                        'id' => $period->id,
+                        'type' => $type,
+                        'period_start_date' => $period->period_start_date,
+                        'period_end_date' => $period->period_end_date,
+                        'categories' => $categories,
+                    ];
+                }
+            }
+
+            return [
+                'options' => $options,
+                'selectedId' => $selectedId,
+                'data' => $data,
+            ];
+        };
+
+        $budgetOwner = $buildBudgetData('owner');
+        $budgetKingdom = $buildBudgetData('kingdom');
+
+        // ============================================================
+        // Section 6: Warehouse Stock
+        // ============================================================
+        $warehouseService = app(WarehouseService::class);
+        $warehouses = $warehouseService->findAll();
+
+        $warehouseOptions = $warehouses->map(function ($w) {
+            return ['id' => $w->id, 'name' => $w->name];
+        })->values()->toArray();
+
+        $selectedWarehouseId = $req->input('warehouse_id', $warehouses->first()->id ?? null);
+        $warehouseStock = [];
+
+        if ($selectedWarehouseId) {
+            $stockData = app(StockMovementLogsService::class)->findAllLatestStockPerWarehouse($selectedWarehouseId);
+            $warehouseStock = $stockData->map(function ($item) {
+                return [
+                    'name' => $item->name,
+                    'qty' => (float) $item->system_stock,
+                    'minimum_stock' => (float) ($item->minimum_stock ?? 0),
+                ];
+            })->values()->toArray();
+        }
+
+        return view('pages.dashboard', compact(
+            'soTotal', 'sdNonConfirm', 'sdConfirm', 'siExpected', 'siSettled',
+            'dailySales',
+            'topupBelumBayar', 'topupTerbayar',
+            'revenueSplitOptions', 'activeRevenueSplit',
+            'budgetOwner', 'budgetKingdom',
+            'warehouseOptions', 'warehouseStock',
+            'dateFrom', 'dateTo', 'isLifetime',
+            'selectedCycleId', 'selectedWarehouseId'
+        ));
     }
 
     public function dashboardSummary(Request $req): View

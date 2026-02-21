@@ -231,6 +231,7 @@
                                             $remainingQty = $purchaseOrderProduct->remaining_qty;
                                             if ($remainingQty == floor($remainingQty)) {
                                                 $formattedRemainingQty = number_format($remainingQty, 0, ',', '.');
+                                                $formatted = number_format($remainingQty, 0, ',', '.');
                                             } else {
                                                 $formatted = number_format($remainingQty, 4, ',', '.');
                                                 $formattedRemainingQty = rtrim(rtrim($formatted, '0'), ',');
@@ -251,7 +252,7 @@
                                         <input type="hidden" name="products[{{ $counter }}][remaining_qty_before]"
                                             value="{{ $purchaseOrderProduct->remaining_qty }}" />
                                         <input type="text" data-remaining="{{ $purchaseOrderProduct->remaining_qty }}"
-                                            value="0" class="form-control delivery-qty-input numeric-input"
+                                            value="{{ $formatted }}" class="form-control delivery-qty-input numeric-input"
                                             name="products[{{ $counter }}][delivery_qty]" min="1"
                                             max="{{ $purchaseOrderProduct->remaining_qty }}" />
                                     </td>
@@ -366,6 +367,7 @@
             // Generate initial transaction numbers on page load
             generateTransactionNumber();
             generateDeliveryNumber();
+            updateSummary();
 
             // Generate transaction number function
             function generateTransactionNumber() {

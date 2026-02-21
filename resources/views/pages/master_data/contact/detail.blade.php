@@ -83,12 +83,12 @@
                             <i class="icon-base ti tabler-receipt-2 me-2"></i>
                             <b>Transaksi</b>
                         </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="credit-memo-list-item"
+                        {{-- <a class="list-group-item list-group-item-action waves-effect" id="credit-memo-list-item"
                             data-bs-toggle="list" href="#horizontal-credit-memo" aria-selected="false" role="tab"
                             tabindex="-1">
                             <i class="icon-base ti tabler-file-dollar me-2"></i>
                             <b>Credit Memo</b>
-                        </a>
+                        </a> --}}
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab"
                             tabindex="-1">
@@ -114,7 +114,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="horizontal-credit-memo" role="tabpanel"
+                        {{-- <div class="tab-pane fade" id="horizontal-credit-memo" role="tabpanel"
                             aria-labelledby="credit-memo-list-item">
                             <div id="credit-memo-content">
                                 <!-- Content will be loaded dynamically -->
@@ -124,7 +124,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel"

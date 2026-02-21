@@ -16,14 +16,14 @@
         <div class="card-body">
             <form method="GET" action="{{ route('main_transaction.topup.index') }}" id="filter-form">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-3">
+                    {{-- <div class="col-md-3">
                         <label class="form-label">Entity</label>
                         <select name="entity_type" class="form-select">
                             <option value="">All Entities</option>
                             <option value="KINGDOM" {{ request('entity_type') == 'KINGDOM' ? 'selected' : '' }}>Kingdom</option>
                             <option value="OWNER" {{ request('entity_type') == 'OWNER' ? 'selected' : '' }}>Owner</option>
                         </select>
-                    </div>
+                    </div> --}}
                     <div class="col-md-3">
                         <label class="form-label">Start Date</label>
                         <input type="date" name="start_date" class="form-control" value="{{ request('start_date', date('Y-m-01')) }}">
@@ -68,7 +68,7 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Entity</th>
+                        {{-- <th>Entity</th> --}}
                         <th>Top Up Reference</th>
                         <th>Top Up Amount</th>
                         <th>Allocated Amount</th>
@@ -96,7 +96,7 @@
                 ajax: {
                     url: "{{ route('main_transaction.topup.index_data_table') }}",
                     data: function(d) {
-                        d.entity_type = $('select[name="entity_type"]').val();
+                        // d.entity_type = $('select[name="entity_type"]').val();
                         d.start_date = $('input[name="start_date"]').val();
                         d.end_date = $('input[name="end_date"]').val();
                         d.status = $('select[name="status"]').val();
@@ -119,17 +119,17 @@
                             return new Date(data).toLocaleDateString('id-ID');
                         }
                     },
-                    {
-                        data: 'entity_type',
-                        render: function(data) {
-                            if (data === 'KINGDOM') {
-                                return '<span class="badge" style="background-color: #f3e8ff; color: #9333ea; border: 1px solid #9333ea;">🏪 Kingdom</span>';
-                            } else if (data === 'OWNER') {
-                                return '<span class="badge" style="background-color: #ffedd5; color: #ea580c; border: 1px solid #ea580c;">👤 Owner</span>';
-                            }
-                            return data;
-                        }
-                    },
+                    // {
+                    //     data: 'entity_type',
+                    //     render: function(data) {
+                    //         if (data === 'KINGDOM') {
+                    //             return '<span class="badge" style="background-color: #f3e8ff; color: #9333ea; border: 1px solid #9333ea;">🏪 Kingdom</span>';
+                    //         } else if (data === 'OWNER') {
+                    //             return '<span class="badge" style="background-color: #ffedd5; color: #ea580c; border: 1px solid #ea580c;">👤 Owner</span>';
+                    //         }
+                    //         return data;
+                    //     }
+                    // },
                     {
                         data: 'topup_number',
                         render: function(data, type, row) {

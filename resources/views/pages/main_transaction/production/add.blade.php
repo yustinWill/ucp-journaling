@@ -197,10 +197,10 @@
                         <thead>
                             <tr>
                                 <th style="width: 30%;">Komponen Product</th>
-                                <th style="width: 10%;">Satuan</th>
+                                <th style="width: 15%;">Stock Available</th>
                                 <th style="width: 15%;">Qty per Bundle</th>
                                 <th style="width: 15%;">Total Required</th>
-                                <th style="width: 15%;">Stock Available</th>
+                                <th style="width: 10%;">Satuan</th>
                                 <th style="width: 15%;">HPP</th>
                                 <th style="width: 15%;">Status</th>
                             </tr>
@@ -218,11 +218,10 @@
                     <table class="table table-bordered" id="components-table-input">
                         <thead>
                             <tr>
-                                <th style="width: 20%;">Komponen Product</th>
-                                <th style="width: 10%;">Satuan</th>
+                                <th style="width: 25%;">Komponen Product</th>
                                 <th style="width: 13%;">Qty per Bundle</th>
                                 <th style="width: 15%;">Stock Available</th>
-                                <th style="width: 5%;">Harga Satuan</th>
+                                <th style="width: 10%;">Satuan</th>
                                 <th style="width: 15%;">Material Input <span style="color: red;">*</span></th>
                                 <th style="width: 12%;">Leftover Material</th>
                                 <th style="width: 10%;">Status</th>
@@ -791,10 +790,10 @@
                     componentsHtml += `
                 <tr>
                     <td data-product-id="${component.id}">${component.product_name}</td>
-                    <td class="text-center">${component.unit}</td>
+                    <td class="text-center stock-display">${formatNumber(component.stock_available_display)}</td>
                     <td class="text-center">${formatNumber(component.quantity_required)}</td>
                     <td class="text-center total-required" data-stock-available="${component.stock_available}" data-stock-available-display="${component.stock_available_display}" data-conversion-factor="${component.conversion_factor}" data-qty-per-bundle="${component.quantity_required}">${formatNumber(totalRequired)}</td>
-                    <td class="text-center stock-display">${formatNumber(component.stock_available_display)}</td>
+                    <td class="text-center">${component.unit}</td>
                     <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}">Rp. ${formatNumber(component.purchase_price)}</td>
                     <td class="text-center">
                         ${isAvailable
@@ -821,10 +820,9 @@
                     data-conversion-factor="${component.conversion_factor}"
                     data-price-per-unit="${component.purchase_price}">
                     <td>${component.product_name}</td>
-                    <td class="text-center">${component.unit}</td>
                     <td class="text-center" >${formatNumber(component.quantity_required)}</td>
                     <td class="text-center stock-available" >${formatNumber(component.stock_available_display)}</td>
-                    <td class="text-center purchase-price" data-price-per-unit="${component.purchase_price}">Rp. ${formatNumber(component.purchase_price)}</td>
+                    <td class="text-center">${component.unit}</td>
                     <td>
                         <input type="text"
                             class="form-control numeric-input material-input"
