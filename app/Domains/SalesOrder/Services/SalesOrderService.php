@@ -218,8 +218,8 @@ class SalesOrderService
             ->join($this->table_name . ' as so', 'so.id', '=', 'sd.sales_order_id')
             ->where('so.company_code', $companyCode)
             ->selectRaw("
-                SUM(CASE WHEN sd.status != 'DELIVERED' OR sd.status IS NULL THEN 1 ELSE 0 END) as non_confirm,
-                SUM(CASE WHEN sd.status = 'DELIVERED' THEN 1 ELSE 0 END) as confirmed
+                SUM(CASE WHEN sd.is_confirmed = '0' OR sd.is_confirmed IS NULL THEN 1 ELSE 0 END) as non_confirm,
+                SUM(CASE WHEN sd.is_confirmed = '1' THEN 1 ELSE 0 END) as confirmed
             ")
             ->first();
 
