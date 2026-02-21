@@ -69,6 +69,9 @@ class CreateReturnManagementAction
                 ]
             );
 
+            // Auto-process stock movement for the return
+            app(ProcessReturnStockAction::class)->execute($returnId);
+
             return $returnId;
         });
     }

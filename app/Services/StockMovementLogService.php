@@ -138,7 +138,15 @@ class StockMovementLogService
 
         // Calculate new stock
         $isInMovement = in_array($movementType, ['PURCHASE_IN', 'ADJUSTMENT_IN', 'TRANSFER_IN', 'RETURN_IN', 'PRODUCTION_IN', 'PRODUCTION_REVERSAL_IN']);
-        $newStock = $isInMovement ? $currentStock + $movementQty : $currentStock - $movementQty;
+        $isOutMovement = in_array($movementType, ['SALES_OUT', 'ADJUSTMENT_OUT', 'TRANSFER_OUT', 'RETURN_OUT', 'PRODUCTION_OUT', 'PRODUCTION_REVERSAL_OUT']);
+
+        if ($isInMovement) {
+            $newStock = $currentStock + $movementQty;
+        } elseif ($isOutMovement) {
+            $newStock = $currentStock - $movementQty;
+        } else {
+            $newStock = $currentStock; // Unknown movement type, don't change stock
+        }
 
         return $this->create([
             'movement_date' => $movementDate ?? now(),
