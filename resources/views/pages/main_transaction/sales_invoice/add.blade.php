@@ -331,9 +331,9 @@
                             <input type="hidden" name="products[${item.id}][po_qty]" value="${item.quantity}">
                         </td>
                         <td>
-                            <input type="text" class="form-control invoice-qty numeric-input" 
-                                name="products[${item.id}][invoice_qty]" 
-                                min="0" value="0" max="${item.remaining_qty_for_invoice}"
+                            <input type="text" class="form-control invoice-qty numeric-input"
+                                name="products[${item.id}][invoice_qty]"
+                                min="0" value="${item.remaining_qty_for_invoice}" max="${item.remaining_qty_for_invoice}"
                                 data-item-id="${item.id}" data-unit-price="${item.unit_price}">
                             <input type="hidden" name="products[${item.id}][remaining_qty_before]" value="${item.remaining_qty_for_invoice}">
                         </td>
