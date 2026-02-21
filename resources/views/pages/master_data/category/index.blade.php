@@ -107,7 +107,7 @@
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
                             
-                            @can('category.create')
+                            @can('product_category.create')
                                 <a href="{{ route('master_data.category.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
