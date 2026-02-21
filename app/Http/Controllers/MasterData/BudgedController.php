@@ -101,9 +101,14 @@ class BudgedController extends Controller
         // $id is now the period_id
         $periodData = app(BudgedService::class)->getPeriodWithBudgetsAndExpenses($id);
         $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
-    
+
+        // Map permission variables for blade template compatibility
+        $canShowEditButton = $permissionData['canEditBudged'] ?? false;
+        $canShowDeleteButton = $permissionData['canDeleteBudged'] ?? false;
+
         return view('pages.master_data.budged.detail', array_merge(
-            compact('periodData'),
+            compact('periodData', 'canShowEditButton', 'canShowDeleteButton'),
+            $permissionData
         ));
     }
 
