@@ -59,10 +59,12 @@ class SalesDeliveryService
                 'c.name as customer_name',
                 'c.email as customer_email',
                 'ca.address as customer_address',
-
                 'w.name as warehouse_name',
                 'u.name as created_by_name',
-                'is_confirmed',
+                't_sales_deliveries.is_confirmed',
+                't_sales_deliveries.is_accepted',
+                't_sales_deliveries.accepted_at',
+                't_sales_deliveries.accepted_by',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin('m_contacts as c', 't_sales_deliveries.customer_id', '=', 'c.id')
@@ -148,6 +150,7 @@ class SalesDeliveryService
                 'sd.status',
                 'sd.shipping_cost',
                 'sd.is_confirmed',
+                'sd.is_accepted',
                 'sd.created_at',
                 'sd.created_by',
                 'so.transaction_code as sales_order_number',

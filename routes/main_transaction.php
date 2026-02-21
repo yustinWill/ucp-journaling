@@ -186,6 +186,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_delivery_segment.'/add', 'add')->name('main_transaction.sales_delivery.add');
         Route::post($base_segment.$sales_delivery_segment.'/create', 'create')->name('main_transaction.sales_delivery.create');
         Route::get($base_segment.$sales_delivery_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_delivery.detail');
+        Route::post($base_segment.$sales_delivery_segment.'/accept', 'accept')->name('main_transaction.sales_delivery.accept');
         Route::post($base_segment.$sales_delivery_segment.'/confirm/{id}', 'confirm')->name('main_transaction.sales_delivery.confirm');
         Route::get($base_segment.$sales_delivery_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_delivery.edit');
         Route::post($base_segment.$sales_delivery_segment.'/update', 'update')->name('main_transaction.sales_delivery.update');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MainTransaction;
 
 use App\Domains\SalesDelivery\Actions\CreateSalesDeliveryAction;
 use App\Domains\SalesDelivery\Actions\UpdateSalesDeliveryAction;
+use App\Domains\SalesDelivery\Actions\AcceptSalesDeliveryAction;
 use App\Domains\SalesDelivery\Actions\ConfirmSalesDeliveryAction;
 use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
 use App\Domains\SalesDelivery\Services\SalesDeliveryService;
@@ -195,6 +196,7 @@ class SalesDeliveryController extends Controller
             'created_at' => $salesDeliveryHeader->created_at,
             'updated_at' => $salesDeliveryHeader->updated_at,
             'is_confirmed' => $salesDeliveryHeader->is_confirmed,
+            'is_accepted' => $salesDeliveryHeader->is_accepted,
         ];
         // dd($sales_delivery);
 
@@ -385,15 +387,63 @@ class SalesDeliveryController extends Controller
     }
 
     /**
+     * Accept Sales Delivery (first step before confirmation)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function accept(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:t_sales_deliveries,id',
+            ]);
+
+            app(AcceptSalesDeliveryAction::class)->execute($validated['id']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengiriman berhasil diterima. Anda dapat melengkapi detail pengiriman dan konfirmasi.',
+            ], 200);
+        } catch (AppException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => $e->getCodeValue(),
+            ], $e->getCode());
+        } catch (\Exception $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Confirm Sales Delivery and process stock movement
      *
+     * @param Request $request
      * @param int $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function confirm($id)
+    public function confirm(Request $request, $id)
     {
         try {
-            app(ConfirmSalesDeliveryAction::class)->execute($id);
+            // Get optional fields from request
+            $data = [];
+            if ($request->has('shipping_cost')) {
+                $data['shipping_cost'] = $request->input('shipping_cost');
+            }
+            if ($request->has('customer_reference')) {
+                $data['customer_reference'] = $request->input('customer_reference');
+            }
+            if ($request->has('delivery_notes')) {
+                $data['delivery_notes'] = $request->input('delivery_notes');
+            }
+
+            app(ConfirmSalesDeliveryAction::class)->execute($id, $data);
 
             return response()->json([
                 'success' => true,

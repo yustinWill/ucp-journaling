@@ -12,7 +12,12 @@
                 </div>
                 <div class="col-md-4">
                     <div class="d-flex gap-2 justify-content-end">
-                        @if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
+                        @if (!$salesDelivery->is_accepted)
+                            <button type="button" id="btn-accept-delivery" class="btn btn-warning btn-md waves-effect waves-light">
+                                <i class="icon-base ti tabler-check me-2"></i>
+                                Terima Pengiriman
+                            </button>
+                        @elseif ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
                             <button type="button" id="btn-confirm-delivery" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-check me-2"></i>
                                 Konfirm
@@ -65,6 +70,30 @@
                             <b>Audit Log</b>
                         </a>
                     </div>
+                    @if ($salesDelivery->is_accepted)
+                        <div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Customer Reference</label>
+                                    <input type="text" id="customer-reference" class="form-control"
+                                        value="{{ $salesDelivery->customer_reference ?? '' }}"
+                                        {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
+                                    @if (!$salesDelivery->is_accepted)
+                                        <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
+                                    @endif
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Ongkos Kirim</label>
+                                    <input type="text" id="shipping-cost" class="form-control currency-input text-end"
+                                        value="{{ $salesDelivery->shipping_cost ?? 0 }}"
+                                        {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
+                                    @if (!$salesDelivery->is_accepted)
+                                        <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     <div class="tab-content px-0 mt-0">
                         <!-- Information Tab -->
                         <div class="tab-pane fade show active" id="horizontal-sales-delivery-info" role="tabpanel">
@@ -141,23 +170,16 @@
                             <label class="form-label">Alamat Pengiriman</label>
                             <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_address ?? '-' }}</textarea>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Customer Reference</label>
-                            <input type="text" class="form-control"
-                                value="{{ $salesDelivery->customer_reference ?? '-' }}" disabled />
-                        </div>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Ongkos Kirim</label>
-                            <input type="text" class="form-control"
-                                value="Rp {{ number_format($salesDelivery->shipping_cost ?? 0, 0, ',', '.') }}" disabled />
-                        </div>
+                        
                     </div>
                     <div class="row g-3 mb-4">
                         <div class="col-md-12">
                             <label class="form-label">Catatan Pengiriman</label>
-                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_notes ?? '-' }}</textarea>
+                            <textarea id="delivery-notes" class="form-control" rows="3"
+                                {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }}>{{ $salesDelivery->delivery_notes ?? '' }}</textarea>
+                            @if (!$salesDelivery->is_accepted)
+                                <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
+                            @endif
                         </div>
                     </div>
 
@@ -357,12 +379,91 @@
 @section('js_script')
     <script>
         $(function() {
+            // Format existing currency value before Cleave initialization
+            const shippingCostInput = $('#shipping-cost');
+            if (shippingCostInput.length && shippingCostInput.val()) {
+                const rawValue = shippingCostInput.val();
+                shippingCostInput.val(convertToIndonesianFormat(rawValue));
+            }
+
+            // Initialize currency formatting
+            initCleaveCurrency(document);
+
             $('#audit-log-table').DataTable({
                 orderCellsTop: true,
                 order: [[0, 'desc']], // Sort by date descending
                 searching: false,
                 paging: false,
                 info: false
+            });
+
+            // Handle Terima Pengiriman button click
+            $('#btn-accept-delivery').on('click', function() {
+                const deliveryId = {{ $salesDelivery->id }};
+                const deliveryNumber = '{{ $salesDelivery->delivery_number }}';
+
+                Swal.fire({
+                    title: 'Terima Pengiriman?',
+                    html: `Anda akan menerima sales delivery:<br><strong>${deliveryNumber}</strong><br><br>` +
+                          `<div class="alert alert-info">` +
+                          `<i class="icon-base ti tabler-info-circle me-2"></i>` +
+                          `Setelah diterima, Anda dapat melengkapi detail pengiriman dan konfirmasi.` +
+                          `</div>`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Terima',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#ff9f43',
+                    cancelButtonColor: '#82868b'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Memproses...',
+                            text: 'Mohon tunggu sebentar',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Send AJAX request
+                        $.ajax({
+                            url: '{{ route('main_transaction.sales_delivery.accept') }}',
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                id: deliveryId
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: response.message,
+                                    confirmButtonColor: '#28c76f'
+                                }).then(() => {
+                                    // Reload page to show updated status
+                                    location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'Terjadi kesalahan saat menerima delivery.';
+
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal!',
+                                    text: errorMessage,
+                                    confirmButtonColor: '#ea5455'
+                                });
+                            }
+                        });
+                    }
+                });
             });
 
             // Handle Konfirm button click
@@ -396,12 +497,20 @@
                             }
                         });
 
+                        // Get field values
+                        const shippingCost = parseCurrency($('#shipping-cost').val());
+                        const customerReference = $('#customer-reference').val();
+                        const deliveryNotes = $('#delivery-notes').val();
+
                         // Send AJAX request
                         $.ajax({
                             url: `{{ url('main_transaction/sales_delivery/confirm') }}/${deliveryId}`,
                             type: 'POST',
                             data: {
-                                _token: '{{ csrf_token() }}'
+                                _token: '{{ csrf_token() }}',
+                                shipping_cost: shippingCost,
+                                customer_reference: customerReference,
+                                delivery_notes: deliveryNotes
                             },
                             success: function(response) {
                                 Swal.fire({

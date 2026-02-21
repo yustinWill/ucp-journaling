@@ -104,7 +104,9 @@ class SalesOrderService
                 DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) as si_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) as sd_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) as si_settled_count"),
-                DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') as sd_confirmed_count")
+                DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND (sd.is_accepted = 0 OR sd.is_accepted IS NULL)) as sd_waiting_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_accepted = 1 AND (sd.is_confirmed = '0' OR sd.is_confirmed IS NULL)) as sd_accepted_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') as sd_confirmed_count")
             )
             ->leftJoin('m_contacts as mc', 'mc.id', '=', 'so.f_customer_id')
             ->leftJoin('users as u', 'so.created_by', '=', 'u.id')
@@ -142,24 +144,37 @@ class SalesOrderService
         // Status filter
         if ($statusFilter = request()->input('status_filter')) {
             switch ($statusFilter) {
-                case 'Order':
+                case 'Menunggu':
+                    // No SI and no SD created
                     $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) = 0")
                           ->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) = 0");
                     break;
-                case 'Dikirim':
-                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) > 0")
-                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') = 0");
+                case 'Menunggu Pengiriman':
+                    // SD created but not accepted yet
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND (sd.is_accepted = 0 OR sd.is_accepted IS NULL)) > 0");
                     break;
-                case 'Pengiriman Dikonfirmasi':
-                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') > 0")
+                case 'Dikirim':
+                    // SD accepted but not confirmed
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_accepted = 1 AND (sd.is_confirmed = '0' OR sd.is_confirmed IS NULL)) > 0");
+                    break;
+                case 'Terkirim':
+                    // SD confirmed but no SI yet
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0")
                           ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) = 0");
                     break;
                 case 'Dibayar':
+                    // SI created but not settled
                     $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) > 0")
                           ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) = 0");
                     break;
+                case 'Terbayar':
+                    // SI settled but SD not confirmed (SI without delivery)
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0")
+                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') = 0");
+                    break;
                 case 'Selesai':
-                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') > 0")
+                    // Both SD confirmed AND SI settled
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0")
                           ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0");
                     break;
             }
@@ -177,18 +192,21 @@ class SalesOrderService
         $recordsFiltered = $filteredQuery->get()->count();
 
         // Order by status priority (lowest first), then by date
+        // Priority: Menunggu(0) -> Menunggu Pengiriman(1) -> Dikirim(2) -> Terkirim(3) -> Dibayar(4) -> Terbayar(5) -> Selesai(6)
         $query->orderByRaw("
             CASE
-                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') > 0
+                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0
                      AND (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0
-                THEN 5
+                THEN 6
                 WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0
-                THEN 4
+                THEN 5
                 WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) > 0
+                THEN 4
+                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0
                 THEN 3
-                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') > 0
+                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_accepted = 1 AND (sd.is_confirmed = '0' OR sd.is_confirmed IS NULL)) > 0
                 THEN 2
-                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) > 0
+                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND (sd.is_accepted = 0 OR sd.is_accepted IS NULL)) > 0
                 THEN 1
                 ELSE 0
             END ASC
@@ -218,7 +236,8 @@ class SalesOrderService
             ->join($this->table_name . ' as so', 'so.id', '=', 'sd.sales_order_id')
             ->where('so.company_code', $companyCode)
             ->selectRaw("
-                SUM(CASE WHEN sd.is_confirmed = '0' OR sd.is_confirmed IS NULL THEN 1 ELSE 0 END) as non_confirm,
+                SUM(CASE WHEN sd.is_accepted = 0 OR sd.is_accepted IS NULL THEN 1 ELSE 0 END) as waiting,
+                SUM(CASE WHEN sd.is_accepted = 1 AND (sd.is_confirmed = '0' OR sd.is_confirmed IS NULL) THEN 1 ELSE 0 END) as non_confirm,
                 SUM(CASE WHEN sd.is_confirmed = '1' THEN 1 ELSE 0 END) as confirmed
             ")
             ->first();
@@ -234,6 +253,7 @@ class SalesOrderService
 
         return [
             'total_so' => $totalSO,
+            'sd_waiting' => (int) ($sdCounts->waiting ?? 0),
             'sd_non_confirm' => (int) ($sdCounts->non_confirm ?? 0),
             'sd_confirm' => (int) ($sdCounts->confirmed ?? 0),
             'si_expected' => 'Rp ' . number_format($siAmounts->expected ?? 0, 0, ',', '.'),

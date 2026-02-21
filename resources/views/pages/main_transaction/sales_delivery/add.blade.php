@@ -164,7 +164,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Nomor Resi Pengiriman</label>
                     <input type="text" class="form-control" id="sales-delivery-customer-ref"
-                        name="customer_reference" placeholder="Nomor Resi Pengiriman" />
+                        name="customer_reference" placeholder="Nomor Resi Pengiriman" disabled/>
                 </div>
             </div>
 
@@ -175,7 +175,7 @@
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
                         <input type="text" class="form-control global-currency" id="shipping-cost" name="shipping_cost"
-                            placeholder="0" value="0" />
+                            placeholder="0" value="0" disabled />
                     </div>
                     <small class="form-text text-muted">Biaya ongkir untuk pengiriman ini</small>
                 </div>

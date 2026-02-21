@@ -18,11 +18,12 @@ class ConfirmSalesDeliveryAction
      * Confirm sales delivery and process stock movement
      *
      * @param int $salesDeliveryId
+     * @param array $data Optional data to update (shipping_cost, customer_reference, delivery_notes)
      * @return void
      */
-    public function execute(int $salesDeliveryId)
+    public function execute(int $salesDeliveryId, array $data = [])
     {
-        return DB::transaction(function () use ($salesDeliveryId) {
+        return DB::transaction(function () use ($salesDeliveryId, $data) {
             // Get sales delivery data
             $salesDelivery = app(SalesDeliveryService::class)->findOne($salesDeliveryId);
 
@@ -97,15 +98,28 @@ class ConfirmSalesDeliveryAction
             }
 
             // Update sales delivery status to CONFIRMED
+            $updateData = [
+                'is_confirmed' => '1',
+                'updated_at' => now(),
+                'updated_by' => Auth::id(),
+                'confirm_at' => now(),
+                'confirmed_by' => Auth::id(),
+            ];
+
+            // Add optional fields if provided
+            if (isset($data['shipping_cost'])) {
+                $updateData['shipping_cost'] = $data['shipping_cost'];
+            }
+            if (isset($data['customer_reference'])) {
+                $updateData['customer_reference'] = $data['customer_reference'];
+            }
+            if (isset($data['delivery_notes'])) {
+                $updateData['delivery_notes'] = $data['delivery_notes'];
+            }
+
             DB::table('t_sales_deliveries')
                 ->where('id', $salesDeliveryId)
-                ->update([
-                    'is_confirmed' => '1',
-                    'updated_at' => now(),
-                    'updated_by' => Auth::id(),
-                    'confirm_at' => now(),
-                    'confirmed_by' => Auth::id(),
-                ]);
+                ->update($updateData);
 
             // Create audit log
             $log_data = [
