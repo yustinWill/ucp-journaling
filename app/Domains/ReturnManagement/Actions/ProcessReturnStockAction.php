@@ -95,15 +95,16 @@ class ProcessReturnStockAction
                         $return->return_date ?? now()
                     );
 
-                    // Create stock batch for returned items (only for SALES_RETURN)
-                    $this->createStockBatch(
-                        $productId,
-                        $warehouseId,
-                        $returnQtyInBaseUnit,
-                        $returnId,
-                        $return->transaction_code,
-                        $return->return_date
-                    );
+                    // Create stock batch for returned items using BatchManagementService
+                    app(BatchManagementService::class)->createBatch([
+                        'f_product_id' => $productId,
+                        'source_type' => 'STOCK_ADJUSTMENT', // Use existing source_type
+                        'f_source_transaction_id' => $returnId,
+                        'batch_date' => $return->return_date ?? now(),
+                        'quantity' => $returnQtyInBaseUnit,
+                        'purchase_price' => $product->return_unit_price ?? 0,
+                        'hpp_status' => 'SETTLED',
+                    ]);
 
                 } elseif ($return->return_type === 'PURCHASE_RETURN') {
                     // Purchase Return: Stock goes OUT from our warehouse back to supplier
@@ -122,8 +123,14 @@ class ProcessReturnStockAction
                         $return->return_date ?? now()
                     );
 
-                    // Consume stock batches (FIFO) for purchase return
-                    $this->consumeStockBatches($productId, $warehouseId, $returnQtyInBaseUnit, $returnId);
+                    // Consume stock batches (FIFO) using BatchManagementService
+                    app(BatchManagementService::class)->consumeBatches($productId, $returnQtyInBaseUnit, [
+                        'source_type' => 'SALES_DELIVERY', // Use existing source_type
+                        'f_source_transaction_id' => $returnId,
+                        'transaction_date' => $return->return_date ?? now(),
+                        'reference_code' => $return->transaction_code,
+                        'notes' => 'Stock consumed by Purchase Return',
+                    ]);
                 }
 
                 // Recalculate product total_stock from movement logs
@@ -156,113 +163,5 @@ class ProcessReturnStockAction
 
             return $returnId;
         });
-    }
-
-    /**
-     * Create stock batch for returned items (SALES_RETURN only)
-     */
-    private function createStockBatch(
-        int $productId,
-        int $warehouseId,
-        float $quantity,
-        int $returnId,
-        string $transactionCode,
-        $batchDate
-    ) {
-        // Create new batch for returned stock
-        $batchId = DB::table('t_product_stock_batches')->insertGetId([
-            'company_code' => session('user_company_code'),
-            'f_product_id' => $productId,
-            'f_warehouse_id' => $warehouseId,
-            'batch_number' => 'RTN-' . $transactionCode,
-            'batch_date' => $batchDate ?? now(),
-            'original_qty' => $quantity,
-            'remaining_qty' => $quantity,
-            'source_type' => 'RETURN',
-            'f_source_transaction_id' => $returnId,
-            'status' => 'ACTIVE',
-            'notes' => 'Stock batch from sales return',
-            'created_at' => now(),
-            'created_by' => Auth::id(),
-        ]);
-
-        // Record batch transaction
-        DB::table('t_product_batch_transactions')->insert([
-            'company_code' => session('user_company_code'),
-            'f_product_batch_id' => $batchId,
-            'f_product_id' => $productId,
-            'transaction_type' => 'IN',
-            'source_type' => 'RETURN',
-            'f_source_transaction_id' => $returnId,
-            'transaction_date' => $batchDate ?? now(),
-            'qty_moved' => $quantity,
-            'reference_code' => $transactionCode,
-            'notes' => 'Stock received from sales return',
-            'created_at' => now(),
-            'created_by' => Auth::id(),
-        ]);
-    }
-
-    /**
-     * Consume stock batches using FIFO method (PURCHASE_RETURN only)
-     */
-    private function consumeStockBatches(int $productId, int $warehouseId, float $quantityToConsume, int $returnId)
-    {
-        // Get available batches for this warehouse ordered by date (FIFO)
-        $batches = DB::table('t_product_stock_batches')
-            ->where('f_product_id', $productId)
-            ->where('f_warehouse_id', $warehouseId)
-            ->where('remaining_qty', '>', 0)
-            ->where('status', 'ACTIVE')
-            ->orderBy('batch_date', 'asc')
-            ->orderBy('id', 'asc')
-            ->get();
-
-        $remainingToConsume = $quantityToConsume;
-
-        foreach ($batches as $batch) {
-            if ($remainingToConsume <= 0) {
-                break;
-            }
-
-            if (!isset($batch->id) || !isset($batch->remaining_qty)) {
-                continue;
-            }
-
-            $availableQty = $batch->remaining_qty;
-            $consumeFromThisBatch = min($remainingToConsume, $availableQty);
-
-            // Update batch remaining quantity
-            DB::table('t_product_stock_batches')
-                ->where('id', $batch->id)
-                ->update([
-                    'remaining_qty' => $availableQty - $consumeFromThisBatch,
-                    'updated_at' => now(),
-                    'updated_by' => Auth::id(),
-                ]);
-
-            // Record batch consumption transaction
-            DB::table('t_product_batch_transactions')->insert([
-                'company_code' => session('user_company_code'),
-                'f_product_batch_id' => $batch->id,
-                'f_product_id' => $productId,
-                'transaction_type' => 'OUT',
-                'source_type' => 'RETURN',
-                'f_source_transaction_id' => $returnId,
-                'transaction_date' => now(),
-                'qty_moved' => $consumeFromThisBatch,
-                'reference_code' => 'RTN-' . $returnId,
-                'notes' => 'Stock consumed by Purchase Return',
-                'created_at' => now(),
-                'created_by' => Auth::id(),
-            ]);
-
-            $remainingToConsume -= $consumeFromThisBatch;
-        }
-
-        // Log warning if we couldn't consume all required quantity
-        if ($remainingToConsume > 0) {
-            Log::warning("Insufficient stock batches for product {$productId} in warehouse {$warehouseId}. Could not consume {$remainingToConsume} units for purchase return.");
-        }
     }
 }
