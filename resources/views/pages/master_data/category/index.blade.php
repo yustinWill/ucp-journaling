@@ -141,11 +141,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = @json(auth()->user()->can('category.view'));
-            const canWrite = @json(auth()->user()->can('category.create'));
-            const canDelete = @json(auth()->user()->can('category.delete'));
-            const canShowEditButton = @json(auth()->user()->can('category.edit'));
-            const canShowDeleteButton = @json(auth()->user()->can('category.delete'));
+            const canRead = @json(auth()->user()->can('product_category.view'));
+            const canWrite = @json(auth()->user()->can('product_category.create'));
+            const canDelete = @json(auth()->user()->can('product_category.delete'));
+            const canShowEditButton = @json(auth()->user()->can('product_category.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('product_category.delete'));
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');

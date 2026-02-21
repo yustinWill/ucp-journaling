@@ -59,11 +59,16 @@ class CategoryController extends Controller
     {
         $categoryTypes = $this->categoryTypes;
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_product_category');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canCreateProductCategory'] ?? false;
 
         return view('pages.master_data.category.add', array_merge([
             'categoryTypes' => $categoryTypes,
             'statuses' => $statuses,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function save(Request $request)
@@ -124,12 +129,17 @@ class CategoryController extends Controller
         }
 
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_product_category');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canEditProductCategory'] ?? false;
 
         return view('pages.master_data.category.edit', array_merge([
             'categoryTypes' => $this->categoryTypes,
             'statuses' => $statuses,
             'category' => $category,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function update(Request $request)
@@ -205,12 +215,18 @@ class CategoryController extends Controller
         ];
 
         $auditLogs = app(CategoryAuditLogService::class)->findAllBasedOnTagId($id);
+        $permissionData = PermissionHelper::getViewPermissions('master_data_product_category');
+
+        // Map permission variables for blade template compatibility
+        $canShowEditButton = $permissionData['canEditProductCategory'] ?? false;
+        $canShowDeleteButton = $permissionData['canDeleteProductCategory'] ?? false;
 
         return view('pages.master_data.category.detail', array_merge([
             'category' => $categoryArray,
             'auditLogs' => $auditLogs,
-
-        ], ['auditLogType' => AuditLogTypes::MASTER_DATA_CATEGORY->code()]));
+            'canShowEditButton' => $canShowEditButton,
+            'canShowDeleteButton' => $canShowDeleteButton,
+        ], ['auditLogType' => AuditLogTypes::MASTER_DATA_CATEGORY->code()], $permissionData));
     }
 
     public function export()
