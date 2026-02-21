@@ -333,7 +333,7 @@
                         <td>
                             <input type="text" class="form-control invoice-qty numeric-input"
                                 name="products[${item.id}][invoice_qty]"
-                                min="0" value="${item.remaining_qty_for_invoice}" max="${item.remaining_qty_for_invoice}"
+                                min="0" value="${toIndonesianNumberFormat(item.remaining_qty_for_invoice)}" max="${item.remaining_qty_for_invoice}"
                                 data-item-id="${item.id}" data-unit-price="${item.unit_price}">
                             <input type="hidden" name="products[${item.id}][remaining_qty_before]" value="${item.remaining_qty_for_invoice}">
                         </td>
@@ -361,6 +361,16 @@
                         updateInvoiceTotals();
                     });
                     initCleaveCurrency(document);
+
+                    // Calculate initial totals for each row with pre-filled quantities
+                    $('.invoice-qty').each(function() {
+                        const itemId = $(this).data('item-id');
+                        const unitPrice = $(this).data('unit-price');
+                        const qty = parseCurrency($(this).val()) || 0;
+                        const total = qty * unitPrice;
+                        $(`.item-total[data-item-id="${itemId}"]`).text(formatRupiah(total));
+                    });
+
                     updateInvoiceTotals();
                 },
                 error: function() {

@@ -263,6 +263,15 @@
                                             {{ $formattedRemainingQty }} {{ $row->unit_name }}
                                         </td>
                                         <td>
+                                            @php
+                                                $deliveryQtyValue = $row->quantity;
+                                                if ($deliveryQtyValue == floor($deliveryQtyValue)) {
+                                                    $formattedDeliveryQty = number_format($deliveryQtyValue, 0, ',', '.');
+                                                } else {
+                                                    $formatted = number_format($deliveryQtyValue, 4, ',', '.');
+                                                    $formattedDeliveryQty = rtrim(rtrim($formatted, '0'), ',');
+                                                }
+                                            @endphp
                                             <input type="hidden"
                                                 name="products[{{ $counter }}][sales_order_product_id]"
                                                 value="{{ $row->id }}" />
@@ -279,7 +288,7 @@
                                                 name="products[{{ $counter }}][remaining_qty_before]"
                                                 value="{{ $row->remaining_qty }}" />
                                             <input type="text" data-remaining="{{ $row->remaining_qty }}"
-                                                value="{{ $row->remaining_qty }}" class="form-control delivery-qty-input numeric-input"
+                                                value="{{ $formattedDeliveryQty }}" class="form-control delivery-qty-input numeric-input"
                                                 name="products[{{ $counter }}][delivery_qty]" min="1"
                                                 max="{{ $row->remaining_qty }}" />
                                         </td>
