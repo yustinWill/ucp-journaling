@@ -199,6 +199,38 @@
                             }
                         },
                         {
+                            data: null,
+                            responsivePriority: 2,
+                            render: function(data, type, row) {
+                                const pdCount = parseInt(row.pd_count) || 0;
+                                const piCount = parseInt(row.pi_count) || 0;
+                                const piSettledCount = parseInt(row.pi_settled_count) || 0;
+
+                                let status = '';
+                                let badgeClass = '';
+
+                                // Priority-based status determination
+                                if (pdCount > 0 && piSettledCount > 0) {
+                                    status = 'Selesai';
+                                    badgeClass = 'badge bg-label-success';
+                                } else if (piSettledCount > 0) {
+                                    status = 'Terbayar';
+                                    badgeClass = 'badge bg-label-info';
+                                } else if (piCount > 0) {
+                                    status = 'Dibayar';
+                                    badgeClass = 'badge bg-label-warning';
+                                } else if (pdCount > 0) {
+                                    status = 'Dikirim';
+                                    badgeClass = 'badge bg-label-secondary';
+                                } else {
+                                    status = 'Menunggu';
+                                    badgeClass = 'badge bg-label-dark';
+                                }
+
+                                return `<span class="${badgeClass}">${status}</span>`;
+                            }
+                        },
+                        {
                             data: 'payment_term_due_date',
                             responsivePriority: 10001,
                         },

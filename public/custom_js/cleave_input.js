@@ -18,6 +18,7 @@ function initCleaveCurrency(context) {
 
     $(context).find('.numeric-input').each(function () {
         if (!this.cleave) {
+            const $input = $(this);
             this.cleave = new Cleave(this, {
                 numeral: true,
                 numeralThousandsGroupStyle: 'thousand',
@@ -25,7 +26,21 @@ function initCleaveCurrency(context) {
                 delimiter: '.',
                 numeralDecimalScale: 4, // <-- allow up to 4 decimals
                 noImmediatePrefix: false,
-                rawValueTrimPrefix: true
+                rawValueTrimPrefix: true,
+                onValueChanged: function(e) {
+                    // Store raw value for later use
+                    $input.data('raw-value', e.target.rawValue);
+                }
+            });
+
+            // On blur, format to strip trailing zeros for conversion-factor inputs
+            $input.on('blur', function() {
+                if ($(this).hasClass('conversion-factor')) {
+                    const rawValue = $(this).data('raw-value') || this.cleave.getRawValue();
+                    if (rawValue) {
+                        $(this).val(toIndonesianNumberFormat(rawValue));
+                    }
+                }
             });
         }
     });

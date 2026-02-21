@@ -5,7 +5,7 @@
 @section('content')
 <div class="row g-4 mb-4">
         <!-- Total SO -->
-        <div class="col-lg-6 col-sm-6">
+        <div class="col-lg-3 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
@@ -24,29 +24,62 @@
             </div>
         </div>
 
-        <!-- Total SD -->
-        <div class="col-lg-6 col-sm-6">
+        <!-- SD Menunggu Pengiriman -->
+        <div class="col-lg-3 col-sm-6">
+            <div class="card card-border-shadow-dark h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-dark">
+                                <i class="icon-base ti tabler-clock icon-28px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 text-dark">{{ $stats['sd_waiting'] }}</h4>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">Menunggu Pengiriman</p>
+                    <small class="text-muted">Belum diterima</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- SD Dikirim -->
+        <div class="col-lg-3 col-sm-6">
             <div class="card card-border-shadow-warning h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
                             <span class="avatar-initial rounded bg-label-warning">
-                                <i class="icon-base ti tabler-truck icon-28px"></i>
+                                <i class="icon-base ti tabler-truck-delivery icon-28px"></i>
                             </span>
                         </div>
                         <div>
-                            <h4 class="mb-0">
-                                <span class="text-warning">{{ $stats['sd_non_confirm'] }}</span>
-                                <span class="text-muted fs-6">/</span>
-                                <span class="text-success">{{ $stats['sd_confirm'] }}</span>
-                            </h4>
+                            <h4 class="mb-0 text-warning">{{ $stats['sd_non_confirm'] }}</h4>
                         </div>
                     </div>
-                    <p class="mb-0 fw-semibold">Sales Delivery</p>
-                    <small class="text-muted">
-                        <span class="text-warning">Dikirim</span> /
-                        <span class="text-success">Terkonfirmasi</span>
-                    </small>
+                    <p class="mb-0 fw-semibold">Dikirim</p>
+                    <small class="text-muted">Sudah diterima, belum konfirmasi</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- SD Terkirim -->
+        <div class="col-lg-3 col-sm-6">
+            <div class="card card-border-shadow-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-success">
+                                <i class="icon-base ti tabler-truck-loading icon-28px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 text-success">{{ $stats['sd_confirm'] }}</h4>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">Terkirim</p>
+                    <small class="text-muted">Sudah terkonfirmasi</small>
                 </div>
             </div>
         </div>
@@ -250,14 +283,19 @@
                             }
                         },
                         {
-                            data: 'is_confirmed',
-                            width: '130px',
+                            data: null,
+                            width: '180px',
                             responsivePriority: 1,
                             render: function(data, type, row) {
-                                if (data === '1' || data === 1) {
-                                    return `<span class="badge bg-label-success">Terkonfirmasi</span>`;
-                                } else {
+                                const isAccepted = row.is_accepted;
+                                const isConfirmed = row.is_confirmed === '1' || row.is_confirmed === 1;
+
+                                if (isConfirmed) {
+                                    return `<span class="badge bg-label-success">Terkirim</span>`;
+                                } else if (isAccepted) {
                                     return `<span class="badge bg-label-warning">Dikirim</span>`;
+                                } else {
+                                    return `<span class="badge bg-label-dark">Menunggu Pengiriman</span>`;
                                 }
                             }
                         },

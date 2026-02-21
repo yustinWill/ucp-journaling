@@ -6,7 +6,7 @@
     <!-- Summary Cards -->
     <div class="row g-4 mb-4">
         <!-- Total SO -->
-        <div class="col-lg-4 col-sm-6">
+        <div class="col-lg-3 col-sm-6">
             <div class="card card-border-shadow-primary h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
@@ -25,40 +25,73 @@
             </div>
         </div>
 
-        <!-- Total SD -->
-        <div class="col-lg-4 col-sm-6">
-            <div class="card card-border-shadow-warning h-100">
+        <!-- SD Menunggu -->
+        <div class="col-lg-2 col-sm-6">
+            <div class="card card-border-shadow-dark h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
-                        <div class="avatar me-4">
-                            <span class="avatar-initial rounded bg-label-warning">
-                                <i class="icon-base ti tabler-truck icon-28px"></i>
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded bg-label-dark">
+                                <i class="icon-base ti tabler-clock icon-24px"></i>
                             </span>
                         </div>
                         <div>
-                            <h4 class="mb-0">
-                                <span class="text-warning">{{ $stats['sd_non_confirm'] }}</span>
-                                <span class="text-muted fs-6">/</span>
-                                <span class="text-success">{{ $stats['sd_confirm'] }}</span>
-                            </h4>
+                            <h4 class="mb-0 text-dark">{{ $stats['sd_waiting'] }}</h4>
                         </div>
                     </div>
-                    <p class="mb-0 fw-semibold">Sales Delivery</p>
-                    <small class="text-muted">
-                        <span class="text-warning">Dikirim</span> /
-                        <span class="text-success">Terkonfirmasi</span>
-                    </small>
+                    <p class="mb-0 fw-semibold">SD Menunggu</p>
+                    <small class="text-muted">Belum diterima</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- SD Dikirim -->
+        <div class="col-lg-2 col-sm-6">
+            <div class="card card-border-shadow-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded bg-label-warning">
+                                <i class="icon-base ti tabler-truck-delivery icon-24px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 text-warning">{{ $stats['sd_non_confirm'] }}</h4>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">SD Dikirim</p>
+                    <small class="text-muted">Belum konfirmasi</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- SD Terkirim -->
+        <div class="col-lg-2 col-sm-6">
+            <div class="card card-border-shadow-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-3">
+                            <span class="avatar-initial rounded bg-label-success">
+                                <i class="icon-base ti tabler-truck-loading icon-24px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 text-success">{{ $stats['sd_confirm'] }}</h4>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">SD Terkirim</p>
+                    <small class="text-muted">Terkonfirmasi</small>
                 </div>
             </div>
         </div>
 
         <!-- Total SI -->
-        <div class="col-lg-4 col-sm-6">
-            <div class="card card-border-shadow-success h-100">
+        <div class="col-lg-3 col-sm-6">
+            <div class="card card-border-shadow-info h-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
                         <div class="avatar me-4">
-                            <span class="avatar-initial rounded bg-label-success">
+                            <span class="avatar-initial rounded bg-label-info">
                                 <i class="icon-base ti tabler-receipt icon-28px"></i>
                             </span>
                         </div>
@@ -114,10 +147,12 @@
                         <label class="form-label">Status:</label>
                         <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
                             <option value="">Semua Status</option>
-                            <option value="Order">Order</option>
+                            <option value="Menunggu">Menunggu</option>
+                            <option value="Menunggu Pengiriman">Menunggu Pengiriman</option>
                             <option value="Dikirim">Dikirim</option>
-                            <option value="Pengiriman Dikonfirmasi">Pengiriman Dikonfirmasi</option>
+                            <option value="Terkirim">Terkirim</option>
                             <option value="Dibayar">Dibayar</option>
+                            <option value="Terbayar">Terbayar</option>
                             <option value="Selesai">Selesai</option>
                         </select>
                     </div>
@@ -256,26 +291,41 @@
                             width: '180px',
                             responsivePriority: 1,
                             render: function(data, type, row) {
-                                let status = 'Order';
+                                let status = 'Menunggu';
                                 let badgeClass = 'bg-label-secondary';
 
                                 const siCount = parseInt(row.si_count) || 0;
                                 const sdCount = parseInt(row.sd_count) || 0;
                                 const siSettledCount = parseInt(row.si_settled_count) || 0;
+                                const sdWaitingCount = parseInt(row.sd_waiting_count) || 0;
+                                const sdAcceptedCount = parseInt(row.sd_accepted_count) || 0;
                                 const sdConfirmedCount = parseInt(row.sd_confirmed_count) || 0;
 
+                                // Priority order: Menunggu -> Menunggu Pengiriman -> Dikirim -> Terkirim -> Dibayar -> Terbayar -> Selesai
                                 if (sdConfirmedCount > 0 && siSettledCount > 0) {
+                                    // Both SD confirmed and SI settled
                                     status = 'Selesai'; badgeClass = 'bg-label-success';
                                 } else if (siSettledCount > 0) {
-                                    status = 'Selesai'; badgeClass = 'bg-label-success';
+                                    // SI settled (regardless of SD status)
+                                    status = 'Terbayar'; badgeClass = 'bg-label-success';
                                 } else if (siCount > 0) {
+                                    // SI created but not settled
                                     status = 'Dibayar'; badgeClass = 'bg-label-primary';
                                 } else if (sdConfirmedCount > 0) {
-                                    status = 'Pengiriman Dikonfirmasi'; badgeClass = 'bg-label-info';
-                                } else if (sdCount > 0) {
+                                    // SD confirmed but no SI
+                                    status = 'Terkirim'; badgeClass = 'bg-label-info';
+                                } else if (sdAcceptedCount > 0) {
+                                    // SD accepted but not confirmed
                                     status = 'Dikirim'; badgeClass = 'bg-label-warning';
+                                } else if (sdWaitingCount > 0) {
+                                    // SD created but not accepted
+                                    status = 'Menunggu Pengiriman'; badgeClass = 'bg-label-dark';
+                                } else if (sdCount > 0) {
+                                    // SD exists (fallback)
+                                    status = 'Menunggu Pengiriman'; badgeClass = 'bg-label-dark';
                                 } else {
-                                    status = 'Order'; badgeClass = 'bg-label-secondary';
+                                    // No SD and no SI
+                                    status = 'Menunggu'; badgeClass = 'bg-label-secondary';
                                 }
 
                                 return `<span class="badge ${badgeClass}">${status}</span>`;

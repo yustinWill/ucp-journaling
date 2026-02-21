@@ -347,6 +347,12 @@
             initCleaveCurrency(document);
             // Initialize the form
             initializeForm();
+
+            // Calculate initial totals for pre-filled quantities
+            $('input[name*="[invoice_qty]"]').each(function(index) {
+                calculateRowTotal(index);
+            });
+            calculateInvoiceTotal();
             updateInvoiceStatus();
 
             function initializeForm() {

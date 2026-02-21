@@ -472,6 +472,7 @@
                                             <th>Tanggal</th>
                                             <th>No. Referensi</th>
                                             <th>Deskripsi</th>
+                                            <th>Status</th>
                                             <th>Dibuat Oleh</th>
                                             <th>Aksi</th>
                                         </tr>
@@ -482,6 +483,19 @@
                                                 <td>{{ $item->delivery_date }}</td>
                                                 <td>{{ $item->delivery_number }}</td>
                                                 <td>{{ $item->memo }}</td>
+                                                <td>
+                                                    @php
+                                                        $isAccepted = $item->is_accepted ?? false;
+                                                        $isConfirmed = $item->is_confirmed == '1';
+                                                    @endphp
+                                                    @if ($isConfirmed)
+                                                        <span class="badge bg-label-success">Terkirim</span>
+                                                    @elseif ($isAccepted)
+                                                        <span class="badge bg-label-warning">Dikirim</span>
+                                                    @else
+                                                        <span class="badge bg-label-dark">Menunggu Pengiriman</span>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $item->created_by_name }}</td>
                                                 <td>
                                                     <a href="{{ route('main_transaction.sales_delivery.detail', $item->id) }}"
@@ -494,7 +508,7 @@
                                         @endforeach
                                         @if (count($salesDeliveries) == 0)
                                             <tr>
-                                                <td colspan="5" class="text-center text-muted py-4">
+                                                <td colspan="6" class="text-center text-muted py-4">
                                                     <div class="d-flex flex-column align-items-center">
                                                         <i class="icon-base ti tabler-truck-delivery mb-2 text-muted"
                                                             style="font-size: 2rem;"></i>

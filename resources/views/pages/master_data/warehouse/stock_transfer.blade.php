@@ -491,13 +491,15 @@
                     // Format stock: remove trailing zeros (0.500000 → 0.5), keep meaningful decimals (0.5 → 0.5)
                     const formattedStock = parseFloat(currentStock.toFixed(2));
                     const formattedSisaStok = parseFloat(sisaStok.toFixed(2));
-
+                    
+                    const cleanStock = formattedStock.toLocaleString('en-US');
+                    const cleanSisaStok = formattedSisaStok.toLocaleString('en-US');
                     rows += `
                         <tr data-product-code="${product.code}" data-product-id="${product.id}">
                             <td><strong>${product.code}</strong></td>
                             <td>${product.name}</td>
                             <td>${product.unit}</td>
-                            <td><span class="text-info">${formattedStock}</span></td>
+                            <td><span class="text-info">${cleanStock}</span></td>
                             <td>
                                 <input type="number" class="form-control form-control-sm qty-transfer-input"
                                     value="${qtyTransfer}"
@@ -513,7 +515,7 @@
                                     placeholder="0">
                             </td>
                             <td class="sisa-stok-display">
-                                <span class="text-${sisaStok < 0 ? 'danger' : 'info'}">${formattedSisaStok}</span>
+                                <span class="text-${sisaStok < 0 ? 'danger' : 'info'}">${cleanSisaStok}</span>
                             </td>
                             <td>
                                 <input type="text" class="form-control form-control-sm reason-input"
