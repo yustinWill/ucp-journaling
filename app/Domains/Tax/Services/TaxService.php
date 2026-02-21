@@ -21,6 +21,8 @@ class TaxService
             'description' => $data['description'] ?? '',
             'created_at' => now(),
             'created_by' => Auth::id(),
+            'updated_at' => now(),
+            'updated_by' => Auth::id(),
         ]);
     }
 

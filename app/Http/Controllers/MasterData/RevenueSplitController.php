@@ -49,9 +49,15 @@ class RevenueSplitController extends Controller
     public function add()
     {
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canCreateRevenueSplit'] ?? false;
+
         return view('pages.master_data.revenue_split.add', array_merge([
             'statuses' => $statuses,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function save(Request $request)
@@ -115,10 +121,16 @@ class RevenueSplitController extends Controller
         }
 
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canEditRevenueSplit'] ?? false;
+
         return view('pages.master_data.revenue_split.edit', array_merge([
             'statuses' => $statuses,
             'revenueSplt' => $revenueSplt,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function update(Request $request)
@@ -190,10 +202,17 @@ class RevenueSplitController extends Controller
         
         // dd($salesOrdersData);
         $auditLogs = app(RevenueSplitAuditLogService::class)->findAllBasedOnRevenueSplitId($id);
+        $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
+
+        // Map permission variables for blade template compatibility
+        $canShowEditButton = $permissionData['canEditRevenueSplit'] ?? false;
+        $canShowDeleteButton = $permissionData['canDeleteRevenueSplit'] ?? false;
+
         return view('pages.master_data.revenue_split.detail', array_merge(
-            compact('revenueSplt', 'auditLogs'),
+            compact('revenueSplt', 'auditLogs', 'canShowEditButton', 'canShowDeleteButton'),
             $salesOrdersData,
-            ['auditLogType' => AuditLogTypes::MASTER_DATA_REVENUE_SPLIT->code()]
+            ['auditLogType' => AuditLogTypes::MASTER_DATA_REVENUE_SPLIT->code()],
+            $permissionData
         ));
     }
 

@@ -108,6 +108,7 @@ class PaymentTermController extends Controller
                 }
 
                 DB::table($this->table_name)->insert([
+                    'company_code' => session('user_company_code'),
                     'code' => strtoupper($validated['code']),
                     'name' => $validated['name'],
                     'description' => $validated['description'],

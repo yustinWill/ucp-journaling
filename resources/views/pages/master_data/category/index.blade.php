@@ -107,7 +107,7 @@
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
                             
-                            @can('category.create')
+                            @can('product_category.create')
                                 <a href="{{ route('master_data.category.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
@@ -141,11 +141,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = @json(auth()->user()->can('category.view'));
-            const canWrite = @json(auth()->user()->can('category.create'));
-            const canDelete = @json(auth()->user()->can('category.delete'));
-            const canShowEditButton = @json(auth()->user()->can('category.edit'));
-            const canShowDeleteButton = @json(auth()->user()->can('category.delete'));
+            const canRead = @json(auth()->user()->can('product_category.view'));
+            const canWrite = @json(auth()->user()->can('product_category.create'));
+            const canDelete = @json(auth()->user()->can('product_category.delete'));
+            const canShowEditButton = @json(auth()->user()->can('product_category.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('product_category.delete'));
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');

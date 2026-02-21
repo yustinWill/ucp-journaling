@@ -72,7 +72,14 @@ class TaxController extends Controller
     {
         try {
             $validated = $request->validate([
-                'code' => 'required|string|max:255|unique:m_taxes,code',
+                'code' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('m_taxes', 'code')->where(function ($query) {
+                        return $query->where('company_code', session('user_company_code'));
+                    }),
+                ],
                 'name' => 'required|string|max:255',
                 'rate' => 'required|numeric|min:0|max:100',
                 'type' => [

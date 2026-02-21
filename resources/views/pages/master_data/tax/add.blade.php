@@ -132,15 +132,40 @@
                 buttonsStyling: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Simulate save success
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Pajak berhasil dibuat.',
-                        customClass: { confirmButton: 'btn btn-success' },
-                        buttonsStyling: false
-                    }).then(() => {
-                        window.location.href = "{{ route('master_data.tax.index') }}";
+                    // Submit via AJAX
+                    $.ajax({
+                        url: "{{ route('master_data.tax.save') }}",
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            code: $('#tax-code').val(),
+                            name: $('#tax-name').val(),
+                            rate: $('#tax-rate').val(),
+                            type: $('#tax-type').val(),
+                            status: $('#status').val(),
+                            description: $('#description').val()
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: response.message || 'Pajak berhasil dibuat.',
+                                customClass: { confirmButton: 'btn btn-success' },
+                                buttonsStyling: false
+                            }).then(() => {
+                                window.location.href = "{{ route('master_data.tax.index') }}";
+                            });
+                        },
+                        error: function(xhr) {
+                            const res = xhr.responseJSON;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal menyimpan',
+                                html: res?.message || 'Terjadi kesalahan saat menyimpan data.',
+                                customClass: { confirmButton: 'btn btn-primary' },
+                                buttonsStyling: false
+                            });
+                        }
                     });
                 }
             });
