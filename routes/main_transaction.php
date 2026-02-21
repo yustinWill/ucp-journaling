@@ -388,6 +388,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$reimbursement_approval_segment.'/index', 'index')->name('main_transaction.reimbursement_approval.index');
         Route::get($base_segment.$reimbursement_approval_segment.'/index_data_table', 'index_data_table')->name('main_transaction.reimbursement_approval.index_data_table');
         Route::get($base_segment.$reimbursement_approval_segment.'/detail/{id}', 'detail')->name('main_transaction.reimbursement_approval.detail');
+        Route::get($base_segment.$reimbursement_approval_segment.'/detail_json/{id}', 'detailJson')->name('main_transaction.reimbursement_approval.detail_json');
         Route::post($base_segment.$reimbursement_approval_segment.'/approve/{id}', 'approve')->name('main_transaction.reimbursement_approval.approve');
         Route::post($base_segment.$reimbursement_approval_segment.'/reject/{id}', 'reject')->name('main_transaction.reimbursement_approval.reject');
     });

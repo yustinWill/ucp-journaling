@@ -79,21 +79,26 @@ class ReimbursementController extends Controller
 
         try {
             $validated = $request->validate([
-                'reimbursement_name' => 'required|string|max:255',
-                'amount' => 'required|numeric|min:0',
-                'description' => 'nullable|string|max:1000',
+                'items' => 'required|array|min:1',
+                'items.*.reimbursement_name' => 'required|string|max:255',
+                'items.*.amount' => 'required|numeric|min:0',
+                'items.*.description' => 'nullable|string|max:1000',
+                'items.*.attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
             ], [], [
-                'reimbursement_name' => 'Nama Reimbursement',
-                'amount' => 'Jumlah',
-                'description' => 'Deskripsi',
+                'items.*.reimbursement_name' => 'Nama Reimbursement',
+                'items.*.amount' => 'Jumlah',
+                'items.*.description' => 'Deskripsi',
+                'items.*.attachment' => 'Lampiran',
             ]);
 
-            $reimbursement = $this->reimbursementService->create($validated, auth()->id());
+            $reimbursements = $this->reimbursementService->createMultiple($validated['items'], auth()->id());
+
+            $count = count($reimbursements);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Reimbursement berhasil diajukan.',
-                'data' => $reimbursement,
+                'message' => $count . ' reimbursement berhasil diajukan.',
+                'data' => $reimbursements,
             ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
         } catch (ValidationException $e) {
             return response()->json([

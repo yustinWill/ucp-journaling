@@ -169,6 +169,37 @@ class ReimbursementService
     }
 
     /**
+     * Create multiple reimbursements from repeater items
+     */
+    public function createMultiple(array $items, $userId)
+    {
+        DB::beginTransaction();
+        try {
+            $reimbursements = [];
+
+            foreach ($items as $item) {
+                // Handle file upload
+                if (isset($item['attachment']) && $item['attachment'] instanceof \Illuminate\Http\UploadedFile) {
+                    $item['attachment'] = $item['attachment']->store('reimbursements', 'public');
+                }
+
+                $item['transaction_code'] = $this->generateTransactionCode();
+                $item['created_by'] = $userId;
+                $item['company_code'] = session('user_company_code');
+                $item['status'] = ReimbursementStatuses::PENDING;
+
+                $reimbursements[] = Reimbursement::create($item);
+            }
+
+            DB::commit();
+            return $reimbursements;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
      * Approve reimbursement and assign budget category
      */
     public function approve($id, $budgetCategoryId, $reviewerId)
