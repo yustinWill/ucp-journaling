@@ -31,6 +31,11 @@ class ConfirmSalesDeliveryAction
                 throw new \Exception("Sales Delivery dengan ID {$salesDeliveryId} tidak ditemukan.");
             }
 
+            // Check if not accepted yet
+            if (!$salesDelivery->is_accepted) {
+                throw new \Exception("Sales Delivery harus diterima terlebih dahulu sebelum dikonfirmasi.");
+            }
+
             // Check if already confirmed
             if ($salesDelivery->is_confirmed === '1') {
                 throw new \Exception("Sales Delivery ini sudah dikonfirmasi sebelumnya.");

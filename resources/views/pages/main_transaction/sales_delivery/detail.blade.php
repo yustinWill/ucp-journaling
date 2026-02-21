@@ -11,13 +11,21 @@
                     <h4 class="mb-3">Detail Sales Delivery</h4>
                 </div>
                 <div class="col-md-4">
-                    <div class="d-flex gap-2 justify-content-end">
+                    <div class="d-flex gap-2 justify-content-end align-items-center">
                         @if (!$salesDelivery->is_accepted)
+                            <span class="badge bg-label-dark fs-6 py-2 px-3 me-2">
+                                <i class="icon-base ti tabler-clock me-1"></i>
+                                Menunggu Pengiriman
+                            </span>
                             <button type="button" id="btn-accept-delivery" class="btn btn-warning btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-check me-2"></i>
                                 Terima Pengiriman
                             </button>
                         @elseif ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
+                            <span class="badge bg-label-warning fs-6 py-2 px-3 me-2">
+                                <i class="icon-base ti tabler-truck me-1"></i>
+                                Dikirim
+                            </span>
                             <button type="button" id="btn-confirm-delivery" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-check me-2"></i>
                                 Konfirm
@@ -25,7 +33,7 @@
                         @else
                             <span class="badge bg-label-success fs-6 py-2 px-3">
                                 <i class="icon-base ti tabler-check me-1"></i>
-                                Sudah Dikonfirmasi
+                                Terkirim
                             </span>
                         @endif
                     </div>
@@ -74,7 +82,7 @@
                         <div>
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label">Customer Reference</label>
+                                    <label class="form-label">No Resi</label>
                                     <input type="text" id="customer-reference" class="form-control"
                                         value="{{ $salesDelivery->customer_reference ?? '' }}"
                                         {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
@@ -320,12 +328,42 @@
                             <input type="text" class="form-control" value="{{ $salesDelivery->created_at }}"
                                 disabled />
                         </div>
-                        {{-- <div class="col-md-6">
-                            <label class="form-label">Diupdate Pada</label>
-                            <input type="text" class="form-control" value="{{ $salesDelivery->updated_at ?? 'Belum pernah diupdate' }}"
+                        <div class="col-md-6">
+                            <label class="form-label">Dibuat Oleh</label>
+                            <input type="text" class="form-control" value="{{ $salesDelivery->created_by_name ?? '-' }}"
                                 disabled />
-                        </div> --}}
+                        </div>
                     </div>
+
+                    @if ($salesDelivery->is_accepted)
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Diterima Pada</label>
+                                <input type="text" class="form-control" value="{{ $salesDelivery->accepted_at ?? '-' }}"
+                                    disabled />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Diterima Oleh</label>
+                                <input type="text" class="form-control" value="{{ $salesDelivery->accepted_by_name ?? '-' }}"
+                                    disabled />
+                            </div>
+                        </div>
+                    @endif
+
+                    @if ($salesDelivery->is_confirmed == '1')
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Dikonfirmasi Pada</label>
+                                <input type="text" class="form-control" value="{{ $salesDelivery->confirm_at ?? '-' }}"
+                                    disabled />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Dikonfirmasi Oleh</label>
+                                <input type="text" class="form-control" value="{{ $salesDelivery->confirmed_by_name ?? '-' }}"
+                                    disabled />
+                            </div>
+                        </div>
+                    @endif
                             </div>
                         </div>
 
@@ -454,16 +492,27 @@
                             },
                             error: function(xhr) {
                                 let errorMessage = 'Terjadi kesalahan saat menerima delivery.';
+                                let shouldReload = false;
 
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     errorMessage = xhr.responseJSON.message;
+
+                                    // Check if it's an "already accepted" or "already confirmed" error
+                                    if (errorMessage.includes('sudah diterima') ||
+                                        errorMessage.includes('sudah dikonfirmasi')) {
+                                        shouldReload = true;
+                                    }
                                 }
 
                                 Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal!',
+                                    icon: 'info',
+                                    title: 'Informasi',
                                     text: errorMessage,
-                                    confirmButtonColor: '#ea5455'
+                                    confirmButtonColor: '#28c76f'
+                                }).then(() => {
+                                    if (shouldReload) {
+                                        location.reload();
+                                    }
                                 });
                             }
                         });
@@ -539,16 +588,27 @@
                             },
                             error: function(xhr) {
                                 let errorMessage = 'Terjadi kesalahan saat mengkonfirmasi delivery.';
+                                let shouldReload = false;
 
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     errorMessage = xhr.responseJSON.message;
+
+                                    // Check if it's an "already confirmed" or "not accepted yet" error
+                                    if (errorMessage.includes('sudah dikonfirmasi') ||
+                                        errorMessage.includes('harus diterima terlebih dahulu')) {
+                                        shouldReload = true;
+                                    }
                                 }
 
                                 Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal!',
+                                    icon: 'info',
+                                    title: 'Informasi',
                                     text: errorMessage,
-                                    confirmButtonColor: '#ea5455'
+                                    confirmButtonColor: '#28c76f'
+                                }).then(() => {
+                                    if (shouldReload) {
+                                        location.reload();
+                                    }
                                 });
                             }
                         });

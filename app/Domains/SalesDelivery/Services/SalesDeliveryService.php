@@ -61,10 +61,14 @@ class SalesDeliveryService
                 'ca.address as customer_address',
                 'w.name as warehouse_name',
                 'u.name as created_by_name',
+                'u_accepted.name as accepted_by_name',
+                'u_confirmed.name as confirmed_by_name',
                 't_sales_deliveries.is_confirmed',
                 't_sales_deliveries.is_accepted',
                 't_sales_deliveries.accepted_at',
                 't_sales_deliveries.accepted_by',
+                't_sales_deliveries.confirm_at',
+                't_sales_deliveries.confirmed_by',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
             ])
             ->leftJoin('m_contacts as c', 't_sales_deliveries.customer_id', '=', 'c.id')
@@ -75,6 +79,8 @@ class SalesDeliveryService
             ->leftJoin('m_warehouses as w', 't_sales_deliveries.warehouse_id', '=', 'w.id')
             ->leftJoin('t_sales_orders as so', 't_sales_deliveries.sales_order_id', '=', 'so.id')
             ->leftJoin('users as u', 't_sales_deliveries.created_by', '=', 'u.id')
+            ->leftJoin('users as u_accepted', 't_sales_deliveries.accepted_by', '=', 'u_accepted.id')
+            ->leftJoin('users as u_confirmed', 't_sales_deliveries.confirmed_by', '=', 'u_confirmed.id')
             ->leftJoin(DB::raw("JSON_TABLE(t_sales_deliveries.tags, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
                 $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
             })
