@@ -123,7 +123,7 @@
                 },
                 columns: [
                     {
-                        data: 'created_at',
+                        data: 'reimbursement_date',
                         render: function(data) {
                             return new Date(data).toLocaleDateString('id-ID');
                         }
