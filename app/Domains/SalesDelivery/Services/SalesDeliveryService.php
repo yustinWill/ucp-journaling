@@ -156,6 +156,7 @@ class SalesDeliveryService
                 'c.id as customer_id',
                 'w.name as warehouse',
                 'w.id as warehouse_id',
+                'sd.delivery_address',
                 'u.name as created_by',
                 DB::raw("COALESCE(JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)), JSON_ARRAY()) as tags"),
             ])

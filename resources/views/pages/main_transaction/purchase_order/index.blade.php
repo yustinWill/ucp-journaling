@@ -82,6 +82,11 @@
                         <input type="text" class="form-control" id="purchase-order-no-filter"
                             placeholder="Cari Purchase Order">
                     </div>
+                    <div class="col-12 col-sm-6 col-lg-3 mt-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                            <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                        </button>
+                    </div>
                 </div>
 
                 <hr class="my-6 mx-n6" />
@@ -92,7 +97,7 @@
                         <!-- Column Toggle -->
                         <div class="d-flex align-items-center">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                                 <label class="form-check-label" for="toggleTagColumn">
                                     <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                                 </label>
@@ -115,14 +120,13 @@
                 <table id="purchase-order-table" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th style="width: 100px;">Tanggal</th>
-                            <th style="width: 140px;">No Purchase Order</th>
-                            <th style="width: 180px;">Supplier</th>
-                            <th style="width: 120px;">Tgl Jatuh Tempo</th>
-                            <th style="width: 120px;">Total</th>
-                            <th style="width: 120px;">Diinput Oleh</th>
-                            <th style="width: 120px;">Tag</th>
-                            <th style="width: 80px;">Aksi</th>
+                            <th>Tanggal</th>
+                            <th>No PO</th>
+                            <th>Supplier</th>
+                            <th>Tgl Jatuh Tempo</th>
+                            <th>Total</th>
+                            <th>Diinput Oleh</th>
+                            <th>Tag</th>
                         </tr>
                     </thead>
                 </table>
@@ -140,7 +144,8 @@
 
             // Permission variables - using Spatie permissions
             const canRead = @json(auth()->user()->can('purchase_order.view'));
-            const canEdit = @json(auth()->user()->can('purchase_order.edit'));
+            const canViewContact = @json(auth()->user()->can('contact.view'));
+            const canViewUser = @json(auth()->user()->can('user.view'));
 
             // Initialize DataTable
             function initPurchaseOrderTable() {
@@ -160,26 +165,34 @@
                             d.purchase_order_no_filter = $('#purchase-order-no-filter').val()
                         }
                     },
-                    columns: [{
+                    columns: [
+                        {
                             data: 'transaction_date',
-                            width: '100px'
+                            width: '110px',
                         },
                         {
                             data: 'transaction_code',
                             width: '140px',
-                            render: function(data, type, row) {
-                                return data; // Non-clickable as per standard
-                            }
-                        },
-                        {
-                            data: 'supplier_name',
-                            width: '180px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
                                 if (!data) return '-';
                                 if (canRead) {
                                     const detailUrl =
+                                        `{{ route('main_transaction.purchase_order.detail', ':id') }}`
+                                        .replace(':id', row.id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
+                            }
+                        },
+                        {
+                            data: 'supplier_name',
+                            render: function(data, type, row) {
+                                if (!data) return '-';
+                                if (canViewContact && row.f_supplier_id) {
+                                    const detailUrl =
                                         `{{ route('master_data.contact.detail', ':id') }}`
-                                        .replace(':id', row.supplier_id);
+                                        .replace(':id', row.f_supplier_id);
                                     return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 }
                                 return data;
@@ -187,11 +200,10 @@
                         },
                         {
                             data: 'payment_term_due_date',
-                            width: '120px'
+                            responsivePriority: 10001,
                         },
                         {
                             data: 'grand_price',
-                            width: '120px',
                             className: 'text-end',
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
@@ -202,9 +214,10 @@
                         },
                         {
                             data: 'created_by_name',
-                            width: '120px',
+                            responsivePriority: 10002,
                             render: function(data, type, row) {
-                                if (canRead) {
+                                if (!data) return '-';
+                                if (canViewUser && row.created_by) {
                                     const detailUrl =
                                         `{{ route('master_data.user.detail', ':id') }}`
                                         .replace(':id', row.created_by);
@@ -215,7 +228,7 @@
                         },
                         {
                             data: 'tags',
-                            width: '120px',
+                            responsivePriority: 10003,
                             render: function(data, type, row) {
                                 let tags = JSON.parse(data);
                                 return tags.map(tag => {
@@ -226,37 +239,6 @@
                                 }).join('');
                             }
                         },
-                        {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            responsivePriority: 1,
-                            width: '80px',
-                            render: function(data, type, row, meta) {
-                                const detailUrl =
-                                    `{{ route('main_transaction.purchase_order.detail', ':id') }}`
-                                    .replace(':id', row.id);
-                                const editUrl =
-                                    `{{ route('main_transaction.purchase_order.edit', ':id') }}`
-                                    .replace(':id', row.id);
-                                let actions = '<div class="d-flex gap-2">';
-
-                                if (canRead) {
-                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                <i class="icon-xs icon-base ti tabler-eye"></i>
-                            </a>`;
-                                }
-
-                                if (canEdit) {
-                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                <i class="icon-xs icon-base ti tabler-edit"></i>
-                            </a>`;
-                                }
-
-                                actions += '</div>';
-                                return actions;
-                            }
-                        }
                     ],
                     layout: {
                         topStart: {
@@ -278,7 +260,6 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    // scrollX: true,
                     responsive: true,
                     orderCellsTop: true,
                     ordering: false
@@ -288,34 +269,36 @@
             // Initialize table
             initPurchaseOrderTable();
 
+            // Tag column hidden by default (0=date,1=code,2=supplier,3=due_date,4=total,5=created_by,6=tags)
+            purchaseOrderTable.column(6).visible(false);
+
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = purchaseOrderTable.column(7); // Tag column index (0-based)
-                tagColumn.visible(this.checked);
+                purchaseOrderTable.column(6).visible(this.checked);
             });
+
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#date-range-picker').val('');
+                $('#on-due-date-filter').val('');
+                $('#suppllier-filter').val('').trigger('change');
+                $('#purchase-order-no-filter').val('');
+                if (purchaseOrderTable) {
+                    purchaseOrderTable.draw();
+                }
+            });
+
             let searchTimeout;
             $('#date-range-picker, #on-due-date-filter, #suppllier-filter, #purchase-order-no-filter').on(
                 'keyup change',
                 function() {
                     clearTimeout(searchTimeout);
-                    const input = this;
                     searchTimeout = setTimeout(function() {
                         if (purchaseOrderTable) {
-                            purchaseOrderTable.search(input.value).draw();
+                            purchaseOrderTable.draw();
                         }
                     }, 400); // 400ms delay
                 });
         });
-
-        // Action button functions
-        function viewDetail(id) {
-            // Navigate to purchase order detail page
-            window.location.href = "{{ route('main_transaction.purchase_order.detail', ':id') }}".replace(':id', id);
-        }
-
-        function editRecord(id) {
-            // Navigate to purchase order edit page
-            window.location.href = "{{ route('main_transaction.purchase_order.edit', ':id') }}".replace(':id', id);
-        }
     </script>
 @endsection

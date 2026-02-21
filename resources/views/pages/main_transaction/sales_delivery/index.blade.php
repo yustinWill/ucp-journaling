@@ -101,6 +101,11 @@
                         <input type="text" class="form-control" id="delivery-no-filter"
                             placeholder="Cari Sales Delivery / Sales Order">
                     </div>
+                    <div class="col-12 col-sm-6 col-lg-3 mt-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                            <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                        </button>
+                    </div>
                 </div>
 
                 <hr class="my-6 mx-n6" />
@@ -111,7 +116,7 @@
                         <!-- Column Toggle -->
                         <div class="d-flex align-items-center">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                                 <label class="form-check-label" for="toggleTagColumn">
                                     <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                                 </label>
@@ -132,14 +137,14 @@
                     <thead>
                         <tr>
                             <th>Tanggal</th>
-                            <th>No Sales Delivery</th>
-                            <th>No Sales Order</th>
+                            <th>No Delivery</th>
                             <th>Customer</th>
+                            <th>Alamat</th>
+                            <th>Status</th>
+                            <th>Referensi SO</th>
                             <th>Gudang</th>
                             <th>Ongkir</th>
-                            <th>Status</th>
                             <th>Tag</th>
-                            <th>Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -166,10 +171,12 @@
             let salesDeliveryTable;
 
             // Define permissions as JavaScript variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('sales_delivery.view'));
             const canEdit = @json(auth()->user()->can('sales_delivery.edit'));
             const canViewContact = @json(auth()->user()->can('contact.view'));
             const canViewUser = @json(auth()->user()->can('user.view'));
             const canViewSalesOrder = @json(auth()->user()->can('sales_order.view'));
+            const canViewWarehouse = @json(auth()->user()->can('warehouse.view'));
 
             // Initialize DataTable
             function initDataTable() {
@@ -199,8 +206,10 @@
                             });
                         }
                     },
-                    columns: [{
+                    columns: [
+                        {
                             data: 'delivery_date',
+                            width: '110px',
                             render: function(data) {
                                 if (!data) return '-';
                                 return new Date(data).toLocaleDateString('id-ID');
@@ -208,15 +217,14 @@
                         },
                         {
                             data: 'delivery_number',
-                        },
-                        {
-                            data: 'sales_order_number',
+                            width: '150px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
                                 if (!data) return '-';
-                                if (canViewSalesOrder && row.sales_order_id) {
+                                if (canRead) {
                                     const detailUrl =
-                                        "{{ route('main_transaction.sales_order.detail', ':id') }}"
-                                        .replace(':id', row.sales_order_id);
+                                        "{{ route('main_transaction.sales_delivery.detail', ':id') }}"
+                                        .replace(':id', row.id);
                                     return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 }
                                 return data;
@@ -236,17 +244,15 @@
                             }
                         },
                         {
-                            data: 'warehouse',
-                        },
-                        {
-                            data: 'shipping_cost',
-                            render: function(data, type, row) {
-                                return `Rp ${parseInt(data || 0).toLocaleString('id-ID')}`;
+                            data: 'delivery_address',
+                            render: function(data) {
+                                return data || '-';
                             }
                         },
                         {
                             data: 'is_confirmed',
-                            width: '100px',
+                            width: '130px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
                                 if (data === '1' || data === 1) {
                                     return `<span class="badge bg-label-success">Terkonfirmasi</span>`;
@@ -256,7 +262,43 @@
                             }
                         },
                         {
+                            data: 'sales_order_number',
+                            responsivePriority: 10001,
+                            render: function(data, type, row) {
+                                if (!data) return '-';
+                                if (canViewSalesOrder && row.so_id) {
+                                    const detailUrl =
+                                        "{{ route('main_transaction.sales_order.detail', ':id') }}"
+                                        .replace(':id', row.so_id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
+                            }
+                        },
+                        {
+                            data: 'warehouse',
+                            responsivePriority: 10002,
+                            render: function(data, type, row) {
+                                if (!data) return '-';
+                                if (canViewWarehouse && row.warehouse_id) {
+                                    const detailUrl =
+                                        "{{ route('master_data.warehouse.detail', ':id') }}"
+                                        .replace(':id', row.warehouse_id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
+                            }
+                        },
+                        {
+                            data: 'shipping_cost',
+                            responsivePriority: 10003,
+                            render: function(data) {
+                                return `Rp ${parseInt(data || 0).toLocaleString('id-ID')}`;
+                            }
+                        },
+                        {
                             data: 'tags',
+                            responsivePriority: 10004,
                             render: function(data, type, row) {
                                 if (!data) return '-';
                                 let tags = JSON.parse(data);
@@ -268,37 +310,6 @@
                                 }).join('') || '-';
                             }
                         },
-                        {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            responsivePriority: 1,
-                            width: '80px',
-                            render: function(data, type, row, meta) {
-                                const detailUrl =
-                                    "{{ route('main_transaction.sales_delivery.detail', ':id') }}"
-                                    .replace(':id', row.id);
-                                const editUrl =
-                                    "{{ route('main_transaction.sales_delivery.edit', ':id') }}"
-                                    .replace(':id', row.id);
-
-                                let actions = '<div class="d-flex gap-2">';
-
-                                // Detail button (always available)
-                                actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                            <i class="icon-base ti tabler-eye"></i></a>`;
-
-                                // Edit button 
-                                // if (canEdit) {
-                                //     actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                            //                <i class="icon-base ti tabler-edit"></i></a>`;
-                                // }
-
-
-                                actions += '</div>';
-                                return actions;
-                            }
-                        }
                     ],
                     layout: {
                         topStart: {
@@ -320,7 +331,6 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    // scrollX: true,
                     responsive: true,
                     orderCellsTop: true,
                     ordering: false
@@ -329,6 +339,9 @@
 
             // Initialize table
             initDataTable();
+
+            // Tag column hidden by default (0=date,1=delivery_number,2=customer,3=delivery_address,4=status,5=so_reference,6=warehouse,7=shipping_cost,8=tags)
+            salesDeliveryTable.column(8).visible(false);
 
             // Date range picker event - uses global bootstrap daterangepicker (with default last 30 days)
             $('#date-range-picker').on('apply.daterangepicker', function(ev, picker) {
@@ -359,10 +372,21 @@
                         }, 400); // 400ms delay
                     });
 
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#date-range-picker').val('');
+                $('#customer-filter').val('').trigger('change');
+                $('#warehouse-filter').val('').trigger('change');
+                $('#status-filter').val('').trigger('change');
+                $('#delivery-no-filter').val('');
+                if (salesDeliveryTable) {
+                    salesDeliveryTable.draw();
+                }
+            });
+
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = salesDeliveryTable.column(
-                    7); // Tag column index (0-based, tags is 8th column = index 7)
+                const tagColumn = salesDeliveryTable.column(8);
                 tagColumn.visible(this.checked);
             });
         });

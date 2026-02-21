@@ -42,10 +42,12 @@
                         <input type="text" class="form-control" id="invoice-search-filter"
                             placeholder="Cari Invoice atau SO">
                     </div>
+                    <div class="col-12 col-sm-6 col-lg-3 mt-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                            <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                        </button>
+                    </div>
                 </div>
-                {{-- <div class="row mb-4">
-                   
-                </div> --}}
 
                 <hr class="my-6 mx-n6" />
 
@@ -55,7 +57,7 @@
                         <!-- Column Toggle -->
                         <div class="d-flex align-items-center">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                                 <label class="form-check-label" for="toggleTagColumn">
                                     <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                                 </label>
@@ -75,13 +77,12 @@
                             <th>Tanggal</th>
                             <th>No Invoice</th>
                             <th>Customer</th>
-                            <th>Referensi SO</th>
                             <th>Grand Total</th>
                             {{-- <th>Tgl Jatuh Tempo</th> --}}
                             <th>Status</th>
                             {{-- <th>Diinput Oleh</th> --}}
+                            <th>Referensi SO</th>
                             <th>Tag</th>
-                            <th>Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -132,26 +133,35 @@
                             d.invoice_search_filter = $('#invoice-search-filter').val();
                         }
                     },
-                    columns: [{
+                    columns: [
+                        {
                             data: 'invoice_date',
+                            width: '110px',
                         },
                         {
                             data: 'transaction_code',
+                            width: '150px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
-                                return data; // Non-clickable as per standard
+                                if (!data) return '-';
+                                if (canRead) {
+                                    const detailUrl =
+                                        `{{ route('main_transaction.sales_invoice.detail', ':id') }}`
+                                        .replace(':id', row.id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
                             }
                         },
                         {
                             data: 'customer_name',
-                        },
-                        {
-                            data: 'so_reference',
                             render: function(data, type, row) {
                                 if (!data) return '-';
-                                if (canViewSalesOrder && row.f_sales_order_id) {
+                                const canViewContact = @json(auth()->user()->can('contact.view'));
+                                if (canViewContact && row.customer_id) {
                                     const detailUrl =
-                                        `{{ route('main_transaction.sales_order.detail', ':id') }}`
-                                        .replace(':id', row.f_sales_order_id);
+                                        `{{ route('master_data.contact.detail', ':id') }}`
+                                        .replace(':id', row.customer_id);
                                     return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 }
                                 return data;
@@ -159,12 +169,15 @@
                         },
                         {
                             data: 'grand_total',
+                            className: 'text-end',
                             render: function(data, type, row) {
                                 return `Rp ${parseInt(data || 0).toLocaleString('id-ID')}`;
                             }
                         },
                         {
                             data: 'status',
+                            width: '150px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
                                 let badgeClass = 'bg-label-secondary';
                                 let statusText = data;
@@ -186,7 +199,22 @@
                             }
                         },
                         {
+                            data: 'so_reference',
+                            responsivePriority: 10001,
+                            render: function(data, type, row) {
+                                if (!data) return '-';
+                                if (canViewSalesOrder && row.f_sales_order_id) {
+                                    const detailUrl =
+                                        `{{ route('main_transaction.sales_order.detail', ':id') }}`
+                                        .replace(':id', row.f_sales_order_id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
+                            }
+                        },
+                        {
                             data: 'tags',
+                            responsivePriority: 10002,
                             render: function(data, type, row) {
                                 if (!data) return '-';
                                 let tags = JSON.parse(data);
@@ -198,37 +226,6 @@
                                 }).join('');
                             }
                         },
-                        {
-                            data: null,
-                            width: '80px',
-                            orderable: false,
-                            searchable: false,
-                            responsivePriority: 1,
-                            render: function(data, type, row, meta) {
-                                const detailUrl =
-                                    `{{ route('main_transaction.sales_invoice.detail', ':id') }}`
-                                    .replace(':id', row.id);
-                                // const editUrl =
-                                //     `{{ route('main_transaction.sales_invoice.edit', ':id') }}`
-                                //     .replace(':id', row.id);
-                                let actions = '<div class="d-flex gap-2">';
-
-                                if (canRead) {
-                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                <i class="icon-xs icon-base ti tabler-eye"></i>
-                            </a>`;
-                                }
-
-                                // if (canEdit) {
-                                //     actions += `<a href="${editUrl}" class="btn btn-sm btn-warning waves-effect waves-light" title="Edit">
-                            //         <i class="icon-xs icon-base ti tabler-edit"></i>
-                            //     </a>`;
-                                // }
-
-                                actions += '</div>';
-                                return actions;
-                            }
-                        }
                     ],
                     layout: {
                         topStart: {
@@ -250,7 +247,7 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    // scrollX: true,
+                    responsive: true,
                     orderCellsTop: true,
                     ordering: false
                 });
@@ -259,9 +256,23 @@
             // Initialize table
             initSalesInvoiceTable();
 
+            // Tag column hidden by default (0=date,1=code,2=customer,3=total,4=status,5=so_reference,6=tags)
+            salesInvoiceTable.column(6).visible(false);
+
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#date-range-picker').val('');
+                $('#due-date-filter').val('');
+                $('#customer-filter').val('').trigger('change');
+                $('#invoice-search-filter').val('');
+                if (salesInvoiceTable) {
+                    salesInvoiceTable.draw();
+                }
+            });
+
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = salesInvoiceTable.column(6); // Tag column index (0-based)
+                const tagColumn = salesInvoiceTable.column(6);
                 tagColumn.visible(this.checked);
             });
 

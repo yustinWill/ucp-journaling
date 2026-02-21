@@ -97,6 +97,11 @@
                         <input type="text" class="form-control" id="invoice-search-filter"
                             placeholder="Cari Invoice atau PO">
                     </div>
+                    <div class="col-12 col-sm-6 col-lg-3 mt-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                            <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                        </button>
+                    </div>
                 </div>
 
                 <hr class="my-6 mx-n6" />
@@ -107,7 +112,7 @@
                         <!-- Column Toggle -->
                         <div class="d-flex align-items-center">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                                 <label class="form-check-label" for="toggleTagColumn">
                                     <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                                 </label>
@@ -132,7 +137,6 @@
                             <th>Status</th>
                             <th>Diinput Oleh</th>
                             <th>Tag</th>
-                            <th>Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -160,10 +164,9 @@
 
             // Permission variables - using Spatie permissions
             const canRead = @json(auth()->user()->can('purchase_invoice.view'));
-            const canEdit = @json(auth()->user()->can('purchase_invoice.edit'));
+            const canViewContact = @json(auth()->user()->can('contact.view'));
             const canViewUser = @json(auth()->user()->can('user.view'));
             const canViewPurchaseOrder = @json(auth()->user()->can('purchase_order.view'));
-            const canViewPurchaseDelivery = @json(auth()->user()->can('purchase_delivery.view'));
 
             // Initialize DataTable
             function initPurchaseInvoiceTable() {
@@ -185,23 +188,35 @@
                             d.invoice_search_filter = $('#invoice-search-filter').val();
                         }
                     },
-                    columns: [{
+                    columns: [
+                        {
                             data: 'transaction_date',
+                            width: '110px',
                         },
                         {
                             data: 'invoice_number',
+                            width: '150px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
-                                return data; // Non-clickable as per standard
+                                if (!data) return '-';
+                                if (canRead) {
+                                    const detailUrl =
+                                        `{{ route('main_transaction.purchase_invoice.detail', ':id') }}`
+                                        .replace(':id', row.id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
                             }
                         },
                         {
                             data: 'invoice_date',
+                            responsivePriority: 10001,
                         },
                         {
                             data: 'supplier_name',
                             render: function(data, type, row) {
                                 if (!data) return '-';
-                                if (canRead && row.supplier_id) {
+                                if (canViewContact && row.supplier_id) {
                                     const detailUrl =
                                         `{{ route('master_data.contact.detail', ':id') }}`
                                         .replace(':id', row.supplier_id);
@@ -212,6 +227,7 @@
                         },
                         {
                             data: 'po_reference',
+                            responsivePriority: 10002,
                             render: function(data, type, row) {
                                 if (!data) return '-';
                                 if (canViewPurchaseOrder && row.po_id) {
@@ -225,15 +241,19 @@
                         },
                         {
                             data: 'due_date',
+                            responsivePriority: 10003,
                         },
                         {
                             data: 'grand_total',
+                            className: 'text-end',
                             render: function(data, type, row) {
                                 return `Rp ${parseInt(data || 0).toLocaleString('id-ID')}`;
                             }
                         },
                         {
                             data: 'status',
+                            width: '130px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
                                 let badgeClass = 'bg-label-secondary';
                                 switch (data) {
@@ -261,7 +281,9 @@
                         },
                         {
                             data: 'created_by_name',
+                            responsivePriority: 10004,
                             render: function(data, type, row) {
+                                if (!data) return '-';
                                 if (canViewUser && row.created_by) {
                                     const detailUrl =
                                         `{{ route('master_data.user.detail', ':id') }}`
@@ -273,6 +295,7 @@
                         },
                         {
                             data: 'tags',
+                            responsivePriority: 10005,
                             render: function(data, type, row) {
                                 if (!data) return '-';
                                 let tags = JSON.parse(data);
@@ -284,32 +307,6 @@
                                 }).join('');
                             }
                         },
-                        {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            responsivePriority: 1,
-                            render: function(data, type, row, meta) {
-                                const detailUrl =
-                                    `{{ route('main_transaction.purchase_invoice.detail', ':id') }}`
-                                    .replace(':id', row.id);
-                                const editUrl =
-                                    `{{ route('main_transaction.purchase_invoice.edit', ':id') }}`
-                                    .replace(':id', row.id);
-                                let actions = '<div class="d-flex gap-2">';
-
-                                if (canRead) {
-                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                <i class="icon-xs icon-base ti tabler-eye"></i>
-                            </a>`;
-                                }
-
-                                // Edit button removed per requirement
-
-                                actions += '</div>';
-                                return actions;
-                            }
-                        }
                     ],
                     layout: {
                         topStart: {
@@ -331,7 +328,7 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    // scrollX: true,
+                    responsive: true,
                     orderCellsTop: true,
                     ordering: false
                 });
@@ -340,6 +337,22 @@
             // Initialize table
             initPurchaseInvoiceTable();
 
+            // Tag column hidden by default (0=date,1=invoice_no,2=invoice_date,3=supplier,4=po_ref,5=due_date,6=total,7=status,8=created_by,9=tags)
+            purchaseInvoiceTable.column(9).visible(false);
+
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#date-range-picker').val('');
+                $('#invoice-date-filter').val('');
+                $('#supplier-filter').val('').trigger('change');
+                $('#status-filter').val('').trigger('change');
+                $('#due-date-filter').val('');
+                $('#invoice-search-filter').val('');
+                if (purchaseInvoiceTable) {
+                    purchaseInvoiceTable.draw();
+                }
+            });
+
             // Filter functionality with timeout
             let searchTimeout;
             $('#date-range-picker, #invoice-date-filter, #supplier-filter, #status-filter, #due-date-filter, #invoice-search-filter')
@@ -347,7 +360,6 @@
                     'keyup change',
                     function() {
                         clearTimeout(searchTimeout);
-                        const input = this;
                         searchTimeout = setTimeout(function() {
                             if (purchaseInvoiceTable) {
                                 purchaseInvoiceTable.draw();
@@ -357,9 +369,7 @@
 
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = purchaseInvoiceTable.column(
-                9); // Tag column index (0-based, adjusted for new column)
-                tagColumn.visible(this.checked);
+                purchaseInvoiceTable.column(9).visible(this.checked);
             });
         });
     </script>
