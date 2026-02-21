@@ -24,7 +24,7 @@
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Tanggal Pengajuan</label>
                     <input type="text" class="form-control"
-                        value="{{ $reimbursement->created_at->format('d/m/Y H:i') }}" disabled>
+                        value="{{ $reimbursement->reimbursement_date ? \Carbon\Carbon::parse($reimbursement->reimbursement_date)->format('d/m/Y') : $reimbursement->created_at->format('d/m/Y') }}" disabled>
                 </div>
             </div>
 

@@ -81,17 +81,22 @@ class ReimbursementController extends Controller
             $validated = $request->validate([
                 'items' => 'required|array|min:1',
                 'items.*.reimbursement_name' => 'required|string|max:255',
+                'items.*.reimbursement_date' => 'required|date',
                 'items.*.amount' => 'required|numeric|min:0',
                 'items.*.description' => 'nullable|string|max:1000',
                 'items.*.attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
             ], [], [
                 'items.*.reimbursement_name' => 'Nama Reimbursement',
+                'items.*.reimbursement_date' => 'Tanggal Reimburse',
                 'items.*.amount' => 'Jumlah',
                 'items.*.description' => 'Deskripsi',
                 'items.*.attachment' => 'Lampiran',
             ]);
 
-            $reimbursements = $this->reimbursementService->createMultiple($validated['items'], auth()->id());
+            $reimbursements = $this->reimbursementService->createMultiple(
+                $validated['items'],
+                auth()->id()
+            );
 
             $count = count($reimbursements);
 

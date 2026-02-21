@@ -90,7 +90,12 @@ class ReimbursementService
 
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
-        $data = $query->orderBy('t.id', 'DESC')->skip($start)->take($length)->get();
+        $data = $query
+            ->orderByRaw("CASE WHEN t.status = 'PENDING' THEN 0 ELSE 1 END ASC")
+            ->orderBy('t.id', 'DESC')
+            ->skip($start)
+            ->take($length)
+            ->get();
 
         return [
             'draw' => $draw,
@@ -118,7 +123,12 @@ class ReimbursementService
 
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
-        $data = $query->orderBy('t.id', 'DESC')->skip($start)->take($length)->get();
+        $data = $query
+            ->orderByRaw("CASE WHEN t.status = 'PENDING' THEN 0 ELSE 1 END ASC")
+            ->orderBy('t.id', 'DESC')
+            ->skip($start)
+            ->take($length)
+            ->get();
 
         return [
             'draw' => $draw,
@@ -187,6 +197,7 @@ class ReimbursementService
                 $item['created_by'] = $userId;
                 $item['company_code'] = session('user_company_code');
                 $item['status'] = ReimbursementStatuses::PENDING;
+                // reimbursement_date is already in $item from the form
 
                 $reimbursements[] = Reimbursement::create($item);
             }

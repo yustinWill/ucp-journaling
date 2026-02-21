@@ -47,12 +47,16 @@
                 <i class="icon-base ti tabler-trash"></i>
             </button>
             <div class="row g-3">
-                <div class="col-md-5">
+                <div class="col-md-4">
                     <label class="form-label">Nama Reimbursement <span class="text-danger">*</span></label>
                     <input type="text" class="form-control item-name"
                         placeholder="Contoh: Biaya Transport Meeting Client" required maxlength="255">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label class="form-label">Tanggal <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control item-date" value="{{ date('Y-m-d') }}" required>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">Jumlah (IDR) <span class="text-danger">*</span></label>
                     <input type="text" class="form-control numeric-input item-amount"
                         placeholder="Rp 0" required>
@@ -62,7 +66,7 @@
                     <div class="d-flex align-items-center gap-2">
                         <input type="file" class="form-control item-attachment" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
                     </div>
-                    <small class="text-muted">Format: JPG, PNG, PDF, DOC (maks. 5 MB)</small>
+                    <small class="text-muted">JPG, PNG, PDF, DOC (maks. 5 MB)</small>
                 </div>
                 <div class="col-md-12">
                     <label class="form-label">Deskripsi</label>
@@ -127,6 +131,7 @@
         function updateRowNumbers() {
             $('.reimbursement-item').each(function(index) {
                 $(this).find('.item-name').attr('name', 'items[' + index + '][reimbursement_name]');
+                $(this).find('.item-date').attr('name', 'items[' + index + '][reimbursement_date]');
                 $(this).find('.item-amount').attr('name', 'items[' + index + '][amount]');
                 $(this).find('.item-description').attr('name', 'items[' + index + '][description]');
                 $(this).find('.item-attachment').attr('name', 'items[' + index + '][attachment]');
@@ -214,12 +219,14 @@
             let itemIndex = 0;
             $('.reimbursement-item').each(function() {
                 const name = $(this).find('.item-name').val().trim();
+                const date = $(this).find('.item-date').val();
                 const amount = parseCurrency($(this).find('.item-amount').val());
                 const description = $(this).find('.item-description').val().trim();
                 const fileInput = $(this).find('.item-attachment')[0];
 
                 if (name && amount > 0) {
                     formData.append('items[' + itemIndex + '][reimbursement_name]', name);
+                    formData.append('items[' + itemIndex + '][reimbursement_date]', date);
                     formData.append('items[' + itemIndex + '][amount]', amount);
                     formData.append('items[' + itemIndex + '][description]', description);
 
