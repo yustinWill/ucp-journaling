@@ -115,7 +115,7 @@
                         </div>
                         @if ($canAddPaymentTerms)
                             <div class="col-auto">
-                                <a href="{{ route('master_data.transaction_number.add') }}" target="_blank"
+                                <a href="{{ route('master_data.payment_term.add') }}" target="_blank"
                                     class="btn btn-outline-primary d-flex align-items-center"
                                     title="Tambah Syarat Pembayaran Baru">
                                     <i class="icon-base ti tabler-plus"></i>
