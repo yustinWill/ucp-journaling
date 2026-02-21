@@ -27,9 +27,9 @@
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
                             @can('budget.create')
-                                <button type=\"button\" id=\"btn-add-budged\"
-                                    class=\"btn btn-md btn-primary waves-effect waves-light\"><span
-                                        class=\"icon-xs icon-base ti tabler-plus me-2\"></span> Tambah Periode & Anggaran</button>
+                                <button type="button" id="btn-add-budged"
+                                    class="btn btn-md btn-primary waves-effect waves-light"><span
+                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Periode & Anggaran</button>
                             @endcan
                         </div>
                     </div>

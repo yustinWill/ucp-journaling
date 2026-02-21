@@ -157,6 +157,10 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables
+            const canView = @json(auth()->user()->can('warehouse.view'));
+            const canEdit = @json(auth()->user()->can('warehouse.edit'));
+
             let warehouseTable;
 
             warehouseTable = new DataTable('#warehouse-table', {
@@ -220,16 +224,22 @@
                                 .replace(':id', row.id);
                             const editUrl = `{{ route('master_data.warehouse.edit', ':id') }}`
                                 .replace(':id', row.id);
-                            return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                                `;
+                            let actions = '<div class="d-flex gap-2">';
+
+                            if (canView) {
+                                actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                    <i class="icon-base ti tabler-eye"></i>
+                                </a>`;
+                            }
+
+                            if (canEdit) {
+                                actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <i class="icon-base ti tabler-edit"></i>
+                                </a>`;
+                            }
+
+                            actions += '</div>';
+                            return actions;
                         }
                     }
                 ],
