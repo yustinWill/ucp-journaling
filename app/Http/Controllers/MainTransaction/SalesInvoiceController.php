@@ -159,12 +159,12 @@ class SalesInvoiceController extends Controller
         // Get return data for this invoice (one invoice can only have one return)
         $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'SALES_RETURN');
 
-        // Check if Sales Delivery is complete (DELIVERED status)
+        // Check if Sales Delivery is complete (confirmed)
         $hasCompletedDelivery = false;
         if ($invoice_data->f_sales_order_id) {
             $hasCompletedDelivery = DB::table('t_sales_deliveries')
                 ->where('sales_order_id', $invoice_data->f_sales_order_id)
-                ->where('status', 'DELIVERED')
+                ->where('is_confirmed', '=', '1')
                 ->exists();
         }
 
