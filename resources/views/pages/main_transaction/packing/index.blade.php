@@ -45,9 +45,11 @@
                 <!-- Action Buttons -->
                 <div class="d-flex justify-content-end">
                     <div class="d-flex gap-2">
+                            @can('packing.create')
                             <a href="{{ route('main_transaction.packing.add') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
                                     class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Packing</a>
+                            @endcan
                         
                     </div>
                 </div>

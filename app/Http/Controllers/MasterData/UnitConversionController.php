@@ -24,10 +24,6 @@ class UnitConversionController extends Controller
 
     public function index()
     {
-        if (! PermissionHelper::hasPermission('master_data_unit_conversion', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
         $statuses = $this->statuses;
         $permissionData = PermissionHelper::getViewPermissions('master_data_unit_conversion');
 
@@ -46,29 +42,17 @@ class UnitConversionController extends Controller
 
     public function add()
     {
-        if (! PermissionHelper::hasPermission('master_data_unit_conversion', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
-
         $units = app(UnitService::class)->findAll();
         $statuses = $this->statuses;
-        $permissionData = PermissionHelper::getViewPermissions('master_data_unit_conversion');
 
         return view('pages.master_data.unit_conversion.add', array_merge([
             'units' => $units,
             'statuses' => $statuses,
-        ], $permissionData));
+        ]));
     }
 
     public function save(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit_conversion', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk menyimpan data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'from_unit_id' => 'required|exists:m_units,id',
@@ -131,29 +115,19 @@ class UnitConversionController extends Controller
 
     public function detail($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit_conversion', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat data.');
-        }
-
         $unitConversion = app(UnitConversionService::class)->findOne($id);
 
         if (! $unitConversion) {
             abort(404, 'Data konversi unit tidak ditemukan.');
         }
 
-        $permissionData = PermissionHelper::getViewPermissions('master_data_unit_conversion');
-
         return view('pages.master_data.unit_conversion.detail', array_merge([
             'unitConversion' => $unitConversion,
-        ], $permissionData));
+        ]));
     }
 
     public function edit($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit_conversion', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
-        }
-
         $unitConversion = app(UnitConversionService::class)->findOne($id);
 
         if (! $unitConversion) {
@@ -162,24 +136,16 @@ class UnitConversionController extends Controller
 
         $units = app(UnitService::class)->findAll();
         $statuses = $this->statuses;
-        $permissionData = PermissionHelper::getViewPermissions('master_data_unit_conversion');
 
         return view('pages.master_data.unit_conversion.edit', array_merge([
             'unitConversion' => $unitConversion,
             'units' => $units,
             'statuses' => $statuses,
-        ], $permissionData));
+        ]));
     }
 
     public function update(Request $request, $id)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit_conversion', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'from_unit_id' => 'required|exists:m_units,id',
@@ -243,13 +209,6 @@ class UnitConversionController extends Controller
 
     public function delete($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_unit_conversion', 'delete')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk menghapus data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             app(UnitConversionService::class)->delete($id);
 

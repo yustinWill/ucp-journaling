@@ -14,15 +14,8 @@ class TopUpController extends Controller
      */
     public function index()
     {
-        // Permission check - DISABLED
-        // if (!PermissionHelper::hasPermission('main_transaction_topup', 'read')) {
-        //     abort(403, 'Anda tidak memiliki akses untuk melihat data.');
-        // }
-
-        return view('pages.main_transaction.topup.index', [
-            'canEdit' => true, // Permission disabled - always allow
-            'canDelete' => true, // Permission disabled - always allow
-        ]);
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_topup');
+        return view('pages.main_transaction.topup.index', $permissionData);
     }
 
     /**
@@ -30,11 +23,6 @@ class TopUpController extends Controller
      */
     public function index_data_table(Request $request)
     {
-        // Permission check - DISABLED
-        // if (!PermissionHelper::hasPermission('main_transaction_topup', 'read')) {
-        //     return response()->json(['error' => 'Unauthorized'], 403);
-        // }
-
         $companyCode = session('user_company_code');
 
         // Base query
@@ -130,10 +118,6 @@ class TopUpController extends Controller
      */
     public function add()
     {
-        // Permission check - DISABLED
-        // if (!PermissionHelper::hasPermission('main_transaction_topup', 'write')) {
-        //     abort(403, 'Anda tidak memiliki akses untuk membuat data.');
-        // }
 
         return view('pages.main_transaction.topup.add');
     }
@@ -143,10 +127,6 @@ class TopUpController extends Controller
      */
     public function store(Request $request)
     {
-        // Permission check - DISABLED
-        // if (!PermissionHelper::hasPermission('main_transaction_topup', 'write')) {
-        //     return response()->json(['message' => 'Unauthorized'], 403);
-        // }
 
         // Validation
         $validated = $request->validate([
@@ -308,10 +288,6 @@ class TopUpController extends Controller
      */
     public function detail($id)
     {
-        // Permission check - DISABLED
-        // if (!PermissionHelper::hasPermission('main_transaction_topup', 'read')) {
-        //     abort(403, 'Anda tidak memiliki akses untuk melihat data.');
-        // }
 
         $companyCode = session('user_company_code');
 
@@ -369,10 +345,6 @@ class TopUpController extends Controller
      */
     public function destroy($id)
     {
-        // Permission check - DISABLED
-        // if (!PermissionHelper::hasPermission('main_transaction_topup', 'delete')) {
-        //     return response()->json(['message' => 'Unauthorized'], 403);
-        // }
 
         try {
             $companyCode = session('user_company_code');

@@ -114,11 +114,11 @@
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
                                     class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                         @endif --}}
-                        @if ($canAddProduction)
+                        @can('production.create')
                             <a href="{{ route('main_transaction.production.add') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
                                     class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Produksi</a>
-                        @endif
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -176,14 +176,14 @@
                         {
                             data: 'production_number',
                             render: function(data, type, row) {
-                                @if ($canViewDetails)
+                                @can('production.view')
                                     const detailUrl =
                                         "{{ route('main_transaction.production.detail', ':id') }}"
                                         .replace(':id', row.id);
                                     return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 @else
                                     return data;
-                                @endif
+                                @endcan
                             }
                         },
                         {
@@ -220,34 +220,18 @@
                             render: function(data, type, row, meta) {
                                 let actions = '';
 
-                                @if ($canViewDetails)
+                                @can('production.view')
                                     const detailUrl =
                                         "{{ route('main_transaction.production.detail', ':id') }}"
                                         .replace(':id', row.id);
                                     actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
                                     </a>`;
-                                @endif
+                                @endcan
 
                                 // Edit functionality removed - use Reversal process for modifications
 
-                                // @if ($canReverseProduction)
-                                // if (row.status === 'COMPLETED') {
-                                //     const reversalUrl = "{{ route('main_transaction.production.reversal', ':id') }}".replace(':id', row.id);
-                                //     actions += `<a href="${reversalUrl}" class="btn btn-sm btn-danger waves-effect waves-light ms-1" title="Reversal">
-                            //                     <i class="icon-base ti tabler-arrow-back-up"></i>
-                            //                 </a>`;
-                                // }
-                                // @endif
-
-                                // @if ($canDeleteProduction)
-                                // if (row.status === 'DRAFT') {
-                                //     actions += `<button type="button" class="btn btn-sm btn-danger waves-effect waves-light ms-1" 
-                            //                        onclick="deleteProduction(${row.id})" title="Delete">
-                            //                     <i class="icon-base ti tabler-trash"></i>
-                            //                 </button>`;
-                                // }
-                                // @endif
+                              
 
                                 return actions;
                             }

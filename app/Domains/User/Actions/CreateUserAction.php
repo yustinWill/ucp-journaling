@@ -7,7 +7,9 @@ use App\Domains\User\Services\UserService;
 use App\Domains\UserCompany\Services\UserCompanyService;
 use App\Enums\ActionTypes;
 use App\Enums\GeneralStatuses;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class CreateUserAction
 {
@@ -15,6 +17,15 @@ class CreateUserAction
     {
         return DB::transaction(function () use ($data) {
             $user_id = app(UserService::class)->create($data);
+
+            // Assign Spatie role to user
+            $user = User::find($user_id);
+            if (isset($data['role']) && $data['role']) {
+                $role = Role::find($data['role']);
+                if ($role) {
+                    $user->assignRole($role->name);
+                }
+            }
 
             app(UserCompanyService::class)->create([
                 'user_id' => $user_id,

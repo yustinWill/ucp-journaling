@@ -25,10 +25,11 @@ class JournalController extends Controller
     public function index()
     {
         $createdByUsers = app(UserService::class)->findAll();
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_journal');
 
-        return view('pages.main_transaction.journal.index', [
+        return view('pages.main_transaction.journal.index', array_merge([
             'createdByUsers' => $createdByUsers,
-        ]);
+        ], $permissionData));
     }
 
     public function index_data_table()
@@ -50,11 +51,10 @@ class JournalController extends Controller
         $tags = app(TagService::class)->findAll();
         $coas = app(CoaService::class)->findAll();
         $referenceNo = app(AccountingJournalService::class)->generateReferenceNo(date('Y-m-d'));
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
 
         return view('pages.main_transaction.journal.add', [
             'today' => date('Y-m-d'),
-            'canAddTags' => $canAddTags,
+            'canAddTags' => true,
             'tags' => $tags,
             'coas' => $coas,
             'referenceNo' => $referenceNo,
@@ -192,7 +192,6 @@ class JournalController extends Controller
             abort(404);
         }
 
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
         $tags = app(TagService::class)->findAll();
         $coas = app(CoaService::class)->findAll();
 
@@ -235,7 +234,7 @@ class JournalController extends Controller
             'journal' => $journal,
             'coas' => $coas,
             'tags' => $tags,
-            'canAddTags' => $canAddTags,
+            'canAddTags' => true,
         ]);
     }
 

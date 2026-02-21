@@ -17,6 +17,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,11 +26,6 @@ class ProductionController extends Controller
 {
     public function index()
     {
-        // Check read permission
-        if (! $this->hasPermission('production.read')) {
-            abort(403, 'Unauthorized access');
-        }
-
         // Get summary statistics
         $productions = app(ProductionService::class)->findAll();
 
@@ -42,17 +38,12 @@ class ProductionController extends Controller
 
         $bundleProducts = app(ProductService::class)->findAllBundle();
         $warehouses = app(WarehouseService::class)->findAll();
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_production');
 
         return view('pages.main_transaction.production.index', array_merge($stats, [
             'bundleProducts' => $bundleProducts,
             'warehouses' => $warehouses,
-            'canAddProduction' => $this->hasPermission('production.write'),
-            'canExportProduction' => $this->hasPermission('production.export'),
-            'canViewDetails' => $this->hasPermission('production.read'),
-            'canEditProduction' => $this->hasPermission('production.write'),
-            'canDeleteProduction' => $this->hasPermission('production.delete'),
-            'canReverseProduction' => $this->hasPermission('production.reversal'),
-        ]));
+        ], $permissionData));
     }
 
     public function index_data_table(Request $request)

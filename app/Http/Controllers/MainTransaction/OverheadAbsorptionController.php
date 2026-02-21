@@ -4,7 +4,6 @@ namespace App\Http\Controllers\MainTransaction;
 
 use App\Domains\OverheadAbsorption\Services\OverheadAbsorptionService;
 use App\Http\Controllers\Controller;
-use App\Helpers\PermissionHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -19,10 +18,6 @@ class OverheadAbsorptionController extends Controller
 
     public function index()
     {
-        if (!PermissionHelper::hasPermission('main_transaction_overhead_absorption', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat data absorpsi overhead.');
-        }
-
         return view('pages.main_transaction.overhead_absorption.index');
     }
 
@@ -67,13 +62,6 @@ class OverheadAbsorptionController extends Controller
      */
     public function settle(Request $request)
     {
-        if (!PermissionHelper::hasPermission('main_transaction_overhead_absorption', 'write')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda tidak memiliki akses untuk melakukan settlement overhead.',
-            ], 403);
-        }
-
         try {
             $request->validate([
                 'period' => 'required|date_format:Y-m',

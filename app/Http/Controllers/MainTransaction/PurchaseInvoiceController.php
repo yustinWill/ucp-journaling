@@ -27,14 +27,6 @@ class PurchaseInvoiceController extends Controller
 {
     public function index()
     {
-        // Check read permission for purchase invoice module
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
-        // Get permission data for view
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_invoice');
-
         $suppliers = app(ContactService::class)->findAllByFlag('supplier');
 
         $statuses = [
@@ -46,23 +38,10 @@ class PurchaseInvoiceController extends Controller
             ['value' => 'COMPLETED', 'label' => 'COMPLETED - Sudah Dibayar'],
         ];
 
-        // Map permissions to view variables - following user requirement to remove add/import buttons
-        $canAddPurchaseInvoice = false; // Disabled per requirement - creation only from PO detail page
-        $canImportPurchaseInvoice = false; // Disabled per requirement
-        $canExportPurchaseInvoice = PermissionHelper::canRead('main_transaction_purchase_invoice');
-        $canViewPurchaseInvoice = PermissionHelper::canRead('main_transaction_purchase_invoice');
-        $canEditPurchaseInvoice = PermissionHelper::canWrite('main_transaction_purchase_invoice');
-
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_invoice');
         $data = [
             'suppliers' => $suppliers,
             'statuses' => $statuses,
-            'canAddPurchaseInvoice' => $canAddPurchaseInvoice,
-            'canImportPurchaseInvoice' => $canImportPurchaseInvoice,
-            'canExportPurchaseInvoice' => $canExportPurchaseInvoice,
-            'canViewPurchaseInvoice' => $canViewPurchaseInvoice,
-            'canEditPurchaseInvoice' => $canEditPurchaseInvoice,
-            'canViewUser' => PermissionHelper::canRead('master_data_user'),
-            'canViewPurchaseOrder' => PermissionHelper::canRead('main_transaction_purchase_order'),
         ];
 
         return view('pages.main_transaction.purchase_invoice.index', array_merge($data, $permissionData));
@@ -70,11 +49,6 @@ class PurchaseInvoiceController extends Controller
 
     public function index_data_table(Request $request)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $data = app(PurchaseInvoiceService::class)->findAllDatatable();
 
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
@@ -82,11 +56,6 @@ class PurchaseInvoiceController extends Controller
 
     public function add(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
-
         // Check if coming from PO detail page
         $preselectedPOId = $request->get('po_id');
 
@@ -101,7 +70,7 @@ class PurchaseInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks for related data creation
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddTags = true;
 
         return view('pages.main_transaction.purchase_invoice.add', [
             'purchaseOrder' => $purchaseOrder,
@@ -115,11 +84,6 @@ class PurchaseInvoiceController extends Controller
 
     public function store(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'invoice_date' => 'required|date',
@@ -197,11 +161,6 @@ class PurchaseInvoiceController extends Controller
 
     public function detail($id)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail invoice.');
-        }
-
         $invoice_data = app(PurchaseInvoiceService::class)->findOne($id);
         if (! $invoice_data) {
             abort(404, 'Invoice tidak ditemukan.');
@@ -226,11 +185,11 @@ class PurchaseInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks
-        $canEditPurchaseInvoice = PermissionHelper::canWrite('main_transaction_purchase_invoice');
-        $canViewUser = PermissionHelper::canRead('master_data_user');
-        $canViewPurchaseOrder = PermissionHelper::canRead('main_transaction_purchase_order');
-        $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
-        $canViewProduct = PermissionHelper::canRead('master_data_product');
+        $canEditPurchaseInvoice = true;
+        $canViewUser = true;
+        $canViewPurchaseOrder = true;
+        $canViewReturnManagement = true;
+        $canViewProduct = true;
 
         return view('pages.main_transaction.purchase_invoice.detail', [
             'invoice_data' => $invoice_data,
@@ -249,11 +208,6 @@ class PurchaseInvoiceController extends Controller
 
     public function auditLogDataTable($id)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock audit log data - in real implementation, get from audit log service
         $auditLogs = [
             [
@@ -284,11 +238,6 @@ class PurchaseInvoiceController extends Controller
 
     public function edit($id)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit invoice.');
-        }
-
         $invoice_data = app(PurchaseInvoiceService::class)->findOne($id);
         if (! $invoice_data) {
             abort(404, 'Invoice tidak ditemukan.');
@@ -301,7 +250,7 @@ class PurchaseInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks for related data creation
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddTags = true;
 
         return view('pages.main_transaction.purchase_invoice.edit', [
             'invoice_data' => $invoice_data,
@@ -314,10 +263,6 @@ class PurchaseInvoiceController extends Controller
 
     public function update(Request $request)
     {
-        // // Check write permission
-        // if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-        //     return response()->json(['error' => 'Unauthorized'], 403);
-        // }
 
         // try {
         //     $id = $request->input('id');
@@ -360,11 +305,6 @@ class PurchaseInvoiceController extends Controller
     // Import/Export Methods
     public function import(Request $request)
     {
-        // Check write permission for import
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
-        }
-
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
@@ -385,11 +325,6 @@ class PurchaseInvoiceController extends Controller
 
     public function export()
     {
-        // Check read permission for export
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
-        }
-
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
@@ -410,11 +345,6 @@ class PurchaseInvoiceController extends Controller
 
     public function downloadTemplate(Request $request)
     {
-        // Check write permission for template download
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
-        }
-
         // Mock template download - in real implementation, generate Excel file
         return response()->json([
             'message' => 'Template download untuk Purchase Invoice akan segera tersedia.',
@@ -424,10 +354,6 @@ class PurchaseInvoiceController extends Controller
 
     public function validateImport(Request $request)
     {
-        // Check write permission for import validation
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
 
         // Mock validation - in real implementation, validate uploaded file
         $mockValidationResults = [
@@ -452,11 +378,6 @@ class PurchaseInvoiceController extends Controller
 
     public function processImport(Request $request)
     {
-        // Check write permission for import processing
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock import processing
         return response()->json([
             'success' => true,
@@ -467,11 +388,6 @@ class PurchaseInvoiceController extends Controller
 
     public function processExport(Request $request)
     {
-        // Check read permission for export processing
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
         $filename = 'purchase_invoices_export_'.date('Y-m-d_H-i-s').'.'.$format;
@@ -486,11 +402,6 @@ class PurchaseInvoiceController extends Controller
 
     public function get_po_products_for_invoice(Request $request)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         try {
             $poId = $request->input('po_id');
             if (! $poId) {
@@ -516,11 +427,6 @@ class PurchaseInvoiceController extends Controller
 
     public function get_available_purchase_orders()
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         try {
             $purchaseOrders = app(PurchaseInvoiceService::class)->findAvailableForInvoicing();
 

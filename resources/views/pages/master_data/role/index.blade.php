@@ -78,26 +78,6 @@
                         <div class="col-12">
                             <div class="row g-3">
                                 <div class="col-12 col-sm-6 col-lg-4">
-                                    <label class="form-label">Status:</label>
-                                    <select class="global-select2 form-select" id="role-status-filter"
-                                        data-allow-clear="false">
-                                        <option value="">Semua Status</option>
-                                        @foreach ($statusFilters as $filter)
-                                            <option value="{{ $filter['value'] }}">{{ $filter['label'] }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-12 col-sm-6 col-lg-4">
-                                    <label class="form-label">Jumlah User:</label>
-                                    <select class="global-select2 form-select" id="role-user-filter"
-                                        data-allow-clear="false">
-                                        <option value="">Semua</option>
-                                        @foreach ($userFilters as $filter)
-                                            <option value="{{ $filter['value'] }}">{{ $filter['label'] }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-12 col-sm-6 col-lg-4">
                                     <label class="form-label">Pencarian:</label>
                                     <input type="text" class="form-control" id="role-search" placeholder="Cari Role">
                                 </div>
@@ -108,31 +88,11 @@
                 <hr class="my-6 mx-n6" />
                 <!-- Action Buttons -->
                 <div class="mt-4">
-                    <div class="d-flex justify-content-between">
-                        <!-- Column Toggle -->
-                        <div class="d-flex align-items-center">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
-                                <label class="form-check-label" for="toggleTagColumn">
-                                    <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            {{-- <a href="{{ route('master_data.role.import') }}"
-                                class="btn btn-md btn-primary waves-effect waves-light">
-                                <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
-                            </a>
-                            <a href="{{ route('master_data.role.export') }}"
-                                class="btn btn-md btn-primary waves-effect waves-light">
-                                <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
-                            </a> --}}
-                            <a href="{{ route('master_data.role.add') }}"
-                                class="btn btn-md btn-primary waves-effect waves-light">
-                                <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
-                            </a>
-                        </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ route('master_data.role.add') }}"
+                            class="btn btn-md btn-primary waves-effect waves-light">
+                            <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Role
+                        </a>
                     </div>
                 </div>
             </div>
@@ -143,11 +103,8 @@
                         <tr>
                             <th>Dibuat Pada</th>
                             <th>Nama Role</th>
-                            <th>Deskripsi</th>
                             <th>Users</th>
                             <th>Permissions</th>
-                            <th>Tag</th>
-                            <th>Status</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -175,61 +132,36 @@
                     ajax: {
                         url: `{{ route('master_data.role.index_data_table') }}`,
                         data: function(d) {
-                            d.status = $('#role-status-filter').val();
-                            d.user_count = $('#role-user-filter').val();
                             d.name = $('#role-search').val();
                         }
                     },
                     columns: [{
                             data: 'created_at',
-                            responsivePriority: 2
+                            responsivePriority: 2,
+                            render: function(data, type, row) {
+                                return new Date(data).toLocaleDateString('id-ID');
+                            }
                         },
                         {
                             data: 'name',
                             responsivePriority: 3
                         },
                         {
-                            data: 'description'
-                        },
-                        {
                             data: 'user_count',
                             render: function(data, type, row) {
-                                return `${data} users`; // Plain text for count
+                                return `<span class="badge bg-label-info">${data}</span>`;
                             }
                         },
                         {
                             data: 'permission_count',
                             render: function(data, type, row) {
-                                return `${data} permissions`; // Plain text for count
-                            }
-                        },
-                        {
-                            data: 'tags',
-                            responsivePriority: 6,
-                            render: function(data, type, row) {
-                                let tags = JSON.parse(data);
-                                return tags.map(tag => {
-                                    if (tag.name == null) {
-                                        return ``;
-                                    }
-                                    return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
-                                }).join('');
-                            }
-                        },
-                        {
-                            data: 'is_active',
-                            render: function(data, type, row) {
-                                const badgeClass = data == '1' ? 'bg-label-success' :
-                                    'bg-label-secondary';
-                                const statusText = data == '1' ? 'ACTIVE' : 'INACTIVE';
-                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                                return `<span class="badge bg-label-warning">${data}</span>`;
                             }
                         },
                         {
                             data: null,
                             orderable: false,
                             searchable: false,
-                            // width: '120px',
                             responsivePriority: 1,
                             render: function(data, type, row, meta) {
                                 const editUrl = '{{ route('master_data.role.edit', ':id') }}'
@@ -279,31 +211,16 @@
             // Initialize table
             initRoleTable();
 
-            // Tag Column Toggle Functionality
-            $('#toggleTagColumn').on('change', function() {
-                if (dt_adv_filter) {
-                    const tagColumn = dt_adv_filter.column(5); // Tag column index (0-based)
-                    tagColumn.visible(this.checked);
-                }
-            });
-
             let searchTimeout;
-            $('#role-search, #role-status-filter, #role-user-filter').on('keyup change',
-                function() {
-                    clearTimeout(searchTimeout);
-                    const input = this;
-                    searchTimeout = setTimeout(function() {
-                        if (dt_adv_filter) {
-                            dt_adv_filter.search(input.value).draw();
-                        }
-                    }, 400); // 400ms delay
-                });
-
-            // Initialize tag column visibility based on checkbox state
-            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
-            if (dt_adv_filter) {
-                dt_adv_filter.column(5).visible(initialTagVisibility);
-            }
+            $('#role-search').on('keyup', function() {
+                clearTimeout(searchTimeout);
+                const input = this;
+                searchTimeout = setTimeout(function() {
+                    if (dt_adv_filter) {
+                        dt_adv_filter.search(input.value).draw();
+                    }
+                }, 400); // 400ms delay
+            });
         });
     </script>
 @endsection

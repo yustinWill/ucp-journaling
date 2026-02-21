@@ -18,14 +18,12 @@
                     <label class="form-label">Nama Role <span style="color: red;">*</span></label>
                     <input type="text" class="form-control" id="role-name" value="{{ $role->name }}"
                         placeholder="Masukkan nama role" maxlength="100" />
-                    <small class="form-text text-muted">Maksimal 100 karakter</small>
+                    <small class="form-text text-muted">Maksimal 100 karakter. Contoh: admin, manager, staff</small>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Status</label>
-                    <select class="global-select2 form-select" id="role-status" data-allow-clear="false">
-                        <option value="ACTIVE" {{ $role->is_active ? 'selected' : '' }}>ACTIVE - Aktif</option>
-                        <option value="INACTIVE" {{ !$role->is_active ? 'selected' : '' }}>INACTIVE - Tidak Aktif</option>
-                    </select>
+                    <label class="form-label">Guard Name</label>
+                    <input type="text" class="form-control" id="role-guard" value="{{ $role->guard_name }}" disabled />
+                    <small class="form-text text-muted">Guard name diatur otomatis (web)</small>
                 </div>
             </div>
 
@@ -33,7 +31,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Deskripsi</label>
                     <textarea class="form-control" id="role-description" rows="3" placeholder="Masukkan deskripsi role"
-                        maxlength="500">{{ $role->description }}</textarea>
+                        maxlength="500">{{ $role->description ?? '' }}</textarea>
                     <small class="form-text text-muted">Maksimal 500 karakter</small>
                 </div>
                 <div class="col-md-6">
@@ -51,53 +49,26 @@
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
                         <h4 class="mb-0 text-success" id="read-count">0</h4>
-                        <small class="text-muted">Hak Baca</small>
+                        <small class="text-muted">Permission Terpilih</small>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
                         <h4 class="mb-0 text-primary" id="write-count">0</h4>
-                        <small class="text-muted">Hak Tulis</small>
+                        <small class="text-muted">Total Available</small>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
-                        <h4 class="mb-0 text-danger" id="delete-count">0</h4>
-                        <small class="text-muted">Hak Hapus</small>
+                        <h4 class="mb-0 text-danger" id="delete-count">-</h4>
+                        <small class="text-muted">-</small>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
-                        <h4 class="mb-0 text-warning" id="approval-count">0</h4>
-                        <small class="text-muted">Hak Persetujuan</small>
+                        <h4 class="mb-0 text-warning" id="approval-count">-</h4>
+                        <small class="text-muted">-</small>
                     </div>
-                </div>
-            </div>
-
-            <!-- Informasi Tambahan Section -->
-            <div class="section-header mt-12">
-                <h6>Informasi Tambahan</h6>
-                <hr class="mx-n6">
-            </div>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Tag</label>
-                    <div class="row g-2">
-                        <div class="col">
-                            <select class="global-select2 form-select" id="role-tags" multiple data-allow-clear="false">
-                                @foreach ($tags as $tag)
-                                    <option value="{{ $tag->id }}" data-color="{{ $tag->tag_color_code }}"
-                                        @if (isset($role->f_tag_codes) && in_array($tag->id, $role->f_tag_codes)) selected @endif>{{ $tag->code }} -
-                                        {{ $tag->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <small class="form-text text-muted">Pilih satu atau lebih tag untuk kategorisasi role</small>
-                </div>
-                <div class="col-md-6">
-                    <!-- Empty column for alignment -->
                 </div>
             </div>
 
@@ -107,8 +78,7 @@
                     <h6 class="mb-0">Hak Akses Modul</h6>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">Pilih Semua</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">Hapus
-                            Semua</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">Hapus Semua</button>
                     </div>
                 </div>
                 <hr class="mx-n6">
@@ -117,38 +87,25 @@
             <div class="mb-4">
                 <div class="mx-n6">
                     <div id="permissions-container" style="padding: 1.5rem;">
-                        @foreach ($modules as $module)
+                        @forelse ($permissions->groupBy(function($item) { return explode('.', $item->name)[0]; }) as $module => $modulePermissions)
                             <div class="module-permissions mb-4">
                                 <h6 class="mb-3">
                                     <i class="icon-base ti tabler-folder me-2"></i>
-                                    {{ $module->name }}
+                                    {{ ucfirst($module) }}
                                 </h6>
                                 <div class="row g-3">
-                                    @foreach ($permission_types as $type)
-                                        @php
-                                            $permissionId = $module->id . '-' . $type['value'];
-                                            $isChecked = false;
-                                            foreach ($permissions as $permission) {
-                                                if (
-                                                    $permission->module_id == $module->id &&
-                                                    $permission->type == $type['value']
-                                                ) {
-                                                    $isChecked = in_array($permission->id, $role_permissions);
-                                                    break;
-                                                }
-                                            }
-                                        @endphp
+                                    @foreach ($modulePermissions as $permission)
                                         <div class="col-md-3">
                                             <div class="form-check">
                                                 <input class="form-check-input permission-checkbox" type="checkbox"
-                                                    id="permission-{{ $permissionId }}"
-                                                    data-module="{{ $module->id }}" data-type="{{ $type['value'] }}"
-                                                    value="{{ $permissionId }}"
-                                                    @if ($isChecked) checked @endif>
-                                                <label class="form-check-label" for="permission-{{ $permissionId }}">
-                                                    <i
-                                                        class="icon-base ti tabler-{{ $type['value'] == 'read' ? 'eye' : ($type['value'] == 'write' ? 'edit' : ($type['value'] == 'delete' ? 'trash' : 'check')) }} me-1"></i>
-                                                    {{ $type['label'] }}
+                                                    id="permission-{{ $permission->id }}"
+                                                    data-permission-id="{{ $permission->id }}"
+                                                    value="{{ $permission->id }}"
+                                                    @if ($role->hasPermissionTo($permission->name)) checked @endif>
+                                                <label class="form-check-label"
+                                                    for="permission-{{ $permission->id }}">
+                                                    <i class="icon-base ti tabler-check me-1"></i>
+                                                    {{ $permission->display_name ?? $permission->name }}
                                                 </label>
                                             </div>
                                         </div>
@@ -158,7 +115,11 @@
                                     <hr class="my-3">
                                 @endif
                             </div>
-                        @endforeach
+                        @empty
+                            <div class="alert alert-warning" role="alert">
+                                Tidak ada permission yang tersedia. Silakan jalankan <code>php artisan permission:create-default-permissions</code> untuk membuat permission.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -178,15 +139,13 @@
         $(function() {
             // Update permission counts
             function updatePermissionCounts() {
-                const readCount = $('.permission-checkbox[data-type="read"]:checked').length;
-                const writeCount = $('.permission-checkbox[data-type="write"]:checked').length;
-                const deleteCount = $('.permission-checkbox[data-type="delete"]:checked').length;
-                const approvalCount = $('.permission-checkbox[data-type="approval"]:checked').length;
-
+                const readCount = $('.permission-checkbox:checked').length;
+                const totalCount = $('.permission-checkbox').length;
+                
                 $('#read-count').text(readCount);
-                $('#write-count').text(writeCount);
-                $('#delete-count').text(deleteCount);
-                $('#approval-count').text(approvalCount);
+                $('#write-count').text(totalCount);
+                $('#delete-count').text('-');
+                $('#approval-count').text('-');
             }
 
             // Handle permission checkbox changes
@@ -221,21 +180,6 @@
                     }
                 });
 
-                // Check if at least one permission is selected
-                const selectedPermissions = $('.permission-checkbox:checked').length;
-                if (selectedPermissions === 0) {
-                    isValid = false;
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Kesalahan Validasi',
-                        text: 'Silakan pilih setidaknya satu hak akses untuk role ini.',
-                        customClass: {
-                            confirmButton: 'btn btn-primary'
-                        },
-                        buttonsStyling: false
-                    });
-                }
-
                 return isValid;
             }
 
@@ -251,18 +195,13 @@
                 const formData = {
                     name: $('#role-name').val(),
                     description: $('#role-description').val(),
-                    status: $('#role-status').val(),
                     id: $('#role-id').val(),
-                    tags: $('#role-tags').val(),
                     permissions: []
                 };
 
-                // Collect selected permissions
+                // Collect selected permission IDs
                 $('.permission-checkbox:checked').each(function() {
-                    formData.permissions.push({
-                        module_id: $(this).data('module'),
-                        permission_type: $(this).data('type')
-                    });
+                    formData.permissions.push($(this).data('permission-id'));
                 });
 
                 Swal.fire({
@@ -318,7 +257,7 @@
                             },
                             complete: function() {
                                 $('#submit-btn').prop('disabled', false).html(
-                                    'Simpan Data');
+                                    'Perbarui Role');
                             }
                         });
                     }
@@ -348,30 +287,11 @@
                 });
             });
 
-            // Character count for description
-            $('#role-description').on('input', function() {
-                const maxLength = 500;
-                const currentLength = $(this).val().length;
-                const remaining = maxLength - currentLength;
-
-                if (remaining < 50) {
-                    $(this).next('.form-text').html(`${remaining} karakter tersisa`);
-                    if (remaining < 0) {
-                        $(this).addClass('is-invalid');
-                    } else {
-                        $(this).removeClass('is-invalid');
-                    }
-                } else {
-                    $(this).next('.form-text').html('Maksimal 500 karakter');
-                    $(this).removeClass('is-invalid');
-                }
-            });
-
-            $('.permission-checkbox').each(function() {
-                this.checked = this.defaultChecked;
-            });
             // Initialize permission counts
             updatePermissionCounts();
+
+            // Trigger character count check on page load
+            $('#role-description').trigger('input');
         });
     </script>
 @endsection

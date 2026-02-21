@@ -14,7 +14,6 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
-use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
@@ -49,16 +48,8 @@ class ReturnManagementController extends Controller
 
     public function index()
     {
-        // Check read permission for return management module
-        if (! PermissionHelper::hasPermission('main_transaction_return_management', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
-        // Get permission data for view
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_return_management');
-
-        $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
-        $canCreateReturnManagement = PermissionHelper::canWrite('main_transaction_return_management');
+        $canViewReturnManagement = true;
+        $canCreateReturnManagement = true;
 
         return view('pages.main_transaction.return_management.index', [
             'canCreateReturnManagement' => $canCreateReturnManagement,
@@ -68,11 +59,6 @@ class ReturnManagementController extends Controller
 
     public function index_data_table(Request $request)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_return_management', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $data = app(ReturnManagementService::class)->findAllDatatable();
 
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
@@ -82,7 +68,7 @@ class ReturnManagementController extends Controller
     {
         $return_type = $request->input('return_type');
         $source_invoice_id = $request->input('source_invoice_id');
-        $canCreateReturnManagement = PermissionHelper::canWrite('main_transaction_return_management');
+        $canCreateReturnManagement = true;
 
         $transaction_number = '';
         if ($return_type == 'PURCHASE_RETURN') {
@@ -98,7 +84,7 @@ class ReturnManagementController extends Controller
         }
 
         $tags = app(TagService::class)->findAll();
-        $canViewProduct = PermissionHelper::canRead('master_data_product');
+        $canViewProduct = true;
 
         return view('pages.main_transaction.return_management.add', [
             'canCreateReturnManagement' => $canCreateReturnManagement,
@@ -113,8 +99,7 @@ class ReturnManagementController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
-        $canCreateReturnManagement = PermissionHelper::canWrite('main_transaction_return_management');
+        $canCreateReturnManagement = true;
 
         if (! $canCreateReturnManagement) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -203,7 +188,7 @@ class ReturnManagementController extends Controller
 
     public function detail($id)
     {
-        $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
+        $canViewReturnManagement = true;
 
         if (! $canViewReturnManagement) {
             return redirect()->route('main_transaction.return_management.index')->with('error', 'Anda tidak memiliki akses untuk melihat detail Return Management');
@@ -219,8 +204,8 @@ class ReturnManagementController extends Controller
         $auditLogs = app(ReturnManagementAuditLogService::class)->findByReturnId($id);
 
         // Permission checks
-        $canViewUser = PermissionHelper::canRead('master_data_user');
-        $canViewProduct = PermissionHelper::canRead('master_data_product');
+        $canViewUser = true;
+        $canViewProduct = true;
 
         return view('pages.main_transaction.return_management.detail', [
             'return_data' => $return,
@@ -234,7 +219,7 @@ class ReturnManagementController extends Controller
 
     public function auditLogDataTable($id)
     {
-        $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
+        $canViewReturnManagement = true;
 
         if (! $canViewReturnManagement) {
             return response()->json(['error' => 'Unauthorized'], 403);

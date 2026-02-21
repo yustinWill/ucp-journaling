@@ -15,10 +15,10 @@ class AuthenticateUserAction
     public function login($req)
     {
         if (Auth::attempt($req)) {
-            $permissions = app(RolePermissionService::class)->findAllBasedOnRoleId(Auth::user()->role_id);
-            if (empty($permissions)) {
-                throw new AppException(ErrorCodes::USER_NO_PERMISSIONS);
-            }
+            // $permissions = app(RolePermissionService::class)->findAllBasedOnRoleId(Auth::user()->role_id);
+            // if (empty($permissions)) {
+            //     throw new AppException(ErrorCodes::USER_NO_PERMISSIONS);
+            // }
             $user_company = app(UserCompanyService::class)->findAllBasedOnUserId(Auth::id());
 
             if ($user_company->isEmpty()) {
@@ -41,7 +41,7 @@ class AuthenticateUserAction
             foreach ($config_data as $config) {
                 session([$config->code => $config->value]);
             }
-            session(['permissions' => $permissions, 'user_company' => $user_company, 'user_company_code' => $user_company_code, 'user_company_name' => $user_company_name]);
+            session(['user_company' => $user_company, 'user_company_code' => $user_company_code, 'user_company_name' => $user_company_name]);
 
             return true;
         } else {

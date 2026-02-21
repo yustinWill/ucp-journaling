@@ -29,10 +29,6 @@ class RevenueSplitController extends Controller
 
     public function index()
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
         $statuses = $this->statuses;
         $summaryCards = app(RevenueSplitService::class)->getSummaryCards();
         $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
@@ -52,27 +48,14 @@ class RevenueSplitController extends Controller
 
     public function add()
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
-
         $statuses = $this->statuses;
-        $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
-
         return view('pages.master_data.revenue_split.add', array_merge([
             'statuses' => $statuses,
-        ], $permissionData));
+        ]));
     }
 
     public function save(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk menyimpan data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'cycle_name' => 'required|string|max:255|unique:m_revenue_splits,cycle_name',
@@ -125,10 +108,6 @@ class RevenueSplitController extends Controller
 
     public function edit($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
-        }
-
         $revenueSplt = app(RevenueSplitService::class)->findOne($id);
 
         if ($revenueSplt == null) {
@@ -136,23 +115,14 @@ class RevenueSplitController extends Controller
         }
 
         $statuses = $this->statuses;
-        $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
-
         return view('pages.master_data.revenue_split.edit', array_merge([
             'statuses' => $statuses,
             'revenueSplt' => $revenueSplt,
-        ], $permissionData));
+        ]));
     }
 
     public function update(Request $request)
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
-                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_revenue_splits,id',
@@ -209,10 +179,6 @@ class RevenueSplitController extends Controller
 
     public function detail($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail data.');
-        }
-
         $revenueSplt = app(RevenueSplitService::class)->findOne($id);
 
         if ($revenueSplt == null) {
@@ -224,11 +190,9 @@ class RevenueSplitController extends Controller
         
         // dd($salesOrdersData);
         $auditLogs = app(RevenueSplitAuditLogService::class)->findAllBasedOnRevenueSplitId($id);
-        $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
         return view('pages.master_data.revenue_split.detail', array_merge(
             compact('revenueSplt', 'auditLogs'),
             $salesOrdersData,
-            $permissionData,
             ['auditLogType' => AuditLogTypes::MASTER_DATA_REVENUE_SPLIT->code()]
         ));
     }
@@ -660,10 +624,6 @@ class RevenueSplitController extends Controller
 
     public function preview($id)
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'read')) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
-
         $cycle = app(RevenueSplitService::class)->findOne($id);
         if (!$cycle) {
             return response()->json(['success' => false, 'message' => 'Cycle not found'], 404);
@@ -726,10 +686,6 @@ class RevenueSplitController extends Controller
 
     public function export()
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk export data.');
-        }
-
         $data = [
             ['no' => 1, 'value' => 'Nama Cycle'],
             ['no' => 2, 'value' => 'Deskripsi'],
@@ -748,10 +704,6 @@ class RevenueSplitController extends Controller
 
     public function import()
     {
-        if (! PermissionHelper::hasPermission('master_data_revenue_split', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk import data.');
-        }
-
         return view('pages.master_data.revenue_split.import', []);
     }
 }

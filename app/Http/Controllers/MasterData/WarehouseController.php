@@ -14,9 +14,9 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
-use App\Helpers\PermissionHelper;
 use App\Domains\Category\Services\CategoryService;
 use App\Domains\StockMovement\Services\StockMovementLogsService;
 // Enums
@@ -114,10 +114,6 @@ class WarehouseController extends Controller
 
     public function stock_transfer_add(Request $request)
     {
-        // Check write permission
-        // if (! PermissionHelper::hasPermission('main_transaction_stock_adjustment', 'write')) {
-        //     abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        // }
         // Adjustment types
         if (isset($request->id) && isset($request->type)) {
             $adjustmentTypes = [
@@ -180,10 +176,10 @@ class WarehouseController extends Controller
         }
 
         // Permission checks for add buttons
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
-        $canAddWarehouses = PermissionHelper::canWrite('master_data_warehouse');
-        $canAddContacts = PermissionHelper::canWrite('master_data_contact');
-        $canAddCategories = PermissionHelper::canWrite('master_data_category');
+        $canAddTags = true;
+        $canAddWarehouses = true;
+        $canAddContacts = true;
+        $canAddCategories = true;
 
         $header_data = [];
         $items = [];

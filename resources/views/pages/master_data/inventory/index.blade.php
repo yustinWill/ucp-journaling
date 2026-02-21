@@ -150,15 +150,21 @@
                         <div class="mt-4 mb-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
+                                    @can('inventory.create')
                                     <a href="{{ route('master_data.inventory.add') }}" class="btn btn-md btn-primary waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-shopping-cart me-2"></span> Pembelian Aset
                                     </a>
+                                    @endcan
+                                    @can('inventory.dispose')
                                     <a href="{{ route('master_data.inventory.dispose') }}" class="btn btn-md btn-danger waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-trash me-2"></span> Pelepasan Aset
                                     </a>
+                                    @endcan
+                                    @can('inventory.payment')
                                     <button type="button" class="btn btn-md btn-success waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-cash me-2"></span> Pembayaran Aset
                                     </button>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -213,15 +219,21 @@
                         <div class="mt-4 mb-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
+                                    @can('inventory.create')
                                     <a href="{{ route('master_data.inventory.add') }}" class="btn btn-md btn-primary waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-shopping-cart me-2"></span> Pembelian Aset
                                     </a>
+                                    @endcan
+                                    @can('inventory.dispose')
                                     <button type="button" class="btn btn-md btn-danger waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-trash me-2"></span> Pelepasan Aset
                                     </button>
+                                    @endcan
+                                    @can('inventory.payment')
                                     <button type="button" class="btn btn-md btn-success waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-cash me-2"></span> Pembayaran Aset
                                     </button>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -275,15 +287,21 @@
                         <div class="mt-4 mb-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
+                                    @can('inventory.create')
                                     <a href="{{ route('master_data.inventory.add') }}" class="btn btn-md btn-primary waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-shopping-cart me-2"></span> Pembelian Aset
                                     </a>
+                                    @endcan
+                                    @can('inventory.dispose')
                                     <button type="button" class="btn btn-md btn-danger waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-trash me-2"></span> Pelepasan Aset
                                     </button>
+                                    @endcan
+                                    @can('inventory.payment')
                                     <button type="button" class="btn btn-md btn-success waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-cash me-2"></span> Pembayaran Aset
                                     </button>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -361,9 +379,11 @@
                         <div class="mt-4 mb-4">
                             <div class="d-flex justify-content-end">
                                 <div class="d-flex gap-2">
+                                    @can('inventory.depreciation')
                                     <a href="{{ route('master_data.inventory.depreciation') }}"  class="btn btn-md btn-success waves-effect waves-light">
                                         <span class="icon-xs icon-base ti tabler-calculator me-2"></span> Penyusutan Bulanan
                                     </a>
+                                    @endcan
                                 </div>
                             </div>
                         </div>

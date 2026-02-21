@@ -14,6 +14,7 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 // Services
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -31,8 +32,12 @@ class CoaController extends Controller
     public function index()
     {
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_coa');
 
-        return view('pages.master_data.coa.index', compact('statuses'));
+        return view('pages.master_data.coa.index', array_merge(
+            compact('statuses'),
+            $permissionData
+        ));
     }
 
     public function index_data_table()

@@ -26,11 +26,11 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            @if ($canShowAddButton)
+                            @can('budget.create')
                                 <button type="button" id="btn-add-budged"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Periode & Anggaran</button>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -58,12 +58,12 @@
 @section('js_script')
     <script>
         $(function() {
-            // Permission variables
-            const canRead = @json($canRead);
-            const canWrite = @json($canWrite);
-            const canDelete = @json($canDelete);
-            const canShowEditButton = @json($canShowEditButton);
-            const canShowDeleteButton = @json($canShowDeleteButton);
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('budget.view'));
+            const canWrite = @json(auth()->user()->can('budget.create'));
+            const canDelete = @json(auth()->user()->can('budget.delete'));
+            const canShowEditButton = @json(auth()->user()->can('budget.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('budget.delete'));
 
             let dt_adv_filter;
 

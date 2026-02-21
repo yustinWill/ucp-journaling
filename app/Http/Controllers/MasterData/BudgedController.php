@@ -21,25 +21,8 @@ class BudgedController extends Controller
 {
     public function index()
     {
-        // $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
-        
-        $permissionData =  [
-            "permissions" => [
-                "read" => true,
-                "write" => true,
-                "delete" => true,
-                "approval" => true
-            ],
-            "canRead" => true,
-            "canWrite" => true,
-            "canDelete" => true,
-            "canApprove" => true,
-            "canShowAddButton" => true,
-            "canShowEditButton" => true,
-            "canShowDeleteButton" => true,
-            "canShowImportButton" => true,
-            "canShowExportButton" => true
-    ]   ; 
+        $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
+
         return view('pages.master_data.budged.index', $permissionData);
     }
 
@@ -54,7 +37,6 @@ class BudgedController extends Controller
     {
         $budgedlist = app(BudgedService::class)->findAllDatatable();
         $budgetCategories = app(BudgetCategoryService::class)->findAllActive();
-        // dd($budgedlist["data"]);
         return view('pages.master_data.budged.add',["budgedlist" => $budgedlist["data"], "budgetCategories" => $budgetCategories]);
     }
 
@@ -122,7 +104,6 @@ class BudgedController extends Controller
     
         return view('pages.master_data.budged.detail', array_merge(
             compact('periodData'),
-            $permissionData
         ));
     }
 

@@ -100,42 +100,16 @@ class PurchaseOrderController extends Controller
 
     public function index()
     {
-        // Check read permission for purchase order module
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
-        // Get permission data for view
+        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
 
-        $suppliers = app(ContactService::class)->findAllByFlag('supplier');
-
-        // Map permissions to view variables
-        $canAddPurchaseOrder = PermissionHelper::canWrite('main_transaction_purchase_order');
-        $canImportPurchaseOrder = PermissionHelper::canWrite('main_transaction_purchase_order');
-        $canExportPurchaseOrder = PermissionHelper::canRead('main_transaction_purchase_order');
-        $canViewPurchaseOrder = PermissionHelper::canRead('main_transaction_purchase_order');
-        $canEditPurchaseOrder = PermissionHelper::canWrite('main_transaction_purchase_order');
-
-        $data = [
+        return view('pages.main_transaction.purchase_order.index', array_merge([
             'suppliers' => $suppliers,
-            'canAddPurchaseOrder' => $canAddPurchaseOrder,
-            'canImportPurchaseOrder' => $canImportPurchaseOrder,
-            'canExportPurchaseOrder' => $canExportPurchaseOrder,
-            'canViewPurchaseOrder' => $canViewPurchaseOrder,
-            'canEditPurchaseOrder' => $canEditPurchaseOrder,
-        ];
-
-        return view('pages.main_transaction.purchase_order.index', array_merge($data, $permissionData));
+        ], $permissionData));
     }
 
     public function index_data_table()
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $data = app(PurchaseOrderService::class)->findAllDatatable();
 
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
@@ -143,11 +117,6 @@ class PurchaseOrderController extends Controller
 
     public function add()
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
-
         $customers = app(ContactService::class)->findAllByFlag('employee');
         $suppliers = app(ContactService::class)->findAllByFlag('supplier');
         $paymentTerms = app(PaymentTermService::class)->findAll();
@@ -157,10 +126,10 @@ class PurchaseOrderController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
-        $canAddSuppliers = PermissionHelper::hasPermission('master_data_contact', 'write');
-        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
-        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddStorages = PermissionHelper::hasPermission('master_data_warehouse', 'write');
+        $canAddSuppliers = true;
+        $canAddPaymentTerms = true;
+        $canAddTags = true;
+        $canAddStorages = true;
 
         return view('pages.main_transaction.purchase_order.add', [
             'suppliers' => $suppliers,
@@ -206,14 +175,6 @@ class PurchaseOrderController extends Controller
 
     public function store(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk menambah data.',
-                'error' => 'PERMISSION_DENIED',
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'date' => 'required|date',
@@ -305,14 +266,6 @@ class PurchaseOrderController extends Controller
 
     public function detail($id)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail.');
-        }
-
-        // Get permission data for view
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
-
         $po_data = app(PurchaseOrderService::class)->findOne($id);
         $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
         $audit_logs = app(PurchaseOrderAuditLogService::class)->findAllBasedOnPurchaseOrderId($id);
@@ -454,28 +407,23 @@ class PurchaseOrderController extends Controller
         $data = [
             'purchaseOrder' => $purchaseOrder,
             'auditLogs' => $auditLogs,
-            'canEditPurchaseOrder' => PermissionHelper::canWrite('main_transaction_purchase_order'),
-            'canDeletePurchaseOrder' => PermissionHelper::canDelete('main_transaction_purchase_order'),
-            'canApprovePurchaseOrder' => PermissionHelper::canApprove('main_transaction_purchase_order'),
-            'canViewProduct' => PermissionHelper::canRead('master_data_product'),
-            'canViewUser' => PermissionHelper::canRead('master_data_user'),
-            'canViewPurchaseDelivery' => PermissionHelper::canRead('main_transaction_purchase_delivery'),
-            'canViewPurchaseInvoice' => PermissionHelper::canRead('main_transaction_purchase_invoice'),
-            'canCreatePurchaseDelivery' => PermissionHelper::canWrite('main_transaction_purchase_delivery'),
-            'canCreatePurchaseInvoice' => PermissionHelper::canWrite('main_transaction_purchase_invoice'),
-            'canViewReturnManagement' => PermissionHelper::canRead('main_transaction_return_management'),
+            'canEditPurchaseOrder' => true,
+            'canDeletePurchaseOrder' => true,
+            'canApprovePurchaseOrder' => true,
+            'canViewProduct' => true,
+            'canViewUser' => true,
+            'canViewPurchaseDelivery' => true,
+            'canViewPurchaseInvoice' => true,
+            'canCreatePurchaseDelivery' => true,
+            'canCreatePurchaseInvoice' => true,
+            'canViewReturnManagement' => true,
         ];
 
-        return view('pages.main_transaction.purchase_order.detail', array_merge($data, $permissionData));
+        return view('pages.main_transaction.purchase_order.detail', array_merge($data));
     }
 
     public function auditLogDataTable($id)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock audit log data - in real implementation, get from audit log service
         $auditLogs = [
             [
@@ -499,14 +447,6 @@ class PurchaseOrderController extends Controller
 
     public function edit($id)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
-        }
-
-        // Get permission data for view
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
-
         $customers = app(ContactService::class)->findAllByFlag('employee');
         $po_data = app(PurchaseOrderService::class)->findOne($id);
         $po_products = app(PurchaseOrderProductService::class)->findAllBasedOnPOId($id);
@@ -636,11 +576,11 @@ class PurchaseOrderController extends Controller
         ];
 
         // Check permissions for adding related data
-        $canAddSuppliers = PermissionHelper::hasPermission('master_data_contact', 'write');
-        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
-        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddStorages = PermissionHelper::hasPermission('master_data_warehouse', 'write');
-        $canAddPIC = PermissionHelper::hasPermission('master_data_user', 'write');
+        $canAddSuppliers = true;
+        $canAddPaymentTerms = true;
+        $canAddTags = true;
+        $canAddStorages = true;
+        $canAddPIC = true;
 
         // Ensure all fields have default values
         $purchaseOrder['description'] = $purchaseOrder['description'] ?? '';
@@ -655,7 +595,7 @@ class PurchaseOrderController extends Controller
             'products' => $products,
             'paymentTerms' => $paymentTerms,
             'availableTags' => $availableTags,
-            'canWrite' => PermissionHelper::canWrite('main_transaction_purchase_order'),
+            'canWrite' => true,
             'canAddSuppliers' => $canAddSuppliers,
             'canAddPaymentTerms' => $canAddPaymentTerms,
             'canAddTags' => $canAddTags,
@@ -668,14 +608,6 @@ class PurchaseOrderController extends Controller
 
     public function update(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
-            return response()->json([
-                'message' => 'Anda tidak memiliki akses untuk mengupdate data.',
-                'error' => 'PERMISSION_DENIED',
-            ], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:t_purchase_orders,id',
@@ -772,11 +704,6 @@ class PurchaseOrderController extends Controller
     // Import/Export Methods
     public function import(Request $request)
     {
-        // Check write permission for import
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
-        }
-
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
@@ -797,10 +724,6 @@ class PurchaseOrderController extends Controller
 
     public function downloadTemplate(Request $request)
     {
-        // Check write permission for template download
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
-        }
 
         // Mock template download - in real implementation, generate Excel file
         return response()->json([
@@ -811,10 +734,6 @@ class PurchaseOrderController extends Controller
 
     public function validateImport(Request $request)
     {
-        // Check write permission for import validation
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
 
         // Mock validation - in real implementation, validate uploaded file
         $mockValidationResults = [
@@ -838,11 +757,6 @@ class PurchaseOrderController extends Controller
 
     public function processImport(Request $request)
     {
-        // Check write permission for import processing
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock import processing
         return response()->json([
             'success' => true,
@@ -853,11 +767,6 @@ class PurchaseOrderController extends Controller
 
     public function export()
     {
-        // Check read permission for export
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
-        }
-
         $suppliers = [
             ['value' => '1', 'label' => 'CV Plastik Prima'],
             ['value' => '2', 'label' => 'PT Grafika Mandiri'],
@@ -878,11 +787,6 @@ class PurchaseOrderController extends Controller
 
     public function processExport(Request $request)
     {
-        // Check read permission for export processing
-        if (! PermissionHelper::hasPermission('main_transaction_purchase_order', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
         $filename = 'purchase_orders_export_'.date('Y-m-d_H-i-s').'.'.$format;

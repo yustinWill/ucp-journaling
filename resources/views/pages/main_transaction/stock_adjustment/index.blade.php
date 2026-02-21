@@ -123,11 +123,11 @@
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    @if ($canAddStockAdjustment)
+                                    @can('stock_adjustment.create')
                                         <a href="{{ route('main_transaction.stock_adjustment.add') }}"
                                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                                    @endif
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -191,11 +191,11 @@
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    @if ($canAddStockAdjustment)
+                                    @can('stock_adjustment.create')
                                         <a href="{{ route('main_transaction.stock_adjustment.add') }}"
                                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                                    @endif
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -261,21 +261,21 @@
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    @if ($canImportStockAdjustment)
+                                    @can('stock_adjustment.view')
                                         <a href="{{ route('main_transaction.stock_adjustment.import') }}"
                                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                                 class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                                    @endif
-                                    @if ($canExportStockAdjustment)
+                                    @endcan
+                                    @can('stock_adjustment.view')
                                         <a href="{{ route('main_transaction.stock_adjustment.export') }}"
                                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                                 class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                                    @endif
-                                    @if ($canAddStockAdjustment)
+                                    @endcan
+                                    @can('stock_adjustment.create')
                                         <a href="{{ route('main_transaction.stock_adjustment.add') }}"
                                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                                 class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                                    @endif
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -323,9 +323,9 @@
             let waitingAdjustmentTable, waitingApprovalTable, finishedTable;
             let currentActiveTab = 'waiting-adjustment';
 
-            // Permission variables
-            const canRead = @json($canViewStockAdjustment ?? true);
-            const canEdit = @json($canEditStockAdjustment ?? true);
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('stock_adjustment.view'));
+            const canEdit = @json(auth()->user()->can('stock_adjustment.edit'));
 
             // Initialize all DataTables for each tab
             function initWaitingAdjustmentTable() {

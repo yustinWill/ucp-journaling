@@ -81,9 +81,11 @@
         <div class="card-body">
             <div class="d-flex justify-content-between mb-4">
                 <div></div>
+                @can('reimbursement.create')
                 <a href="{{ route('main_transaction.reimbursement.add') }}" class="btn btn-primary">
                     <i class="icon-base ti tabler-plus me-1"></i> Ajukan Reimbursement Baru
                 </a>
+                @endcan
             </div>
         </div>
 
@@ -110,7 +112,7 @@
 @section('js_script')
     <script>
         $(function() {
-            const canRead = @json($canViewReimbursement ?? true);
+            const canRead = @json(auth()->user()->can('reimbursement.view'));
 
             // Initialize DataTable
             const reimbursementTable = new DataTable('#reimbursement-table', {

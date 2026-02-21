@@ -30,14 +30,6 @@ class SalesInvoiceController extends Controller
 {
     public function index()
     {
-        // Check read permission for sales invoice module
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
-
-        // Get permission data for view
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_invoice');
-
         $customers = app(ContactService::class)->findAllByFlag('customer');
 
         $statuses = [
@@ -49,23 +41,10 @@ class SalesInvoiceController extends Controller
             ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan'],
         ];
 
-        // Map permissions to view variables
-        $canAddSalesInvoice = PermissionHelper::canWrite('main_transaction_sales_invoice');
-        $canImportSalesInvoice = PermissionHelper::canWrite('main_transaction_sales_invoice');
-        $canExportSalesInvoice = PermissionHelper::canRead('main_transaction_sales_invoice');
-        $canViewSalesInvoice = PermissionHelper::canRead('main_transaction_sales_invoice');
-        $canEditSalesInvoice = PermissionHelper::canWrite('main_transaction_sales_invoice');
-
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_invoice');
         $data = [
             'customers' => $customers,
             'statuses' => $statuses,
-            'canAddSalesInvoice' => $canAddSalesInvoice,
-            'canImportSalesInvoice' => $canImportSalesInvoice,
-            'canExportSalesInvoice' => $canExportSalesInvoice,
-            'canViewSalesInvoice' => $canViewSalesInvoice,
-            'canEditSalesInvoice' => $canEditSalesInvoice,
-            'canViewUser' => PermissionHelper::canRead('master_data_user'),
-            'canViewSalesOrder' => PermissionHelper::canRead('main_transaction_sales_order'),
         ];
 
         return view('pages.main_transaction.sales_invoice.index', array_merge($data, $permissionData));
@@ -73,11 +52,6 @@ class SalesInvoiceController extends Controller
 
     public function index_data_table(Request $request)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $data = app(SalesInvoiceService::class)->findAllDatatable();
 
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
@@ -85,10 +59,6 @@ class SalesInvoiceController extends Controller
 
     public function add(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
         $so_id = $request->query('so_id');
 
         // Get available Sales Orders for invoicing
@@ -100,7 +70,7 @@ class SalesInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAll();
 
         // Permission checks for related data creation
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddTags = true;
 
         return view('pages.main_transaction.sales_invoice.add', [
             'availableSalesOrders' => $availableSalesOrders,
@@ -113,11 +83,6 @@ class SalesInvoiceController extends Controller
 
     public function store(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'invoice_number' => 'required|string|max:50|unique:t_sales_invoices,transaction_code',
@@ -182,11 +147,6 @@ class SalesInvoiceController extends Controller
 
     public function detail($id)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail invoice.');
-        }
-
         $invoice_data = app(SalesInvoiceService::class)->findOne($id);
         if (! $invoice_data) {
             abort(404, 'Invoice tidak ditemukan.');
@@ -212,10 +172,10 @@ class SalesInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks
-        $canEditSalesInvoice = PermissionHelper::canWrite('main_transaction_sales_invoice');
-        $canViewUser = PermissionHelper::canRead('master_data_user');
-        $canViewSalesOrder = PermissionHelper::canRead('main_transaction_sales_order');
-        $canViewReturnManagement = PermissionHelper::canRead('main_transaction_return_management');
+        $canEditSalesInvoice = true;
+        $canViewUser = true;
+        $canViewSalesOrder = true;
+        $canViewReturnManagement = true;
 
         return view('pages.main_transaction.sales_invoice.detail', [
             'invoice_data' => $invoice_data,
@@ -233,11 +193,6 @@ class SalesInvoiceController extends Controller
     public function payment_recipient(request $request)
     {
         $source_invoice_id = $request->query('source_invoice_id');
-
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat halaman ini.');
-        }
 
         $invoice_data = app(SalesInvoiceService::class)->findOne($source_invoice_id); 
         $remaining_payment = app(SalesInvoicePaymentService::class)->getRemainingPayment($source_invoice_id); 
@@ -296,10 +251,6 @@ class SalesInvoiceController extends Controller
     }
     public function auditLogDataTable($id)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
 
         $data = app(SalesInvoiceAuditLogService::class)->findAllDatatableBySalesInvoiceId($id);
 
@@ -308,11 +259,6 @@ class SalesInvoiceController extends Controller
 
     public function edit($id)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit invoice.');
-        }
-
         $invoice_data = app(SalesInvoiceService::class)->findOne($id);
         if (! $invoice_data) {
             abort(404, 'Invoice tidak ditemukan.');
@@ -325,7 +271,7 @@ class SalesInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks for related data creation
-        $canAddTags = PermissionHelper::canWrite('master_data_tag');
+        $canAddTags = true;
 
         return view('pages.main_transaction.sales_invoice.edit', [
             'invoice_data' => $invoice_data,
@@ -338,11 +284,6 @@ class SalesInvoiceController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         try {
             // Use validation from UpdateSalesInvoiceAction
             $validation = app(UpdateSalesInvoiceAction::class)->validateUpdateData($request->all());
@@ -378,11 +319,6 @@ class SalesInvoiceController extends Controller
     // Import/Export Methods
     public function import(Request $request)
     {
-        // Check write permission for import
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengimpor data.');
-        }
-
         $customers = app(ContactService::class)->findAllByFlag('customer');
 
         return view('pages.main_transaction.sales_invoice.import', [
@@ -392,11 +328,6 @@ class SalesInvoiceController extends Controller
 
     public function export()
     {
-        // Check read permission for export
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengekspor data.');
-        }
-
         $customers = app(ContactService::class)->findAllByFlag('customer');
 
         return view('pages.main_transaction.sales_invoice.export', [
@@ -406,11 +337,6 @@ class SalesInvoiceController extends Controller
 
     public function downloadTemplate(Request $request)
     {
-        // Check write permission for template download
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengunduh template.');
-        }
-
         // Mock template download - in real implementation, generate Excel file
         return response()->json([
             'message' => 'Template download untuk Sales Invoice akan segera tersedia.',
@@ -420,11 +346,6 @@ class SalesInvoiceController extends Controller
 
     public function validateImport(Request $request)
     {
-        // Check write permission for import validation
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock validation - in real implementation, validate uploaded file
         $mockValidationResults = [
             'success' => true,
@@ -448,11 +369,6 @@ class SalesInvoiceController extends Controller
 
     public function processImport(Request $request)
     {
-        // Check write permission for import processing
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock import processing
         return response()->json([
             'success' => true,
@@ -463,11 +379,6 @@ class SalesInvoiceController extends Controller
 
     public function processExport(Request $request)
     {
-        // Check read permission for export processing
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         // Mock export processing - in real implementation, generate file
         $format = $request->input('export_format', 'excel');
         $filename = 'sales_invoices_export_' . date('Y-m-d_H-i-s') . '.' . $format;
@@ -482,11 +393,6 @@ class SalesInvoiceController extends Controller
 
     public function get_so_products_for_invoice(Request $request)
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         try {
             $soId = $request->input('so_id');
 
@@ -512,11 +418,6 @@ class SalesInvoiceController extends Controller
 
     public function get_available_sales_orders()
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         try {
             $salesOrders = app(SalesInvoiceService::class)->findAvailableForInvoicing();
 
@@ -534,11 +435,6 @@ class SalesInvoiceController extends Controller
     
     public function payment_save(Request $request)
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         try {
             $validator = Validator::make($request->all(), [
                 'customer_id' => 'required|exists:m_contacts,id',
@@ -608,11 +504,6 @@ class SalesInvoiceController extends Controller
     public function print($id)
     {
         try {
-            // Check read permission
-            if (!PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read')) {
-                abort(403, 'Anda tidak memiliki akses untuk mencetak invoice.');
-            }
-
             // Generate printable HTML
             $html = PdfHelper::getPrintableHtml('sales_invoice', $id);
 

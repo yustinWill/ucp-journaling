@@ -26,43 +26,20 @@ class SalesDeliveryController extends Controller
 {
     public function index()
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat data.');
-        }
-
         $customers = app(ContactService::class)->findAllByFlag('customer');
         $warehouses = app(WarehouseService::class)->findAll();
-
-        if (PermissionHelper::hasPermission('master_data_contact', 'read')) {
-            $customers = app(\App\Domains\Contact\Services\ContactService::class)->findAllByFlag('customer');
-        }
-
-        if (PermissionHelper::hasPermission('master_data_warehouse', 'read')) {
-            $warehouses = app(\App\Domains\Warehouse\Services\WarehouseService::class)->findAll();
-        }
-
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_delivery');
+    
         $stats = app(SalesOrderService::class)->getSummaryStats();
-        return view('pages.main_transaction.sales_delivery.index', [
-            'stats' => $stats,
+        return view('pages.main_transaction.sales_delivery.index', array_merge([
             'customers' => $customers,
             'warehouses' => $warehouses,
-            'canEdit' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
-            'canImport' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'import'),
-            'canExport' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'export'),
-            'canViewContact' => PermissionHelper::hasPermission('master_data_contact', 'read'),
-            'canViewUser' => PermissionHelper::hasPermission('master_data_user', 'read'),
-            'canViewSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'read'),
-        ]);
+            'stats'=>$stats
+        ], $permissionData));
     }
 
     public function add(Request $req)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk membuat data.');
-        }
-
         $preselectedSOId = null;
         $salesOrderProducts = [];
         if (isset($req['so_id'])) {
@@ -107,11 +84,6 @@ class SalesDeliveryController extends Controller
 
     public function create(Request $request)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'delivery_date' => 'required|date',
@@ -202,11 +174,6 @@ class SalesDeliveryController extends Controller
 
     public function detail($id)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat data.');
-        }
-
         $salesDeliveryHeader = app(SalesDeliveryService::class)->findOne($id);
         $salesDeliveryProduct = app(SalesDeliveryService::class)->findProductLines($id, true);
         // TODO: Replace with actual data loading
@@ -269,17 +236,12 @@ class SalesDeliveryController extends Controller
             'salesOrder' => $salesOrder,
             'productLines' => $productLines,
             'audit_logs' => $audit_logs,
-            'canEdit' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
+            'canEdit' => true,
         ]);
     }
 
     public function edit($id)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
-        }
-
         $salesDelivery = app(SalesDeliveryService::class)->findById($id);
 
         if (!$salesDelivery) {
@@ -314,11 +276,6 @@ class SalesDeliveryController extends Controller
 
     public function update(Request $request)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'id' => 'required|integer',
@@ -363,11 +320,6 @@ class SalesDeliveryController extends Controller
 
     public function index_data_table()
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $data = app(SalesDeliveryService::class)->findAllDatatable();
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
@@ -375,21 +327,11 @@ class SalesDeliveryController extends Controller
     // Import/Export methods
     public function import()
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'import')) {
-            abort(403, 'Anda tidak memiliki akses untuk import data.');
-        }
-
         return view('pages.main_transaction.sales_delivery.import');
     }
 
     public function export()
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_delivery', 'export')) {
-            abort(403, 'Anda tidak memiliki akses untuk export data.');
-        }
-
         // TODO: Implement export columns configuration
         $exportColumns = [];
 
@@ -450,14 +392,6 @@ class SalesDeliveryController extends Controller
      */
     public function confirm($id)
     {
-        // Permission check
-        if (!PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda tidak memiliki akses untuk mengkonfirmasi sales delivery.',
-            ], 403);
-        }
-
         try {
             app(ConfirmSalesDeliveryAction::class)->execute($id);
 

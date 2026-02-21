@@ -16,12 +16,9 @@ class UserService
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
-            'status' => $data['status'],
-            'role_id' => $data['role'],
-            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'password' => bcrypt($data['password']),
             'created_at' => now(),
-            'created_by' => Auth::id(),
+            'updated_at' => now(),
         ]);
     }
 
@@ -31,11 +28,7 @@ class UserService
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
-            'status' => $data['status'],
-            'role_id' => $data['role'],
-            'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
             'updated_at' => now(),
-            'updated_by' => Auth::id(),
         ];
         if (isset($data['password']) && $data['password'] !== '') {
             $updateData['password'] = bcrypt($data['password']);
@@ -61,45 +54,32 @@ class UserService
                 't.name',
                 't.email',
                 't.phone',
-                't.f_tag_codes',
-                't.last_login',
-                't.status',
                 't.created_at',
                 't.updated_at',
-                't.created_by',
-                't.updated_by',
-                'r.id AS role_id',
-                'r.name AS role_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("COALESCE(r.name, 'N/A') as role_name"),
+                DB::raw("COALESCE(r.id, 0) as role_id"),
             ])
-            ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
-            ->leftJoin('roles as r', 't.role_id', '=', 'r.id')
-            ->leftJoin(DB::raw("JSON_TABLE(t.f_tag_codes, '$[*]' COLUMNS(id VARCHAR(255) PATH '$')) as tag_json"), function ($join) {
-                $join->on(DB::raw('1'), '=', DB::raw('1')); // ON TRUE
+            /** Spatie Laravel Permission joins */
+            ->leftJoin('model_has_roles as mhr', function($join) {
+                $join->on('t.id', '=', 'mhr.model_id')
+                    ->where('mhr.model_type', '=', \App\Models\User::class);
             })
-            ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
-            ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id');
+            ->leftJoin('roles as r', 'mhr.role_id', '=', 'r.id');
 
-        // Filter by status
-        $query->where('uc.f_company_code', session('user_company_code'));
-        $query->where('uc.status', GeneralStatuses::ACTIVE);
-
+        // Filter by name
         if ($name = request()->input('name')) {
             $query->where('t.name', 'like', "%{$name}%");
         }
 
+        // Filter by email
         if ($email = request()->input('email')) {
             $query->where('t.email', 'like', "%{$email}%");
         }
 
+        // Filter by role
         if ($role = request()->input('role')) {
             $query->where('r.id', $role);
         }
-
-        if ($status = request()->input('status')) {
-            $query->where('t.status', $status);
-        }
-        $query->groupBy('t.id');
 
         $draw = (int) request()->input('draw', 1);
         $recordsTotal = DB::table($this->table_name)->count();
@@ -110,7 +90,8 @@ class UserService
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
         $recordsFiltered = $filteredQuery->get()->count();
-        $query->orderBy('name', 'ASC');
+        $query->orderBy('t.name', 'ASC');
+        $query->distinct('t.id');
         $data = $query->get();
 
         return [
@@ -123,57 +104,47 @@ class UserService
 
     public function findOne($id)
     {
-        $data = DB::table($this->table_name.' as t')
-            ->select([
-                't.id',
-                't.role_id',
-                't.name',
-                't.email',
-                't.phone',
-                't.f_tag_codes as f_tag_codes',
-                't.status as status',
-                't.created_at as created_at',
-                't.last_login',
-                't.last_password_change',
-                'r.name as role_name',
-            ])
-            ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
-            ->join('roles as r', 't.role_id', '=', 'r.id')
-            ->where('t.id', $id)
-            ->where('uc.f_company_code', session('user_company_code'))
-            ->where('uc.status', GeneralStatuses::ACTIVE)
+        $user = DB::table($this->table_name)
+            ->where('id', $id)
             ->first();
 
-        $data->f_tag_codes = json_decode($data->f_tag_codes);
+        if (!$user) {
+            return null;
+        }
 
-        return $data;
+        // Get user's role from Spatie
+        $roleData = DB::table('model_has_roles')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where('model_has_roles.model_id', $id)
+            ->where('model_has_roles.model_type', \App\Models\User::class)
+            ->select('roles.id', 'roles.name')
+            ->first();
+
+        $user->role_id = $roleData->id ?? null;
+        $user->role_name = $roleData->name ?? null;
+
+        return $user;
     }
 
     public function findAllBasedOnRole($roleId)
     {
         $data = DB::table($this->table_name.' as t')
+            ->join('model_has_roles as mhr', function($join) {
+                $join->on('t.id', '=', 'mhr.model_id')
+                    ->where('mhr.model_type', '=', DB::raw('"' . \App\Models\User::class . '"'));
+            })
+            ->join('roles as r', 'mhr.role_id', '=', 'r.id')
             ->select([
                 't.id',
-                't.role_id',
                 't.name',
                 't.email',
                 't.phone',
-                't.f_tag_codes as f_tag_codes',
-                't.status as status',
-                't.created_at as created_at',
-                't.last_login',
-                't.last_password_change',
+                't.created_at',
+                'r.id as role_id',
                 'r.name as role_name',
             ])
-            ->join('m_user_companies as uc', 't.id', '=', 'uc.f_user_id')
-            ->join('roles as r', 't.role_id', '=', 'r.id')
-            ->where('t.role_id', $roleId)
-            ->where('uc.f_company_code', session('user_company_code'))
+            ->where('r.id', $roleId)
             ->get();
-
-        foreach ($data as $item) {
-            $item->f_tag_codes = json_decode($item->f_tag_codes);
-        }
 
         return $data;
     }

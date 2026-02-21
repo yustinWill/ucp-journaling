@@ -125,9 +125,11 @@
                         <a href="{{ route('master_data.user.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
-                        <a href="{{ route('master_data.user.add') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                        @can('user.create')
+                            <a href="{{ route('master_data.user.add') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light"><span
+                                    class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -142,9 +144,9 @@
                         <th>Email User</th>
                         <th>Phone</th>
                         <th>Role</th>
-                        <th>Tag</th>
+                        {{-- <th>Tag</th> --}}
                         <th>Terakhir Login</th>
-                        <th>Status</th>
+                        {{-- <th>Status</th> --}}
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -174,48 +176,49 @@
                     },
                     columns: [{
                             data: 'created_at',
-                            responsivePriority: 2
+                            responsivePriority: 1
                         },
                         {
                             data: 'name',
-                            responsivePriority: 3
+                            responsivePriority: 2
                         },
                         {
                             data: 'email',
-                            responsivePriority: 4
+                            responsivePriority: 3
                         },
                         {
                             data: 'phone',
-                            responsivePriority: 7
+                            responsivePriority: 4
                         },
                         {
                             data: 'role_name',
                             responsivePriority: 5
                         },
-                        {
-                            data: 'tags',
-                            responsivePriority: 6,
-                            render: function(data, type, row) {
-                                let tags = JSON.parse(data);
-                                return tags.map(tag => {
-                                    if (tag.name == null) {
-                                        return ``;
-                                    }
-                                    return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
-                                }).join('');
-                            }
-                        },
+                        // {
+                        //     data: 'tags',
+                        //     responsivePriority: 6,
+                        //     render: function(data, type, row) {
+                        //         // let tags = JSON.parse(data);
+                        //         // return tags.map(tag => {
+                        //         //     if (tag.name == null) {
+                        //         //         return ``;
+                        //         //     }
+                        //         //     return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
+                        //         // }).join('');
+                        //         return ''
+                        //     }
+                        // },
                         {
                             data: 'last_login',
-                            responsivePriority: 8
+                            responsivePriority: 6
                         },
-                        {
-                            data: 'status',
-                            responsivePriority: 9
-                        },
+                        // {
+                        //     data: 'status',
+                        //     responsivePriority: 9
+                        // },
                         {
                             data: null,
-                            responsivePriority: 1
+                            responsivePriority: 7
                         }
                     ],
                     columnDefs: [{
@@ -251,15 +254,15 @@
                             targets: [1], // Name column
                             responsivePriority: 3
                         },
-                        {
-                            targets: [7], // Status column
-                            render: function(data, type, row) {
-                                const badgeClass = data == 'ACTIVE' ? 'bg-label-success' :
-                                    'bg-label-secondary';
-                                const statusText = data == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
-                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
-                            }
-                        }
+                        // {
+                        //     targets: [7], // Status column
+                        //     render: function(data, type, row) {
+                        //         const badgeClass = data == 'ACTIVE' ? 'bg-label-success' :
+                        //             'bg-label-secondary';
+                        //         const statusText = data == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
+                        //         return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                        //     }
+                        // }
                     ],
                     layout: {
                         topStart: {

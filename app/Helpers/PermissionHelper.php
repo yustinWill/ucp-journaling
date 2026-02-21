@@ -2,288 +2,313 @@
 
 namespace App\Helpers;
 
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Session;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use App\Models\User;
 
 class PermissionHelper
 {
-    private static function generatePermissions()
+    /**
+     * Check if user has permission
+     *
+     * @param User $user
+     * @param string $permission
+     * @return bool
+     */
+    public static function hasPermission(User $user, string $permission): bool
     {
-        $permissions = Session::get('permissions');
-        $formattedPermissions = [];
+        return $user->hasPermissionTo($permission);
+    }
 
-        // Safety check: ensure $permissions is iterable
-        if (! is_array($permissions) && ! is_object($permissions)) {
-            return $formattedPermissions; // Return empty array if permissions is not iterable
+    /**
+     * Check if user has role
+     *
+     * @param User $user
+     * @param string $role
+     * @return bool
+     */
+    public static function hasRole(User $user, string $role): bool
+    {
+        return $user->hasRole($role);
+    }
+
+    /**
+     * Check if user has any of the given roles
+     *
+     * @param User $user
+     * @param array $roles
+     * @return bool
+     */
+    public static function hasAnyRole(User $user, array $roles): bool
+    {
+        return $user->hasAnyRole($roles);
+    }
+
+    /**
+     * Check if user has all of the given roles
+     *
+     * @param User $user
+     * @param array $roles
+     * @return bool
+     */
+    public static function hasAllRoles(User $user, array $roles): bool
+    {
+        return $user->hasAllRoles($roles);
+    }
+
+    /**
+     * Assign role to user
+     *
+     * @param User $user
+     * @param string $role
+     * @return mixed
+     */
+    public static function assignRole(User $user, string $role)
+    {
+        return $user->assignRole($role);
+    }
+
+    /**
+     * Assign multiple roles to user
+     *
+     * @param User $user
+     * @param array $roles
+     * @return mixed
+     */
+    public static function assignRoles(User $user, array $roles)
+    {
+        return $user->assignRole($roles);
+    }
+
+    /**
+     * Remove role from user
+     *
+     * @param User $user
+     * @param string $role
+     * @return mixed
+     */
+    public static function removeRole(User $user, string $role)
+    {
+        return $user->removeRole($role);
+    }
+
+    /**
+     * Sync roles for user
+     *
+     * @param User $user
+     * @param array $roles
+     * @return mixed
+     */
+    public static function syncRoles(User $user, array $roles)
+    {
+        return $user->syncRoles($roles);
+    }
+
+    /**
+     * Give permission to user
+     *
+     * @param User $user
+     * @param string $permission
+     * @return mixed
+     */
+    public static function givePermission(User $user, string $permission)
+    {
+        return $user->givePermissionTo($permission);
+    }
+
+    /**
+     * Get all permissions for user
+     *
+     * @param User $user
+     * @return mixed
+     */
+    public static function getUserPermissions(User $user)
+    {
+        return $user->getPermissionsViaRoles()->merge($user->getDirectPermissions());
+    }
+
+    /**
+     * Get all roles for user
+     *
+     * @param User $user
+     * @return mixed
+     */
+    public static function getUserRoles(User $user)
+    {
+        return $user->getRoleNames();
+    }
+
+    /**
+     * Get all permissions
+     *
+     * @return mixed
+     */
+    public static function getAllPermissions()
+    {
+        return Permission::all();
+    }
+
+    /**
+     * Get all roles
+     *
+     * @return mixed
+     */
+    public static function getAllRoles()
+    {
+        return Role::all();
+    }
+
+    /**
+     * Create new role
+     *
+     * @param string $name
+     * @return Role
+     */
+    public static function createRole(string $name, string $guardName = 'web'): Role
+    {
+        return Role::create([
+            'name' => $name,
+            'guard_name' => $guardName,
+        ]);
+    }
+
+    /**
+     * Create new permission
+     *
+     * @param string $name
+     * @return Permission
+     */
+    public static function createPermission(string $name, string $guardName = 'web'): Permission
+    {
+        return Permission::create([
+            'name' => $name,
+            'guard_name' => $guardName,
+        ]);
+    }
+
+    /**
+     * Assign permission to role
+     *
+     * @param Role $role
+     * @param string $permission
+     * @return mixed
+     */
+    public static function assignPermissionToRole(Role $role, string $permission)
+    {
+        return $role->givePermissionTo($permission);
+    }
+
+    /**
+     * Get permissions for role
+     *
+     * @param Role $role
+     * @return mixed
+     */
+    public static function getRolePermissions(Role $role)
+    {
+        return $role->permissions;
+    }
+
+    /**
+     * Get view permissions for a module
+     * Returns an array of permission flags for Blade templates
+     *
+     * @param string $module Module name (e.g., 'master_data_product' or 'product')
+     * @param User|null $user Optional user, defaults to auth()->user()
+     * @return array
+     */
+    public static function getViewPermissions(string $module, User $user = null): array
+    {
+        if (!$user) {
+            $user = auth()->user();
         }
 
+        // Remove common prefixes to get the actual permission name
+        $permissionName = self::getPermissionName($module);
+        $permissionKey = self::getPermissionKey($module);
+
+        if (!$user) {
+            return self::getDefaultPermissions($permissionKey);
+        }
+
+        // Use try-catch to handle cases where permissions don't exist
+        return [
+            "canView{$permissionKey}" => self::safeHasPermission($user, "{$permissionName}.view", "{$permissionName}.read"),
+            "canCreate{$permissionKey}" => self::safeHasPermission($user, "{$permissionName}.create", "{$permissionName}.write"),
+            "canEdit{$permissionKey}" => self::safeHasPermission($user, "{$permissionName}.edit", "{$permissionName}.write"),
+            "canDelete{$permissionKey}" => self::safeHasPermission($user, "{$permissionName}.delete"),
+            "canApprove{$permissionKey}" => self::safeHasPermission($user, "{$permissionName}.approve"),
+        ];
+    }
+
+    /**
+     * Safely check if user has permission, handling non-existent permissions
+     *
+     * @param User $user
+     * @param string ...$permissions Variable number of permission names to check
+     * @return bool
+     */
+    private static function safeHasPermission(User $user, string ...$permissions): bool
+    {
         foreach ($permissions as $permission) {
-            $moduleName = $permission->module_name;
-            $permissionType = $permission->permission_type;
-            $permissionStatus = $permission->status;
-
-            $formattedPermissions[$moduleName][$permissionType] = $permissionStatus;
-        }
-
-        return $formattedPermissions;
-    }
-
-    /**
-     * Mock permissions for development - replace with actual Gate logic in production
-     * All permissions set to true for development phase
-     */
-    private static function getMockPermissions(): array
-    {
-        $sessionPermissions = self::generatePermissions();
-        
-        // If session permissions are empty, provide fallback mock permissions for development
-        if (empty($sessionPermissions)) {
-            return [
-                // Master Data permissions
-                'master_data_sales_person' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_tax' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_unit' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_category' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_contact' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_product' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_user' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_warehouse' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_revenue_split' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'master_data_budged' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-
-                // Transaction permissions
-                'main_transaction_sales_order' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true, 'import' => true, 'export' => true],
-                'main_transaction_sales_delivery' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'main_transaction_sales_invoice' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'main_transaction_purchase_order' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'main_transaction_purchase_delivery' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'main_transaction_purchase_invoice' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'main_transaction_expense' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'main_transaction_journal' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'main_transaction_return_management' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-                'main_transaction_overhead_absorption' => ['read' => true, 'write' => true, 'delete' => true, 'approval' => true],
-            ];
-        }
-
-        return $sessionPermissions;
-    }
-
-    /**
-     * Check if current user has specific permission
-     */
-    public static function hasPermission(string $module, string $permission): bool
-    {
-        // For development, use mock permissions
-        $mockPermissions = self::getMockPermissions();
-        if (isset($mockPermissions[$module][$permission])) {
-            return $mockPermissions[$module][$permission];
-        }
-        
-        // Fallback to Gate for production
-        return Gate::allows("{$module}.{$permission}");
-    }
-
-    /**
-     * Check if current user has read permission for module
-     */
-    public static function canRead(string $module): bool
-    {
-        return self::hasPermission($module, 'read');
-    }
-
-    /**
-     * Check if current user has write permission for module
-     */
-    public static function canWrite(string $module): bool
-    {
-        return self::hasPermission($module, 'write');
-    }
-
-    /**
-     * Check if current user has delete permission for module
-     */
-    public static function canDelete(string $module): bool
-    {
-        return self::hasPermission($module, 'delete');
-    }
-
-    /**
-     * Check if current user has approval permission for module
-     */
-    public static function canApprove(string $module): bool
-    {
-        return self::hasPermission($module, 'approval');
-    }
-
-    /**
-     * Get all permissions for a module
-     */
-    public static function getModulePermissions(string $module): array
-    {
-        return [
-            'read' => self::canRead($module),
-            'write' => self::canWrite($module),
-            'delete' => self::canDelete($module),
-            'approval' => self::canApprove($module),
-        ];
-    }
-
-    /**
-     * Check if user has any permission for a module
-     */
-    public static function hasAnyPermission(string $module): bool
-    {
-        return self::canRead($module) ||
-            self::canWrite($module) ||
-            self::canDelete($module) ||
-            self::canApprove($module);
-    }
-
-    /**
-     * Get permission-aware view data for controllers
-     */
-    public static function getViewPermissions(string $module): array
-    {
-        $permissions = self::getModulePermissions($module);
-
-        return [
-            'permissions' => $permissions,
-            'canRead' => $permissions['read'],
-            'canWrite' => $permissions['write'],
-            'canDelete' => $permissions['delete'],
-            'canApprove' => $permissions['approval'],
-            'canShowAddButton' => $permissions['write'],
-            'canShowEditButton' => $permissions['write'],
-            'canShowDeleteButton' => $permissions['delete'],
-            'canShowImportButton' => $permissions['write'],
-            'canShowExportButton' => $permissions['read'],
-        ];
-    }
-
-    /**
-     * Check if user can access a specific route
-     */
-    public static function canAccessRoute(string $route): bool
-    {
-        // Map routes to permissions
-        $routePermissions = [
-            // Sales Person
-            'master_data.sales_person.index' => ['master_data_sales_person', 'read'],
-            'master_data.sales_person.detail' => ['master_data_sales_person', 'read'],
-            'master_data.sales_person.export' => ['master_data_sales_person', 'read'],
-            'master_data.sales_person.add' => ['master_data_sales_person', 'write'],
-            'master_data.sales_person.save' => ['master_data_sales_person', 'write'],
-            'master_data.sales_person.edit' => ['master_data_sales_person', 'write'],
-            'master_data.sales_person.update' => ['master_data_sales_person', 'write'],
-            'master_data.sales_person.import' => ['master_data_sales_person', 'write'],
-            'master_data.sales_person.delete' => ['master_data_sales_person', 'delete'],
-
-            // budged
-            'master_data.budged.index' => ['master_data_budged', 'read'],
-            'master_data.budged.detail' => ['master_data_budged', 'read'],
-            'master_data.budged.export' => ['master_data_budged', 'read'],
-            'master_data.budged.add' => ['master_data_budged', 'write'],
-            'master_data.budged.save' => ['master_data_budged', 'write'],
-            'master_data.budged.edit' => ['master_data_budged', 'write'],
-            'master_data.budged.update' => ['master_data_budged', 'write'],
-            'master_data.budged.import' => ['master_data_budged', 'write'],
-            'master_data.budged.delete' => ['master_data_budged', 'delete'],
-
-            // Tax
-            'master_data.tax.index' => ['master_data_tax', 'read'],
-            'master_data.tax.detail' => ['master_data_tax', 'read'],
-            'master_data.tax.export' => ['master_data_tax', 'read'],
-            'master_data.tax.add' => ['master_data_tax', 'write'],
-            'master_data.tax.save' => ['master_data_tax', 'write'],
-            'master_data.tax.edit' => ['master_data_tax', 'write'],
-            'master_data.tax.update' => ['master_data_tax', 'write'],
-            'master_data.tax.import' => ['master_data_tax', 'write'],
-            'master_data.tax.delete' => ['master_data_tax', 'delete'],
-
-            // Unit
-            'master_data.unit.index' => ['master_data_unit', 'read'],
-            'master_data.unit.detail' => ['master_data_unit', 'read'],
-            'master_data.unit.export' => ['master_data_unit', 'read'],
-            'master_data.unit.add' => ['master_data_unit', 'write'],
-            'master_data.unit.save' => ['master_data_unit', 'write'],
-            'master_data.unit.edit' => ['master_data_unit', 'write'],
-            'master_data.unit.update' => ['master_data_unit', 'write'],
-            'master_data.unit.import' => ['master_data_unit', 'write'],
-            'master_data.unit.delete' => ['master_data_unit', 'delete'],
-
-            // Category
-            'master_data.category.index' => ['master_data_category', 'read'],
-            'master_data.category.detail' => ['master_data_category', 'read'],
-            'master_data.category.export' => ['master_data_category', 'read'],
-            'master_data.category.add' => ['master_data_category', 'write'],
-            'master_data.category.save' => ['master_data_category', 'write'],
-            'master_data.category.edit' => ['master_data_category', 'write'],
-            'master_data.category.update' => ['master_data_category', 'write'],
-            'master_data.category.import' => ['master_data_category', 'write'],
-            'master_data.category.delete' => ['master_data_category', 'delete'],
-
-            // Expense Transaction
-            'main_transaction.expense.index' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.index_data_table' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.detail' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.export' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.add' => ['main_transaction_expense', 'write'],
-            'main_transaction.expense.save' => ['main_transaction_expense', 'write'],
-            'main_transaction.expense.edit' => ['main_transaction_expense', 'write'],
-            'main_transaction.expense.update' => ['main_transaction_expense', 'write'],
-            'main_transaction.expense.import' => ['main_transaction_expense', 'write'],
-            'main_transaction.expense.delete' => ['main_transaction_expense', 'delete'],
-            'main_transaction.expense.categories' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.statuses' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.recipients' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.accounts' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.payment_methods' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.payment_terms' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.taxes' => ['main_transaction_expense', 'read'],
-            'main_transaction.expense.tags' => ['main_transaction_expense', 'read'],
-        ];
-
-        if (! isset($routePermissions[$route])) {
-            return false;
-        }
-
-        [$module, $permission] = $routePermissions[$route];
-
-        return self::hasPermission($module, $permission);
-    }
-
-    /**
-     * Get menu items that user has access to
-     */
-    public static function getAccessibleMenuItems(): array
-    {
-        $modules = [
-            'master_data_sales_person' => 'Sales Person',
-            'master_data_tax' => 'Pajak',
-            'master_data_unit' => 'Unit',
-            'master_data_category' => 'Kategori',
-            'user' => 'User Management',
-            'role' => 'Role Management',
-            'contact' => 'Contact Management',
-            'product' => 'Product Management',
-            'sales' => 'Sales Management',
-            'purchase' => 'Purchase Management',
-            'journal' => 'Journal Management',
-            'expense' => 'Expense Management',
-            'coa' => 'COA Management',
-        ];
-
-        $accessibleModules = [];
-
-        foreach ($modules as $module => $title) {
-            if (self::hasAnyPermission($module)) {
-                $accessibleModules[$module] = [
-                    'title' => $title,
-                    'permissions' => self::getModulePermissions($module),
-                ];
+            try {
+                if ($user->hasPermissionTo($permission)) {
+                    return true;
+                }
+            } catch (\Exception $e) {
+                // Permission doesn't exist or other error, continue to next
+                continue;
             }
         }
+        return false;
+    }
 
-        return $accessibleModules;
+    /**
+     * Convert module name to permission name (strip prefixes)
+     * e.g., 'master_data_product' -> 'product'
+     * e.g., 'main_transaction_reimbursement' -> 'reimbursement'
+     * e.g., 'product' -> 'product' (no change if already stripped)
+     *
+     * @param string $module
+     * @return string
+     */
+    private static function getPermissionName(string $module): string
+    {
+        return preg_replace('/^(main_transaction|master_data|operasional)_/', '', $module);
+    }
+
+    /**
+     * Get default permissions (all false) for a module
+     *
+     * @param string $permissionKey
+     * @return array
+     */
+    private static function getDefaultPermissions(string $permissionKey): array
+    {
+        return [
+            "canView{$permissionKey}" => false,
+            "canCreate{$permissionKey}" => false,
+            "canEdit{$permissionKey}" => false,
+            "canDelete{$permissionKey}" => false,
+            "canApprove{$permissionKey}" => false,
+        ];
+    }
+
+    /**
+     * Convert module name to PascalCase permission key
+     * e.g., 'main_transaction_reimbursement' -> 'Reimbursement'
+     * e.g., 'main_transaction_reimbursement_approval' -> 'ReimbursementApproval'
+     *
+     * @param string $module
+     * @return string
+     */
+    private static function getPermissionKey(string $module): string
+    {
+        // Remove common prefixes
+        $module = preg_replace('/^(main_transaction|master_data|operasional)_/', '', $module);
+
+        // Convert to PascalCase (split by underscore and capitalize each part)
+        $parts = explode('_', $module);
+        return implode('', array_map('ucfirst', $parts));
     }
 }

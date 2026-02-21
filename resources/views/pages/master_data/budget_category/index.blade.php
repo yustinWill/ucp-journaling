@@ -35,7 +35,7 @@
                 <hr class="my-6 mx-n6" />
 
                 <!-- Action Buttons -->
-                @if($canShowAddButton)
+                @can('budget_category.create')
                     <div class="mt-4">
                         <div class="d-flex justify-content-end">
                             <div class="d-flex gap-2">
@@ -46,7 +46,7 @@
                             </div>
                         </div>
                     </div>
-                @endif
+                @endcan
             </div>
 
             <!-- Data Table -->
@@ -70,6 +70,10 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables
+            const canEdit = @json(auth()->user()->can('budget_category.edit'));
+            const canDelete = @json(auth()->user()->can('budget_category.delete'));
+
             //DataTable
             const main_table = document.querySelector('#main-table');
             let dt_adv_filter;
@@ -110,20 +114,23 @@
                             render: function(data, type, row, meta) {
                                 const editUrl = `{{ route('master_data.budget_category.edit', ':id') }}`
                                     .replace(':id', row.id);
+                                let actions = '<div class="d-flex gap-2">';
 
-                                return `
-                                <div class="d-flex gap-2">
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                if (canEdit) {
+                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                    @if($canShowDeleteButton)
-                                    <button type="button" class="btn btn-sm btn-danger waves-effect waves-light delete-btn"
+                                    </a>`;
+                                }
+
+                                if (canDelete) {
+                                    actions += `<button type="button" class="btn btn-sm btn-danger waves-effect waves-light delete-btn"
                                         data-id="${row.id}" data-name="${row.category_name}" title="Hapus">
                                         <i class="icon-base ti tabler-trash"></i>
-                                    </button>
-                                    @endif
-                                </div>
-                            `;
+                                    </button>`;
+                                }
+
+                                actions += '</div>';
+                                return actions;
                             }
                         },
                         {

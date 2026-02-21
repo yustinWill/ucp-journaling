@@ -116,11 +116,11 @@
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                             @endif --}}
-                            @if ($canShowAddButton)
+                            @can('unit.create')
                                 <a href="{{ route('master_data.unit.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -149,11 +149,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = @json($canRead);
-            const canWrite = @json($canWrite);
-            const canDelete = @json($canDelete);
-            const canShowEditButton = @json($canShowEditButton);
-            const canShowDeleteButton = @json($canShowDeleteButton);
+            const canRead = @json(auth()->user()->can('unit.view'));
+            const canWrite = @json(auth()->user()->can('unit.create'));
+            const canDelete = @json(auth()->user()->can('unit.delete'));
+            const canShowEditButton = @json(auth()->user()->can('unit.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('unit.delete'));
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');

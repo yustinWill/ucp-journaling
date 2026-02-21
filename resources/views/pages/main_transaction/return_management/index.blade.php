@@ -92,7 +92,7 @@
             let returnManagementTable;
 
             // Permission variables
-            const canRead = @json($canViewReturnManagement ?? true);
+            const canRead = @json(auth()->user()->can('return_management.view'));
 
             // Initialize DataTable
             function initReturnManagementTable() {

@@ -122,12 +122,16 @@
                         <a href="{{ route('master_data.warehouse.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
+                        @can('warehouse.stock_transfer')
                         <a href="{{ route('master_data.warehouse.stock_transfer') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-transfer me-2"></span> Stock Transfer</a>
-                        <a href="{{ route('master_data.warehouse.add') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                        @endcan
+                        @can('warehouse.create')
+                            <a href="{{ route('master_data.warehouse.add') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light"><span
+                                    class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -153,6 +157,10 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables
+            const canView = @json(auth()->user()->can('warehouse.view'));
+            const canEdit = @json(auth()->user()->can('warehouse.edit'));
+
             let warehouseTable;
 
             warehouseTable = new DataTable('#warehouse-table', {
@@ -216,16 +224,22 @@
                                 .replace(':id', row.id);
                             const editUrl = `{{ route('master_data.warehouse.edit', ':id') }}`
                                 .replace(':id', row.id);
-                            return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                                `;
+                            let actions = '<div class="d-flex gap-2">';
+
+                            if (canView) {
+                                actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                    <i class="icon-base ti tabler-eye"></i>
+                                </a>`;
+                            }
+
+                            if (canEdit) {
+                                actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    <i class="icon-base ti tabler-edit"></i>
+                                </a>`;
+                            }
+
+                            actions += '</div>';
+                            return actions;
                         }
                     }
                 ],

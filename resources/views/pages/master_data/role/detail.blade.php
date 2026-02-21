@@ -27,12 +27,12 @@
                                     class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
-                                @if ($role->user_count == 0)
+                                {{-- @if ($role->user_count == 0)
                                     <button type="button" class="btn btn-danger btn-md waves-effect waves-light"
                                         id="delete-role-btn">
                                         <i class="icon-base ti tabler-trash me-2"></i>Hapus
                                     </button>
-                                @endif
+                                @endif --}}
                             </div>
                         @else
                             <!-- Show dropdown for 3 or more actions -->
@@ -73,8 +73,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Status</label>
-                    <input type="text" class="form-control" value="{{ $role->is_active ? 'Aktif' : 'Tidak Aktif' }}"
-                        disabled />
+                    <input type="text" class="form-control" value="Aktif" disabled />
                 </div>
                 <div class="col-md-6">
                     <!-- Empty column for layout balance -->
@@ -95,7 +94,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Deskripsi</label>
-                    <textarea class="form-control" rows="3" disabled>{{ $role->description }}</textarea>
+                    <textarea class="form-control" rows="3" disabled>{{ $role->description ?? 'Tidak ada deskripsi' }}</textarea>
                 </div>
                 <div class="col-md-6">
                     <!-- Empty column for alignment -->
@@ -149,11 +148,11 @@
                             <i class="icon-base ti tabler-users me-2"></i>
                             <b>Pengguna</b>
                         </a>
-                        <a class="list-group-item list-group-item-action waves-effect" id="audit-list-item"
+                        {{-- <a class="list-group-item list-group-item-action waves-effect" id="audit-list-item"
                             data-bs-toggle="list" href="#horizontal-audit" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>
                             <b>Audit Log</b>
-                        </a>
+                        </a> --}}
                     </div>
                     <div class="tab-content px-0 mt-0">
                         <!-- Permissions Tab -->
@@ -192,7 +191,7 @@
                         </div>
 
                         <!-- Audit Log Tab -->
-                        <div class="tab-pane fade" id="horizontal-audit" role="tabpanel">
+                        {{-- <div class="tab-pane fade" id="horizontal-audit" role="tabpanel">
                             <div class="section-header mt-6">
                                 <h6>Log Audit Role</h6>
                             </div>
@@ -236,7 +235,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
@@ -269,89 +268,92 @@
                 loadPermissionsContent();
             });
 
-            // Update permission counts
-            function updatePermissionCounts() {
-                $.get('/master_data/role/permissions/' + roleId, function(data) {
-                    var readCount = 0,
-                        writeCount = 0,
-                        deleteCount = 0,
-                        approvalCount = 0;
+            // Update permission counts based on loaded data
+            function updatePermissionCounts(permissionsData) {
+                var readCount = 0,
+                    writeCount = 0,
+                    deleteCount = 0,
+                    approvalCount = 0;
 
-                    Object.keys(data).forEach(function(moduleName) {
-                        data[moduleName].forEach(function(permission) {
+                // Check each module
+                for (var moduleName in permissionsData) {
+                    if (permissionsData.hasOwnProperty(moduleName)) {
+                        permissionsData[moduleName].forEach(function(permission) {
                             if (permission.granted) {
-                                switch (permission.type) {
-                                    case 'read':
-                                        readCount++;
-                                        break;
-                                    case 'write':
-                                        writeCount++;
-                                        break;
-                                    case 'delete':
-                                        deleteCount++;
-                                        break;
-                                    case 'approval':
-                                        approvalCount++;
-                                        break;
+                                var permType = permission.type.toLowerCase();
+                                if (permType.includes('read') || permType.includes('view')) {
+                                    readCount++;
+                                } else if (permType.includes('write') || permType.includes('create') || permType.includes('edit')) {
+                                    writeCount++;
+                                } else if (permType.includes('delete')) {
+                                    deleteCount++;
+                                } else if (permType.includes('approval') || permType.includes('approve')) {
+                                    approvalCount++;
                                 }
                             }
                         });
-                    });
+                    }
+                }
 
-                    $('#read-count').text(readCount);
-                    $('#write-count').text(writeCount);
-                    $('#delete-count').text(deleteCount);
-                    $('#approval-count').text(approvalCount);
-                });
+                $('#read-count').text(readCount);
+                $('#write-count').text(writeCount);
+                $('#delete-count').text(deleteCount);
+                $('#approval-count').text(approvalCount);
             }
 
             // Load permissions content
             function loadPermissionsContent() {
-                $.get('/master_data/role/permissions/' + roleId, function(data) {
-                    var content = '';
+                $.ajax({
+                    url: '/master_data/role/permissions/' + roleId,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        var content = '';
 
-                    Object.keys(data).forEach(function(moduleName) {
-                        content += '<div class="mb-4">';
-                        content +=
-                            '<div class="d-flex justify-content-between align-items-center mb-3">';
-                        content += '<h6 class="mb-0">';
-                        content += '<i class="icon-base ti tabler-folder me-2"></i>';
-                        content += moduleName;
-                        content += '</h6>';
-                        content += '</div>';
-                        content += '<div class="row g-3">';
+                        for (var moduleName in data) {
+                            if (data.hasOwnProperty(moduleName)) {
+                                content += '<div class="mb-4">';
+                                content += '<div class="d-flex justify-content-between align-items-center mb-3">';
+                                content += '<h6 class="mb-0">';
+                                content += '<i class="icon-base ti tabler-folder me-2"></i>';
+                                content += moduleName;
+                                content += '</h6>';
+                                content += '</div>';
+                                content += '<div class="row g-3">';
 
-                        data[moduleName].forEach(function(permission) {
-                            var badgeClass = permission.granted ? 'bg-label-success' :
-                                'bg-label-secondary';
-                            var iconClass = permission.type === 'read' ? 'tabler-eye' :
-                                permission.type === 'write' ? 'tabler-edit' :
-                                permission.type === 'delete' ? 'tabler-trash' :
-                                'tabler-check';
+                                data[moduleName].forEach(function(permission) {
+                                    var badgeClass = permission.granted ? 'bg-label-success' : 'bg-label-secondary';
+                                    var iconClass = permission.type === 'view' ? 'tabler-eye' :
+                                        permission.type === 'edit' || permission.type === 'write' ? 'tabler-edit' :
+                                        permission.type === 'delete' ? 'tabler-trash' :
+                                        'tabler-check';
 
-                            content += '<div class="col-md-3">';
-                            content += '<span class="badge ' + badgeClass +
-                                ' d-flex align-items-center">';
-                            content += '<i class="icon-base ti ' + iconClass +
-                            ' me-1"></i>';
-                            content += permission.name;
-                            content += '</span>';
-                            content += '</div>';
-                        });
+                                    content += '<div class="col-md-3">';
+                                    content += '<span class="badge ' + badgeClass + ' d-flex align-items-center">';
+                                    content += '<i class="icon-base ti ' + iconClass + ' me-1"></i>';
+                                    content += permission.name;
+                                    content += '</span>';
+                                    content += '</div>';
+                                });
 
-                        content += '</div>';
-                        if (Object.keys(data).indexOf(moduleName) < Object.keys(data).length - 1) {
-                            content += '<hr class="my-4">';
+                                content += '</div>';
+                                var moduleNames = Object.keys(data);
+                                if (moduleNames.indexOf(moduleName) < moduleNames.length - 1) {
+                                    content += '<hr class="my-4">';
+                                }
+                                content += '</div>';
+                            }
                         }
-                        content += '</div>';
-                    });
 
-                    $('#permissions-content').html(content);
-                    // Update counts after loading permissions
-                    updatePermissionCounts();
-                }).fail(function() {
-                    $('#permissions-content').html(
-                        '<div class="alert alert-danger">Error loading permissions data</div>');
+                        $('#permissions-content').html(content);
+                        // Update counts after loading permissions
+                        updatePermissionCounts(data);
+                    },
+                    error: function() {
+                        $('#permissions-content').html(
+                            '<div class="alert alert-danger">Error loading permissions data</div>'
+                        );
+                    }
                 });
             }
         });

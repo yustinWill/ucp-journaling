@@ -16,6 +16,7 @@ use App\Enums\SuccessCodes;
 // Services
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -38,7 +39,13 @@ class TagController extends Controller
         // Available status options
         $availableStatus = $this->availableStatus;
 
-        return view('pages.master_data.tag.index', compact('availableColors', 'availableStatus'));
+        // Permission data
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tag');
+
+        return view('pages.master_data.tag.index', array_merge(
+            compact('availableColors', 'availableStatus'),
+            $permissionData
+        ));
     }
 
     public function index_data_table()

@@ -30,13 +30,7 @@ class ExpenseController extends Controller
 {
     public function index()
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat data pengeluaran.');
-        }
-
         $suppliers = app(ContactService::class)->findAllByFlag('supplier');
-
-        // Get permission data for view
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_expense');
 
         return view('pages.main_transaction.expense.index', array_merge([
@@ -53,15 +47,6 @@ class ExpenseController extends Controller
 
     public function add()
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data pengeluaran.');
-        }
-
-        // Check permissions for adding related data
-        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddContacts = PermissionHelper::hasPermission('master_data_contact', 'write');
-        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_payment_term', 'write');
-
         $taxOptions = app(TaxService::class)->findAll();
         $availableTags = app(TagService::class)->findAll();
         $suppliers = app(ContactService::class)->findAllByFlag('supplier');
@@ -70,9 +55,9 @@ class ExpenseController extends Controller
         $coa_accounts = app(CoaService::class)->findAll();
         $activeBudgets = app(BudgedService::class)->getActiveBudgets();
         return view('pages.main_transaction.expense.add', [
-            'canAddTags' => $canAddTags,
-            'canAddContacts' => $canAddContacts,
-            'canAddPaymentTerms' => $canAddPaymentTerms,
+            'canAddTags' => true,
+            'canAddContacts' => true,
+            'canAddPaymentTerms' => true,
             'taxOptions' => $taxOptions,
             'availableTags' => $availableTags,
             'suppliers' => $suppliers,
@@ -85,19 +70,11 @@ class ExpenseController extends Controller
 
     public function import()
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk import data pengeluaran.');
-        }
-
         return view('pages.main_transaction.expense.import', []);
     }
 
     public function export()
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk export data pengeluaran.');
-        }
-
         $exportColumns = [
             ['field' => 'date', 'label' => 'Tanggal', 'export_name' => 'Tanggal'],
             ['field' => 'reference_no', 'label' => 'No Referensi', 'export_name' => 'No Referensi'],
@@ -116,15 +93,6 @@ class ExpenseController extends Controller
 
     public function edit($id)
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data pengeluaran.');
-        }
-
-        // Check permissions for adding related data
-        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddContacts = PermissionHelper::hasPermission('master_data_contact', 'write');
-        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_payment_term', 'write');
-
         $taxOptions = app(TaxService::class)->findAll();
         $availableTags = app(TagService::class)->findAll();
         $suppliers = app(ContactService::class)->findAllByFlag('supplier');
@@ -142,9 +110,9 @@ class ExpenseController extends Controller
 
         return view('pages.main_transaction.expense.edit', [
             'expense' => $expense,
-            'canAddTags' => $canAddTags,
-            'canAddContacts' => $canAddContacts,
-            'canAddPaymentTerms' => $canAddPaymentTerms,
+            'canAddTags' => true,
+            'canAddContacts' => true,
+            'canAddPaymentTerms' => true,
             'paymentMethods' => $paymentMethods,
             'paymentTerms' => $paymentTerms,
             'suppliers' => $suppliers,
@@ -158,14 +126,10 @@ class ExpenseController extends Controller
 
     public function payment($id)
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data pengeluaran.');
-        }
-
         // Check permissions for adding related data
-        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddContacts = PermissionHelper::hasPermission('master_data_contact', 'write');
-        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_payment_term', 'write');
+        $canAddTags = true;
+        $canAddContacts = true;
+        $canAddPaymentTerms = true;
 
         $taxOptions = app(TaxService::class)->findAll();
         $availableTags = app(TagService::class)->findAll();
@@ -192,10 +156,6 @@ class ExpenseController extends Controller
 
     public function payment_detail($id)
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail pengeluaran.');
-        }
-
         $payment = app(ExpensePaymentService::class)->findOneById($id);
 
         return view('pages.main_transaction.expense.payment_detail', [
@@ -205,17 +165,13 @@ class ExpenseController extends Controller
 
     public function detail($id)
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat detail pengeluaran.');
-        }
-
         $expense = app(ExpenseService::class)->findOne($id);
 
         // Get audit logs
         $auditLogs = app(ExpenseAuditLogService::class)->findAllBasedOnExpenseId($id);
 
         // Permission checks for action buttons
-        $canEdit = PermissionHelper::hasPermission('main_transaction_expense', 'write');
+        $canEdit = true;
 
         return view('pages.main_transaction.expense.detail', [
             'expense' => $expense,
@@ -388,10 +344,6 @@ class ExpenseController extends Controller
 
     public function update(Request $request)
     {
-        if (! PermissionHelper::hasPermission('main_transaction_expense', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengupdate data pengeluaran.');
-        }
-
         try {
             $validated = $request->validate([
                 // Basic transaction fields

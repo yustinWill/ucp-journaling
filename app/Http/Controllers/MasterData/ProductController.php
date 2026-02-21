@@ -21,6 +21,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 // Enums
 use App\Http\Controllers\Controller;
@@ -41,11 +42,13 @@ class ProductController extends Controller
             ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
         ];
 
-        return view('pages.master_data.product.index', [
+        $permissionData = PermissionHelper::getViewPermissions('master_data_product');
+
+        return view('pages.master_data.product.index', array_merge([
             'productCategories' => $productCategories,
             'stockStatuses' => $stockStatuses,
             'statuses' => $statuses,
-        ]);
+        ], $permissionData));
     }
 
     public function index_data_table()

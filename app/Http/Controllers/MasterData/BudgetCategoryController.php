@@ -17,23 +17,7 @@ class BudgetCategoryController extends Controller
 {
     public function index()
     {
-        $permissionData =  [
-            "permissions" => [
-                "read" => true,
-                "write" => true,
-                "delete" => true,
-                "approval" => true
-            ],
-            "canRead" => true,
-            "canWrite" => true,
-            "canDelete" => true,
-            "canApprove" => true,
-            "canShowAddButton" => true,
-            "canShowEditButton" => true,
-            "canShowDeleteButton" => true,
-            "canShowImportButton" => true,
-            "canShowExportButton" => true
-        ];
+        $permissionData = PermissionHelper::getViewPermissions('master_data_budget_category');
         return view('pages.master_data.budget_category.index', $permissionData);
     }
 

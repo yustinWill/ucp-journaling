@@ -117,11 +117,11 @@
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                             @endif --}}
-                            @if ($canAddPaymentTerm)
+                            @can('payment_term.create')
                                 <a href="{{ route('master_data.payment_term.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -151,11 +151,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = @json($canRead);
-            const canWrite = @json($canWrite);
-            const canDelete = @json($canDelete);
-            const canShowEditButton = @json($canShowEditButton);
-            const canShowDeleteButton = @json($canShowDeleteButton);
+            const canRead = @json(auth()->user()->can('payment_term.view'));
+            const canWrite = @json(auth()->user()->can('payment_term.create'));
+            const canDelete = @json(auth()->user()->can('payment_term.delete'));
+            const canShowEditButton = @json(auth()->user()->can('payment_term.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('payment_term.delete'));
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');

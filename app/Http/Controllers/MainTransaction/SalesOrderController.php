@@ -65,11 +65,6 @@ class SalesOrderController extends Controller
 
     public function index()
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat data.');
-        }
-
         // Load customers for filter dropdown
         $customers = DB::table('m_contacts')
             ->where('company_code', session('user_company_code'))
@@ -78,28 +73,17 @@ class SalesOrderController extends Controller
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
-
+        
         $stats = app(SalesOrderService::class)->getSummaryStats();
-
-        return view('pages.main_transaction.sales_order.index', [
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
+        return view('pages.main_transaction.sales_order.index', array_merge([
             'customers' => $customers,
             'stats' => $stats,
-            'canAddSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'write'),
-            'canViewSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'read'),
-            'canEditSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'write'),
-            'canDeleteSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'delete'),
-            'canImportSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'import'),
-            'canExportSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'export'),
-        ]);
+        ], $permissionData));
     }
 
     public function add()
     {
-        // Check write permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk menambah data.');
-        }
-
         $customers = app(ContactService::class)->findAllByFlag('customer');
         $salesPersons = app(SalesPersonService::class)->findAll();
         $paymentTerms = app(PaymentTermService::class)->findAll();
@@ -108,13 +92,11 @@ class SalesOrderController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
-        $canAddCustomers = PermissionHelper::hasPermission('master_data_contact', 'write');
-        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
-        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddWarehouses = PermissionHelper::hasPermission('master_data_warehouse', 'write');
+        $canAddCustomers = true;
+        $canAddPaymentTerms = true;
+        $canAddTags = true;
+        $canAddWarehouses = true;
 
-        // Get permissions
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
 
         return view('pages.main_transaction.sales_order.add', [
             'customers' => $customers,
@@ -127,7 +109,7 @@ class SalesOrderController extends Controller
             'canAddPaymentTerms' => $canAddPaymentTerms,
             'canAddTags' => $canAddTags,
             'canAddWarehouses' => $canAddWarehouses,
-        ] + $permissionData);
+        ]);
     }
 
     public function generateTransactionNumber()
@@ -149,11 +131,6 @@ class SalesOrderController extends Controller
 
     public function store(Request $request)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'reference_no' => 'required|string|max:255',
@@ -265,11 +242,6 @@ class SalesOrderController extends Controller
 
     public function detail($id)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
-            abort(403, 'Anda tidak memiliki akses untuk melihat data.');
-        }
-
         // Load sales order with full details
         $salesOrder = app(SalesOrderService::class)->findWithDetails($id);
 
@@ -305,23 +277,20 @@ class SalesOrderController extends Controller
             ];
         }
 
-        // Get permissions
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
-
         return view('pages.main_transaction.sales_order.detail', [
             'salesOrder' => $salesOrder,
             'audit_logs' => $auditLogs,
             'sales_returns' => $sales_returns,
             'salesDeliveries' => $salesDeliveries,
             'salesInvoices' => $salesInvoices,
-            'canEdit' => $permissionData['canWrite'],
-            'canDelete' => $permissionData['canDelete'],
-            'canCreateSalesDelivery' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),
-            'canCreateSalesInvoice' => PermissionHelper::hasPermission('main_transaction_sales_invoice', 'write'),
-            'canViewUser' => PermissionHelper::hasPermission('master_data_user', 'read'),
-            'canViewReturnManagement' => PermissionHelper::hasPermission('main_transaction_return_management', 'read'),
-            'canViewSalesInvoice' => PermissionHelper::hasPermission('main_transaction_sales_invoice', 'read'),
-            'canViewProduct' => PermissionHelper::hasPermission('master_data_product', 'read'),
+            'canEdit' => true,
+            'canDelete' => true,
+            'canCreateSalesDelivery' => true,
+            'canCreateSalesInvoice' => true,
+            'canViewUser' => true,
+            'canViewReturnManagement' => true,
+            'canViewSalesInvoice' => true,
+            'canViewProduct' => true,
         ]);
     }
 
@@ -385,11 +354,6 @@ class SalesOrderController extends Controller
 
     public function edit($id)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
-            abort(403, 'Anda tidak memiliki akses untuk mengedit data.');
-        }
-
         // Load sales order with details
         $salesOrder = app(SalesOrderService::class)->findWithDetails($id);
 
@@ -406,13 +370,10 @@ class SalesOrderController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
-        $canAddCustomers = PermissionHelper::hasPermission('master_data_contact', 'write');
-        $canAddPaymentTerms = PermissionHelper::hasPermission('master_data_transaction_number', 'write');
-        $canAddTags = PermissionHelper::hasPermission('master_data_tag', 'write');
-        $canAddWarehouses = PermissionHelper::hasPermission('master_data_warehouse', 'write');
-
-        // Get permissions
-        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
+        $canAddCustomers = true;
+        $canAddPaymentTerms = true;
+        $canAddTags = true;
+        $canAddWarehouses = true;
 
         return view('pages.main_transaction.sales_order.edit', [
             'salesOrder' => $salesOrder,
@@ -426,17 +387,11 @@ class SalesOrderController extends Controller
             'canAddPaymentTerms' => $canAddPaymentTerms,
             'canAddTags' => $canAddTags,
             'canAddWarehouses' => $canAddWarehouses,
-        ] + $permissionData);
+        ]);
     }
 
     public function update(Request $request)
     {
-        // dd($request->all());
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         try {
             $validated = $request->validate([
                 'id' => 'required|integer|exists:t_sales_orders,id',
@@ -525,11 +480,6 @@ class SalesOrderController extends Controller
 
     public function index_data_table()
     {
-        // Check read permission
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'read')) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
         $data = app(SalesOrderService::class)->findAllDatatable();
 
         return response()->json($data, 200);
@@ -538,21 +488,11 @@ class SalesOrderController extends Controller
     // Import/Export methods
     public function import()
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'import')) {
-            abort(403, 'Anda tidak memiliki akses untuk import data.');
-        }
-
         return view('pages.main_transaction.sales_order.import');
     }
 
     public function export()
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'export')) {
-            abort(403, 'Anda tidak memiliki akses untuk export data.');
-        }
-
         // TODO: Implement export columns configuration
         $exportColumns = [];
 

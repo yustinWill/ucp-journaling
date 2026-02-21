@@ -6,6 +6,7 @@ use App\Domains\Product\Services\ProductService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\User\Services\UserService;
 use App\Enums\SuccessCodes;
+use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,11 +30,12 @@ class PackingController extends Controller
             ->get();
 
         $warehouses = app(WarehouseService::class)->findAll();
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_packing');
 
-        return view('pages.main_transaction.packing.index', [
+        return view('pages.main_transaction.packing.index', array_merge([
             'bundleProducts' => $bundleProducts,
             'warehouses' => $warehouses,
-        ]);
+        ], $permissionData));
     }
 
     public function index_data_table(Request $request)

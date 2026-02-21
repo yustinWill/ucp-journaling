@@ -41,13 +41,8 @@ class PermissionService
                 'm.name as module_name',
                 'p.id',
                 'p.permission_type as type',
-                DB::raw('IF(rp.id IS NULL, false, true) as granted'),
             ])
             ->join('modules as m', 'p.module_id', '=', 'm.id')
-            ->leftJoin('role_permissions as rp', function ($join) {
-                $join->on('rp.permission_id', '=', 'p.id');
-            })
-            ->where('rp.role_id', '=', $roleId)
             ->orderBy('m.id')
             ->orderBy('p.id')
             ->get();

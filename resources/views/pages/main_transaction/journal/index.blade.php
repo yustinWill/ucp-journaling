@@ -99,9 +99,11 @@
                             <a href="{{ route('main_transaction.journal.export') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
                                     class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
+                            @can('journal.create')
                             <a href="{{ route('main_transaction.journal.add') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
                                     class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                            @endcan
                         </div>
                     </div>
                 </div>

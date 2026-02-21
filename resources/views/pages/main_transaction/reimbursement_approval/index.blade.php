@@ -252,6 +252,7 @@
         const allBudgets = @json($activeBudgets);
 
         $(function() {
+            const canRead = @json(auth()->user()->can('reimbursement_approval.view'));
             reimbursementModal = new bootstrap.Modal(document.getElementById('reimbursementModal'));
             
             initializeEntityTypeFilter();
