@@ -136,9 +136,9 @@
                                 </ul>
                             </div> --}}
                             @can('product.create')
-                                <button type=\"button\" id=\"btn-add-products\"
-                                    class=\"btn btn-md btn-primary waves-effect waves-light\"><span
-                                        class=\"icon-xs icon-base ti tabler-plus me-2\"></span> Tambah Data</button>
+                                <button type="button" id="btn-add-products"
+                                    class="btn btn-md btn-primary waves-effect waves-light"><span
+                                        class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
                             @endcan
                         </div>
                     </div>
