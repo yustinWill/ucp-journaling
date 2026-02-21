@@ -42,7 +42,9 @@ class SalesDeliveryController extends Controller
             $warehouses = app(\App\Domains\Warehouse\Services\WarehouseService::class)->findAll();
         }
 
+        $stats = app(SalesOrderService::class)->getSummaryStats();
         return view('pages.main_transaction.sales_delivery.index', [
+            'stats' => $stats,
             'customers' => $customers,
             'warehouses' => $warehouses,
             'canEdit' => PermissionHelper::hasPermission('main_transaction_sales_delivery', 'write'),

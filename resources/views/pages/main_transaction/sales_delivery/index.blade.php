@@ -3,6 +3,54 @@
     List Sales Delivery
 @stop
 @section('content')
+<div class="row g-4 mb-4">
+        <!-- Total SO -->
+        <div class="col-lg-6 col-sm-6">
+            <div class="card card-border-shadow-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-primary">
+                                <i class="icon-base ti tabler-file-text icon-28px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">{{ $stats['total_so'] }}</h4>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">Total Sales Order</p>
+                    <small class="text-muted">Klik untuk melihat daftar SO</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total SD -->
+        <div class="col-lg-6 col-sm-6">
+            <div class="card card-border-shadow-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-warning">
+                                <i class="icon-base ti tabler-truck icon-28px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">
+                                <span class="text-warning">{{ $stats['sd_non_confirm'] }}</span>
+                                <span class="text-muted fs-6">/</span>
+                                <span class="text-success">{{ $stats['sd_confirm'] }}</span>
+                            </h4>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">Sales Delivery</p>
+                    <small class="text-muted">
+                        <span class="text-warning">Belum Konfirm</span> /
+                        <span class="text-success">Terkonfirmasi</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Main Content Card -->
     <div class="mt-6">
         <div class="card">
