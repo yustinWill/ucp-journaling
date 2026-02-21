@@ -44,7 +44,7 @@
                     </div>
                     <p class="mb-0 fw-semibold">Sales Delivery</p>
                     <small class="text-muted">
-                        <span class="text-warning">Belum Konfirm</span> /
+                        <span class="text-warning">Dikirim</span> /
                         <span class="text-success">Terkonfirmasi</span>
                     </small>
                 </div>
@@ -263,9 +263,9 @@
                             width: '100px',
                             render: function(data, type, row) {
                                 if (data === '1' || data === 1) {
-                                    return `<span class="badge bg-label-success">Diterima</span>`;
+                                    return `<span class="badge bg-label-success">Terkonfirmasi</span>`;
                                 } else {
-                                    return `<span class="badge bg-label-info">Dikirim</span>`;
+                                    return `<span class="badge bg-label-warning">Dikirim</span>`;
                                 }
                             }
                         },

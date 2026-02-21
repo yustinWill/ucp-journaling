@@ -71,7 +71,7 @@
                         </div>
                         <p class="mb-0 fw-semibold">Sales Delivery</p>
                         <small class="text-muted">
-                            <span class="text-warning">Belum Konfirm</span> /
+                            <span class="text-warning">Dikirim</span> /
                             <span class="text-success">Terkonfirmasi</span>
                         </small>
                     </div>
