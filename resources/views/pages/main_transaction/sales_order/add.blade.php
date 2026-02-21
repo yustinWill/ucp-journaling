@@ -58,7 +58,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        @if ($canWrite)
+                        @if ($canAddCustomers)
                             <div class="col-auto">
                                 <a href="{{ route('master_data.contact.add') }}" target="_blank"
                                     class="btn btn-outline-primary d-flex align-items-center" title="Tambah Customer Baru">
@@ -114,7 +114,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        @if ($canWrite)
+                        @if ($canAddPaymentTerms)
                             <div class="col-auto">
                                 <a href="{{ route('master_data.payment_term.add') }}" target="_blank"
                                     class="btn btn-outline-primary d-flex align-items-center"
@@ -163,7 +163,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        @if ($canWrite)
+                        @if ($canAddWarehouses)
                             <div class="col-auto">
                                 <a href="{{ route('master_data.warehouse.add') }}" target="_blank"
                                     class="btn btn-outline-primary d-flex align-items-center" title="Tambah Gudang Baru">
@@ -295,7 +295,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            @if ($canWrite)
+                            @if ($canAddTags)
                                 <div class="col-auto">
                                     <a href="{{ route('master_data.tag.add') }}" target="_blank"
                                         class="btn btn-outline-primary d-flex align-items-center" title="Tambah Tag Baru">

@@ -162,7 +162,9 @@ class SalesInvoiceService
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
         $recordsFiltered = $filteredQuery->count();
-        $query->orderBy('si.id', 'DESC');
+        // Order by status priority (OPEN, PARTIAL first, then PAID/SETTLED), then by invoice_date DESC
+        $query->orderByRaw("CASE WHEN si.status IN ('PAID', 'SETTLED') THEN 1 ELSE 0 END ASC")
+              ->orderBy('si.invoice_date', 'DESC');
         $data = $query->get();
 
         return [

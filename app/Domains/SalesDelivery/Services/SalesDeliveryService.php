@@ -170,7 +170,8 @@ class SalesDeliveryService
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
             ->where('sd.company_code', session('user_company_code'))
             ->groupBy('sd.id')
-            ->orderBy('sd.created_at', 'desc');
+            ->orderBy('sd.is_confirmed', 'asc')
+            ->orderBy('sd.delivery_date', 'desc');
 
         // Apply filters if provided
         if ($dateRange = request()->input('date_range')) {
@@ -206,7 +207,6 @@ class SalesDeliveryService
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
         $recordsFiltered = $filteredQuery->get()->count();
-        $query->orderBy('sd.id', 'DESC');
         $data = $query->get();
 
         return [
