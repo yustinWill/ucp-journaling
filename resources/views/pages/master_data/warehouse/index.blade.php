@@ -97,6 +97,11 @@
                                 <input type="text" class="form-control" id="warehouse-search"
                                     placeholder="Cari Warehouse">
                             </div>
+                            <div class="col-12 col-sm-6 col-lg-4 d-flex align-items-end">
+                                <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                                    <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -108,7 +113,7 @@
                     <!-- Column Toggle -->
                     <div class="d-flex align-items-center">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                            <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                             <label class="form-check-label" for="toggleTagColumn">
                                 <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                             </label>
@@ -142,7 +147,6 @@
                         <th>Alamat</th>
                         <th>Status</th>
                         <th>Tag</th>
-                        <th>Aksi</th>
                     </tr>
                 </thead>
             </table>
@@ -153,8 +157,7 @@
     <script>
         $(function() {
             // Permission variables
-            const canView = @json(auth()->user()->can('warehouse.view'));
-            const canEdit = @json(auth()->user()->can('warehouse.edit'));
+            const canRead = @json(auth()->user()->can('warehouse.view'));
 
             let warehouseTable;
 
@@ -172,7 +175,16 @@
                 },
                 columns: [{
                         data: 'code',
-                        responsivePriority: 2
+                        responsivePriority: 1,
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            if (canRead) {
+                                const detailUrl = `{{ route('master_data.warehouse.detail', ':id') }}`
+                                    .replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: 'name',
@@ -208,35 +220,6 @@
                             }).join('');
                         }
                     },
-                    {
-                        data: null,
-                        orderable: false,
-                        searchable: false,
-                        responsivePriority: 1,
-                        width: '120px',
-                        render: function(data, type, row, meta) {
-                            const detailUrl = `{{ route('master_data.warehouse.detail', ':id') }}`
-                                .replace(':id', row.id);
-                            const editUrl = `{{ route('master_data.warehouse.edit', ':id') }}`
-                                .replace(':id', row.id);
-                            let actions = '<div class="d-flex gap-2">';
-
-                            if (canView) {
-                                actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                    <i class="icon-base ti tabler-eye"></i>
-                                </a>`;
-                            }
-
-                            if (canEdit) {
-                                actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                    <i class="icon-base ti tabler-edit"></i>
-                                </a>`;
-                            }
-
-                            actions += '</div>';
-                            return actions;
-                        }
-                    }
                 ],
                 layout: {
                     topStart: {
@@ -258,32 +241,36 @@
                         last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                     }
                 },
-                // scrollX: true,
-                responsive: true
+                responsive: true,
+                orderCellsTop: true,
+                ordering: false
             });
+
+            // Tag column hidden by default
+            warehouseTable.column(5).visible(false);
 
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                if (warehouseTable) {
-                    const tagColumn = warehouseTable.column(5); // Tag column index (0-based)
-                    tagColumn.visible(this.checked);
-                }
+                warehouseTable.column(5).visible(this.checked);
             });
 
-            // Initialize tag column visibility based on checkbox state
-            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
-            if (warehouseTable) {
-                warehouseTable.column(5).visible(initialTagVisibility);
-            }
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#warehouse-status-filter').val('').trigger('change');
+                $('#warehouse-tag-filter').val('').trigger('change');
+                $('#warehouse-search').val('');
+                if (warehouseTable) {
+                    warehouseTable.draw();
+                }
+            });
 
             let searchTimeout;
             $('#warehouse-status-filter, #warehouse-tag-filter, #warehouse-search').on('keyup change',
                 function() {
                     clearTimeout(searchTimeout);
-                    const input = this;
                     searchTimeout = setTimeout(function() {
                         if (warehouseTable) {
-                            warehouseTable.search(input.value).draw();
+                            warehouseTable.draw();
                         }
                     }, 400); // 400ms delay
                 });

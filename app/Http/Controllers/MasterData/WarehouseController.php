@@ -97,9 +97,10 @@ class WarehouseController extends Controller
                 ->where('reference_type', 'STOCK_TRANSFER')
                 ->where('reference_number', $row->adjustment_number)
                 ->where('movement_type', 'ADJUSTMENT_IN')
-                ->select('m_warehouses.code', 'm_warehouses.name')
+                ->select('m_warehouses.id', 'm_warehouses.code', 'm_warehouses.name')
                 ->first();
 
+            $row->destination_warehouse_id = $destinationWarehouse->id ?? null;
             $row->destination_warehouse_code = $destinationWarehouse->code ?? '-';
             $row->destination_warehouse_name = $destinationWarehouse->name ?? '-';
         }

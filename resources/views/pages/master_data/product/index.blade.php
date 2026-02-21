@@ -98,6 +98,11 @@
                                     <input type="text" class="form-control" id="products-search"
                                         placeholder="Cari Produk">
                                 </div>
+                                <div class="col-12 col-sm-6 col-lg-4 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                                        <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -109,7 +114,7 @@
                         <!-- Column Toggle -->
                         <div class="d-flex align-items-center">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                                 <label class="form-check-label" for="toggleTagColumn">
                                     <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                                 </label>
@@ -162,7 +167,6 @@
                             <th>Harga Jual</th>
                             <th>Status</th>
                             <th>Tag</th>
-                            <th>Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -173,12 +177,8 @@
 @section('js_script')
     <script>
         $(function() {
-            // Permission variables - using Spatie permissions
+            // Permission variables
             const canRead = @json(auth()->user()->can('product.view'));
-            const canWrite = @json(auth()->user()->can('product.create'));
-            const canDelete = @json(auth()->user()->can('product.delete'));
-            const canShowEditButton = @json(auth()->user()->can('product.edit'));
-            const canShowDeleteButton = @json(auth()->user()->can('product.delete'));
 
             let productsTable;
 
@@ -196,7 +196,16 @@
                 },
                 columns: [{
                         data: 'code',
-                        responsivePriority: 2
+                        responsivePriority: 1,
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            if (canRead) {
+                                const detailUrl = `{{ route('master_data.product.detail', ':id') }}`
+                                    .replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: 'name',
@@ -311,35 +320,6 @@
                             }).join('');
                         }
                     },
-                    {
-                        data: null,
-                        orderable: false,
-                        searchable: false,
-                        responsivePriority: 1,
-                        width: '120px',
-                        render: function(data, type, row, meta) {
-                            const detailUrl = `{{ route('master_data.product.detail', ':id') }}`
-                                .replace(':id', row.id);
-                            const editUrl = `{{ route('master_data.product.edit', ':id') }}`
-                                .replace(':id', row.id);
-                            let buttons = `<div class="d-flex gap-2">`;
-                            
-                            if (canRead) {
-                                buttons += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-base ti tabler-eye"></i>
-                                    </a>`;
-                            }
-                            
-                            if (canShowEditButton) {
-                                buttons += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>`;
-                            }
-                            
-                            buttons += `</div>`;
-                            return buttons;
-                        }
-                    }
                 ],
                 layout: {
                     topStart: {
@@ -361,64 +341,41 @@
                         last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                     }
                 },
-                // scrollX: true,
-                responsive: true
+                responsive: true,
+                orderCellsTop: true,
+                ordering: false
             });
 
-            // Button click events - Products Tab
+            // Button click events
             $('#btn-add-products').on('click', function() {
                 window.location.href = "{{ route('master_data.product.add') }}";
             });
 
-            $('#btn-export-products').on('click', function() {
-                window.location.href = "{{ route('master_data.product.export') }}?type=products";
-            });
+            // Tag column hidden by default
+            productsTable.column(12).visible(false);
 
-            $('#btn-export-bundle').on('click', function() {
-                window.location.href = "{{ route('master_data.product.export') }}?type=bundle";
-            });
-
-            // Import button events
-            $('#btn-import-products, #btn-import-update, #btn-import-bundle').on('click', function() {
-                window.location.href = "{{ route('master_data.product.import') }}";
-            });
-
-            // // Search functionality
-            // $('#products-search').on('keyup', function() {
-            //     if (productsTable) {
-            //         productsTable.search(this.value).draw();
-            //     }
-            // });
-
-            // // Filter functionality
-            // $('#products-category-filter, #products-stock-filter').on('change', function() {
-            //     if (productsTable) {
-            //         productsTable.draw();
-            //     }
-            // });
-
-            // Tag Column Toggle Functionality (Products Table Only)
+            // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
+                productsTable.column(12).visible(this.checked);
+            });
+
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#products-category-filter').val('').trigger('change');
+                $('#products-stock-filter').val('').trigger('change');
+                $('#products-search').val('');
                 if (productsTable) {
-                    const tagColumn = productsTable.column(12); // Tag column index (0-based, now at position 12)
-                    tagColumn.visible(this.checked);
+                    productsTable.draw();
                 }
             });
-
-            // Initialize tag column visibility based on checkbox state
-            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
-            if (productsTable) {
-                productsTable.column(12).visible(initialTagVisibility);
-            }
 
             let searchTimeout;
             $('#products-stock-filter, #products-category-filter, #products-search').on('keyup change',
                 function() {
                     clearTimeout(searchTimeout);
-                    const input = this;
                     searchTimeout = setTimeout(function() {
                         if (productsTable) {
-                            productsTable.search(input.value).draw();
+                            productsTable.draw();
                         }
                     }, 400); // 400ms delay
                 });

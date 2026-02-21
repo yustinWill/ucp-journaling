@@ -27,6 +27,11 @@
                         <label class="form-label">Pencarian:</label>
                         <input type="text" class="form-control" id="search-filter" placeholder="Cari nomor transaksi...">
                     </div>
+                    <div class="col-12 col-sm-6 col-lg-4 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                            <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -43,7 +48,6 @@
                         <th>Total Item</th>
                         <th>Total Qty</th>
                         <th>Status</th>
-                        <th>Aksi</th>
                     </tr>
                 </thead>
             </table>
@@ -53,6 +57,9 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables
+            const canRead = @json(auth()->user()->can('warehouse.view'));
+
             let stockTransferTable;
 
             stockTransferTable = new DataTable('#stock-transfer-table', {
@@ -78,22 +85,38 @@
                         data: 'adjustment_number',
                         responsivePriority: 1,
                         render: function(data, type, row) {
-                            const detailUrl = `{{ route('master_data.warehouse.stock_transfer_detail', ':id') }}`.replace(':id', row.id);
-                            return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            if (!data) return '-';
+                            if (canRead) {
+                                const detailUrl = `{{ route('master_data.warehouse.stock_transfer_detail', ':id') }}`.replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
+                            return data;
                         }
                     },
                     {
                         data: 'warehouse_code',
                         responsivePriority: 3,
                         render: function(data, type, row) {
-                            return `${data} - ${row.warehouse_name}`;
+                            if (!data) return '-';
+                            const label = `${data} - ${row.warehouse_name}`;
+                            if (canRead && row.warehouse_id) {
+                                const detailUrl = `{{ route('master_data.warehouse.detail', ':id') }}`.replace(':id', row.warehouse_id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${label}</a>`;
+                            }
+                            return label;
                         }
                     },
                     {
                         data: 'destination_warehouse_code',
                         responsivePriority: 4,
                         render: function(data, type, row) {
-                            return `${data} - ${row.destination_warehouse_name}`;
+                            if (!data || data === '-') return '-';
+                            const label = `${data} - ${row.destination_warehouse_name}`;
+                            if (canRead && row.destination_warehouse_id) {
+                                const detailUrl = `{{ route('master_data.warehouse.detail', ':id') }}`.replace(':id', row.destination_warehouse_id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${label}</a>`;
+                            }
+                            return label;
                         }
                     },
                     {
@@ -131,23 +154,6 @@
                             return `<span class="badge ${badgeClass}">${data}</span>`;
                         }
                     },
-                    {
-                        data: null,
-                        orderable: false,
-                        searchable: false,
-                        responsivePriority: 1,
-                        width: '80px',
-                        render: function(data, type, row, meta) {
-                            const detailUrl = `{{ route('master_data.warehouse.stock_transfer_detail', ':id') }}`.replace(':id', row.id);
-                            return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                </div>
-                            `;
-                        }
-                    }
                 ],
                 layout: {
                     topStart: {
@@ -172,6 +178,16 @@
                 responsive: true,
                 orderCellsTop: true,
                 ordering: false
+            });
+
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#date-filter').val('');
+                $('#warehouse-filter').val('');
+                $('#search-filter').val('');
+                if (stockTransferTable) {
+                    stockTransferTable.draw();
+                }
             });
 
             // Search functionality

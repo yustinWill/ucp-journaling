@@ -94,6 +94,11 @@
                                     <option value="OTHERS">Lainnya</option>
                                 </select>
                             </div>
+                            <div class="col-12 col-sm-6 col-lg-4 d-flex align-items-end">
+                                <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                                    <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -105,7 +110,7 @@
                     <!-- Column Toggle -->
                     <div class="d-flex align-items-center">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                            <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                             <label class="form-check-label" for="toggleTagColumn">
                                 <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                             </label>
@@ -135,7 +140,6 @@
                         <th>Group</th>
                         <th>Tag</th>
                         <th>Tipe</th>
-                        <th>Aksi</th>
                     </tr>
                 </thead>
             </table>
@@ -145,6 +149,9 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables
+            const canRead = @json(auth()->user()->can('contact.view'));
+
             //DataTable
             const main_table = document.querySelector('#main-table');
             let dt_adv_filter;
@@ -166,7 +173,16 @@
                     },
                     columns: [{
                             data: 'contact_name',
-                            responsivePriority: 3
+                            responsivePriority: 1,
+                            render: function(data, type, row) {
+                                if (!data) return '-';
+                                if (canRead) {
+                                    const detailUrl = "{{ route('master_data.contact.detail', ':id') }}"
+                                        .replace(':id', row.id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
+                            }
                         },
                         {
                             data: 'company_name',
@@ -199,7 +215,7 @@
                         },
                         {
                             data: null,
-                            responsivePriority: 9,
+                            responsivePriority: 2,
                             render: function(data, type, row) {
                                 let badges = [];
                                 if (row.is_customer) {
@@ -217,34 +233,6 @@
                                 return badges.length > 0 ? badges.join('') : '<span class="badge bg-label-warning">Tidak ada tipe</span>';
                             }
                         },
-                        {
-                            data: null,
-                            responsivePriority: 1,
-                            width: '120px'
-                        }
-                    ],
-                    columnDefs: [
-                        {
-                            targets: -1,
-                            orderable: false,
-                            searchable: false,
-                            render: function(data, type, row, meta) {
-                                const detailUrl = "{{ route('master_data.contact.detail', ':id') }}"
-                                    .replace(':id', row.id);
-                                const editUrl = "{{ route('master_data.contact.edit', ':id') }}"
-                                    .replace(':id', row.id);
-                                return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                            `;
-                            }
-                        }
                     ],
                     layout: {
                         topStart: {
@@ -266,31 +254,41 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    // scrollX: true,
                     responsive: true,
-                    orderCellsTop: true
+                    orderCellsTop: true,
+                    ordering: false
                 });
             }
 
+            // Tag column hidden by default
+            dt_adv_filter.column(5).visible(false);
+
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = dt_adv_filter.column(5); // Tag column index (0-based)
-                tagColumn.visible(this.checked);
+                dt_adv_filter.column(5).visible(this.checked);
             });
 
-            // Initialize tag column visibility based on checkbox state
-            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
-            dt_adv_filter.column(5).visible(initialTagVisibility);
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#contact-name').val('');
+                $('#contact-company').val('');
+                $('#contact-email').val('');
+                $('#contact-phone').val('');
+                $('#contact-group').val('');
+                $('#contact-type').val('').trigger('change');
+                if (dt_adv_filter) {
+                    dt_adv_filter.draw();
+                }
+            });
 
             let searchTimeout;
             $('#contact-name, #contact-company, #contact-email, #contact-group, #contact-phone, #contact-type').on(
                 'keyup change',
                 function() {
                     clearTimeout(searchTimeout);
-                    const input = this;
                     searchTimeout = setTimeout(function() {
                         if (dt_adv_filter) {
-                            dt_adv_filter.search(input.value).draw();
+                            dt_adv_filter.draw();
                         }
                     }, 400); // 400ms delay
                 });
