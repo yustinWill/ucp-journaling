@@ -92,7 +92,22 @@ class PurchaseOrderService
                 'po.*',
                 'mc.name AS supplier_name',
                 'u.name AS created_by_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id) as pi_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id) as pd_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status IN ('PAID', 'SETTLED')) as pi_settled_count"),
+                DB::raw("CASE
+                    WHEN (SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id) > 0
+                         AND (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status IN ('PAID', 'SETTLED')) > 0
+                    THEN 5
+                    WHEN (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status IN ('PAID', 'SETTLED')) > 0
+                    THEN 4
+                    WHEN (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id) > 0
+                    THEN 3
+                    WHEN (SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id) > 0
+                    THEN 2
+                    ELSE 1
+                END as status_priority")
             )
             ->leftJoin('m_contacts as mc', 'mc.id', '=', 'po.f_supplier_id')
             ->leftJoin('users as u', 'po.created_by', '=', 'u.id')
@@ -134,7 +149,8 @@ class PurchaseOrderService
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
         $recordsFiltered = $filteredQuery->get()->count();
-        $query->orderBy('po.id', 'DESC');
+        $query->orderBy('status_priority', 'ASC')
+              ->orderBy('po.transaction_date', 'DESC');
         $data = $query->get();
 
         return [
