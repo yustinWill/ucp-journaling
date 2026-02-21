@@ -193,17 +193,27 @@
                             <h6 class="mb-3">Approval Action</h6>
                             <div class="row g-3 mb-3">
                                 <div class="col-md-12">
+                                    <label class="form-label fw-bold">Entity Type <span class="text-danger">*</span></label>
+                                    <select name="entity_type" class="global-select2 form-select" id="modal-budged-entity-type">
+                                        <option value="">Pilih Entity Type</option>
+                                        <option value="kingdom">Kingdom</option>
+                                        <option value="owner">Owner</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-12">
                                     <label class="form-label fw-bold">Pilih Anggaran <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="modal-budget-select">
+                                    <select class="global-select2 form-select" id="modal-budget-select">
                                         <option value="">Pilih Anggaran</option>
-                                        @foreach ($activeBudgets as $budget)
+                                        {{-- @foreach ($activeBudgets as $budget)
                                             <option value="{{ $budget->budget_id }}">
                                                 {{ $budget->budged_name }}
                                                 ({{ \Carbon\Carbon::parse($budget->period_start_date)->format('d/m/Y') }} -
                                                 {{ \Carbon\Carbon::parse($budget->period_end_date)->format('d/m/Y') }})
                                                 - Sisa: Rp {{ number_format($budget->budged_remaining_value, 0, ',', '.') }}
                                             </option>
-                                        @endforeach
+                                        @endforeach --}}
                                     </select>
                                     <small class="text-muted">Pilih anggaran sebelum approve</small>
                                 </div>
@@ -239,10 +249,12 @@
         var currentReimbursementId = null;
         var reimbursementModal = null;
         var storageBaseUrl = '{{ asset("storage") }}/';
+        const allBudgets = @json($activeBudgets);
 
         $(function() {
             reimbursementModal = new bootstrap.Modal(document.getElementById('reimbursementModal'));
-
+            
+            initializeEntityTypeFilter();
             // Initialize DataTable
             const reimbursementTable = new DataTable('#reimbursement-approval-table', {
                 processing: true,
@@ -319,12 +331,93 @@
             $(document).on('click', '.btn-open-modal', function() {
                 var id = $(this).data('id');
                 openReimbursementModal(id);
+                initializeEntityTypeFilter();
             });
         });
+        function initializeEntityTypeFilter() {
 
+            $('#modal-budged-entity-type')
+                .on('change', function() {
+
+                    const selectedEntityType = $(this).val();
+                    const budgetSelect = $('#modal-budget-select');
+
+                    budgetSelect.empty();
+                    budgetSelect.append('<option value="">Pilih Anggaran</option>');
+
+                    if (!selectedEntityType) {
+                        budgetSelect.trigger('change');
+                        return;
+                    }
+
+                    const filteredBudgets = allBudgets.filter(budget =>
+                        budget.entity_type === selectedEntityType
+                    );
+
+                    filteredBudgets.forEach(budget => {
+                        const startDate = new Date(budget.period_start_date).toLocaleDateString('id-ID');
+                        const endDate = new Date(budget.period_end_date).toLocaleDateString('id-ID');
+
+                        budgetSelect.append(
+                            `<option value="${budget.budget_id}">
+                                ${budget.budged_name} (${startDate} - ${endDate})
+                            </option>`
+                        );
+                    });
+
+                    budgetSelect.trigger('change');
+                });
+        }
+        // function initializeEntityTypeFilter() {
+            
+        //     // Listen to entity type changes only
+        //     $('#modal-budged-entity-type').on('change', function() {
+        //         const selectedEntityType = $(this).val();
+        //         const budgetSelect = $('#modal-budget-select');
+
+        //         // Clear and reset budget dropdown
+        //         budgetSelect.empty();
+        //         if (!selectedEntityType) {
+        //             budgetSelect.append('<option value="">Pilih Entity Type terlebih dahulu</option>');
+        //             if (budgetSelect.hasClass('select2-hidden-accessible')) {
+        //                 budgetSelect.select2('destroy');
+        //                 budgetSelect.select2({ allowClear: true });
+        //             }
+        //             return;
+        //         }
+
+        //         // Filter budgets by entity type only
+        //         const filteredBudgets = allBudgets.filter(budget => {
+        //             return budget.entity_type === selectedEntityType;
+        //         });
+        //         budgetSelect.append('<option value="">Pilih Anggaran</option>');
+
+        //         if (filteredBudgets.length === 0) {
+        //             budgetSelect.append('<option value="" disabled>Tidak ada anggaran yang sesuai</option>');
+        //         } else {
+        //             console.log(filteredBudgets);
+        //             filteredBudgets.forEach(budget => {
+        //                 console.log(budget);
+        //                 const startDate = new Date(budget.period_start_date).toLocaleDateString('id-ID');
+        //                 const endDate = new Date(budget.period_end_date).toLocaleDateString('id-ID');
+        //                 budgetSelect.append(
+        //                     `<option value="${budget.budget_id}">
+        //                         ${budget.budged_name} (${startDate} - ${endDate})
+        //                     </option>`
+        //                 );
+        //             });
+        //         }
+
+        //         // Reinitialize select2
+        //         if (budgetSelect.hasClass('select2-hidden-accessible')) {
+        //             budgetSelect.select2('destroy');
+        //         }
+        //         budgetSelect.select2({ allowClear: true });
+        //         budgetSelect.trigger('change');
+        //     });
+        // }
         function openReimbursementModal(id) {
             currentReimbursementId = id;
-
             // Reset modal state
             $('#modal-loading').show();
             $('#modal-content').hide();
@@ -332,11 +425,13 @@
             $('#modal-review-section, #modal-approval-section').hide();
             $('#modal-description-row, #modal-attachment-row').hide();
             $('#modal-budget-row, #modal-rejection-row').hide();
+            $('#modal-budged-entity-type').val('');
             $('#modal-budget-select').val('');
             $('#modal-reject-reason-input').val('');
 
             reimbursementModal.show();
 
+            initializeEntityTypeFilter();
             // Fetch detail
             var detailUrl = '{{ route("main_transaction.reimbursement_approval.detail_json", ":id") }}'.replace(':id', id);
 
@@ -400,6 +495,7 @@
         }
 
         function approveFromModal() {
+            var budgetEntity = $('#modal-budged-entity-type').val();
             var budgetCategoryId = $('#modal-budget-select').val();
 
             if (!budgetCategoryId) {
@@ -427,6 +523,7 @@
                         type: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
+                            budget_entity: budgetEntity,
                             budget_category_id: budgetCategoryId
                         },
                         success: function(response) {

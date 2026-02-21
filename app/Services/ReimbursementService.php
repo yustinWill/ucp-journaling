@@ -202,7 +202,7 @@ class ReimbursementService
     /**
      * Approve reimbursement and assign budget category
      */
-    public function approve($id, $budgetCategoryId, $reviewerId)
+    public function approve($id,$budgetEntity, $budgetCategoryId, $reviewerId)
     {
         DB::beginTransaction();
         try {
