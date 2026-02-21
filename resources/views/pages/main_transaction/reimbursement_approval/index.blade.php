@@ -122,7 +122,7 @@
                                 <input type="text" class="form-control" id="modal-code" disabled>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Tanggal Pengajuan</label>
+                                <label class="form-label fw-bold">Tanggal Reimburse</label>
                                 <input type="text" class="form-control" id="modal-date" disabled>
                             </div>
                         </div>
@@ -267,9 +267,9 @@
                         data: 'transaction_code',
                     },
                     {
-                        data: 'created_at',
+                        data: 'reimbursement_date',
                         render: function(data) {
-                            return new Date(data).toLocaleDateString('id-ID');
+                            return data ? new Date(data).toLocaleDateString('id-ID') : '-';
                         }
                     },
                     {
@@ -444,7 +444,7 @@
 
                     // Fill info
                     $('#modal-code').val(d.transaction_code);
-                    $('#modal-date').val(d.created_at);
+                    $('#modal-date').val(d.reimbursement_date || '-');
                     $('#modal-creator').val(d.creator_name);
                     $('#modal-amount').val('Rp ' + parseInt(d.amount).toLocaleString('id-ID'));
                     $('#modal-name').val(d.reimbursement_name);

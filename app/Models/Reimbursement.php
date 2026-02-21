@@ -14,6 +14,7 @@ class Reimbursement extends Model
     protected $fillable = [
         'transaction_code',
         'reimbursement_name',
+        'reimbursement_date',
         'amount',
         'description',
         'attachment',
@@ -28,6 +29,7 @@ class Reimbursement extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'reimbursement_date' => 'date',
         'reviewed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
