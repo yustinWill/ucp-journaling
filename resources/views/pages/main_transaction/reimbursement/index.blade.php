@@ -94,13 +94,13 @@
             <table id="reimbursement-table" class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>Kode</th>
                         <th>Tanggal</th>
                         <th>Nama Reimbursement</th>
                         <th>Jumlah</th>
                         <th>Status</th>
                         <th>Budget Category</th>
-                        <th>Reviewed By</th>
+                        <th>Diajukan oleh</th>
+                        <th>DiApprove oleh</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -121,9 +121,7 @@
                 ajax: {
                     url: '{{ route('main_transaction.reimbursement.index_data_table') }}',
                 },
-                columns: [{
-                        data: 'transaction_code',
-                    },
+                columns: [
                     {
                         data: 'created_at',
                         render: function(data) {
@@ -153,6 +151,12 @@
                     },
                     {
                         data: 'budget_category_name',
+                        render: function(data) {
+                            return data || '-';
+                        }
+                    },
+                    {
+                        data: 'creator_name',
                         render: function(data) {
                             return data || '-';
                         }

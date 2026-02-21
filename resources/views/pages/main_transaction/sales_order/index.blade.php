@@ -3,8 +3,86 @@
     List Sales Order
 @stop
 @section('content')
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Total SO -->
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-primary">
+                                <i class="icon-base ti tabler-file-text icon-28px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">{{ $stats['total_so'] }}</h4>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">Total Sales Order</p>
+                    <small class="text-muted">Klik untuk melihat daftar SO</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total SD -->
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-warning">
+                                <i class="icon-base ti tabler-truck icon-28px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">
+                                <span class="text-warning">{{ $stats['sd_non_confirm'] }}</span>
+                                <span class="text-muted fs-6">/</span>
+                                <span class="text-success">{{ $stats['sd_confirm'] }}</span>
+                            </h4>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">Sales Delivery</p>
+                    <small class="text-muted">
+                        <span class="text-warning">Belum Konfirm</span> /
+                        <span class="text-success">Terkonfirmasi</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total SI -->
+        <div class="col-lg-4 col-sm-6">
+            <div class="card card-border-shadow-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-success">
+                                <i class="icon-base ti tabler-receipt icon-28px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">
+                                <span class="text-warning">{{ $stats['si_expected'] }}</span>
+                            </h6>
+                            <h6 class="mb-0">
+                                <span class="text-success">{{ $stats['si_settled'] }}</span>
+                            </h6>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">Sales Invoice</p>
+                    <small class="text-muted">
+                        <span class="text-warning">Expected</span> /
+                        <span class="text-success">Settled</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content Card -->
-    <div class="mt-6">
+    <div class="mt-2">
         <div class="card">
             <h4 class="card-header">Kelola Sales Order</h4>
             <div class="card-body">
@@ -14,10 +92,10 @@
                         <label class="form-label">Tanggal Transaksi:</label>
                         <input type="text" id="date-range-picker" class="form-control" />
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-3">
+                    {{-- <div class="col-12 col-sm-6 col-lg-3">
                         <label class="form-label">Tanggal Jatuh Tempo:</label>
                         <input type="date" class="form-control global-single-date-picker" id="on-due-date-filter" />
-                    </div>
+                    </div> --}}
                     <div class="col-md-3">
                         <label class="form-label">Customer:</label>
                         <select class="global-select2 form-select" id="customer-filter" data-allow-clear="true">
@@ -31,6 +109,22 @@
                         <label class="form-label">No Sales Order:</label>
                         <input type="text" class="form-control" id="sales-order-no-filter"
                             placeholder="Cari Sales Order">
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">Status:</label>
+                        <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
+                            <option value="">Semua Status</option>
+                            <option value="Order">Order</option>
+                            <option value="Dikirim">Dikirim</option>
+                            <option value="Pengiriman Dikonfirmasi">Pengiriman Dikonfirmasi</option>
+                            <option value="Dibayar">Dibayar</option>
+                            <option value="Selesai">Selesai</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 mt-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                            <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                        </button>
                     </div>
                 </div>
 
@@ -119,6 +213,7 @@
                             d.on_due_date_filter = $('#on-due-date-filter').val()
                             d.customer_filter = $('#customer-filter').val()
                             d.sales_order_no_filter = $('#sales-order-no-filter').val()
+                            d.status_filter = $('#status-filter').val()
                         }
                     },
                     columns: [{
@@ -192,7 +287,7 @@
                             width: '120px',
                             render: function(data, type, row) {
                                 // Calculate overall status based on SI and SD
-                                let status = 'Menunggu';
+                                let status = 'Order';
                                 let badgeClass = 'bg-label-secondary';
 
                                 const siCount = parseInt(row.si_count) || 0;
@@ -205,19 +300,19 @@
                                     status = 'Selesai';
                                     badgeClass = 'bg-label-success';
                                 }
-                                // SI settled -> Terbayar
+                                // SI settled -> Selesai (paid)
                                 else if (siSettledCount > 0) {
-                                    status = 'Terbayar';
-                                    badgeClass = 'bg-label-info';
+                                    status = 'Selesai';
+                                    badgeClass = 'bg-label-success';
                                 }
                                 // SI created -> Dibayar
                                 else if (siCount > 0) {
                                     status = 'Dibayar';
                                     badgeClass = 'bg-label-primary';
                                 }
-                                // SD confirmed -> Terkirim
+                                // SD confirmed -> Pengiriman Dikonfirmasi
                                 else if (sdConfirmedCount > 0) {
-                                    status = 'Terkirim';
+                                    status = 'Pengiriman Dikonfirmasi';
                                     badgeClass = 'bg-label-info';
                                 }
                                 // SD created but not confirmed -> Dikirim
@@ -225,9 +320,9 @@
                                     status = 'Dikirim';
                                     badgeClass = 'bg-label-warning';
                                 }
-                                // No SI and SD -> Menunggu
+                                // No SI and SD -> Order
                                 else {
-                                    status = 'Menunggu';
+                                    status = 'Order';
                                     badgeClass = 'bg-label-secondary';
                                 }
 
@@ -302,7 +397,7 @@
                 tagColumn.visible(this.checked);
             });
             let searchTimeout;
-            $('#date-range-picker, #on-due-date-filter, #customer-filter, #sales-order-no-filter').on(
+            $('#date-range-picker, #on-due-date-filter, #customer-filter, #sales-order-no-filter, #status-filter').on(
                 'keyup change',
                 function() {
                     clearTimeout(searchTimeout);
@@ -313,6 +408,18 @@
                         }
                     }, 400); // 400ms delay
                 });
+
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#date-range-picker').val('');
+                $('#on-due-date-filter').val('');
+                $('#sales-order-no-filter').val('');
+                $('#customer-filter').val('').trigger('change');
+                $('#status-filter').val('').trigger('change');
+                if (salesOrderTable) {
+                    salesOrderTable.search('').draw();
+                }
+            });
         });
 
         // Action button functions

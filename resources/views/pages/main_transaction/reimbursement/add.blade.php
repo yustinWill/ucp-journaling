@@ -13,32 +13,19 @@
                 <strong>Informasi:</strong> Ajukan reimbursement Anda di sini. Admin akan melakukan review dan approval.
             </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <label class="form-label">Nama Reimbursement <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" name="reimbursement_name" id="reimbursement_name"
-                        placeholder="Contoh: Biaya Transport Meeting Client, Pembelian Alat Tulis" required maxlength="255">
-                    <small class="text-muted">Masukkan nama/deskripsi reimbursement yang jelas</small>
-                </div>
+            <!-- Repeater Items -->
+            <div class="section-header">
+                <h6>Item Reimbursement <span class="text-danger">*</span></h6>
+                <hr class="mx-n6">
             </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Jumlah (IDR) <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control numeric-input" name="amount" id="amount"
-                        placeholder="Rp 0" required>
-                    <small class="text-muted">Masukkan jumlah reimbursement dalam Rupiah</small>
-                </div>
+            <div id="reimbursement-items">
+                <!-- Row template will be added here -->
             </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-12">
-                    <label class="form-label">Deskripsi Tambahan</label>
-                    <textarea class="form-control" name="description" id="description" rows="4"
-                        placeholder="Jelaskan detail reimbursement Anda (opsional)" maxlength="1000"></textarea>
-                    <small class="text-muted">Berikan informasi tambahan jika diperlukan (maks. 1000 karakter)</small>
-                </div>
-            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm mt-3" id="btn-add-item">
+                <i class="icon-base ti tabler-plus me-1"></i> Tambah Item
+            </button>
 
             <!-- Action Buttons -->
             <div class="d-flex justify-content-end gap-3 mt-6">
@@ -51,13 +38,73 @@
             </div>
         </form>
     </div>
+
+    <!-- Row Template (hidden) -->
+    <template id="item-row-template">
+        <div class="reimbursement-item border rounded p-3 mb-3 position-relative">
+            <button type="button" class="btn btn-sm btn-icon btn-outline-danger btn-remove-item position-absolute"
+                style="top: 8px; right: 8px;" title="Hapus item">
+                <i class="icon-base ti tabler-trash"></i>
+            </button>
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Nama Reimbursement <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control item-name"
+                        placeholder="Contoh: Biaya Transport Meeting Client" required maxlength="255">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Jumlah (IDR) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control numeric-input item-amount"
+                        placeholder="Rp 0" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Lampiran</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="file" class="form-control item-attachment" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                    </div>
+                    <small class="text-muted">Format: JPG, PNG, PDF, DOC (maks. 5 MB)</small>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">Deskripsi</label>
+                    <textarea class="form-control item-description" rows="2"
+                        placeholder="Jelaskan detail reimbursement (opsional)" maxlength="1000"></textarea>
+                </div>
+            </div>
+        </div>
+    </template>
 @stop
 
 @section('js_script')
     <script>
         $(document).ready(function() {
-            // Initialize numeric input
-            initCleaveCurrency(document);
+            // Add first row on load
+            addItemRow();
+
+            // Add item button
+            $('#btn-add-item').on('click', function() {
+                addItemRow();
+            });
+
+            // Remove item button (delegated)
+            $('#reimbursement-items').on('click', '.btn-remove-item', function() {
+                if ($('.reimbursement-item').length > 1) {
+                    $(this).closest('.reimbursement-item').remove();
+                    updateRowNumbers();
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Minimal 1 Item',
+                        text: 'Setidaknya harus ada 1 item reimbursement.',
+                        customClass: { confirmButton: 'btn btn-primary' },
+                        buttonsStyling: false
+                    });
+                }
+            });
+
+            // File validation on change
+            $('#reimbursement-items').on('change', '.item-attachment', function() {
+                validateFile(this);
+            });
 
             // Form submission
             $('#reimbursementForm').on('submit', function(e) {
@@ -66,17 +113,126 @@
             });
         });
 
+        function addItemRow() {
+            const template = document.getElementById('item-row-template');
+            const clone = template.content.cloneNode(true);
+            $('#reimbursement-items').append(clone);
+
+            // Re-initialize cleave on new numeric inputs
+            const newRow = $('#reimbursement-items .reimbursement-item').last();
+            initCleaveCurrency(newRow[0]);
+            updateRowNumbers();
+        }
+
+        function updateRowNumbers() {
+            $('.reimbursement-item').each(function(index) {
+                $(this).find('.item-name').attr('name', 'items[' + index + '][reimbursement_name]');
+                $(this).find('.item-amount').attr('name', 'items[' + index + '][amount]');
+                $(this).find('.item-description').attr('name', 'items[' + index + '][description]');
+                $(this).find('.item-attachment').attr('name', 'items[' + index + '][attachment]');
+            });
+        }
+
+        function validateFile(input) {
+            const file = input.files[0];
+            if (!file) return true;
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf',
+                'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Format File Tidak Valid',
+                    text: 'Hanya format JPG, PNG, PDF, DOC, DOCX yang diperbolehkan.',
+                    customClass: { confirmButton: 'btn btn-primary' },
+                    buttonsStyling: false
+                });
+                input.value = '';
+                return false;
+            }
+
+            if (file.size > maxSize) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ukuran File Terlalu Besar',
+                    text: 'Ukuran file maksimal 5 MB.',
+                    customClass: { confirmButton: 'btn btn-primary' },
+                    buttonsStyling: false
+                });
+                input.value = '';
+                return false;
+            }
+
+            return true;
+        }
+
         function submitReimbursement() {
-            const formData = {
-                _token: '{{ csrf_token() }}',
-                reimbursement_name: $('#reimbursement_name').val(),
-                amount: parseCurrency($('#amount').val()),
-                description: $('#description').val(),
-            };
+            // Validate at least one item has data
+            let hasValidItem = false;
+            let validationError = null;
+
+            $('.reimbursement-item').each(function(index) {
+                const name = $(this).find('.item-name').val().trim();
+                const amount = parseCurrency($(this).find('.item-amount').val());
+
+                if (name && amount > 0) {
+                    hasValidItem = true;
+                } else if (name || amount > 0) {
+                    validationError = 'Item #' + (index + 1) + ': Nama dan Jumlah harus diisi.';
+                    return false;
+                }
+            });
+
+            if (validationError) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi Gagal',
+                    text: validationError,
+                    customClass: { confirmButton: 'btn btn-primary' },
+                    buttonsStyling: false
+                });
+                return;
+            }
+
+            if (!hasValidItem) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi Gagal',
+                    text: 'Minimal 1 item reimbursement harus diisi.',
+                    customClass: { confirmButton: 'btn btn-primary' },
+                    buttonsStyling: false
+                });
+                return;
+            }
+
+            // Build FormData
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+
+            let itemIndex = 0;
+            $('.reimbursement-item').each(function() {
+                const name = $(this).find('.item-name').val().trim();
+                const amount = parseCurrency($(this).find('.item-amount').val());
+                const description = $(this).find('.item-description').val().trim();
+                const fileInput = $(this).find('.item-attachment')[0];
+
+                if (name && amount > 0) {
+                    formData.append('items[' + itemIndex + '][reimbursement_name]', name);
+                    formData.append('items[' + itemIndex + '][amount]', amount);
+                    formData.append('items[' + itemIndex + '][description]', description);
+
+                    if (fileInput && fileInput.files.length > 0) {
+                        formData.append('items[' + itemIndex + '][attachment]', fileInput.files[0]);
+                    }
+                    itemIndex++;
+                }
+            });
 
             Swal.fire({
                 title: 'Ajukan Reimbursement?',
-                text: 'Pastikan data yang diisi sudah benar.',
+                text: 'Akan mengajukan ' + itemIndex + ' item reimbursement. Pastikan data sudah benar.',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Ajukan!',
@@ -96,6 +252,8 @@
                         url: "{{ route('main_transaction.reimbursement.store') }}",
                         type: 'POST',
                         data: formData,
+                        processData: false,
+                        contentType: false,
                         success: function(response) {
                             Swal.fire({
                                 icon: 'success',

@@ -29,10 +29,12 @@ class SalesDeliveryController extends Controller
         $customers = app(ContactService::class)->findAllByFlag('customer');
         $warehouses = app(WarehouseService::class)->findAll();
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_delivery');
-
+    
+        $stats = app(SalesOrderService::class)->getSummaryStats();
         return view('pages.main_transaction.sales_delivery.index', array_merge([
             'customers' => $customers,
             'warehouses' => $warehouses,
+            'stats'=>$stats
         ], $permissionData));
     }
 

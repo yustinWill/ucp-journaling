@@ -139,6 +139,32 @@ class SalesOrderService
             $query->where('so.transaction_code', 'like', "%{$salesOrderNoFilter}%");
         }
 
+        // Status filter
+        if ($statusFilter = request()->input('status_filter')) {
+            switch ($statusFilter) {
+                case 'Order':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) = 0")
+                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) = 0");
+                    break;
+                case 'Dikirim':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) > 0")
+                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') = 0");
+                    break;
+                case 'Pengiriman Dikonfirmasi':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') > 0")
+                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) = 0");
+                    break;
+                case 'Dibayar':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) > 0")
+                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) = 0");
+                    break;
+                case 'Selesai':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') > 0")
+                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0");
+                    break;
+            }
+        }
+
         $query->groupBy('so.id');
 
         $draw = (int) request()->input('draw', 1);
@@ -148,9 +174,28 @@ class SalesOrderService
         // Pagination
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
-        $query->skip($start)->take($length);
         $recordsFiltered = $filteredQuery->get()->count();
+
+        // Order by status priority (lowest first), then by date
+        $query->orderByRaw("
+            CASE
+                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') > 0
+                     AND (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0
+                THEN 5
+                WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0
+                THEN 4
+                WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) > 0
+                THEN 3
+                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.status = 'DELIVERED') > 0
+                THEN 2
+                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) > 0
+                THEN 1
+                ELSE 0
+            END ASC
+        ");
+        $query->orderBy('so.transaction_date', 'DESC');
         $query->orderBy('so.id', 'DESC');
+        $query->skip($start)->take($length);
         $data = $query->get();
 
         return [
@@ -158,6 +203,41 @@ class SalesOrderService
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
+        ];
+    }
+
+    public function getSummaryStats()
+    {
+        $companyCode = session('user_company_code');
+
+        $totalSO = DB::table($this->table_name)
+            ->where('company_code', $companyCode)
+            ->count();
+
+        $sdCounts = DB::table('t_sales_deliveries as sd')
+            ->join($this->table_name . ' as so', 'so.id', '=', 'sd.sales_order_id')
+            ->where('so.company_code', $companyCode)
+            ->selectRaw("
+                SUM(CASE WHEN sd.status != 'DELIVERED' OR sd.status IS NULL THEN 1 ELSE 0 END) as non_confirm,
+                SUM(CASE WHEN sd.status = 'DELIVERED' THEN 1 ELSE 0 END) as confirmed
+            ")
+            ->first();
+
+        $siAmounts = DB::table('t_sales_invoices as si')
+            ->join($this->table_name . ' as so', 'so.id', '=', 'si.f_sales_order_id')
+            ->where('so.company_code', $companyCode)
+            ->selectRaw("
+                COALESCE(SUM(si.grand_total), 0) as expected,
+                COALESCE(SUM(CASE WHEN si.status IN ('PAID', 'SETTLED') THEN si.grand_total ELSE 0 END), 0) as settled
+            ")
+            ->first();
+
+        return [
+            'total_so' => $totalSO,
+            'sd_non_confirm' => (int) ($sdCounts->non_confirm ?? 0),
+            'sd_confirm' => (int) ($sdCounts->confirmed ?? 0),
+            'si_expected' => 'Rp ' . number_format($siAmounts->expected ?? 0, 0, ',', '.'),
+            'si_settled' => 'Rp ' . number_format($siAmounts->settled ?? 0, 0, ',', '.'),
         ];
     }
 
