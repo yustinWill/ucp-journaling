@@ -22,31 +22,31 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Kode Transaksi</label>
-                    <input type="text" class="form-control" value="{{ $reimbursement->transaction_code }}" readonly>
+                    <input type="text" class="form-control" value="{{ $reimbursement->transaction_code }}" disabled>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Tanggal Pengajuan</label>
                     <input type="text" class="form-control"
-                        value="{{ $reimbursement->created_at->format('d/m/Y H:i') }}" readonly>
+                        value="{{ $reimbursement->created_at->format('d/m/Y H:i') }}" disabled>
                 </div>
             </div>
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Diajukan Oleh</label>
-                    <input type="text" class="form-control" value="{{ $reimbursement->creator->name }}" readonly>
+                    <input type="text" class="form-control" value="{{ $reimbursement->creator->name }}" disabled>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Jumlah</label>
                     <input type="text" class="form-control"
-                        value="Rp {{ number_format($reimbursement->amount, 0, ',', '.') }}" readonly>
+                        value="Rp {{ number_format($reimbursement->amount, 0, ',', '.') }}" disabled>
                 </div>
             </div>
 
             <div class="row g-3 mb-4">
                 <div class="col-md-12">
                     <label class="form-label fw-bold">Nama Reimbursement</label>
-                    <input type="text" class="form-control" value="{{ $reimbursement->reimbursement_name }}" readonly>
+                    <input type="text" class="form-control" value="{{ $reimbursement->reimbursement_name }}" disabled>
                 </div>
             </div>
 
@@ -54,7 +54,7 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-12">
                         <label class="form-label fw-bold">Deskripsi</label>
-                        <textarea class="form-control" rows="3" readonly>{{ $reimbursement->description }}</textarea>
+                        <textarea class="form-control" rows="3" disabled>{{ $reimbursement->description }}</textarea>
                     </div>
                 </div>
             @endif
@@ -114,13 +114,13 @@
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Direview Oleh</label>
                         <input type="text" class="form-control" value="{{ $reimbursement->reviewer->name ?? '-' }}"
-                            readonly>
+                            disabled>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold">Tanggal Review</label>
                         <input type="text" class="form-control"
                             value="{{ $reimbursement->reviewed_at ? $reimbursement->reviewed_at->format('d/m/Y H:i') : '-' }}"
-                            readonly>
+                            disabled>
                     </div>
                 </div>
 
@@ -129,7 +129,7 @@
                         <div class="col-md-12">
                             <label class="form-label fw-bold">Anggaran</label>
                             <input type="text" class="form-control"
-                                value="{{ $reimbursement->budget_category->budged_name ?? '-' }}" readonly>
+                                value="{{ $reimbursement->budget_category->budged_name ?? '-' }}" disabled>
                         </div>
                     </div>
                 @endif
@@ -138,7 +138,7 @@
                     <div class="row g-3 mb-4">
                         <div class="col-md-12">
                             <label class="form-label fw-bold">Alasan Penolakan</label>
-                            <textarea class="form-control" rows="3" readonly>{{ $reimbursement->rejection_reason }}</textarea>
+                            <textarea class="form-control" rows="3" disabled>{{ $reimbursement->rejection_reason }}</textarea>
                         </div>
                     </div>
                 @endif

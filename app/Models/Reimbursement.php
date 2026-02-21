@@ -16,6 +16,7 @@ class Reimbursement extends Model
         'reimbursement_name',
         'amount',
         'description',
+        'attachment',
         'status',
         'rejection_reason',
         'created_by',

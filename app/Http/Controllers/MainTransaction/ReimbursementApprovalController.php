@@ -33,10 +33,12 @@ class ReimbursementApprovalController extends Controller
         // }
 
         $stats = $this->reimbursementService->getSummaryStatistics();
+        $activeBudgets = app(BudgedService::class)->getActiveBudgets();
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_reimbursement_approval');
 
         return view('pages.main_transaction.reimbursement_approval.index', array_merge([
             'stats' => $stats,
+            'activeBudgets' => $activeBudgets,
         ], $permissionData));
     }
 
@@ -75,6 +77,37 @@ class ReimbursementApprovalController extends Controller
             'reimbursement' => $reimbursement,
             'activeBudgets' => $activeBudgets,
         ], $permissionData));
+    }
+
+    /**
+     * Get reimbursement detail as JSON (for modal)
+     */
+    public function detailJson($id)
+    {
+        $reimbursement = $this->reimbursementService->findOne($id);
+
+        if (!$reimbursement) {
+            return response()->json(['message' => 'Reimbursement tidak ditemukan.'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $reimbursement->id,
+                'transaction_code' => $reimbursement->transaction_code,
+                'reimbursement_name' => $reimbursement->reimbursement_name,
+                'amount' => $reimbursement->amount,
+                'description' => $reimbursement->description,
+                'attachment' => $reimbursement->attachment,
+                'status' => $reimbursement->status,
+                'rejection_reason' => $reimbursement->rejection_reason,
+                'created_at' => $reimbursement->created_at->format('d/m/Y H:i'),
+                'creator_name' => $reimbursement->creator->name ?? '-',
+                'reviewer_name' => $reimbursement->reviewer->name ?? null,
+                'reviewed_at' => $reimbursement->reviewed_at ? $reimbursement->reviewed_at->format('d/m/Y H:i') : null,
+                'budget_category_name' => $reimbursement->budget_category->budged_name ?? null,
+            ],
+        ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
     /**

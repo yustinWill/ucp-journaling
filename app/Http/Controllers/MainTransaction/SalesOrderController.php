@@ -79,8 +79,11 @@ class SalesOrderController extends Controller
             ->orderBy('name')
             ->get();
 
+        $stats = app(SalesOrderService::class)->getSummaryStats();
+
         return view('pages.main_transaction.sales_order.index', [
             'customers' => $customers,
+            'stats' => $stats,
             'canAddSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'write'),
             'canViewSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'read'),
             'canEditSalesOrder' => PermissionHelper::hasPermission('main_transaction_sales_order', 'write'),
