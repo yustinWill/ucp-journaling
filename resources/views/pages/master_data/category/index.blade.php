@@ -106,16 +106,7 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            {{-- @if ($canShowImportButton)
-                                <a href="{{ route('master_data.category.import') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                            @endif
-                            @if ($canShowExportButton)
-                                <a href="{{ route('master_data.category.export') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif --}}
+                            
                             @can('category.create')
                                 <a href="{{ route('master_data.category.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span

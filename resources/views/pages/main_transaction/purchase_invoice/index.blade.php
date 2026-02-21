@@ -113,14 +113,6 @@
                                 </label>
                             </div>
                         </div>
-
-                        {{-- <div class="d-flex gap-2">
-                            @if ($canExportPurchaseInvoice)
-                                <a href="{{ route('main_transaction.purchase_invoice.export') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif
-                        </div> --}}
                     </div>
                 </div>
             </div>

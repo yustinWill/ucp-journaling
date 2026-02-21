@@ -118,11 +118,6 @@
 
                         <div class="d-flex gap-2">
                             {{-- <div class="dropdown">
-                                <button type="button"
-                                    class="btn btn-md btn-primary dropdown-toggle waves-effect waves-light"
-                                    data-bs-toggle="dropdown">
-                                    <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
-                                </button>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="#" id="btn-import-products">Produk Baru</a>
                                     </li>
@@ -133,11 +128,6 @@
                                 </ul>
                             </div>
                             <div class="dropdown">
-                                <button type="button"
-                                    class="btn btn-md btn-primary dropdown-toggle waves-effect waves-light"
-                                    data-bs-toggle="dropdown">
-                                    <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
-                                </button>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="#" id="btn-export-products">Semua Produk</a>
                                     </li>

@@ -126,12 +126,7 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            {{-- <button type="button" id="btn-export" class="btn btn-md btn-primary waves-effect waves-light">
-                                <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
-                            </button>
-                            <button type="button" id="btn-import" class="btn btn-md btn-primary waves-effect waves-light">
-                                <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
-                            </button> --}}
+                            
                             @can('stock_opname.create')
                                 <button type="button" id="btn-add-stock-opname"
                                     class="btn btn-md btn-primary waves-effect waves-light">

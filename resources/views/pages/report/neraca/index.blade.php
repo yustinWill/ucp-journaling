@@ -27,18 +27,6 @@
                         <!-- Column Toggle -->
                         <div class="d-flex align-items-center">
                         </div>
-
-                        <div class="d-flex gap-2">
-                            {{-- <a href="{{ route('master_data.contact.import') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                        <a href="{{ route('master_data.contact.export') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
-                            <button type="submit" class="btn btn-md btn-primary waves-effect waves-light"><span
-                                    class="icon-xs icon-base ti tabler-settings me-2"></span> Generate Report
-                            </button>
-                        </div>
                     </div>
                 </div>
             </form>

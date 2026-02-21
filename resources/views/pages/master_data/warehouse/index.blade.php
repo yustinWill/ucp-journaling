@@ -116,12 +116,7 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        {{-- <a href="{{ route('master_data.warehouse.import') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                        <a href="{{ route('master_data.warehouse.export') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
+                        
                         @can('warehouse.stock_transfer')
                         <a href="{{ route('master_data.warehouse.stock_transfer') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
