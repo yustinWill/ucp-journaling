@@ -70,7 +70,6 @@ class ReimbursementApprovalController extends Controller
 
         // Get active budgets for budget category selection
         $activeBudgets = app(BudgedService::class)->getActiveBudgets();
-
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_reimbursement_approval');
 
         return view('pages.main_transaction.reimbursement_approval.detail', array_merge([
@@ -125,6 +124,7 @@ class ReimbursementApprovalController extends Controller
 
         try {
             $validated = $request->validate([
+                'budget_entity' => 'required',
                 'budget_category_id' => 'required|exists:m_budgeds,id',
             ], [], [
                 'budget_category_id' => 'Anggaran',
@@ -132,6 +132,7 @@ class ReimbursementApprovalController extends Controller
 
             $reimbursement = $this->reimbursementService->approve(
                 $id,
+                $validated['budget_entity'],
                 $validated['budget_category_id'],
                 auth()->id()
             );
