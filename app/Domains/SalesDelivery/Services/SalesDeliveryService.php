@@ -168,16 +168,16 @@ class SalesDeliveryService
             })
             ->leftJoin('m_tags', 'tag_json.id', '=', 'm_tags.id')
             ->leftJoin('m_tag_colors', 'm_tags.f_tag_color_id', '=', 'm_tag_colors.id')
-            ->where('sd.company_code', session('user_company_code'))
-            ->groupBy('sd.id')
-            ->orderBy('sd.is_confirmed', 'asc')
-            ->orderBy('sd.delivery_date', 'desc');
+            ->where('sd.company_code', session('user_company_code'));
 
         // Apply filters if provided
         if ($dateRange = request()->input('date_range')) {
-            $dates = explode(' to ', $dateRange);
+            // Support both ' - ' (bootstrap-daterangepicker) and ' to ' separators
+            $dates = strpos($dateRange, ' - ') !== false
+                ? explode(' - ', $dateRange)
+                : explode(' to ', $dateRange);
             if (count($dates) == 2) {
-                $query->whereBetween('sd.delivery_date', [$dates[0], $dates[1]]);
+                $query->whereBetween('sd.delivery_date', [trim($dates[0]), trim($dates[1])]);
             }
         }
 
@@ -196,10 +196,18 @@ class SalesDeliveryService
             });
         }
 
-        $query->groupBy('sd.id');
+        $statusFilter = request()->input('status');
+        if ($statusFilter !== null && $statusFilter !== '') {
+            $query->where('sd.is_confirmed', '=', $statusFilter);
+        }
+
+        // Group by and order after all filters
+        $query->groupBy('sd.id')
+              ->orderBy('sd.is_confirmed', 'asc')
+              ->orderBy('sd.delivery_date', 'desc');
 
         $draw = (int) request()->input('draw', 1);
-        $recordsTotal = DB::table($this->table_name)->count();
+        $recordsTotal = DB::table($this->table_name)->where('company_code', session('user_company_code'))->count();
         $filteredQuery = clone $query;
 
         // Pagination

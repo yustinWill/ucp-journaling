@@ -46,7 +46,7 @@ class HomeController extends Controller
         $soTotal = $soQuery->count();
 
         $sdCounts = (clone $sdQuery)->selectRaw("
-            SUM(CASE WHEN t_sales_deliveries.is_confirmed = '0' OR t_sales_deliveries.is_confirmed IS NULL THEN 1 ELSE 0 END) as non_confirm,
+            SUM(CASE WHEN t_sales_deliveries.is_confirmed = '0' THEN 1 ELSE 0 END) as non_confirm,
             SUM(CASE WHEN t_sales_deliveries.is_confirmed = '1' THEN 1 ELSE 0 END) as confirmed
         ")->first();
         $sdNonConfirm = (int) ($sdCounts->non_confirm ?? 0);

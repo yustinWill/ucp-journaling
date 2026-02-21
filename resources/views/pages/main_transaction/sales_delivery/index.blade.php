@@ -60,7 +60,7 @@
                 <div class="row mb-4">
                     <div class="col-12 col-sm-6 col-lg-3">
                         <label class="form-label">Tanggal Pengiriman:</label>
-                        <input type="text" id="date-range-picker" class="form-control" />
+                        <input type="text" id="date-range-picker" class="form-control" placeholder="Pilih tanggal" />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Customer:</label>
@@ -86,30 +86,22 @@
                         </select>
                     </div>
                     <div class="col-12 col-sm-6 col-lg-3">
+                        <label class="form-label">Status Konfirmasi:</label>
+                        <select class="form-select" id="status-filter" data-allow-clear="true">
+                            <option value="">Semua Status</option>
+                            <option value="0">Dikirim</option>
+                            <option value="1">Terkonfirmasi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12 col-sm-6 col-lg-3">
                         <label class="form-label">No Sales Delivery / Sales Order:</label>
                         <input type="text" class="form-control" id="delivery-no-filter"
                             placeholder="Cari Sales Delivery / Sales Order">
                     </div>
                 </div>
-
-                {{-- <div class="row mb-4"> --}}
-                {{-- <div class="col-12 col-sm-6 col-lg-3">
-                        <label class="form-label">Status:</label>
-                        <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
-                            <option value="">Semua Status</option>
-                            <option value="PENDING">PENDING - Menunggu</option>
-                            <option value="IN_TRANSIT">IN_TRANSIT - Dalam Perjalanan</option>
-                            <option value="DELIVERED">DELIVERED - Terkirim</option>
-                            <option value="CANCELLED">CANCELLED - Dibatalkan</option>
-                            <option value="RETURNED">RETURNED - Dikembalikan</option>
-                        </select>
-                    </div> --}}
-                {{-- <div class="col-12 col-sm-6 col-lg-3">
-                        <label class="form-label">No Sales Order:</label>
-                        <input type="text" class="form-control" id="sales-order-no-filter"
-                            placeholder="Cari Sales Order">
-                    </div> --}}
-                {{-- </div> --}}
 
                 <hr class="my-6 mx-n6" />
 
@@ -195,7 +187,7 @@
                             d.customer_id = $('#customer-filter').val();
                             d.warehouse_id = $('#warehouse-filter').val();
                             d.delivery_no = $('#delivery-no-filter').val();
-                            // d.sales_order_no = $('#sales-order-no-filter').val();
+                            d.status = $('#status-filter').val();
                         },
                         error: function(xhr, error, code) {
                             console.log('DataTable Ajax Error:', xhr.responseText);
@@ -338,9 +330,23 @@
             // Initialize table
             initDataTable();
 
+            // Date range picker event - uses global bootstrap daterangepicker (with default last 30 days)
+            $('#date-range-picker').on('apply.daterangepicker', function(ev, picker) {
+                if (salesDeliveryTable) {
+                    salesDeliveryTable.draw();
+                }
+            });
+
+            $('#date-range-picker').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+                if (salesDeliveryTable) {
+                    salesDeliveryTable.draw();
+                }
+            });
+
             // Filter functionality with timeout
             let searchTimeout;
-            $('#date-range-picker, #customer-filter, #warehouse-filter, #delivery-no-filter, #status-filter, #sales-order-no-filter')
+            $('#customer-filter, #warehouse-filter, #delivery-no-filter, #status-filter')
                 .on(
                     'keyup change',
                     function() {
