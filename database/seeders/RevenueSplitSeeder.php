@@ -12,6 +12,12 @@ class RevenueSplitSeeder extends Seeder
      */
     public function run(): void
     {
+        // Skip seeding revenue split if modules table doesn't exist
+        if (!DB::connection()->getSchemaBuilder()->hasTable('modules')) {
+            $this->command->warn('Skipping RevenueSplitSeeder: modules table does not exist');
+            return;
+        }
+
         // First, check if the module already exists, if not create it
         $existingModule = DB::table('modules')->where('slug', 'master-data-revenue-split')->first();
         if ($existingModule) {

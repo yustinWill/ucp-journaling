@@ -2,23 +2,33 @@
 
 namespace App\Domains\User\Actions;
 
-use App\Domains\Role\Services\RoleService;
 use App\Domains\User\Services\UserAuditLogService;
 use App\Domains\User\Services\UserService;
 use App\Enums\ActionTypes;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class UpdateUserAction
 {
     public function execute(int $id, array $data)
     {
         $old_data = app(UserService::class)->findOne($id);
+        $oldRole = Role::find($old_data->role_id ?? null);
+        $newRole = Role::find($data['role'] ?? null);
 
-        $before_role = app(RoleService::class)->findOne($old_data->role_id);
-        $after_role = app(RoleService::class)->findOne($data['role']);
-
-        return DB::transaction(function () use ($id, $data, $old_data, $before_role, $after_role) {
+        return DB::transaction(function () use ($id, $data, $old_data, $oldRole, $newRole) {
             app(UserService::class)->update($id, $data);
+
+            // Sync Spatie role for user
+            $user = User::find($id);
+            if (isset($data['role']) && $data['role']) {
+                $role = Role::find($data['role']);
+                if ($role) {
+                    $user->syncRoles([$role->name]);
+                }
+            }
+
             $log_data = [
                 'action_type' => ActionTypes::UPDATE,
                 'description' => 'Perubahan User',
@@ -31,35 +41,20 @@ class UpdateUserAction
                             'before' => $old_data->name,
                             'after' => $data['name'],
                         ],
-                        'type' => [
+                        'email' => [
                             'label' => 'Email User',
                             'before' => $old_data->email,
                             'after' => $data['email'],
                         ],
-                        'status' => [
+                        'phone' => [
                             'label' => 'Nomor Telepon',
                             'before' => $old_data->phone,
                             'after' => $data['phone'],
                         ],
-                        'status' => [
-                            'label' => 'Status',
-                            'before' => $old_data->status,
-                            'after' => $data['status'],
-                        ],
                         'role' => [
                             'label' => 'Role',
-                            'before' => $before_role->id.' - '.$before_role->name,
-                            'after' => $after_role->id.' - '.$after_role->name,
-                        ],
-                        'status' => [
-                            'label' => 'Status User',
-                            'before' => $old_data->status,
-                            'after' => $data['status'] ?? null,
-                        ],
-                        'tags' => [
-                            'label' => 'Tag',
-                            'before' => $old_data->f_tag_codes,
-                            'after' => $data['tags'] ?? null,
+                            'before' => $oldRole ? $oldRole->id.' - '.$oldRole->name : 'N/A',
+                            'after' => $newRole ? $newRole->id.' - '.$newRole->name : 'N/A',
                         ],
                     ],
                 ]),

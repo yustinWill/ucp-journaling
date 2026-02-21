@@ -36,7 +36,6 @@ class UnitController extends Controller
 
         return view('pages.master_data.unit.index', array_merge(
             compact('unitTypes', 'statuses'),
-            $permissionData
         ));
     }
 
