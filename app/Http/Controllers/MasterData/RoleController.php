@@ -29,9 +29,15 @@ class RoleController extends Controller
     public function add()
     {
         $permissions = \Spatie\Permission\Models\Permission::orderBy('name')->get();
+        
+        // Empty tags (can be expanded later if tag system is implemented)
+        $tags = collect();
+        $canAddTags = false;
 
         return view('pages.master_data.role.add', [
             'permissions' => $permissions,
+            'tags' => $tags,
+            'canAddTags' => $canAddTags,
         ]);
     }
 

@@ -208,4 +208,72 @@ class PermissionHelper
     {
         return $role->permissions;
     }
+
+    /**
+     * Get view permissions for a module
+     * Returns an array of permission flags for Blade templates
+     *
+     * @param string $module Module name (e.g., 'main_transaction_reimbursement')
+     * @param User|null $user Optional user, defaults to auth()->user()
+     * @return array
+     */
+    public static function getViewPermissions(string $module, User $user = null): array
+    {
+        if (!$user) {
+            $user = auth()->user();
+        }
+
+        if (!$user) {
+            return self::getDefaultPermissions($module);
+        }
+
+        // Convert module name to PascalCase for variable names
+        // e.g., 'main_transaction_reimbursement' -> 'Reimbursement'
+        $permissionKey = self::getPermissionKey($module);
+
+        return [
+            "canView{$permissionKey}" => $user->hasPermissionTo("{$module}.view") || $user->hasPermissionTo("{$module}.read"),
+            "canCreate{$permissionKey}" => $user->hasPermissionTo("{$module}.create") || $user->hasPermissionTo("{$module}.write"),
+            "canEdit{$permissionKey}" => $user->hasPermissionTo("{$module}.edit") || $user->hasPermissionTo("{$module}.write"),
+            "canDelete{$permissionKey}" => $user->hasPermissionTo("{$module}.delete"),
+            "canApprove{$permissionKey}" => $user->hasPermissionTo("{$module}.approve"),
+        ];
+    }
+
+    /**
+     * Get default permissions (all false) for a module
+     *
+     * @param string $module
+     * @return array
+     */
+    private static function getDefaultPermissions(string $module): array
+    {
+        $permissionKey = self::getPermissionKey($module);
+
+        return [
+            "canView{$permissionKey}" => false,
+            "canCreate{$permissionKey}" => false,
+            "canEdit{$permissionKey}" => false,
+            "canDelete{$permissionKey}" => false,
+            "canApprove{$permissionKey}" => false,
+        ];
+    }
+
+    /**
+     * Convert module name to PascalCase permission key
+     * e.g., 'main_transaction_reimbursement' -> 'Reimbursement'
+     * e.g., 'main_transaction_reimbursement_approval' -> 'ReimbursementApproval'
+     *
+     * @param string $module
+     * @return string
+     */
+    private static function getPermissionKey(string $module): string
+    {
+        // Remove common prefixes
+        $module = preg_replace('/^(main_transaction|master_data|operasional)_/', '', $module);
+
+        // Convert to PascalCase (split by underscore and capitalize each part)
+        $parts = explode('_', $module);
+        return implode('', array_map('ucfirst', $parts));
+    }
 }

@@ -19,14 +19,14 @@
                         maxlength="100" />
                     <small class="form-text text-muted">Maksimal 100 karakter</small>
                 </div>
-                <div class="col-md-6">
+                {{-- <div class="col-md-6">
                     <label class="form-label">Status</label>
                     <select class="global-select2 form-select" id="role-status" data-allow-clear="false">
                         @foreach ($statuses as $status)
                             <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                         @endforeach
                     </select>
-                </div>
+                </div> --}}
             </div>
 
             <div class="row g-3 mb-4">
@@ -47,7 +47,7 @@
                 <hr class="mx-n6">
             </div>
 
-            <div class="row g-3 mb-4">
+            {{-- <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tag</label>
                     <div class="row g-2">
@@ -74,7 +74,7 @@
                 <div class="col-md-6">
                     <!-- Empty column for alignment -->
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Permissions Section -->
             <div class="section-header mt-12">
@@ -92,25 +92,24 @@
             <div class="mb-4">
                 <div class="mx-n6">
                     <div id="permissions-container" style="padding: 1.5rem;">
-                        @foreach ($modules as $module)
+                        @forelse ($permissions->groupBy(function($item) { return explode('.', $item->name)[0]; }) as $module => $modulePermissions)
                             <div class="module-permissions mb-4">
                                 <h6 class="mb-3">
                                     <i class="icon-base ti tabler-folder me-2"></i>
-                                    {{ $module->name }}
+                                    {{ ucfirst($module) }}
                                 </h6>
                                 <div class="row g-3">
-                                    @foreach ($permission_types as $type)
+                                    @foreach ($modulePermissions as $permission)
                                         <div class="col-md-3">
                                             <div class="form-check">
                                                 <input class="form-check-input permission-checkbox" type="checkbox"
-                                                    id="permission-{{ $module->id }}-{{ $type['value'] }}"
-                                                    data-module="{{ $module->id }}" data-type="{{ $type['value'] }}"
-                                                    value="{{ $module->id }}-{{ $type['value'] }}">
+                                                    id="permission-{{ $permission->id }}"
+                                                    data-permission-id="{{ $permission->id }}"
+                                                    value="{{ $permission->id }}">
                                                 <label class="form-check-label"
-                                                    for="permission-{{ $module->id }}-{{ $type['value'] }}">
-                                                    <i
-                                                        class="icon-base ti tabler-{{ $type['value'] == 'read' ? 'eye' : ($type['value'] == 'write' ? 'edit' : ($type['value'] == 'delete' ? 'trash' : 'check')) }} me-1"></i>
-                                                    {{ $type['label'] }}
+                                                    for="permission-{{ $permission->id }}">
+                                                    <i class="icon-base ti tabler-check me-1"></i>
+                                                    {{ $permission->display_name ?? $permission->name }}
                                                 </label>
                                             </div>
                                         </div>
@@ -120,7 +119,11 @@
                                     <hr class="my-3">
                                 @endif
                             </div>
-                        @endforeach
+                        @empty
+                            <div class="alert alert-warning" role="alert">
+                                Tidak ada permission yang tersedia. Silakan jalankan <code>php artisan permission:create-default-permissions</code> untuk membuat permission.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -135,25 +138,25 @@
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
                         <h4 class="mb-0 text-success" id="read-count">0</h4>
-                        <small class="text-muted">Hak Baca</small>
+                        <small class="text-muted">Permission Terpilih</small>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
                         <h4 class="mb-0 text-primary" id="write-count">0</h4>
-                        <small class="text-muted">Hak Tulis</small>
+                        <small class="text-muted">Total Available</small>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
-                        <h4 class="mb-0 text-danger" id="delete-count">0</h4>
-                        <small class="text-muted">Hak Hapus</small>
+                        <h4 class="mb-0 text-danger" id="delete-count">-</h4>
+                        <small class="text-muted">-</small>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
-                        <h4 class="mb-0 text-warning" id="approval-count">0</h4>
-                        <small class="text-muted">Hak Persetujuan</small>
+                        <h4 class="mb-0 text-warning" id="approval-count">-</h4>
+                        <small class="text-muted">-</small>
                     </div>
                 </div>
             </div>
@@ -173,15 +176,13 @@
         $(function() {
             // Update permission counts
             function updatePermissionCounts() {
-                const readCount = $('.permission-checkbox[data-type="read"]:checked').length;
-                const writeCount = $('.permission-checkbox[data-type="write"]:checked').length;
-                const deleteCount = $('.permission-checkbox[data-type="delete"]:checked').length;
-                const approvalCount = $('.permission-checkbox[data-type="approval"]:checked').length;
-
-                $('#read-count').text(readCount);
-                $('#write-count').text(writeCount);
-                $('#delete-count').text(deleteCount);
-                $('#approval-count').text(approvalCount);
+                const totalCount = $('.permission-checkbox:checked').length;
+                const totalAvailable = $('.permission-checkbox').length;
+                
+                $('#read-count').text(totalCount);
+                $('#write-count').text(totalAvailable);
+                $('#delete-count').text('');
+                $('#approval-count').text('');
             }
 
             // Handle permission checkbox changes
@@ -243,19 +244,11 @@
                 }
 
                 // Collect form data
-                const formData = {
-                    name: $('#role-name').val(),
-                    description: $('#role-description').val(),
-                    status: $('#role-status').val(),
-                    permissions: []
-                };
+                const permissions = [];
 
                 // Collect selected permissions
                 $('.permission-checkbox:checked').each(function() {
-                    formData.permissions.push({
-                        module_id: $(this).data('module'),
-                        permission_type: $(this).data('type')
-                    });
+                    permissions.push($(this).data('permission-id'));
                 });
 
                 Swal.fire({
@@ -281,10 +274,8 @@
                             data: {
                                 _token: '{{ csrf_token() }}',
                                 name: $('#role-name').val(),
-                                status: $('#role-status').val(),
                                 description: $('#role-description').val(),
-                                permissions: formData.permissions,
-                                tags: $('#role-tags').val(),
+                                permissions: permissions,
                             },
                             success: function(response) {
                                 Swal.fire({

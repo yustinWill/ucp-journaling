@@ -27,6 +27,18 @@
                 </div>
             </div>
 
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Deskripsi</label>
+                    <textarea class="form-control" id="role-description" rows="3" placeholder="Masukkan deskripsi role"
+                        maxlength="500">{{ $role->description ?? '' }}</textarea>
+                    <small class="form-text text-muted">Maksimal 500 karakter</small>
+                </div>
+                <div class="col-md-6">
+                    <!-- Empty column for alignment -->
+                </div>
+            </div>
+
             <!-- Permission Summary -->
             <div class="section-header mt-12">
                 <h6>Ringkasan Hak Akses</h6>
@@ -34,10 +46,28 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-12">
+                <div class="col-md-3">
                     <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
-                        <h4 class="mb-0 text-primary" id="total-permissions">0</h4>
-                        <small class="text-muted">Total Hak Akses Dipilih</small>
+                        <h4 class="mb-0 text-success" id="read-count">0</h4>
+                        <small class="text-muted">Permission Terpilih</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                        <h4 class="mb-0 text-primary" id="write-count">0</h4>
+                        <small class="text-muted">Total Available</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                        <h4 class="mb-0 text-danger" id="delete-count">-</h4>
+                        <small class="text-muted">-</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3" style="background-color: #f8f9fa; border-radius: 0.375rem;">
+                        <h4 class="mb-0 text-warning" id="approval-count">-</h4>
+                        <small class="text-muted">-</small>
                     </div>
                 </div>
             </div>
@@ -53,49 +83,43 @@
                 </div>
                 <hr class="mx-n6">
             </div>
-            </div>
 
             <div class="mb-4">
                 <div class="mx-n6">
                     <div id="permissions-container" style="padding: 1.5rem;">
-                        <div class="accordion" id="permissionsAccordion">
-                            @php
-                                $groupedPermissions = $permissions->groupBy('group');
-                            @endphp
-                            @foreach ($groupedPermissions as $group => $perms)
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#collapse{{ ucfirst($group) }}" aria-expanded="true">
-                                            <i class="icon-base ti tabler-folder me-2"></i>
-                                            {{ ucfirst(str_replace('_', ' ', $group)) }}
-                                        </button>
-                                    </h2>
-                                    <div id="collapse{{ ucfirst($group) }}" class="accordion-collapse collapse show"
-                                        data-bs-parent="#permissionsAccordion">
-                                        <div class="accordion-body">
-                                            <div class="row g-3">
-                                                @foreach ($perms as $permission)
-                                                    <div class="col-md-6 col-lg-4">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input permission-checkbox" type="checkbox"
-                                                                id="permission-{{ $permission->id }}"
-                                                                data-permission-id="{{ $permission->id }}"
-                                                                value="{{ $permission->id }}"
-                                                                @if ($role->hasPermissionTo($permission->name)) checked @endif>
-                                                            <label class="form-check-label" for="permission-{{ $permission->id }}">
-                                                                <i class="icon-base ti tabler-check me-1"></i>
-                                                                {{ str_replace('_', ' ', $permission->name) }}
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
+                        @forelse ($permissions->groupBy(function($item) { return explode('.', $item->name)[0]; }) as $module => $modulePermissions)
+                            <div class="module-permissions mb-4">
+                                <h6 class="mb-3">
+                                    <i class="icon-base ti tabler-folder me-2"></i>
+                                    {{ ucfirst($module) }}
+                                </h6>
+                                <div class="row g-3">
+                                    @foreach ($modulePermissions as $permission)
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input permission-checkbox" type="checkbox"
+                                                    id="permission-{{ $permission->id }}"
+                                                    data-permission-id="{{ $permission->id }}"
+                                                    value="{{ $permission->id }}"
+                                                    @if ($role->hasPermissionTo($permission->name)) checked @endif>
+                                                <label class="form-check-label"
+                                                    for="permission-{{ $permission->id }}">
+                                                    <i class="icon-base ti tabler-check me-1"></i>
+                                                    {{ $permission->display_name ?? $permission->name }}
+                                                </label>
                                             </div>
                                         </div>
-                                    </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
-                        </div>
+                                @if (!$loop->last)
+                                    <hr class="my-3">
+                                @endif
+                            </div>
+                        @empty
+                            <div class="alert alert-warning" role="alert">
+                                Tidak ada permission yang tersedia. Silakan jalankan <code>php artisan permission:create-default-permissions</code> untuk membuat permission.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -115,8 +139,13 @@
         $(function() {
             // Update permission counts
             function updatePermissionCounts() {
-                const selectedCount = $('.permission-checkbox:checked').length;
-                $('#total-permissions').text(selectedCount);
+                const readCount = $('.permission-checkbox:checked').length;
+                const totalCount = $('.permission-checkbox').length;
+                
+                $('#read-count').text(readCount);
+                $('#write-count').text(totalCount);
+                $('#delete-count').text('-');
+                $('#approval-count').text('-');
             }
 
             // Handle permission checkbox changes
@@ -165,6 +194,7 @@
                 // Collect form data
                 const formData = {
                     name: $('#role-name').val(),
+                    description: $('#role-description').val(),
                     id: $('#role-id').val(),
                     permissions: []
                 };
@@ -259,6 +289,9 @@
 
             // Initialize permission counts
             updatePermissionCounts();
+
+            // Trigger character count check on page load
+            $('#role-description').trigger('input');
         });
     </script>
 @endsection
