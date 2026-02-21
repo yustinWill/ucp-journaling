@@ -47,12 +47,11 @@ class RoleController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:roles,name',
-                'description' => 'required|string|max:255',
+                
                 'permissions' => 'required|array|min:1',
                 'permissions.*' => 'required|exists:permissions,id',
             ], [], [
                 'name' => 'Nama Role',
-                'description' => 'Deskripsi Role',
                 'permissions' => 'Permissions',
                 'permissions.*' => 'Permission ID',
             ]);
@@ -154,13 +153,11 @@ class RoleController extends Controller
             $validated = $request->validate([
                 'id' => 'required|exists:roles,id',
                 'name' => 'required|string|max:255|unique:roles,name,'.$request->id,
-                'description' => 'required|string|max:255',
                 'permissions' => 'required|array|min:1',
                 'permissions.*' => 'required|exists:permissions,id',
             ], [], [
                 'id' => 'ID Role',
                 'name' => 'Nama Role',
-                'description' => 'Deskripsi Role',
                 'permissions' => 'Permissions',
                 'permissions.*' => 'Permission ID',
             ]);

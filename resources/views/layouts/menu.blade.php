@@ -174,19 +174,23 @@
                 </a>
             </li>
         @endcan
+        @can('reimbursement.view')
         {{-- Reimbursement menu items (add permission permission if available) --}}
-        <li class="menu-item @if (request()->routeIs(['main_transaction.reimbursement.*'])) active @endif">
-            <a href="{{ route('main_transaction.reimbursement.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-receipt-refund"></i>
-                <div data-i18n="Reimbursement">Reimbursement</div>
-            </a>
-        </li>
-        <li class="menu-item @if (request()->routeIs(['main_transaction.reimbursement_approval.*'])) active @endif">
-            <a href="{{ route('main_transaction.reimbursement_approval.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-circle-check"></i>
-                <div data-i18n="Reimbursement Approval">Reimbursement Approval</div>
-            </a>
-        </li>
+            <li class="menu-item @if (request()->routeIs(['main_transaction.reimbursement.*'])) active @endif">
+                <a href="{{ route('main_transaction.reimbursement.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-receipt-refund"></i>
+                    <div data-i18n="Reimbursement">Reimbursement</div>
+                </a>
+            </li>
+        @endcan
+        @can('reimbursement_approval.view')
+            <li class="menu-item @if (request()->routeIs(['main_transaction.reimbursement_approval.*'])) active @endif">
+                <a href="{{ route('main_transaction.reimbursement_approval.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-circle-check"></i>
+                    <div data-i18n="Reimbursement Approval">Reimbursement Approval</div>
+                </a>
+            </li>
+        @endcan
 
         @if(Auth::check() && (Auth::user()->hasPermissionTo('production.view') || Auth::user()->hasPermissionTo('packing.view') || Auth::user()->hasPermissionTo('stock_adjustment.view') || Auth::user()->hasPermissionTo('return_management.view') || Auth::user()->hasPermissionTo('stock_opname.view')))
             <li class="menu-header small">
