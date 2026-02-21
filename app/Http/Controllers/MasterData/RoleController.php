@@ -47,11 +47,12 @@ class RoleController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255|unique:roles,name',
-                
+                'description'=> 'nullable',
                 'permissions' => 'required|array|min:1',
                 'permissions.*' => 'required|exists:permissions,id',
             ], [], [
                 'name' => 'Nama Role',
+                'description'=>'Description',
                 'permissions' => 'Permissions',
                 'permissions.*' => 'Permission ID',
             ]);
@@ -153,11 +154,13 @@ class RoleController extends Controller
             $validated = $request->validate([
                 'id' => 'required|exists:roles,id',
                 'name' => 'required|string|max:255|unique:roles,name,'.$request->id,
+                'description' => 'nullable',
                 'permissions' => 'required|array|min:1',
                 'permissions.*' => 'required|exists:permissions,id',
             ], [], [
                 'id' => 'ID Role',
                 'name' => 'Nama Role',
+                'description' => 'Descripsi',
                 'permissions' => 'Permissions',
                 'permissions.*' => 'Permission ID',
             ]);
@@ -198,28 +201,28 @@ class RoleController extends Controller
         }
     }
 
-    public function export()
-    {
-        $data = [
-            ['no' => 1, 'value' => 'Nama Role'],
-            ['no' => 2, 'value' => 'Deskripsi Role'],
-            ['no' => 3, 'value' => 'Status Role'],
-            ['no' => 4, 'value' => 'Jumlah User'],
-            ['no' => 5, 'value' => 'Jumlah Permission'],
-            ['no' => 6, 'value' => 'Tanggal Dibuat'],
-            ['no' => 7, 'value' => 'Tanggal Diubah'],
-        ];
-        $selectData = $this->getExportSelectData();
+    // public function export()
+    // {
+    //     $data = [
+    //         ['no' => 1, 'value' => 'Nama Role'],
+    //         ['no' => 2, 'value' => 'Deskripsi Role'],
+    //         ['no' => 3, 'value' => 'Status Role'],
+    //         ['no' => 4, 'value' => 'Jumlah User'],
+    //         ['no' => 5, 'value' => 'Jumlah Permission'],
+    //         ['no' => 6, 'value' => 'Tanggal Dibuat'],
+    //         ['no' => 7, 'value' => 'Tanggal Diubah'],
+    //     ];
+    //     $selectData = $this->getExportSelectData();
 
-        return view('pages.master_data.role.export', ['data' => $data] + $selectData);
-    }
+    //     return view('pages.master_data.role.export', ['data' => $data] + $selectData);
+    // }
 
-    public function import()
-    {
-        $selectData = $this->getImportSelectData();
+    // public function import()
+    // {
+    //     $selectData = $this->getImportSelectData();
 
-        return view('pages.master_data.role.import', $selectData);
-    }
+    //     return view('pages.master_data.role.import', $selectData);
+    // }
 
     public function getRolePermissions($roleId)
     {
