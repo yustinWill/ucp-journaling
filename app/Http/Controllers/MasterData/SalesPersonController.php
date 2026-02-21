@@ -52,11 +52,16 @@ class SalesPersonController extends Controller
     {
         $statuses = $this->statuses;
         $employees = app(ContactService::class)->findAllByFlag('employee');
+        $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canCreateSalesPerson'] ?? false;
 
         return view('pages.master_data.sales_person.add', array_merge([
             'statuses' => $statuses,
             'employees' => $employees,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function save(Request $request)
@@ -121,12 +126,17 @@ class SalesPersonController extends Controller
 
         $statuses = $this->statuses;
         $employees = app(ContactService::class)->findAllByFlag('employee');
+        $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canEditSalesPerson'] ?? false;
 
         return view('pages.master_data.sales_person.edit', array_merge([
             'statuses' => $statuses,
             'employees' => $employees,
             'salesPerson' => $salesPerson,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function update(Request $request)
@@ -198,11 +208,19 @@ class SalesPersonController extends Controller
         // Convert to array for consistency
         $salesPersonArray = (array) $salesPerson;
 
+        $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
+
+        // Map permission variables for blade template compatibility
+        $canShowEditButton = $permissionData['canEditSalesPerson'] ?? false;
+        $canShowDeleteButton = $permissionData['canDeleteSalesPerson'] ?? false;
+
         return view('pages.master_data.sales_person.detail', array_merge([
             'salesPerson' => $salesPersonArray,
             'auditLogs' => $auditLogs,
             'auditLogType' => AuditLogTypes::MASTER_DATA_SALES_PERSON->code(),
-        ]));
+            'canShowEditButton' => $canShowEditButton,
+            'canShowDeleteButton' => $canShowDeleteButton,
+        ], $permissionData));
     }
 
     public function export()

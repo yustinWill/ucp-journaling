@@ -81,13 +81,20 @@ class TransactionNumberController extends Controller
         // Generate preview examples
         $previews = $this->generatePreviewExamples($transactionNumber);
         $placeholders = $this->transactionNumberService->getAvailablePlaceholders();
+        $permissionData = PermissionHelper::getViewPermissions('master_data_transaction_number');
 
-        return view('pages.master_data.transaction_number.detail', [
+        // Map permission variables for blade template compatibility
+        $canShowEditButton = $permissionData['canEditTransactionNumber'] ?? false;
+        $canShowDeleteButton = $permissionData['canDeleteTransactionNumber'] ?? false;
+
+        return view('pages.master_data.transaction_number.detail', array_merge([
             'transactionNumber' => $transactionNumber,
             'previews' => $previews,
             'placeholders' => $placeholders,
-            'canEdit' => true,
-        ]);
+            'canEdit' => $canShowEditButton,
+            'canShowEditButton' => $canShowEditButton,
+            'canShowDeleteButton' => $canShowDeleteButton,
+        ], $permissionData));
     }
 
     public function edit($id)
@@ -105,12 +112,17 @@ class TransactionNumberController extends Controller
             ['value' => 'monthly', 'label' => 'Monthly'],
             ['value' => 'yearly', 'label' => 'Yearly'],
         ];
+        $permissionData = PermissionHelper::getViewPermissions('master_data_transaction_number');
 
-        return view('pages.master_data.transaction_number.edit', [
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canEditTransactionNumber'] ?? false;
+
+        return view('pages.master_data.transaction_number.edit', array_merge([
             'transactionNumber' => $transactionNumber,
             'placeholders' => $placeholders,
             'resetFrequencies' => $resetFrequencies,
-        ]);
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function update(Request $request)

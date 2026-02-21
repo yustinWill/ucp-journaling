@@ -54,14 +54,18 @@ class TaxController extends Controller
 
     public function add()
     {
-
         $taxTypes = $this->taxTypes;
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tax');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canCreateTax'] ?? false;
 
         return view('pages.master_data.tax.add', array_merge([
             'taxTypes' => $taxTypes,
             'statuses' => $statuses,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function save(Request $request)
@@ -124,12 +128,17 @@ class TaxController extends Controller
         }
 
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tax');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canEditTax'] ?? false;
 
         return view('pages.master_data.tax.edit', array_merge([
             'taxTypes' => $this->taxTypes,
             'statuses' => $statuses,
             'tax' => $tax,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function update(Request $request)
@@ -192,9 +201,15 @@ class TaxController extends Controller
         }
 
         $auditLogs = app(TaxAuditLogService::class)->findAllBasedOnTagId($id);
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tax');
+
+        // Map permission variables for blade template compatibility
+        $canShowEditButton = $permissionData['canEditTax'] ?? false;
+        $canShowDeleteButton = $permissionData['canDeleteTax'] ?? false;
 
         return view('pages.master_data.tax.detail', array_merge(
-            compact('tax', 'auditLogs'),
+            compact('tax', 'auditLogs', 'canShowEditButton', 'canShowDeleteButton'),
+            $permissionData
         ));
     }
 

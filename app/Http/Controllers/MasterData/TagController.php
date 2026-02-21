@@ -59,8 +59,15 @@ class TagController extends Controller
     {
         $availableColors = app(TagColorService::class)->findAll();
         $availableStatus = $this->availableStatus;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tag');
 
-        return view('pages.master_data.tag.add', compact('availableColors', 'availableStatus'));
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canCreateTag'] ?? false;
+
+        return view('pages.master_data.tag.add', array_merge(
+            compact('availableColors', 'availableStatus', 'canWrite'),
+            $permissionData
+        ));
     }
 
     public function save(Request $request)
@@ -120,8 +127,15 @@ class TagController extends Controller
         }
 
         $availableColors = app(TagColorService::class)->findAll();
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tag');
 
-        return view('pages.master_data.tag.edit', compact('tag', 'availableColors'));
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canEditTag'] ?? false;
+
+        return view('pages.master_data.tag.edit', array_merge(
+            compact('tag', 'availableColors', 'canWrite'),
+            $permissionData
+        ));
     }
 
     public function update(Request $request)
@@ -187,9 +201,16 @@ class TagController extends Controller
         $tag->recent_transactions = $usage_log_data;
         $tag->audit_logs = $audit_log_data;
 
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tag');
+
+        // Map permission variables for blade template compatibility
+        $canShowEditButton = $permissionData['canEditTag'] ?? false;
+        $canShowDeleteButton = $permissionData['canDeleteTag'] ?? false;
+
         return view('pages.master_data.tag.detail', array_merge(
-            compact('tag'),
-            ['auditLogType' => AuditLogTypes::MASTER_DATA_TAG->code()]
+            compact('tag', 'canShowEditButton', 'canShowDeleteButton'),
+            ['auditLogType' => AuditLogTypes::MASTER_DATA_TAG->code()],
+            $permissionData
         ));
     }
 }
