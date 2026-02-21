@@ -16,6 +16,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -37,26 +38,13 @@ class PurchaseInvoiceController extends Controller
             ['value' => 'COMPLETED', 'label' => 'COMPLETED - Sudah Dibayar'],
         ];
 
-        // Map permissions to view variables - following user requirement to remove add/import buttons
-        $canAddPurchaseInvoice = false; // Disabled per requirement - creation only from PO detail page
-        $canImportPurchaseInvoice = false; // Disabled per requirement
-        $canExportPurchaseInvoice = true;
-        $canViewPurchaseInvoice = true;
-        $canEditPurchaseInvoice = true;
-
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_invoice');
         $data = [
             'suppliers' => $suppliers,
             'statuses' => $statuses,
-            'canAddPurchaseInvoice' => $canAddPurchaseInvoice,
-            'canImportPurchaseInvoice' => $canImportPurchaseInvoice,
-            'canExportPurchaseInvoice' => $canExportPurchaseInvoice,
-            'canViewPurchaseInvoice' => $canViewPurchaseInvoice,
-            'canEditPurchaseInvoice' => $canEditPurchaseInvoice,
-            'canViewUser' => true,
-            'canViewPurchaseOrder' => true,
         ];
 
-        return view('pages.main_transaction.purchase_invoice.index', array_merge($data));
+        return view('pages.main_transaction.purchase_invoice.index', array_merge($data, $permissionData));
     }
 
     public function index_data_table(Request $request)

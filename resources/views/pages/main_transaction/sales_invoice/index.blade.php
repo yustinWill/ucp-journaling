@@ -118,11 +118,11 @@
 
             let salesInvoiceTable;
 
-            // Permission variables
-            const canRead = @json($canViewSalesInvoice ?? true);
-            const canEdit = @json($canEditSalesInvoice ?? true);
-            const canViewUser = @json($canViewUser ?? true);
-            const canViewSalesOrder = @json($canViewSalesOrder ?? true);
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('sales_invoice.view'));
+            const canEdit = @json(auth()->user()->can('sales_invoice.edit'));
+            const canViewUser = @json(auth()->user()->can('user.view'));
+            const canViewSalesOrder = @json(auth()->user()->can('sales_order.view'));
 
             // Initialize DataTable
             function initSalesInvoiceTable() {

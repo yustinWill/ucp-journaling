@@ -20,6 +20,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -100,24 +101,11 @@ class PurchaseOrderController extends Controller
     public function index()
     {
         $suppliers = app(ContactService::class)->findAllByFlag('supplier');
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
 
-        // Map permissions to view variables
-        $canAddPurchaseOrder = true;
-        $canImportPurchaseOrder = true;
-        $canExportPurchaseOrder = true;
-        $canViewPurchaseOrder = true;
-        $canEditPurchaseOrder = true;
-
-        $data = [
+        return view('pages.main_transaction.purchase_order.index', array_merge([
             'suppliers' => $suppliers,
-            'canAddPurchaseOrder' => $canAddPurchaseOrder,
-            'canImportPurchaseOrder' => $canImportPurchaseOrder,
-            'canExportPurchaseOrder' => $canExportPurchaseOrder,
-            'canViewPurchaseOrder' => $canViewPurchaseOrder,
-            'canEditPurchaseOrder' => $canEditPurchaseOrder,
-        ];
-
-        return view('pages.main_transaction.purchase_order.index', array_merge($data));
+        ], $permissionData));
     }
 
     public function index_data_table()

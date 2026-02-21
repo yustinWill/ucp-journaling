@@ -132,10 +132,12 @@
                             <button type="button" id="btn-import" class="btn btn-md btn-primary waves-effect waves-light">
                                 <span class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import
                             </button> --}}
-                            <button type="button" id="btn-add-stock-opname"
-                                class="btn btn-md btn-primary waves-effect waves-light">
-                                <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Stock Opname
-                            </button>
+                            @can('stock_opname.create')
+                                <button type="button" id="btn-add-stock-opname"
+                                    class="btn btn-md btn-primary waves-effect waves-light">
+                                    <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Stock Opname
+                                </button>
+                            @endcan
                         </div>
                     </div>
                 </div>

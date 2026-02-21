@@ -15,6 +15,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -35,10 +36,11 @@ class StockOpnameController extends Controller
         // Warehouse locations for RIYO Water
         $warehouses = app(WarehouseService::class)->findAll();
 
-        return view('pages.master_data.stock_opname.index', [
+        $permissionData = PermissionHelper::getViewPermissions('master_data_stock_opname');
+        return view('pages.master_data.stock_opname.index', array_merge([
             'stockOpnameStatuses' => $statusOptions,
             'warehouses' => $warehouses,
-        ]);
+        ], $permissionData));
     }
 
     public function index_data_table()

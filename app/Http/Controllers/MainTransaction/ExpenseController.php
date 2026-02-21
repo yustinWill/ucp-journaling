@@ -19,6 +19,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -30,10 +31,11 @@ class ExpenseController extends Controller
     public function index()
     {
         $suppliers = app(ContactService::class)->findAllByFlag('supplier');
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_expense');
 
         return view('pages.main_transaction.expense.index', array_merge([
             'suppliers' => $suppliers,
-        ]));
+        ], $permissionData));
     }
 
     public function index_data_table()

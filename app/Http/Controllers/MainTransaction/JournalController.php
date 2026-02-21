@@ -14,6 +14,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -24,10 +25,11 @@ class JournalController extends Controller
     public function index()
     {
         $createdByUsers = app(UserService::class)->findAll();
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_journal');
 
-        return view('pages.main_transaction.journal.index', [
+        return view('pages.main_transaction.journal.index', array_merge([
             'createdByUsers' => $createdByUsers,
-        ]);
+        ], $permissionData));
     }
 
     public function index_data_table()

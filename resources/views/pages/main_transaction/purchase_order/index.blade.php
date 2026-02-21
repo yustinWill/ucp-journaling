@@ -110,11 +110,11 @@
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                             @endif --}}
-                            @if ($canAddPurchaseOrder)
+                            @can('purchase_order.create')
                                 <a href="{{ route('main_transaction.purchase_order.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -148,9 +148,9 @@
 
             let purchaseOrderTable;
 
-            // Permission variables
-            const canRead = @json($canViewPurchaseOrder ?? true);
-            const canEdit = @json($canEditPurchaseOrder ?? true);
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('purchase_order.view'));
+            const canEdit = @json(auth()->user()->can('purchase_order.edit'));
 
             // Initialize DataTable
             function initPurchaseOrderTable() {

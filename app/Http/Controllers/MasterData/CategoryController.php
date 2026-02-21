@@ -14,6 +14,7 @@ use App\Exceptions\AppException;
 // Actions
 use App\Helpers\DiscordNotifier;
 // Services
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -39,9 +40,11 @@ class CategoryController extends Controller
     {
         $statuses = $this->statuses;
         $categoryTypes = $this->categoryTypes;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_category');
 
         return view('pages.master_data.category.index', array_merge(
-            compact('categoryTypes', 'statuses')
+            compact('categoryTypes', 'statuses'),
+            $permissionData
         ));
     }
 

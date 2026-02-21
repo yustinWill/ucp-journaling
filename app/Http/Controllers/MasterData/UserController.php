@@ -16,6 +16,7 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 // Services
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -34,8 +35,9 @@ class UserController extends Controller
     {
         $statuses = $this->statuses;
         $roles = app(RoleService::class)->findAll();
+        $permissionData = PermissionHelper::getViewPermissions('master_data_user');
 
-        return view('pages.master_data.user.index', compact('statuses', 'roles'));
+        return view('pages.master_data.user.index', array_merge(compact('statuses', 'roles'), $permissionData));
     }
 
     public function index_data_table()
@@ -76,7 +78,7 @@ class UserController extends Controller
                 ],
                 'password' => 'required|string|min:8|max:50|same:password_confirmation',
                 'password_confirmation' => 'required|string|min:8|max:50',
-                'tags' => 'nullable|array',
+                // 'tags' => 'nullable|array',
             ], [], [
                 'name' => 'Nama User',
                 'email' => 'Email User',
@@ -85,7 +87,7 @@ class UserController extends Controller
                 'status' => 'Status User',
                 'password' => 'Password',
                 'password_confirmation' => 'Konfirmasi Password',
-                'tags' => 'Tag',
+                // 'tags' => 'Tag',
             ]);
 
             app(CreateUserAction::class)->execute($validated);

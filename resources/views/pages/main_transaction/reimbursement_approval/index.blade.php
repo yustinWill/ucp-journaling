@@ -109,7 +109,7 @@
 @section('js_script')
     <script>
         $(function() {
-            const canRead = @json($canViewReimbursementApproval ?? true);
+            const canRead = @json(auth()->user()->can('reimbursement_approval.view'));
 
             // Initialize DataTable
             const reimbursementTable = new DataTable('#reimbursement-approval-table', {

@@ -25,6 +25,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 // Enums
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
@@ -35,7 +36,8 @@ class ContactController extends Controller
 {
     public function index()
     {
-        return view('pages.master_data.contact.index');
+        $permissionData = PermissionHelper::getViewPermissions('master_data_contact');
+        return view('pages.master_data.contact.index', $permissionData);
     }
 
     public function index_data_table()

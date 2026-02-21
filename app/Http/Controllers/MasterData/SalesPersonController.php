@@ -15,6 +15,7 @@ use App\Exceptions\AppException;
 // Actions
 use App\Helpers\DiscordNotifier;
 // Services
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -32,9 +33,11 @@ class SalesPersonController extends Controller
     public function index()
     {
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_sales_person');
 
         return view('pages.master_data.sales_person.index', array_merge(
             compact('statuses'),
+            $permissionData
         ));
     }
 

@@ -166,12 +166,12 @@
 
             let purchaseInvoiceTable;
 
-            // Permission variables
-            const canRead = @json($canViewPurchaseInvoice ?? true);
-            const canEdit = @json($canEditPurchaseInvoice ?? true);
-            const canViewUser = @json($canViewUser ?? true);
-            const canViewPurchaseOrder = @json($canViewPurchaseOrder ?? true);
-            const canViewPurchaseDelivery = @json($canViewPurchaseDelivery ?? true);
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('purchase_invoice.view'));
+            const canEdit = @json(auth()->user()->can('purchase_invoice.edit'));
+            const canViewUser = @json(auth()->user()->can('user.view'));
+            const canViewPurchaseOrder = @json(auth()->user()->can('purchase_order.view'));
+            const canViewPurchaseDelivery = @json(auth()->user()->can('purchase_delivery.view'));
 
             // Initialize DataTable
             function initPurchaseInvoiceTable() {

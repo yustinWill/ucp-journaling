@@ -37,6 +37,10 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables
+            const canView = @json(auth()->user()->can('transaction_number.view'));
+            const canEdit = @json(auth()->user()->can('transaction_number.edit'));
+
             // Initialize DataTable
             $('#transaction-number-table').DataTable({
                 ajax: {
@@ -119,17 +123,19 @@
                                 `{{ route('master_data.transaction_number.edit', ':id') }}`.replace(
                                     ':id', data);
 
-                            let actions = `
-                        <div class="d-flex justify-content-center gap-1">
-                            <a href="${detailUrl}" class="btn btn-sm btn-outline-info" title="Lihat Detail">
-                                <i class="icon-base ti tabler-eye"></i>
-                            </a>`;
+                            let actions = `<div class="d-flex justify-content-center gap-1">`;
 
+                            if (canView) {
+                                actions += `<a href="${detailUrl}" class="btn btn-sm btn-outline-info" title="Lihat Detail">
+                                    <i class="icon-base ti tabler-eye"></i>
+                                </a>`;
+                            }
 
-                            actions += `
-                            <a href="${editUrl}" class="btn btn-sm btn-outline-primary" title="Edit Konfigurasi">
-                                <i class="icon-base ti tabler-edit"></i>
-                            </a>`;
+                            if (canEdit) {
+                                actions += `<a href="${editUrl}" class="btn btn-sm btn-outline-primary" title="Edit Konfigurasi">
+                                    <i class="icon-base ti tabler-edit"></i>
+                                </a>`;
+                            }
 
                             actions += `</div>`;
                             return actions;

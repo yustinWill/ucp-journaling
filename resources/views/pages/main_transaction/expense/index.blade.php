@@ -111,12 +111,12 @@
                                 <span class="icon-xs icon-base ti tabler-file-download me-2"></span> Export
                             </a>
                         @endif --}}
-                            @if (true)
+                            @can('expense.create')
                                 <a href="{{ route('main_transaction.expense.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light">
                                     <span class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data
                                 </a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -147,11 +147,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = true;
-            const canWrite = true;
-            const canDelete = true;
-            const canShowEditButton = true;
-            const canShowDeleteButton = true;
+            const canRead = @json(auth()->user()->can('expense.view'));
+            const canWrite = @json(auth()->user()->can('expense.create'));
+            const canDelete = @json(auth()->user()->can('expense.delete'));
+            const canShowEditButton = @json(auth()->user()->can('expense.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('expense.delete'));
 
             // DataTable initialization
             const main_table = document.querySelector('#main-table');

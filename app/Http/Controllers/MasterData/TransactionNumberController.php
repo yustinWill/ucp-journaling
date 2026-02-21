@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\MasterData;
 
+use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
@@ -20,7 +21,8 @@ class TransactionNumberController extends Controller
 
     public function index()
     {
-        return view('pages.master_data.transaction_number.index');
+        $permissionData = PermissionHelper::getViewPermissions('master_data_transaction_number');
+        return view('pages.master_data.transaction_number.index', $permissionData);
     }
 
     public function indexDataTable()

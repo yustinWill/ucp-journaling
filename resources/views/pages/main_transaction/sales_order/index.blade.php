@@ -60,11 +60,11 @@
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                             @endif --}}
-                            @if ($canAddSalesOrder)
+                            @can('sales_order.create')
                                 <a href="{{ route('main_transaction.sales_order.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -99,9 +99,9 @@
 
             let salesOrderTable;
 
-            // Permission variables
-            const canRead = @json($canViewSalesOrder ?? true);
-            const canEdit = @json($canEditSalesOrder ?? true);
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('sales_order.view'));
+            const canEdit = @json(auth()->user()->can('sales_order.edit'));
 
             // Initialize DataTable
             function initSalesOrderTable() {

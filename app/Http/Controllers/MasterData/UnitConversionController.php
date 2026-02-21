@@ -8,6 +8,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -24,9 +25,11 @@ class UnitConversionController extends Controller
     public function index()
     {
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_unit_conversion');
 
         return view('pages.master_data.unit_conversion.index', array_merge(
             compact('statuses'),
+            $permissionData
         ));
     }
 

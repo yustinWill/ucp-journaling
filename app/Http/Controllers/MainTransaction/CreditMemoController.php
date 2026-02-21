@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
+use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 
 class CreditMemoController extends Controller
 {
     public function index()
     {
-        return view('pages.main_transaction.credit_memo.index', []);
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_credit_memo');
+        return view('pages.main_transaction.credit_memo.index', $permissionData);
     }
 
     public function index_data_table()

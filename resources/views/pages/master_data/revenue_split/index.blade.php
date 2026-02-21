@@ -89,11 +89,11 @@
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
                             @endif --}}
-                            @if (true)
+                            @can('revenue_split.create')
                                 <a href="{{ route('master_data.revenue_split.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Cycle</a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -137,11 +137,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = true;
-            const canWrite = true;
-            const canDelete = true;
-            const canShowEditButton = true;
-            const canShowDeleteButton = true;
+            const canRead = @json(auth()->user()->can('revenue_split.view'));
+            const canWrite = @json(auth()->user()->can('revenue_split.create'));
+            const canDelete = @json(auth()->user()->can('revenue_split.delete'));
+            const canShowEditButton = @json(auth()->user()->can('revenue_split.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('revenue_split.delete'));
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');

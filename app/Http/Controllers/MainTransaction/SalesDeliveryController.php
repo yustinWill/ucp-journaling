@@ -13,6 +13,7 @@ use App\Domains\Warehouse\Services\WarehouseService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\Notification\Services\NotificationService;
 use App\Exceptions\AppException;
+use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
@@ -27,17 +28,12 @@ class SalesDeliveryController extends Controller
     {
         $customers = app(ContactService::class)->findAllByFlag('customer');
         $warehouses = app(WarehouseService::class)->findAll();
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_delivery');
 
-        return view('pages.main_transaction.sales_delivery.index', [
+        return view('pages.main_transaction.sales_delivery.index', array_merge([
             'customers' => $customers,
             'warehouses' => $warehouses,
-            'canEdit' => true,
-            'canImport' => true,
-            'canExport' => true,
-            'canViewContact' => true,
-            'canViewUser' => true,
-            'canViewSalesOrder' => true,
-        ]);
+        ], $permissionData));
     }
 
     public function add(Request $req)

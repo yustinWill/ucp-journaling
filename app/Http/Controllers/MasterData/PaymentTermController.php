@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MasterData;
 
 use App\Domains\PaymentTerm\Services\PaymentTermService;
+use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use App\Enums\SuccessCodes;
 use Illuminate\Http\Request;
@@ -47,7 +48,8 @@ class PaymentTermController extends Controller
             'canExportPaymentTerm' => $canExportPaymentTerm,
         ];
 
-        return view('pages.master_data.payment_term.index', array_merge($data));
+        $permissionData = PermissionHelper::getViewPermissions('master_data_payment_term');
+        return view('pages.master_data.payment_term.index', array_merge($data, $permissionData));
     }
 
     public function indexDataTable(Request $request)

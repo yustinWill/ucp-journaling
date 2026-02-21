@@ -149,8 +149,8 @@
 
             let purchaseDeliveryTable;
 
-            // Permission variables
-            const canRead = @json($canViewPurchaseDelivery ?? true);
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('purchase_delivery.view'));
             const canEdit = @json($canEditPurchaseDelivery ?? true);
             const canViewUser = @json($canViewUser ?? true);
             const canViewPurchaseOrder = @json($canViewPurchaseOrder ?? true);

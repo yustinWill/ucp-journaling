@@ -10,6 +10,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -20,23 +21,8 @@ class BudgedController extends Controller
 {
     public function index()
     {
-        $permissionData =  [
-            "permissions" => [
-                "read" => true,
-                "write" => true,
-                "delete" => true,
-                "approval" => true
-            ],
-            "canRead" => true,
-            "canWrite" => true,
-            "canDelete" => true,
-            "canApprove" => true,
-            "canShowAddButton" => true,
-            "canShowEditButton" => true,
-            "canShowDeleteButton" => true,
-            "canShowImportButton" => true,
-            "canShowExportButton" => true
-    ]   ; 
+        $permissionData = PermissionHelper::getViewPermissions('master_data_budged');
+
         return view('pages.master_data.budged.index', $permissionData);
     }
 

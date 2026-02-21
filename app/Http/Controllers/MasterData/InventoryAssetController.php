@@ -16,6 +16,7 @@ use App\Domains\Tag\Services\TagService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\AuditLogTypes;
 use App\Enums\ErrorCodes;
+use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
@@ -27,10 +28,11 @@ class InventoryAssetController extends Controller
     {
         // Get summary data for default tab (pending_assets)
         $summaryData = app(InventoryAssetService::class)->getSummaryData('pending_assets');
+        $permissionData = PermissionHelper::getViewPermissions('master_data_inventory_asset');
 
-        return view('pages.master_data.inventory.index', [
+        return view('pages.master_data.inventory.index', array_merge([
             'summaryData' => $summaryData
-        ]);
+        ], $permissionData));
     }
 
     public function index_data_table(Request $request)

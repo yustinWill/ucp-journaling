@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\MainTransaction;
 
+use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,10 +14,8 @@ class TopUpController extends Controller
      */
     public function index()
     {
-        return view('pages.main_transaction.topup.index', [
-            'canEdit' => true, // Permission disabled - always allow
-            'canDelete' => true, // Permission disabled - always allow
-        ]);
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_topup');
+        return view('pages.main_transaction.topup.index', $permissionData);
     }
 
     /**

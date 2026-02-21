@@ -12,6 +12,7 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
 // Actions
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 // Services
 use App\Http\Controllers\Controller;
@@ -36,9 +37,11 @@ class TaxController extends Controller
     {
         $statuses = $this->statuses;
         $taxTypes = $this->taxTypes;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_tax');
 
         return view('pages.master_data.tax.index', array_merge(
             compact('taxTypes', 'statuses'),
+            $permissionData
         ));
     }
 

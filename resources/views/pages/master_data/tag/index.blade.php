@@ -100,9 +100,11 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            <a href="{{ route('master_data.tag.add') }}"
-                                class="btn btn-md btn-primary waves-effect waves-light"><span
-                                    class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                            @can('tag.create')
+                                <a href=\"{{ route('master_data.tag.add') }}\"
+                                    class=\"btn btn-md btn-primary waves-effect waves-light\"><span
+                                        class=\"icon-xs icon-base ti tabler-plus me-2\"></span> Tambah Data</a>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -132,6 +134,13 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('tag.view'));
+            const canWrite = @json(auth()->user()->can('tag.create'));
+            const canDelete = @json(auth()->user()->can('tag.delete'));
+            const canShowEditButton = @json(auth()->user()->can('tag.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('tag.delete'));
+
             //DataTable
             const main_table = document.querySelector('#main-table');
             let dt_adv_filter;
@@ -189,16 +198,22 @@
                                 const detailUrl = `{{ route('master_data.tag.detail', ':id') }}`
                                     .replace(':id', row.id);
 
-                                return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                let buttons = `<div class="d-flex gap-2">`;
+                                
+                                if (canRead) {
+                                    buttons += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    </a>`;
+                                }
+                                
+                                if (canShowEditButton) {
+                                    buttons += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                            `;
+                                    </a>`;
+                                }
+                                
+                                buttons += `</div>`;
+                                return buttons;
                             }
                         },
                         {

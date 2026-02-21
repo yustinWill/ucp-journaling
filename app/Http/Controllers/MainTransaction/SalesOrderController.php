@@ -20,6 +20,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
@@ -73,15 +74,10 @@ class SalesOrderController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('pages.main_transaction.sales_order.index', [
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
+        return view('pages.main_transaction.sales_order.index', array_merge([
             'customers' => $customers,
-            'canAddSalesOrder' => true,
-            'canViewSalesOrder' => true,
-            'canEditSalesOrder' => true,
-            'canDeleteSalesOrder' => true,
-            'canImportSalesOrder' => true,
-            'canExportSalesOrder' => true,
-        ]);
+        ], $permissionData));
     }
 
     public function add()

@@ -19,6 +19,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -29,14 +30,6 @@ class StockAdjustmentController extends Controller
 {
     public function index()
     {
-        // Map permissions to view variables
-        $canAddStockAdjustment = true;
-        $canImportStockAdjustment = true;
-        $canExportStockAdjustment = true;
-        $canViewDetails = true;
-        $canEditStockAdjustment = true;
-        $canDeleteStockAdjustment = true;
-
         // Adjustment types for stock adjustment workflow
         $adjustmentTypes = [
             ['value' => 'MANUAL_ADJUSTMENT', 'label' => 'MANUAL_ADJUSTMENT - Penyesuaian Manual'],
@@ -73,20 +66,15 @@ class StockAdjustmentController extends Controller
             ['value' => 'MACHINERY', 'label' => 'MACHINERY - Peralatan'],
         ];
 
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_stock_adjustment');
         $data = [
             'adjustmentTypes' => $adjustmentTypes,
             'adjustmentStatuses' => $adjustmentStatuses,
             'warehouseLocations' => $warehouseLocations,
             'productCategories' => $productCategories,
-            'canAddStockAdjustment' => $canAddStockAdjustment,
-            'canImportStockAdjustment' => $canImportStockAdjustment,
-            'canExportStockAdjustment' => $canExportStockAdjustment,
-            'canViewDetails' => $canViewDetails,
-            'canEditStockAdjustment' => $canEditStockAdjustment,
-            'canDeleteStockAdjustment' => $canDeleteStockAdjustment,
         ];
 
-        return view('pages.main_transaction.stock_adjustment.index', array_merge($data));
+        return view('pages.main_transaction.stock_adjustment.index', array_merge($data, $permissionData));
     }
 
     public function index_data_table(Request $request)

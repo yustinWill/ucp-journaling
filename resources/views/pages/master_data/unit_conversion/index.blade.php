@@ -37,11 +37,11 @@
                 <div class="mt-4">
                     <div class="d-flex justify-content-end">
                         <div class="d-flex gap-2">
-                            @if (true)
+                            @can('unit_conversion.create')
                                 <a href="{{ route('master_data.unit_conversion.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -71,11 +71,11 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = true;
-            const canWrite = true;
-            const canDelete = true;
-            const canShowEditButton = true;
-            const canShowDeleteButton = true;
+            const canRead = @json(auth()->user()->can('unit_conversion.view'));
+            const canWrite = @json(auth()->user()->can('unit_conversion.create'));
+            const canDelete = @json(auth()->user()->can('unit_conversion.delete'));
+            const canShowEditButton = @json(auth()->user()->can('unit_conversion.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('unit_conversion.delete'));
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');

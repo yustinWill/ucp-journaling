@@ -58,9 +58,11 @@
                 <i class="icon-base ti tabler-list me-2"></i>Riwayat Top Up
             </h5>
             
+            @can('topup.create')
             <a href="{{ route('main_transaction.topup.add') }}" class="btn btn-success">
                 <i class="icon-base ti tabler-plus me-1"></i> New Top Up
             </a>
+            @endcan
         </div>
 
         <div class="card-datatable">
@@ -86,8 +88,8 @@
     <script>
         $(function() {
             // Define permissions
-            const canEdit = @json($canEdit ?? false);
-            const canDelete = @json($canDelete ?? false);
+            const canEdit = @json(auth()->user()->can('topup.edit'));
+            const canDelete = @json(auth()->user()->can('topup.delete'));
 
             // Initialize DataTable
             const topupTable = new DataTable('#topup-table', {

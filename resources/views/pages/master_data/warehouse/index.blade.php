@@ -122,12 +122,16 @@
                         <a href="{{ route('master_data.warehouse.export') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a> --}}
+                        @can('warehouse.stock_transfer')
                         <a href="{{ route('master_data.warehouse.stock_transfer') }}"
                             class="btn btn-md btn-primary waves-effect waves-light"><span
                                 class="icon-xs icon-base ti tabler-transfer me-2"></span> Stock Transfer</a>
-                        <a href="{{ route('master_data.warehouse.add') }}"
-                            class="btn btn-md btn-primary waves-effect waves-light"><span
-                                class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                        @endcan
+                        @can('warehouse.create')
+                            <a href="{{ route('master_data.warehouse.add') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light"><span
+                                    class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
+                        @endcan
                     </div>
                 </div>
             </div>

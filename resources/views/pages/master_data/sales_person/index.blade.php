@@ -108,11 +108,11 @@
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
                             @endif --}}
-                            @if (true)
+                            @can('sales_person.create')
                                 <a href="{{ route('master_data.sales_person.add') }}"
                                     class="btn btn-md btn-primary waves-effect waves-light"><span
                                         class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -141,9 +141,9 @@
     <script>
         $(function() {
             // Permission variables
-            const canRead = true;
-            const canWrite = true;
-            const canShowEditButton = true;
+            const canRead = @json(auth()->user()->can('sales_person.view'));
+            const canWrite = @json(auth()->user()->can('sales_person.create'));
+            const canShowEditButton = @json(auth()->user()->can('sales_person.edit'));
 
             // Initialize DataTable
             const mainTable = document.querySelector('#main-table');

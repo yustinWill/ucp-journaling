@@ -79,16 +79,14 @@
                         </div>
 
                         <div class="d-flex gap-2">
-                            @if ($canImport)
-                                <a href="{{ route('main_transaction.sales_delivery.import') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
-                            @endif
-                            @if ($canExport)
-                                <a href="{{ route('main_transaction.sales_delivery.export') }}"
-                                    class="btn btn-md btn-primary waves-effect waves-light"><span
-                                        class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
-                            @endif
+                            <a href="{{ route('main_transaction.sales_delivery.import') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light"><span
+                                    class="icon-xs icon-base ti tabler-file-upload me-2"></span> Import</a>
+
+                            <a href="{{ route('main_transaction.sales_delivery.export') }}"
+                                class="btn btn-md btn-primary waves-effect waves-light"><span
+                                    class="icon-xs icon-base ti tabler-file-download me-2"></span> Export</a>
+
                         </div>
                     </div>
                 </div>
@@ -133,11 +131,11 @@
 
             let salesDeliveryTable;
 
-            // Define permissions as JavaScript variables
-            const canEdit = @json($canEdit ?? false);
-            const canViewContact = @json($canViewContact ?? false);
-            const canViewUser = @json($canViewUser ?? false);
-            const canViewSalesOrder = @json($canViewSalesOrder ?? false);
+            // Define permissions as JavaScript variables - using Spatie permissions
+            const canEdit = @json(auth()->user()->can('sales_delivery.edit'));
+            const canViewContact = @json(auth()->user()->can('contact.view'));
+            const canViewUser = @json(auth()->user()->can('user.view'));
+            const canViewSalesOrder = @json(auth()->user()->can('sales_order.view'));
 
             // Initialize DataTable
             function initDataTable() {

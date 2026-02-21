@@ -19,6 +19,7 @@ use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
+use App\Helpers\PermissionHelper;
 use App\Helpers\PdfHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -40,26 +41,13 @@ class SalesInvoiceController extends Controller
             ['value' => 'CANCELLED', 'label' => 'CANCELLED - Dibatalkan'],
         ];
 
-        // Map permissions to view variables
-        $canAddSalesInvoice = true;
-        $canImportSalesInvoice = true;
-        $canExportSalesInvoice = true;
-        $canViewSalesInvoice = true;
-        $canEditSalesInvoice = true;
-
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_invoice');
         $data = [
             'customers' => $customers,
             'statuses' => $statuses,
-            'canAddSalesInvoice' => $canAddSalesInvoice,
-            'canImportSalesInvoice' => $canImportSalesInvoice,
-            'canExportSalesInvoice' => $canExportSalesInvoice,
-            'canViewSalesInvoice' => $canViewSalesInvoice,
-            'canEditSalesInvoice' => $canEditSalesInvoice,
-            'canViewUser' => true,
-            'canViewSalesOrder' => true,
         ];
 
-        return view('pages.main_transaction.sales_invoice.index', array_merge($data));
+        return view('pages.main_transaction.sales_invoice.index', array_merge($data, $permissionData));
     }
 
     public function index_data_table(Request $request)

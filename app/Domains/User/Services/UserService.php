@@ -59,11 +59,12 @@ class UserService
                 DB::raw("COALESCE(r.name, 'N/A') as role_name"),
                 DB::raw("COALESCE(r.id, 0) as role_id"),
             ])
-            ->leftJoin('model_has_roles as mhr', 't.id', '=', 'mhr.model_id')
-            ->leftJoin('roles as r', function($join) {
-                $join->on('mhr.role_id', '=', 'r.id')
-                    ->where('mhr.model_type', '=', DB::raw('"' . \App\Models\User::class . '"'));
-            });
+            /** Spatie Laravel Permission joins */
+            ->leftJoin('model_has_roles as mhr', function($join) {
+                $join->on('t.id', '=', 'mhr.model_id')
+                    ->where('mhr.model_type', '=', \App\Models\User::class);
+            })
+            ->leftJoin('roles as r', 'mhr.role_id', '=', 'r.id');
 
         // Filter by name
         if ($name = request()->input('name')) {

@@ -35,18 +35,10 @@
                             <select class="global-select2 form-select" id="user-role" data-allow-clear="false">
                                 <option value="">Pilih Role</option>
                                 @foreach ($roles as $role)
-                                    <option value="{{ $role->id }}">{{ $role->name }} - {{ $role->description }}</option>
+                                    <option value="{{ $role->id }}">{{ $role->name }} </option>
                                 @endforeach
                             </select>
                         </div>
-                        @if ($canAddRoles)
-                            <div class="col-auto">
-                                <a href="{{ route('master_data.role.add') }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center"
-                                   title="Tambah Role Baru">
-                                    <i class="icon-base ti tabler-plus"></i>
-                                </a>
-                            </div>
-                        @endif
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -97,11 +89,11 @@
             </div>
 
             <!-- Informasi Tambahan Section -->
-            <div class="section-header mt-12">
+            {{-- <div class="section-header mt-12">
                 <h6>Informasi Tambahan</h6>
                 <hr class="mx-n6">
-            </div>
-
+            </div> --}}
+{{-- 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tag</label>
@@ -128,7 +120,7 @@
                 <div class="col-md-6">
                     <!-- Empty column for alignment -->
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Action Buttons -->
             <div class="pt-6 text-end">

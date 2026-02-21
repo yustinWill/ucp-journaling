@@ -15,6 +15,7 @@ use App\Enums\SuccessCodes;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
 // Services
+use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 // Enums
@@ -33,9 +34,11 @@ class UnitController extends Controller
     {
         $statuses = $this->statuses;
         $unitTypes = app(UnitTypeService::class)->findAll();
+        $permissionData = PermissionHelper::getViewPermissions('master_data_unit');
 
         return view('pages.master_data.unit.index', array_merge(
             compact('unitTypes', 'statuses'),
+            $permissionData
         ));
     }
 

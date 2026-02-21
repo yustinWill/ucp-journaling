@@ -145,9 +145,11 @@
                                             Komposisi</a></li>
                                 </ul>
                             </div> --}}
-                            <button type="button" id="btn-add-products"
-                                class="btn btn-md btn-primary waves-effect waves-light"><span
-                                    class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</button>
+                            @can('product.create')
+                                <button type=\"button\" id=\"btn-add-products\"
+                                    class=\"btn btn-md btn-primary waves-effect waves-light\"><span
+                                        class=\"icon-xs icon-base ti tabler-plus me-2\"></span> Tambah Data</button>
+                            @endcan
                         </div>
                     </div>
                 </div>
@@ -181,6 +183,13 @@
 @section('js_script')
     <script>
         $(function() {
+            // Permission variables - using Spatie permissions
+            const canRead = @json(auth()->user()->can('product.view'));
+            const canWrite = @json(auth()->user()->can('product.create'));
+            const canDelete = @json(auth()->user()->can('product.delete'));
+            const canShowEditButton = @json(auth()->user()->can('product.edit'));
+            const canShowDeleteButton = @json(auth()->user()->can('product.delete'));
+
             let productsTable;
 
             productsTable = new DataTable('#products-table', {
@@ -323,16 +332,22 @@
                                 .replace(':id', row.id);
                             const editUrl = `{{ route('master_data.product.edit', ':id') }}`
                                 .replace(':id', row.id);
-                            return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                            let buttons = `<div class="d-flex gap-2">`;
+                            
+                            if (canRead) {
+                                buttons += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    </a>`;
+                            }
+                            
+                            if (canShowEditButton) {
+                                buttons += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                                `;
+                                    </a>`;
+                            }
+                            
+                            buttons += `</div>`;
+                            return buttons;
                         }
                     }
                 ],
