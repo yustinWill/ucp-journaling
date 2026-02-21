@@ -431,6 +431,11 @@ class SalesDeliveryController extends Controller
     public function confirm(Request $request, $id)
     {
         try {
+            // Validate attachment if present
+            $request->validate([
+                'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
+            ]);
+
             // Get optional fields from request
             $data = [];
             if ($request->has('shipping_cost')) {
@@ -441,6 +446,12 @@ class SalesDeliveryController extends Controller
             }
             if ($request->has('delivery_notes')) {
                 $data['delivery_notes'] = $request->input('delivery_notes');
+            }
+
+            // Handle file upload
+            if ($request->hasFile('attachment')) {
+                $attachment = $request->file('attachment');
+                $data['attachment_path'] = $attachment->store('sales_deliveries', 'public');
             }
 
             app(ConfirmSalesDeliveryAction::class)->execute($id, $data);

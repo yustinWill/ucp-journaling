@@ -116,6 +116,9 @@ class ConfirmSalesDeliveryAction
             if (isset($data['delivery_notes'])) {
                 $updateData['delivery_notes'] = $data['delivery_notes'];
             }
+            if (isset($data['attachment_path'])) {
+                $updateData['attachment_path'] = $data['attachment_path'];
+            }
 
             DB::table('t_sales_deliveries')
                 ->where('id', $salesDeliveryId)

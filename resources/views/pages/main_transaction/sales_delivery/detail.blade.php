@@ -92,6 +92,36 @@
                                     @endif
                                 </div>
                             </div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-12">
+                                    <label class="form-label">Catatan Pengiriman</label>
+                                    <textarea id="delivery-notes" class="form-control" rows="3"
+                                        {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }}>{{ $salesDelivery->delivery_notes ?? '' }}</textarea>
+                                    @if (!$salesDelivery->is_accepted)
+                                        <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Lampiran</label>
+                                @if (isset($salesDelivery->attachment) && $salesDelivery->attachment)
+                                    <div>
+                                        <a href="{{ $salesDelivery->attachment }}" target="_blank" class="btn btn-outline-primary">
+                                            <i class="icon-base ti tabler-file me-2"></i>
+                                            {{ basename($salesDelivery->attachment) }}
+                                            <i class="icon-base ti tabler-external-link ms-2"></i>
+                                        </a>
+                                    </div>
+                                @else
+                                    @if ($salesDelivery->is_accepted && $salesDelivery->is_confirmed != '1')
+                                        <input type="file" id="attachment-file" class="form-control"
+                                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                                        <small class="text-muted">Format: JPG, PNG, PDF, DOC, DOCX. Max: 5MB</small>
+                                    @else
+                                        <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
+                                    @endif
+                                @endif
+                            </div>
                         </div>
                     @endif
                     <div class="tab-content px-0 mt-0">
@@ -172,16 +202,7 @@
                         </div>
                         
                     </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-12">
-                            <label class="form-label">Catatan Pengiriman</label>
-                            <textarea id="delivery-notes" class="form-control" rows="3"
-                                {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }}>{{ $salesDelivery->delivery_notes ?? '' }}</textarea>
-                            @if (!$salesDelivery->is_accepted)
-                                <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
-                            @endif
-                        </div>
-                    </div>
+                    
 
                     <!-- Items Delivery Section -->
                     <div class="section-header mt-12">
@@ -277,22 +298,6 @@
                                     </div>
                                 @else
                                     <div class="text-muted">Tidak ada tag</div>
-                                @endif
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Lampiran</label>
-                                @if (isset($salesDelivery->attachment) && $salesDelivery->attachment)
-                                    <div class="input-group">
-                                        <input type="text" class="form-control"
-                                            value="{{ $salesDelivery->attachment }}" disabled />
-                                        <a href="{{ $salesDelivery->attachment }}" target="_blank"
-                                            class="btn btn-outline-primary">
-                                            <i class="icon-base ti tabler-download"></i>
-                                        </a>
-                                    </div>
-                                @else
-                                    <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
                                 @endif
                             </div>
                         </div>
@@ -501,17 +506,26 @@
                         const shippingCost = parseCurrency($('#shipping-cost').val());
                         const customerReference = $('#customer-reference').val();
                         const deliveryNotes = $('#delivery-notes').val();
+                        const attachmentFile = $('#attachment-file')[0]?.files[0];
+
+                        // Prepare FormData for file upload
+                        const formData = new FormData();
+                        formData.append('_token', '{{ csrf_token() }}');
+                        formData.append('shipping_cost', shippingCost);
+                        formData.append('customer_reference', customerReference);
+                        formData.append('delivery_notes', deliveryNotes);
+
+                        if (attachmentFile) {
+                            formData.append('attachment', attachmentFile);
+                        }
 
                         // Send AJAX request
                         $.ajax({
                             url: `{{ url('main_transaction/sales_delivery/confirm') }}/${deliveryId}`,
                             type: 'POST',
-                            data: {
-                                _token: '{{ csrf_token() }}',
-                                shipping_cost: shippingCost,
-                                customer_reference: customerReference,
-                                delivery_notes: deliveryNotes
-                            },
+                            data: formData,
+                            processData: false,
+                            contentType: false,
                             success: function(response) {
                                 Swal.fire({
                                     icon: 'success',
