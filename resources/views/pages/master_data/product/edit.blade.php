@@ -166,7 +166,7 @@
                                         <td>
                                             <div class="input-group">
                                                 <span class="input-group-text">1 <span class="unit-name-display ms-1"></span> =</span>
-                                                <input type="number" class="form-control conversion-factor" value="" step="0.01" min="0.01" required>
+                                                <input type="text" class="form-control numeric-input text-end conversion-factor" value="" required>
                                                 <span class="input-group-text"><span class="base-unit-display">Unit Dasar</span></span>
                                             </div>
                                         </td>
@@ -193,7 +193,7 @@
                                         <td>
                                             <div class="input-group">
                                                 <span class="input-group-text">1 <span class="unit-name-display ms-1"></span> =</span>
-                                                <input type="number" class="form-control conversion-factor" value="{{ $productUnit->conversion_factor }}" step="0.01" min="0.01" required>
+                                                <input type="text" class="form-control numeric-input text-end conversion-factor" value="{{ $productUnit->conversion_factor }}" required>
                                                 <span class="input-group-text"><span class="base-unit-display">Unit Dasar</span></span>
                                             </div>
                                         </td>
@@ -285,9 +285,9 @@
                                     value="{{ old('purchase-price', $product->unit_purchase_price ?? '') }}" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Akun Pembelian </label>
+                                <label class="form-label">Akun Pembelian</label>
                                 <select class="global-select2 form-select flex-grow-1" id="purchase-account"
-                                    name="purchase-account" data-allow-clear="false">
+                                    name="purchase-account" data-allow-clear="true">
                                     <option value="">Pilih Akun</option>
                                     @foreach ($accounts as $account)
                                         <option value="{{ $account->code }}"
@@ -350,7 +350,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Akun Penjualan</label>
                                 <select class="global-select2 form-select flex-grow-1" id="sales-account"
-                                    name="sales-account" data-allow-clear="false">
+                                    name="sales-account" data-allow-clear="true">
                                     <option value="">Pilih Akun</option>
                                     @foreach ($accounts as $account)
                                         <option value="{{ $account->code }}"
@@ -989,7 +989,12 @@
             });
             $('.numeric-input').each(function() {
                 const val = $(this).val();
-                $(this).val(convertToIndonesianFormat(val));
+                // Use toIndonesianNumberFormat for conversion factors to strip trailing zeros
+                if ($(this).hasClass('conversion-factor')) {
+                    $(this).val(toIndonesianNumberFormat(val));
+                } else {
+                    $(this).val(convertToIndonesianFormat(val));
+                }
             });
             initCleaveCurrency(document);
 
@@ -1130,6 +1135,8 @@
                                 width: '100%'
                             });
                         });
+                        // Initialize Cleave for numeric inputs in the new row
+                        initCleaveCurrency(this);
                         updateUnitDisplays();
                     });
                 },
