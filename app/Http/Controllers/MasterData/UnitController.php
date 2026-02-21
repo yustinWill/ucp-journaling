@@ -53,11 +53,16 @@ class UnitController extends Controller
     {
         $unitTypes = app(UnitTypeService::class)->findAll();
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_unit');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canCreateUnit'] ?? false;
 
         return view('pages.master_data.unit.add', array_merge([
             'unitTypes' => $unitTypes,
             'statuses' => $statuses,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function save(Request $request)
@@ -116,12 +121,17 @@ class UnitController extends Controller
 
         $unitTypes = app(UnitTypeService::class)->findAll();
         $statuses = $this->statuses;
+        $permissionData = PermissionHelper::getViewPermissions('master_data_unit');
+
+        // Map permission for blade compatibility
+        $canWrite = $permissionData['canEditUnit'] ?? false;
 
         return view('pages.master_data.unit.edit', array_merge([
             'unitTypes' => $unitTypes,
             'statuses' => $statuses,
             'unit' => $unit,
-        ]));
+            'canWrite' => $canWrite,
+        ], $permissionData));
     }
 
     public function update(Request $request)
@@ -181,10 +191,16 @@ class UnitController extends Controller
         }
 
         $auditLogs = app(UnitAuditLogService::class)->findAllBasedOnTagId($id);
+        $permissionData = PermissionHelper::getViewPermissions('master_data_unit');
+
+        // Map permission variables for blade template compatibility
+        $canShowEditButton = $permissionData['canEditUnit'] ?? false;
+        $canShowDeleteButton = $permissionData['canDeleteUnit'] ?? false;
 
         return view('pages.master_data.unit.detail', array_merge(
-            compact('unit', 'auditLogs'),
-            ['auditLogType' => AuditLogTypes::MASTER_DATA_UNIT->code()]
+            compact('unit', 'auditLogs', 'canShowEditButton', 'canShowDeleteButton'),
+            ['auditLogType' => AuditLogTypes::MASTER_DATA_UNIT->code()],
+            $permissionData
         ));
     }
 
