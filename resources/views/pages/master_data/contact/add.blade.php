@@ -340,31 +340,46 @@
 
             <span class="pelanggan-additional-form">
                 <hr class="my-6 mx-n6" />
-                <h6>8. Info Produk Dibeli</h6>
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="products-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 15%;">Kode Produk</th>
-                                <th style="width: 40%;">Nama Produk</th>
-                                <th style="width: 30%;">Harga Satuan</th>
-                            </tr>
-                        </thead>
-                        <tbody id="products-tbody">
-                            @foreach ($products as $product)
-                                <tr data-product-code="{{ $product->code }}">
-                                    <td><strong>{{ $product->code }}</strong></td>
-                                    <td>{{ $product->name }}</td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm product-price-input currency-input"
-                                            data-product-code="{{ $product->code }}"
-                                            placeholder="0"
-                                            value="0">
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <h6>8. Info Produk Dibeli Customer</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <span class="form-repeater-product">
+                            <div data-repeater-list="product-list">
+                                <div data-repeater-item>
+                                    <div class="row g-6">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Produk</label>
+                                            <div class="position-relative">
+                                                <select class="select2Product form-select product_code" data-allow-clear="true">
+                                                    <option value="">Pilih Produk</option>
+                                                    @foreach ($products as $product)
+                                                        <option value="{{ $product->code }}" data-name="{{ $product->name }}">{{ $product->code }} - {{ $product->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Harga Satuan</label>
+                                            <input type="text" class="form-control product_price currency-input" placeholder="0" value="0" />
+                                        </div>
+                                        <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
+                                            <button class="btn btn-label-danger mt-xl-6" data-repeater-delete
+                                                type="button">
+                                                <i class="icon-base ti tabler-x me-1"></i>
+                                                <span class="align-middle">Hapus</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-0">
+                                <button class="btn btn-primary" data-repeater-create type="button">
+                                    <i class="icon-base ti tabler-plus me-1"></i>
+                                    <span class="align-middle">Tambah Produk Lain</span>
+                                </button>
+                            </div>
+                        </span>
+                    </div>
                 </div>
             </span>
 
@@ -416,9 +431,43 @@
                 }
             });
 
-            // Initialize currency inputs for product prices
-            $('#products-tbody .product-price-input').each(function() {
-                initCleaveCurrency($(this).parent()[0]);
+            // Initialize select2 for existing product selects
+            $('select.select2Product').each(function() {
+                $(this).select2({
+                    placeholder: "Pilih Produk",
+                    allowClear: true,
+                    dropdownParent: $(this).parent(),
+                    width: '100%'
+                });
+            });
+
+            // Initialize product repeater
+            $('.form-repeater-product').repeater({
+                show: function() {
+                    $(this).slideDown(() => {
+                        // Reinitialize select2 for new product select
+                        $(this).find('.select2-container').remove();
+                        $(this).find('select.select2Product').removeClass(
+                            'select2-hidden-accessible').removeAttr(
+                            'data-select2-id tabindex aria-hidden');
+                        $(this).find('select.select2Product').each(function() {
+                            if ($.fn.select2 && $(this).data('select2')) {
+                                $(this).select2('destroy');
+                            }
+                            $(this).select2({
+                                placeholder: "Pilih Produk",
+                                allowClear: true,
+                                dropdownParent: $(this).parent(),
+                                width: '100%'
+                            });
+                        });
+                        // Initialize currency input for new row
+                        initCleaveCurrency($(this)[0]);
+                    });
+                },
+                hide: function(remove) {
+                    $(this).slideUp(remove);
+                }
             });
 
             function syncShippingWithBilling() {
@@ -460,6 +509,21 @@
 
             // Trigger change event on page load to sync shipping address if checkbox is checked
             $('#copy-from-billing-address').trigger('change');
+
+            // Toggle customer-specific sections (Info Bank and Info Produk) based on customer checkbox
+            function toggleCustomerSections() {
+                if ($('#typeCustomer').is(':checked')) {
+                    $('.pelanggan-additional-form').show();
+                } else {
+                    $('.pelanggan-additional-form').hide();
+                }
+            }
+
+            // Initialize on page load
+            toggleCustomerSections();
+
+            // Toggle when customer checkbox changes
+            $('#typeCustomer').on('change', toggleCustomerSections);
 
             // SweetAlert for submit
             $('#submit-btn').click(function(e) {
@@ -556,14 +620,14 @@
                                                 };
                                             }
                                         }).get(),
-                                    // Products - only submit products with price > 0
-                                    products: $('#products-tbody tr').map(function() {
-                                        const productCode = $(this).data('product-code');
-                                        const priceInput = $(this).find('.product-price-input');
+                                    // Products - collect from repeater, only submit products with price > 0
+                                    products: $('.form-repeater-product [data-repeater-item]').map(function() {
+                                        const productCode = $(this).find('.product_code').val();
+                                        const priceInput = $(this).find('.product_price');
                                         const price = parseCurrency(priceInput.val());
 
-                                        // Only include products with price > 0
-                                        if (price > 0) {
+                                        // Only include products with code and price > 0
+                                        if (productCode && price > 0) {
                                             return {
                                                 product: productCode,
                                                 price: price
