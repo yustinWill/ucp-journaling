@@ -111,6 +111,7 @@ class SalesInvoiceService
                 'si.created_by',
                 'si.f_sales_order_id',
                 'so.transaction_code as so_reference',
+                'c.id AS customer_id',
                 'c.name AS customer_name',
                 'u.name AS created_by_name',
                 DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags")

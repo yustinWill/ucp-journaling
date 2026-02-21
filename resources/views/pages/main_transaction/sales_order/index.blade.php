@@ -136,7 +136,7 @@
                         <!-- Column Toggle -->
                         <div class="d-flex align-items-center">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                                 <label class="form-check-label" for="toggleTagColumn">
                                     <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                                 </label>
@@ -160,15 +160,14 @@
                 <table id="sales-order-table" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th style="width: 100px;">Tanggal</th>
-                            <th style="width: 140px;">No Sales Order</th>
-                            <th style="width: 180px;">Customer</th>
-                            <th style="width: 120px;">Tgl Jatuh Tempo</th>
-                            <th style="width: 120px;">Total</th>
-                            <th style="width: 120px;">Diinput Oleh</th>
-                            <th style="width: 120px;">Tag</th>
-                            <th style="width: 120px;">Status</th>
-                            <th style="width: 80px;">Aksi</th>
+                            <th>Tanggal</th>
+                            <th>No SO</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Tgl Jatuh Tempo</th>
+                            <th>Diinput Oleh</th>
+                            <th>Tag</th>
                         </tr>
                     </thead>
                 </table>
@@ -187,6 +186,8 @@
             // Permission variables - using Spatie permissions
             const canRead = @json(auth()->user()->can('sales_order.view'));
             const canEdit = @json(auth()->user()->can('sales_order.edit'));
+            const canViewContact = @json(auth()->user()->can('contact.view'));
+            const canViewUser = @json(auth()->user()->can('user.view'));
 
             // Initialize DataTable
             function initSalesOrderTable() {
@@ -207,23 +208,31 @@
                             d.status_filter = $('#status-filter').val()
                         }
                     },
-                    columns: [{
+                    columns: [
+                        {
                             data: 'transaction_date',
-                            width: '100px'
+                            width: '110px',
                         },
                         {
                             data: 'transaction_code',
                             width: '140px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
-                                return data; // Non-clickable as per standard
+                                if (!data) return '-';
+                                if (canRead) {
+                                    const detailUrl =
+                                        `{{ route('main_transaction.sales_order.detail', ':id') }}`
+                                        .replace(':id', row.id);
+                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                                }
+                                return data;
                             }
                         },
                         {
                             data: 'customer_name',
-                            width: '180px',
                             render: function(data, type, row) {
                                 if (!data) return '-';
-                                if (canRead) {
+                                if (canViewContact && row.f_customer_id) {
                                     const detailUrl =
                                         `{{ route('master_data.contact.detail', ':id') }}`
                                         .replace(':id', row.f_customer_id);
@@ -233,12 +242,7 @@
                             }
                         },
                         {
-                            data: 'payment_term_due_date',
-                            width: '120px'
-                        },
-                        {
                             data: 'grand_price',
-                            width: '120px',
                             className: 'text-end',
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
@@ -248,10 +252,46 @@
                             }
                         },
                         {
-                            data: 'created_by_name',
-                            width: '120px',
+                            data: null,
+                            width: '180px',
+                            responsivePriority: 1,
                             render: function(data, type, row) {
-                                if (canRead) {
+                                let status = 'Order';
+                                let badgeClass = 'bg-label-secondary';
+
+                                const siCount = parseInt(row.si_count) || 0;
+                                const sdCount = parseInt(row.sd_count) || 0;
+                                const siSettledCount = parseInt(row.si_settled_count) || 0;
+                                const sdConfirmedCount = parseInt(row.sd_confirmed_count) || 0;
+
+                                if (sdConfirmedCount > 0 && siSettledCount > 0) {
+                                    status = 'Selesai'; badgeClass = 'bg-label-success';
+                                } else if (siSettledCount > 0) {
+                                    status = 'Selesai'; badgeClass = 'bg-label-success';
+                                } else if (siCount > 0) {
+                                    status = 'Dibayar'; badgeClass = 'bg-label-primary';
+                                } else if (sdConfirmedCount > 0) {
+                                    status = 'Pengiriman Dikonfirmasi'; badgeClass = 'bg-label-info';
+                                } else if (sdCount > 0) {
+                                    status = 'Dikirim'; badgeClass = 'bg-label-warning';
+                                } else {
+                                    status = 'Order'; badgeClass = 'bg-label-secondary';
+                                }
+
+                                return `<span class="badge ${badgeClass}">${status}</span>`;
+                            }
+                        },
+                        {
+                            data: 'payment_term_due_date',
+                            width: '130px',
+                            responsivePriority: 10001,
+                        },
+                        {
+                            data: 'created_by_name',
+                            responsivePriority: 10002,
+                            render: function(data, type, row) {
+                                if (!data) return '-';
+                                if (canViewUser && row.created_by) {
                                     const detailUrl =
                                         `{{ route('master_data.user.detail', ':id') }}`
                                         .replace(':id', row.created_by);
@@ -262,95 +302,15 @@
                         },
                         {
                             data: 'tags',
-                            width: '120px',
+                            responsivePriority: 10003,
                             render: function(data, type, row) {
                                 let tags = JSON.parse(data);
                                 return tags.map(tag => {
-                                    if (tag.code == null) {
-                                        return ``;
-                                    }
+                                    if (tag.code == null) return '';
                                     return `<span class="badge ${tag.preview} me-1">${tag.code}</span>`;
                                 }).join('');
                             }
                         },
-                        {
-                            data: null,
-                            width: '120px',
-                            render: function(data, type, row) {
-                                // Calculate overall status based on SI and SD
-                                let status = 'Order';
-                                let badgeClass = 'bg-label-secondary';
-
-                                const siCount = parseInt(row.si_count) || 0;
-                                const sdCount = parseInt(row.sd_count) || 0;
-                                const siSettledCount = parseInt(row.si_settled_count) || 0;
-                                const sdConfirmedCount = parseInt(row.sd_confirmed_count) || 0;
-
-                                // Check if both SD confirmed and SI settled -> Selesai
-                                if (sdConfirmedCount > 0 && siSettledCount > 0) {
-                                    status = 'Selesai';
-                                    badgeClass = 'bg-label-success';
-                                }
-                                // SI settled -> Selesai (paid)
-                                else if (siSettledCount > 0) {
-                                    status = 'Selesai';
-                                    badgeClass = 'bg-label-success';
-                                }
-                                // SI created -> Dibayar
-                                else if (siCount > 0) {
-                                    status = 'Dibayar';
-                                    badgeClass = 'bg-label-primary';
-                                }
-                                // SD confirmed -> Pengiriman Dikonfirmasi
-                                else if (sdConfirmedCount > 0) {
-                                    status = 'Pengiriman Dikonfirmasi';
-                                    badgeClass = 'bg-label-info';
-                                }
-                                // SD created but not confirmed -> Dikirim
-                                else if (sdCount > 0) {
-                                    status = 'Dikirim';
-                                    badgeClass = 'bg-label-warning';
-                                }
-                                // No SI and SD -> Order
-                                else {
-                                    status = 'Order';
-                                    badgeClass = 'bg-label-secondary';
-                                }
-
-                                return `<span class="badge ${badgeClass}">${status}</span>`;
-                            }
-                        },
-                        {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            responsivePriority: 1,
-                            width: '80px',
-                            render: function(data, type, row, meta) {
-                                const detailUrl =
-                                    `{{ route('main_transaction.sales_order.detail', ':id') }}`
-                                    .replace(':id', row.id);
-                                const editUrl =
-                                    `{{ route('main_transaction.sales_order.edit', ':id') }}`
-                                    .replace(':id', row.id);
-                                let actions = '<div class="d-flex gap-2">';
-
-                                if (canRead) {
-                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                <i class="icon-xs icon-base ti tabler-eye"></i>
-                            </a>`;
-                                }
-
-                                if (canEdit) {
-                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                <i class="icon-xs icon-base ti tabler-edit"></i>
-                            </a>`;
-                                }
-
-                                actions += '</div>';
-                                return actions;
-                            }
-                        }
                     ],
                     layout: {
                         topStart: {
@@ -372,7 +332,6 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    scrollX: true,
                     responsive: true,
                     orderCellsTop: true,
                     ordering: false
@@ -382,9 +341,12 @@
             // Initialize table
             initSalesOrderTable();
 
+            // Tag column hidden by default (0=date,1=no_so,2=customer,3=total,4=status,5=due_date,6=created_by,7=tags)
+            salesOrderTable.column(7).visible(false);
+
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = salesOrderTable.column(6); // Tag column index (0-based)
+                const tagColumn = salesOrderTable.column(7);
                 tagColumn.visible(this.checked);
             });
             let searchTimeout;

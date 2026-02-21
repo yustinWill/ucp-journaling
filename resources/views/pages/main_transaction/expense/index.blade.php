@@ -69,14 +69,19 @@
                                         data-column="2" placeholder="Cari Berdasarkan No Transaksi" data-column-index="1" />
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-3">
-                                    <label class="form-label">Supplier:</label>
+                                    <label class="form-label">Penerima:</label>
                                     <select class="global-select2 form-select" id="supplier-filter"
                                         data-allow-clear="false">
-                                        <option value="">Semua Supplier</option>
+                                        <option value="">Semua Penerima</option>
                                         @foreach ($suppliers as $supplier)
                                             <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
                                         @endforeach
                                     </select>
+                                </div>
+                                <div class="col-12 col-sm-6 col-lg-3 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-secondary" id="reset-filter">
+                                        <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -91,7 +96,7 @@
                         <!-- Column Toggle -->
                         <div class="d-flex align-items-center">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
+                                <input class="form-check-input" type="checkbox" id="toggleTagColumn">
                                 <label class="form-check-label" for="toggleTagColumn">
                                     <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
                                 </label>
@@ -118,11 +123,10 @@
                             <th>Tanggal</th>
                             <th>No Referensi</th>
                             <th>Keterangan</th>
-                            <th>Supplier/Vendor</th>
+                            <th>Penerima</th>
                             <th>Amount</th>
                             <th>Diinput Oleh</th>
                             <th>Tag</th>
-                            <th>Aksi</th>
                         </tr>
                     </thead>
                 </table>
@@ -136,144 +140,137 @@
         $(function() {
             // Permission variables
             const canRead = @json(auth()->user()->can('expense.view'));
-            const canWrite = @json(auth()->user()->can('expense.create'));
-            const canDelete = @json(auth()->user()->can('expense.delete'));
-            const canShowEditButton = @json(auth()->user()->can('expense.edit'));
-            const canShowDeleteButton = @json(auth()->user()->can('expense.delete'));
+            const canViewContact = @json(auth()->user()->can('contact.view'));
+            const canViewUser = @json(auth()->user()->can('user.view'));
 
-            // DataTable initialization
-            const main_table = document.querySelector('#main-table');
             let dt_adv_filter;
 
-            dt_adv_filter = new DataTable(main_table, {
-                    ajax: {
-                        url: '{{ route('main_transaction.expense.index_data_table') }}',
-                        data: function(d) {
-                            d.date_range_filter = $('#date-range-picker').val()
-                            d.transaction_no = $('#transaction-no-filter').val()
-                            d.supplier_filter = $('#supplier-filter').val()
-                        }
+            dt_adv_filter = new DataTable('#main-table', {
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route('main_transaction.expense.index_data_table') }}',
+                    data: function(d) {
+                        d.date_range_filter = $('#date-range-picker').val()
+                        d.transaction_no = $('#transaction-no-filter').val()
+                        d.supplier_filter = $('#supplier-filter').val()
+                    }
+                },
+                columns: [
+                    {
+                        data: 'transaction_date',
+                        width: '110px',
                     },
-                    columns: [{
-                            data: 'transaction_date'
-                        },
-                        {
-                            data: 'transaction_no',
-                            render: function(data, type, row) {
-                                return data;
-                            }
-                        },
-                        {
-                            data: 'description'
-                        },
-                        {
-                            data: 'supplier_name',
-                            render: function(data, type, row) {
-                                if (!data) return '-';
-                                if (canRead) {
-                                    const detailUrl =
-                                        `{{ route('master_data.contact.detail', ':id') }}`
-                                        .replace(':id', row.supplier_id);
-                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                                }
-                                return data;
-                            }
-                        },
-                        {
-                            data: 'total_amount',
-                            className: 'text-end',
-                            render: function(data, type, row) {
-                                if (type === 'display' && data != null && !isNaN(data)) {
-                                    return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
-                                }
-                                return data ?? '';
-                            }
-                        },
-                        {
-                            data: 'created_by_name',
-                            render: function(data, type, row) {
-                                if (canRead) {
-                                    const detailUrl =
-                                        `{{ route('master_data.user.detail', ':id') }}`
-                                        .replace(':id', row.created_by_id);
-                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                                }
-                                return data;
-                            }
-                        },
-                        {
-                            data: 'tags',
-                            render: function(data, type, row) {
-                                let tags = JSON.parse(data);
-                                return tags.map(tag => {
-                                    if (tag.name == null) {
-                                        return ``;
-                                    }
-                                    return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
-                                }).join('');
-                            }
-                        },
-                        {
-                            data: null,
-                            orderable: false,
-                            searchable: false,
-                            responsivePriority: 1,
-                            render: function(data, type, row, meta) {
+                    {
+                        data: 'transaction_no',
+                        width: '150px',
+                        responsivePriority: 1,
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            if (canRead) {
                                 const detailUrl =
-                                    `{{ route('main_transaction.expense.detail', ':id') }}`.replace(
-                                        ':id', row.id);
-                                const editUrl =
-                                    `{{ route('main_transaction.expense.edit', ':id') }}`.replace(
-                                        ':id', row.id);
-                                let actions = '<div class="d-flex gap-2">';
-
-                                if (canRead) {
-                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
-                                        <i class="icon-xs icon-base ti tabler-eye"></i>
-                                    </a>`;
-                                }
-
-                                if (canShowEditButton) {
-                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
-                                        <i class="icon-xs icon-base ti tabler-edit"></i>
-                                    </a>`;
-                                }
-
-                                actions += '</div>';
-                                return actions;
+                                    `{{ route('main_transaction.expense.detail', ':id') }}`
+                                    .replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                             }
-                        }
-                    ],
-                    layout: {
-                        topStart: {
-                            rowClass: 'm-0',
-                            features: []
-                        },
-                        topEnd: {},
-                        bottomStart: {
-                            rowClass: 'row mx-3 justify-content-between',
-                            features: ['info']
-                        },
-                        bottomEnd: 'paging'
-                    },
-                    language: {
-                        paginate: {
-                            next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
-                            previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
-                            first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
-                            last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                            return data;
                         }
                     },
-                    // scrollX: true,
-                    responsive: true,
-                    orderCellsTop: true,
-                    ordering: false
-                });
+                    {
+                        data: 'description'
+                    },
+                    {
+                        data: 'supplier_name',
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            if (canViewContact && row.supplier_id) {
+                                const detailUrl =
+                                    `{{ route('master_data.contact.detail', ':id') }}`
+                                    .replace(':id', row.supplier_id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'total_amount',
+                        className: 'text-end',
+                        render: function(data, type, row) {
+                            if (type === 'display' && data != null && !isNaN(data)) {
+                                return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
+                            }
+                            return data ?? '';
+                        }
+                    },
+                    {
+                        data: 'created_by_name',
+                        responsivePriority: 10001,
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            if (canViewUser && row.created_by_id) {
+                                const detailUrl =
+                                    `{{ route('master_data.user.detail', ':id') }}`
+                                    .replace(':id', row.created_by_id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'tags',
+                        responsivePriority: 10002,
+                        render: function(data, type, row) {
+                            let tags = JSON.parse(data);
+                            return tags.map(tag => {
+                                if (tag.name == null) {
+                                    return ``;
+                                }
+                                return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
+                            }).join('');
+                        }
+                    },
+                ],
+                layout: {
+                    topStart: {
+                        rowClass: 'm-0',
+                        features: []
+                    },
+                    topEnd: {},
+                    bottomStart: {
+                        rowClass: 'row mx-3 justify-content-between',
+                        features: ['info']
+                    },
+                    bottomEnd: 'paging'
+                },
+                language: {
+                    paginate: {
+                        next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                        previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                        first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                        last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                    }
+                },
+                responsive: true,
+                orderCellsTop: true,
+                ordering: false
+            });
+
+            // Tag column hidden by default (0=date,1=transaction_no,2=description,3=supplier,4=amount,5=created_by,6=tags)
+            dt_adv_filter.column(6).visible(false);
+
+            // Reset Filter
+            $('#reset-filter').on('click', function() {
+                $('#date-range-picker').val('');
+                $('#transaction-no-filter').val('');
+                $('#supplier-filter').val('').trigger('change');
+                if (dt_adv_filter) {
+                    dt_adv_filter.draw();
+                }
+            });
 
             // Tag column toggle functionality
             $('#toggleTagColumn').on('change', function() {
-                const column = dt_adv_filter.column(6); // Tag column is index 7
-                column.visible(this.checked);
+                dt_adv_filter.column(6).visible(this.checked);
             });
 
             let searchTimeout;
@@ -281,14 +278,12 @@
                 'keyup change',
                 function() {
                     clearTimeout(searchTimeout);
-                    const input = this;
                     searchTimeout = setTimeout(function() {
                         if (dt_adv_filter) {
-                            dt_adv_filter.search(input.value).draw();
+                            dt_adv_filter.draw();
                         }
                     }, 400); // 400ms delay
                 });
-
         });
     </script>
 @endsection

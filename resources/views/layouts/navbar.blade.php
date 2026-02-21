@@ -13,7 +13,7 @@
                 <div class="nav-item navbar-search-wrapper mb-0">
                     <span id="company-badge-web" style="">
                         <span class="badge bg-primary">
-                            Company Saat Ini: <b> {{ session('user_company_code') }} -
+                            Perusahaan: <b> {{ session('user_company_code') }} -
                                 {{ session('user_company_name') }}</b>
                         </span>
                     </span>
