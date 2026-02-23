@@ -143,20 +143,26 @@
                         <input type="text" class="form-control" id="sales-order-no-filter"
                             placeholder="Cari Sales Order">
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <label class="form-label">Status:</label>
-                        <select class="global-select2 form-select" id="status-filter" data-allow-clear="true">
-                            <option value="">Semua Status</option>
-                            <option value="Menunggu">Menunggu</option>
+                    <div class="col-12 col-sm-6 col-lg-2">
+                        <label class="form-label">Status SD:</label>
+                        <select class="global-select2 form-select" id="sd-status-filter" data-allow-clear="true">
+                            <option value="">Semua</option>
+                            <option value="Belum Kirim">Belum Kirim</option>
                             <option value="Menunggu Pengiriman">Menunggu Pengiriman</option>
                             <option value="Dikirim">Dikirim</option>
                             <option value="Terkirim">Terkirim</option>
-                            <option value="Dibayar">Dibayar</option>
-                            <option value="Terbayar">Terbayar</option>
-                            <option value="Selesai">Selesai</option>
                         </select>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-3 mt-3 d-flex align-items-end">
+                    <div class="col-12 col-sm-6 col-lg-2">
+                        <label class="form-label">Status SI:</label>
+                        <select class="global-select2 form-select" id="si-status-filter" data-allow-clear="true">
+                            <option value="">Semua</option>
+                            <option value="Belum Bayar">Belum Bayar</option>
+                            <option value="Dibayar Sebagian">Dibayar Sebagian</option>
+                            <option value="Lunas">Lunas</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-2 mt-3 d-flex align-items-end">
                         <button type="button" class="btn btn-outline-secondary" id="reset-filter">
                             <i class="icon-base ti tabler-filter-off me-1"></i> Reset Filter
                         </button>
@@ -199,7 +205,8 @@
                             <th>No SO</th>
                             <th>Customer</th>
                             <th>Total</th>
-                            <th>Status</th>
+                            <th>Status SD</th>
+                            <th>Status SI</th>
                             <th>Tgl Jatuh Tempo</th>
                             <th>Diinput Oleh</th>
                             <th>Tag</th>
@@ -240,7 +247,8 @@
                             d.on_due_date_filter = $('#on-due-date-filter').val()
                             d.customer_filter = $('#customer-filter').val()
                             d.sales_order_no_filter = $('#sales-order-no-filter').val()
-                            d.status_filter = $('#status-filter').val()
+                            d.sd_status_filter = $('#sd-status-filter').val()
+                            d.si_status_filter = $('#si-status-filter').val()
                         }
                     },
                     columns: [
@@ -288,44 +296,54 @@
                         },
                         {
                             data: null,
-                            width: '180px',
+                            width: '140px',
                             responsivePriority: 1,
                             render: function(data, type, row) {
-                                let status = 'Menunggu';
-                                let badgeClass = 'bg-label-secondary';
-
-                                const siCount = parseInt(row.si_count) || 0;
                                 const sdCount = parseInt(row.sd_count) || 0;
-                                const siSettledCount = parseInt(row.si_settled_count) || 0;
                                 const sdWaitingCount = parseInt(row.sd_waiting_count) || 0;
                                 const sdAcceptedCount = parseInt(row.sd_accepted_count) || 0;
                                 const sdConfirmedCount = parseInt(row.sd_confirmed_count) || 0;
 
-                                // Priority order: Menunggu -> Menunggu Pengiriman -> Dikirim -> Terkirim -> Dibayar -> Terbayar -> Selesai
-                                if (sdConfirmedCount > 0 && siSettledCount > 0) {
-                                    // Both SD confirmed and SI settled
-                                    status = 'Selesai'; badgeClass = 'bg-label-success';
-                                } else if (siSettledCount > 0) {
-                                    // SI settled (regardless of SD status)
-                                    status = 'Terbayar'; badgeClass = 'bg-label-success';
-                                } else if (siCount > 0) {
-                                    // SI created but not settled
-                                    status = 'Dibayar'; badgeClass = 'bg-label-primary';
-                                } else if (sdConfirmedCount > 0) {
-                                    // SD confirmed but no SI
-                                    status = 'Terkirim'; badgeClass = 'bg-label-info';
+                                let status = 'Belum Kirim';
+                                let badgeClass = 'bg-label-secondary';
+
+                                // SD Status logic
+                                if (sdConfirmedCount > 0) {
+                                    status = 'Terkirim';
+                                    badgeClass = 'bg-label-success';
                                 } else if (sdAcceptedCount > 0) {
-                                    // SD accepted but not confirmed
-                                    status = 'Dikirim'; badgeClass = 'bg-label-warning';
-                                } else if (sdWaitingCount > 0) {
-                                    // SD created but not accepted
-                                    status = 'Menunggu Pengiriman'; badgeClass = 'bg-label-dark';
-                                } else if (sdCount > 0) {
-                                    // SD exists (fallback)
-                                    status = 'Menunggu Pengiriman'; badgeClass = 'bg-label-dark';
-                                } else {
-                                    // No SD and no SI
-                                    status = 'Menunggu'; badgeClass = 'bg-label-secondary';
+                                    status = 'Dikirim';
+                                    badgeClass = 'bg-label-warning';
+                                } else if (sdWaitingCount > 0 || sdCount > 0) {
+                                    status = 'Menunggu Pengiriman';
+                                    badgeClass = 'bg-label-dark';
+                                }
+
+                                return `<span class="badge ${badgeClass}">${status}</span>`;
+                            }
+                        },
+                        {
+                            data: null,
+                            width: '140px',
+                            responsivePriority: 1,
+                            render: function(data, type, row) {
+                                const siCount = parseInt(row.si_count) || 0;
+                                const siSettledCount = parseInt(row.si_settled_count) || 0;
+                                const siPartialCount = parseInt(row.si_partial_count) || 0;
+
+                                let status = 'Belum Bayar';
+                                let badgeClass = 'bg-label-secondary';
+
+                                // SI Status logic
+                                if (siSettledCount > 0) {
+                                    status = 'Lunas';
+                                    badgeClass = 'bg-label-success';
+                                } else if (siPartialCount > 0) {
+                                    status = 'Dibayar Sebagian';
+                                    badgeClass = 'bg-label-warning';
+                                } else if (siCount > 0) {
+                                    status = 'Belum Bayar';
+                                    badgeClass = 'bg-label-info';
                                 }
 
                                 return `<span class="badge ${badgeClass}">${status}</span>`;
@@ -400,7 +418,7 @@
                 tagColumn.visible(this.checked);
             });
             let searchTimeout;
-            $('#date-range-picker, #on-due-date-filter, #customer-filter, #sales-order-no-filter, #status-filter').on(
+            $('#date-range-picker, #on-due-date-filter, #customer-filter, #sales-order-no-filter, #sd-status-filter, #si-status-filter').on(
                 'keyup change',
                 function() {
                     clearTimeout(searchTimeout);
@@ -418,7 +436,8 @@
                 $('#on-due-date-filter').val('');
                 $('#sales-order-no-filter').val('');
                 $('#customer-filter').val('').trigger('change');
-                $('#status-filter').val('').trigger('change');
+                $('#sd-status-filter').val('').trigger('change');
+                $('#si-status-filter').val('').trigger('change');
                 if (salesOrderTable) {
                     salesOrderTable.search('').draw();
                 }

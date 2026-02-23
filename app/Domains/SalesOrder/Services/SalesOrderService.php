@@ -104,6 +104,7 @@ class SalesOrderService
                 DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) as si_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) as sd_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) as si_settled_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status = 'PARTIALLY_PAID') as si_partial_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND (sd.is_accepted = 0 OR sd.is_accepted IS NULL)) as sd_waiting_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_accepted = 1 AND (sd.is_confirmed = '0' OR sd.is_confirmed IS NULL)) as sd_accepted_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') as sd_confirmed_count")
@@ -141,13 +142,12 @@ class SalesOrderService
             $query->where('so.transaction_code', 'like', "%{$salesOrderNoFilter}%");
         }
 
-        // Status filter
-        if ($statusFilter = request()->input('status_filter')) {
-            switch ($statusFilter) {
-                case 'Menunggu':
-                    // No SI and no SD created
-                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) = 0")
-                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) = 0");
+        // SD Status filter
+        if ($sdStatusFilter = request()->input('sd_status_filter')) {
+            switch ($sdStatusFilter) {
+                case 'Belum Kirim':
+                    // No SD created
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) = 0");
                     break;
                 case 'Menunggu Pengiriman':
                     // SD created but not accepted yet
@@ -158,24 +158,26 @@ class SalesOrderService
                     $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_accepted = 1 AND (sd.is_confirmed = '0' OR sd.is_confirmed IS NULL)) > 0");
                     break;
                 case 'Terkirim':
-                    // SD confirmed but no SI yet
-                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0")
-                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) = 0");
+                    // SD confirmed
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0");
                     break;
-                case 'Dibayar':
-                    // SI created but not settled
-                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) > 0")
-                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) = 0");
+            }
+        }
+
+        // SI Status filter
+        if ($siStatusFilter = request()->input('si_status_filter')) {
+            switch ($siStatusFilter) {
+                case 'Belum Bayar':
+                    // SI created but not paid or partially paid
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status NOT IN ('PAID', 'SETTLED', 'PARTIALLY_PAID')) > 0");
                     break;
-                case 'Terbayar':
-                    // SI settled but SD not confirmed (SI without delivery)
-                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0")
-                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') = 0");
+                case 'Dibayar Sebagian':
+                    // SI with partial payment
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status = 'PARTIALLY_PAID') > 0");
                     break;
-                case 'Selesai':
-                    // Both SD confirmed AND SI settled
-                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0")
-                          ->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0");
+                case 'Lunas':
+                    // SI fully paid/settled
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0");
                     break;
             }
         }
