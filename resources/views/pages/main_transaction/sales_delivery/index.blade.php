@@ -250,8 +250,6 @@
                         },
                         {
                             data: 'delivery_number',
-                            width: '150px',
-                            responsivePriority: 1,
                             render: function(data, type, row) {
                                 const detailUrl = "{{ route('main_transaction.sales_delivery.detail', ':id') }}".replace(':id', row.id);
                                 return `<a href="${detailUrl}" class="text-primary fw-bold">${data}</a>`;

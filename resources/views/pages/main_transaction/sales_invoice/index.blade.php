@@ -225,7 +225,7 @@
                                     return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
                                 }).join('');
                             }
-                        },
+                        }
                     ],
                     layout: {
                         topStart: {

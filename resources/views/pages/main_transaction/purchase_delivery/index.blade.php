@@ -187,6 +187,8 @@
                                     return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 }
                                 return data;
+                                const detailUrl = `{{ route('main_transaction.purchase_delivery.detail', ':id') }}`.replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-bold">${data}</a>`;
                             }
                         },
                         {
@@ -275,7 +277,7 @@
                                     return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
                                 }).join('');
                             }
-                        },
+                        }
                     ],
                     layout: {
                         topStart: {
