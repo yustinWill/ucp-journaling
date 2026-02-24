@@ -260,7 +260,7 @@
                         value="0" />
                 </div>
             </div>
-            <div class="row g-3 mb-4">
+            <div class="row g-3 mb-4" id="component-cost-container" style="display: none;">
                 <div class="col-md-6">
                     <label class="form-label">Total Biaya Komponen Perunit</label>
                     <input type="text" class="form-control currency-input text-end" id="total-component-cost-unit" name="total_component_cost_unit" disabled value="0" />
@@ -461,37 +461,27 @@
                 calculateProductionCosts();
             }
 
+            // Wrapper function to calculate costs from table after DOM updates
+            function calculateProductionCostsFromTable() {
+                // Small delay to ensure table is fully rendered
+                setTimeout(function() {
+                    calculateProductionCosts();
+                    console.log('📊 Calculated costs from rendered table');
+                }, 50);
+            }
+
             // Calculate production costs based on component prices
             function calculateProductionCosts() {
                 const quantityPlanned = parseFloat($('#quantity-planned').val()) || 0;
 
                 if (quantityPlanned <= 0) {
-                    $('#total-component-cost-unit').val('Rp 0');
                     $('#hpp-production').val('Rp 0');
                     return;
                 }
 
-                let totalComponentCost = 0;
-
-                // Sum up all purchase prices from the visible component table
-                $('.purchase-price').each(function() {
-                    const pricePerUnit = parseFloat($(this).data('price-per-unit')) || 0;
-                    const $row = $(this).closest('tr');
-
-                    if (currentProductionMode === 'QUANTITY_PLANNED') {
-                        // In preview mode, use total required quantity
-                        const qtyPerBundle = parseFloat($row.find('.total-required').data('qty-per-bundle')) || 0;
-                        const totalRequired = qtyPerBundle * quantityPlanned;
-                        totalComponentCost += pricePerUnit * totalRequired;
-                    } else {
-                        // In material-based mode, use actual material input
-                        const materialInput = parseCurrency($row.find('.material-input').val()) || 0;
-                        totalComponentCost += pricePerUnit * materialInput;
-                    }
-                });
-
-                // Calculate per-unit costs
-                const totalComponentCostPerUnit = totalComponentCost / quantityPlanned;
+                // Read current component cost from field (already calculated in loadBundleComponents)
+                const totalComponentCostPerUnitText = $('#total-component-cost-unit').val() || 'Rp 0';
+                const totalComponentCostPerUnit = parseCurrency(totalComponentCostPerUnitText);
 
                 // Get bundle production cost (additional costs like labor, overhead, etc.)
                 const bundlePriceText = $('#bundle-price').val() || 'Rp 0';
@@ -506,13 +496,11 @@
                 // HPP = Component costs per unit + Bundle production cost per unit + Biaya Produksi per unit
                 const hppPerUnit = totalComponentCostPerUnit + bundlePricePerUnit + biayaProduksiPerUnit;
 
-                // Update the fields
+                // Update the fields (NOT total-component-cost-unit, only HPP-related fields)
                 $('#bundle-price-unit').val('Rp ' + formatNumber(bundlePricePerUnit));
-                $('#total-component-cost-unit').val('Rp ' + formatNumber(totalComponentCostPerUnit));
                 $('#hpp-production').val('Rp ' + formatNumber(hppPerUnit));
 
-                console.log('💰 Production Costs Calculated:', {
-                    totalComponentCost: totalComponentCost,
+                console.log('💰 HPP Calculated:', {
                     totalComponentCostPerUnit: totalComponentCostPerUnit,
                     bundlePricePerUnit: bundlePricePerUnit,
                     biayaProduksi: biayaProduksi,
@@ -565,6 +553,7 @@
                     // Switch component tables
                     $('#components-section-preview').hide();
                     $('#components-section-input').show();
+                    $('#component-cost-container').show();
 
                 } else {
                     // Switch to Quantity Planned mode
@@ -583,6 +572,7 @@
                     // Switch component tables
                     $('#components-section-preview').show();
                     $('#components-section-input').hide();
+                    $('#component-cost-container').show();
                 }
 
                 // Reload components if bundle product already selected
@@ -629,6 +619,7 @@
                 if (bundleProductId && warehouseId) {
                     loadBundleComponents(bundleProductId, warehouseId);
                     $('#components-disabled-message').hide();
+                    $('#component-cost-container').show();
 
                     if (currentProductionMode === 'QUANTITY_PLANNED') {
                         $('#components-section-preview').show();
@@ -639,6 +630,7 @@
                     $('#components-disabled-message').show();
                     $('#components-section-preview').hide();
                     $('#components-section-input').hide();
+                    $('#component-cost-container').hide();
                     $('#components-rows-preview').empty();
                     $('#components-rows-input').empty();
                     bundleComponents = [];
@@ -653,6 +645,7 @@
                 if (bundleProductId && warehouseId) {
                     loadBundleComponents(bundleProductId, warehouseId);
                     $('#components-disabled-message').hide();
+                    $('#component-cost-container').show();
 
                     if (currentProductionMode === 'QUANTITY_PLANNED') {
                         $('#components-section-preview').show();
@@ -663,6 +656,7 @@
                     $('#components-disabled-message').show();
                     $('#components-section-preview').hide();
                     $('#components-section-input').hide();
+                    $('#component-cost-container').hide();
                     $('#components-rows-preview').empty();
                     $('#components-rows-input').empty();
                     bundleComponents = [];
@@ -737,18 +731,69 @@
                     success: function(response) {
                         if (response.success) {
                             bundleComponents = response.components;
+
+                            // Display components
                             if (currentProductionMode === 'QUANTITY_PLANNED') {
                                 displayComponentsPreview(bundleComponents);
                             } else {
                                 displayComponentsInput(bundleComponents);
                             }
-                            updateFIFOPrices();
+
+                            // Calculate component cost immediately from bundleComponents array
+                            const quantityPlanned = parseFloat($('#quantity-planned').val()) || 0;
+                            if (quantityPlanned > 0 && bundleComponents.length > 0) {
+                                let totalComponentCost = 0;
+
+                                // Sum up component costs using purchase_price from API response
+                                bundleComponents.forEach(function(component) {
+                                    const purchasePrice = parseFloat(component.purchase_price) || 0;
+                                    const qtyRequired = parseFloat(component.quantity_required) || 0;
+
+                                    if (currentProductionMode === 'QUANTITY_PLANNED') {
+                                        // Quantity Planned mode: use quantity_required * quantityPlanned
+                                        const totalRequired = qtyRequired * quantityPlanned;
+                                        totalComponentCost += purchasePrice * totalRequired;
+                                    } else {
+                                        // Material-Based mode: calculate based on material input (will update later via event)
+                                        const totalRequired = qtyRequired * quantityPlanned;
+                                        totalComponentCost += purchasePrice * totalRequired;
+                                    }
+                                });
+
+                                // Calculate per-unit cost
+                                const totalComponentCostPerUnit = totalComponentCost / quantityPlanned;
+                                $('#total-component-cost-unit').val('Rp ' + formatNumber(totalComponentCostPerUnit));
+
+                                console.log('💰 Component cost calculated from bundleComponents:', {
+                                    totalComponentCost: totalComponentCost,
+                                    totalComponentCostPerUnit: totalComponentCostPerUnit,
+                                    quantityPlanned: quantityPlanned,
+                                    componentsCount: bundleComponents.length,
+                                    mode: currentProductionMode
+                                });
+                            }
+
+                            // Update other calculations
+                            setTimeout(function() {
+                                updateFIFOPrices();
+                                getBundleCost();
+
+                                // Recalculate full HPP (includes bundle cost + biaya produksi)
+                                setTimeout(function() {
+                                    calculateProductionCosts();
+                                }, 150);
+                            }, 50);
+
+                            // Show component cost container when components are loaded
+                            $('#component-cost-container').show();
                         } else {
                             bundleComponents = [];
+                            $('#component-cost-container').hide();
                         }
                     },
                     error: function() {
                         bundleComponents = [];
+                        $('#component-cost-container').hide();
                     }
                 });
             }
@@ -855,9 +900,14 @@
 
                 // Attach event listeners to material inputs
                 $('.material-input').on('input', function() {
+                    // Calculate maximum production first (updates quantity-planned)
                     calculateMaximumProduction();
-                    calculateProductionCosts();
-                    updateFIFOPrices();
+
+                    // Small delay to ensure DOM updates before calculating costs
+                    setTimeout(function() {
+                        calculateProductionCosts();
+                        updateFIFOPrices();
+                    }, 10);
                 });
             }
 
