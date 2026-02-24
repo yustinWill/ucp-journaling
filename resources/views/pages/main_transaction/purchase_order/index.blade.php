@@ -148,6 +148,14 @@
                             width: '140px',
                             responsivePriority: 1,
                             render: function(data, type, row) {
+                                const detailUrl = `{{ route('main_transaction.purchase_order.detail', ':id') }}`.replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-bold">${data}</a>`;
+                            }
+                        },
+                        {
+                            data: 'supplier_name',
+                            width: '180px',
+                            render: function(data, type, row) {
                                 if (!data) return '-';
                                 if (canRead) {
                                     const detailUrl =

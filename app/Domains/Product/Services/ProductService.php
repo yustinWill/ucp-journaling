@@ -273,7 +273,11 @@ class ProductService
                 't.minimum_stock',
                 't.f_unit_id',
                 'mu.name AS unit_name',
-                't.average_price',
+                DB::raw('(SELECT estimated_hpp
+                    FROM t_product_stock_batches
+                    WHERE f_product_id = t.id
+                    ORDER BY batch_date DESC, id DESC
+                    LIMIT 1) as average_price'),
                 't.unit_purchase_price',
                 't.unit_sell_price',
                 't.status',

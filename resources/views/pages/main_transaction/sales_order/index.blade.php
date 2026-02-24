@@ -269,6 +269,8 @@
                                     return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
                                 }
                                 return data;
+                                const detailUrl = `{{ route('main_transaction.sales_order.detail', ':id') }}`.replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-bold">${data}</a>`;
                             }
                         },
                         {
@@ -379,6 +381,53 @@
                                 }).join('');
                             }
                         },
+                        {
+                            data: null,
+                            width: '120px',
+                            render: function(data, type, row) {
+                                // Calculate overall status based on SI and SD
+                                let status = 'Menunggu';
+                                let badgeClass = 'bg-label-secondary';
+
+                                const siCount = parseInt(row.si_count) || 0;
+                                const sdCount = parseInt(row.sd_count) || 0;
+                                const siSettledCount = parseInt(row.si_settled_count) || 0;
+                                const sdConfirmedCount = parseInt(row.sd_confirmed_count) || 0;
+
+                                // Check if both SD confirmed and SI settled -> Selesai
+                                if (sdConfirmedCount > 0 && siSettledCount > 0) {
+                                    status = 'Selesai';
+                                    badgeClass = 'bg-label-success';
+                                }
+                                // SI settled -> Terbayar
+                                else if (siSettledCount > 0) {
+                                    status = 'Terbayar';
+                                    badgeClass = 'bg-label-info';
+                                }
+                                // SI created -> Dibayar
+                                else if (siCount > 0) {
+                                    status = 'Dibayar';
+                                    badgeClass = 'bg-label-primary';
+                                }
+                                // SD confirmed -> Terkirim
+                                else if (sdConfirmedCount > 0) {
+                                    status = 'Terkirim';
+                                    badgeClass = 'bg-label-info';
+                                }
+                                // SD created but not confirmed -> Dikirim
+                                else if (sdCount > 0) {
+                                    status = 'Dikirim';
+                                    badgeClass = 'bg-label-warning';
+                                }
+                                // No SI and SD -> Menunggu
+                                else {
+                                    status = 'Menunggu';
+                                    badgeClass = 'bg-label-secondary';
+                                }
+
+                                return `<span class="badge ${badgeClass}">${status}</span>`;
+                            }
+                        }
                     ],
                     layout: {
                         topStart: {
