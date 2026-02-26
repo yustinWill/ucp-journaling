@@ -69,20 +69,41 @@ class CreateProductAction
 
             if (isset($data['product_units']) && !empty($data['product_units'])) {
                 $product_units = [];
+                $defaultUnit = null;
+                $otherUnits = [];
+
                 foreach ($data['product_units'] as $row) {
                     // Skip if row doesn't have unit_id
                     if (!isset($row['unit_id']) || empty($row['unit_id'])) {
                         continue;
                     }
 
-                    $product_units[] = [
+                    // Check if this unit is marked as default
+                    $isDefault = isset($row['is_default']) && ($row['is_default'] === 1 || $row['is_default'] === '1' || $row['is_default'] === true);
+
+                    $unitData = [
                         'unit_id' => $row['unit_id'],
-                        'is_default' => $row['is_default'] ?? 0,
+                        'is_default' => $isDefault ? 1 : 0,
                         'conversion_factor' => $row['conversion_factor'] ?? 1,
                         'status' => $row['status'] ?? 'ACTIVE',
                         'note' => $row['note'] ?? '',
                     ];
+
+                    // Separate default unit from others
+                    if ($isDefault && $defaultUnit === null) {
+                        $defaultUnit = $unitData;
+                    } else {
+                        // Force non-default for duplicates
+                        $unitData['is_default'] = 0;
+                        $otherUnits[] = $unitData;
+                    }
                 }
+
+                // Process default unit FIRST, then others
+                if ($defaultUnit !== null) {
+                    $product_units[] = $defaultUnit;
+                }
+                $product_units = array_merge($product_units, $otherUnits);
 
                 if (!empty($product_units)) {
                     app(ProductUnitService::class)->createMultiple($product_id, $product_units);

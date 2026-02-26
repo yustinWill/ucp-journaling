@@ -781,7 +781,7 @@
                         </div>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label class="form-label">Harga Dasar <span style="color: red;">*</span></label>
+                                <label class="form-label">Harga Dasar Penjualan <span style="color: red;">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">Rp</span>
                                     <input type="text" class="form-control currency-input" id="basePrice"

@@ -209,7 +209,7 @@ class WarehouseController extends Controller
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
                 'warehouse_dest_id' => 'required|integer|exists:m_warehouses,id',
                 'pic_id' => 'nullable|integer|exists:m_contacts,id',
-                'description' => 'required|string|max:1000',
+                'description' => 'nullable|string|max:1000',
                 'memo' => 'nullable|string|max:500',
                 'form_type' => 'nullable|string|max:500',
                 'form_reference_id' => 'nullable|string|max:500',

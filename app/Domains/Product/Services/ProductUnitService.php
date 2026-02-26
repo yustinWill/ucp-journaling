@@ -26,6 +26,14 @@ class ProductUnitService
      */
     public function create(int $productId, array $data): int
     {
+        // If this unit is marked as default, ensure no other unit is default for this product
+        if (isset($data['is_default']) && $data['is_default']) {
+            DB::table($this->table_name)
+                ->where('company_code', session('user_company_code'))
+                ->where('f_product_id', $productId)
+                ->update(['is_default' => false]);
+        }
+
         // Check if this unit already exists for this product (handles both create and update scenarios)
         $existing = DB::table($this->table_name)
             ->where('company_code', session('user_company_code'))
