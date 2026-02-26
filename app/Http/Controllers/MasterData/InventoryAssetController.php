@@ -150,8 +150,6 @@ class InventoryAssetController extends Controller
             $data['useful_life_years'] = round($request->depreciation_period_months / 12, 2);
             $data['f_depreciation_expense_coa_code'] = $request->depreciation_account;
             $data['f_accumulated_depreciation_coa_code'] = $request->accumulated_depreciation_account;
-            $data['f_coa_depreciation_debit'] = $request->depreciation_account_debit;
-            $data['f_coa_depreciation_credit'] = $request->depreciation_account_credit;
 
             // Calculate depreciation values
             $acquisitionValue = floatval(str_replace(',', '', $request->price));

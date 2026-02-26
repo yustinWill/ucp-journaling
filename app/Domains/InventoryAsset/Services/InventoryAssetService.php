@@ -189,8 +189,6 @@ class InventoryAssetService
             'net_book_value' => $data['net_book_value'] ?? 0,
             'f_depreciation_expense_coa_code' => $data['f_depreciation_expense_coa_code'] ?? null,
             'f_accumulated_depreciation_coa_code' => $data['f_accumulated_depreciation_coa_code'] ?? null,
-            'f_coa_depreciation_debit' => $data['f_coa_depreciation_debit'] ?? null,
-            'f_coa_depreciation_credit' => $data['f_coa_depreciation_credit'] ?? null,
             'quantity' => $data['quantity'] ?? 0,
             'f_unit_id' => $data['unit_id'] ?? null,
             'unit_cost' => $data['unit_cost'] ?? 0,
