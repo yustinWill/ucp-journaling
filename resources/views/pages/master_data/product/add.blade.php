@@ -584,10 +584,16 @@
                         <div class="mb-4">
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
+                                    <label class="form-label">Resep Qty <span style="color: red;">*</span></label>
+                                    <input type="text" class="form-control numeric-input text-end"
+                                        id="recipe-qty" placeholder="65" value="65" />
+                                    <small class="form-text text-muted">Jumlah resep/batch yang menghasilkan qty batch bundle (contoh: 65 resep)</small>
+                                </div>
+                                <div class="col-md-6">
                                     <label class="form-label">Qty Batch Bundle <span style="color: red;">*</span></label>
                                     <input type="text" class="form-control numeric-input text-end"
-                                        id="bundle-batch-qty" placeholder="0" />
-                                    <small class="form-text text-muted">Jumlah item per batch untuk bundle ini</small>
+                                        id="bundle-batch-qty" placeholder="73412" />
+                                    <small class="form-text text-muted">Jumlah item yang dihasilkan dari resep qty (contoh: 73412 pcs)</small>
                                 </div>
                             </div>
                         </div>
@@ -1404,8 +1410,8 @@
                         ])
                     }
 
-                    // bundle_batch_qty is always required for bundle
-                    requiredFields.push('bundle-batch-qty');
+                    // recipe_qty and bundle_batch_qty are always required for bundle
+                    requiredFields.push('recipe-qty', 'bundle-batch-qty');
                 }
 
                 requiredFields.forEach(function(fieldId) {
@@ -1542,6 +1548,7 @@
                         data.bundle_purchase_enabled = $('#bundle-enable-purchase').is(':checked');
                         data.bundle_sales_enabled = $('#bundle-enable-sales').is(':checked');
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');
+                        data.recipe_qty = parseCurrency($('#recipe-qty').val());
                         data.bundle_batch_qty = parseCurrency($('#bundle-batch-qty').val());
 
                         if (data.bundle_purchase_enabled) {

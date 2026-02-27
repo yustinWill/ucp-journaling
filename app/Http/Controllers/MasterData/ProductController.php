@@ -396,6 +396,17 @@ class ProductController extends Controller
                         }
                     },
                 ],
+                'recipe_qty' => [
+                    'numeric',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            empty($value)
+                        ) {
+                            $fail('The recipe qty field is required when type is bundle.');
+                        }
+                    },
+                ],
                 'bundle_batch_qty' => [
                     'numeric',
                     function ($attribute, $value, $fail) use ($req) {
@@ -486,6 +497,7 @@ class ProductController extends Controller
                 'bundle_inventory_account' => 'Akun Persediaan Bundle',
                 'bundle_track_quantity' => 'Lacak Kuantitas Bundle',
                 'bundle_track_batch' => 'Lacak Batch Bundle',
+                'recipe_qty' => 'Resep Qty',
                 'bundle_batch_qty' => 'Qty Batch Bundle',
                 'bundle_components' => 'Komponen Bundle',
                 'bundle_components.*.product_id' => 'Produk Komponen Bundle',
@@ -915,6 +927,17 @@ class ProductController extends Controller
                         }
                     },
                 ],
+                'recipe_qty' => [
+                    'numeric',
+                    function ($attribute, $value, $fail) use ($req) {
+                        if (
+                            $req->input('type') === 'bundle' &&
+                            empty($value)
+                        ) {
+                            $fail('The recipe qty field is required when type is bundle.');
+                        }
+                    },
+                ],
                 'bundle_batch_qty' => [
                     'numeric',
                     function ($attribute, $value, $fail) use ($req) {
@@ -1030,6 +1053,7 @@ class ProductController extends Controller
                 'bundle_inventory_account' => 'Akun Persediaan Bundle',
                 'bundle_track_quantity' => 'Lacak Kuantitas Bundle',
                 'bundle_track_batch' => 'Lacak Batch Bundle',
+                'recipe_qty' => 'Resep Qty',
                 'bundle_batch_qty' => 'Qty Batch Bundle',
                 'bundle_components' => 'Komponen Bundle',
                 'bundle_components.*.composition_id' => 'ID Komposisi Komponen Bundle',
