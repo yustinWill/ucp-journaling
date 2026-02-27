@@ -35,7 +35,7 @@ class ProductService
     public function findAllBundle()
     {
         return DB::table($this->table_name.' as m_products')
-            ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name','m_products.bundle_batch_qty')
+            ->select('m_products.id', 'm_products.name', 'm_products.code', 'm_units.name as unit_name','m_products.recipe_qty','m_products.bundle_batch_qty')
             ->join('m_units', 'm_products.f_unit_id', '=', 'm_units.id')
             ->where('m_products.type', '=', 'BUNDLE')
             ->orderBy('m_products.name', 'asc')

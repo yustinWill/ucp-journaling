@@ -52,7 +52,7 @@
                                 data-allow-clear="false" required>
                                 <option value="">Pilih Bundle Product</option>
                                 @foreach ($bundleProducts as $product)
-                                    <option data-bundle-batch-qty="{{$product->bundle_batch_qty}}" data-unit-name="{{$product->unit_name}}" value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
+                                    <option data-recipe-qty="{{$product->recipe_qty ?? 1}}" data-bundle-batch-qty="{{$product->bundle_batch_qty}}" data-unit-name="{{$product->unit_name}}" value="{{ $product->id }}">{{ $product->code }} - {{ $product->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -94,18 +94,18 @@
             </div>
 
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
+                {{-- <div class="col-md-6">
                     <label class="form-label">Mode Produksi <span style="color: red;">*</span></label>
                     <div class="form-check form-switch mb-2">
-                        <input class="form-check-input" type="checkbox" id="production-mode-toggle" checked />
+                        <input class="form-check-input" type="checkbox" id="production-mode-toggle" />
                         <label class="form-check-label" for="production-mode-toggle">
-                            <span id="production-mode-label">Mode: Material-Based</span>
+                            <span id="production-mode-label">Mode: Quantity Planned (Default)</span>
                         </label>
                     </div>
                     <small class="form-text text-muted" id="production-mode-description">
-                        Input material yang tersedia, sistem akan hitung maksimal produksi
+                        Tentukan jumlah recipe, sistem akan hitung kebutuhan material
                     </small>
-                </div>
+                </div> --}}
                 <div class="col-md-6">
                     <label class="form-label">Penanggung Jawab <span style="color: red;">*</span></label>
                     <div class="row g-2">
@@ -131,7 +131,7 @@
             </div>
 
             <!-- Batch Bundle Qty + Max Producible (Material-Based Mode Only) -->
-            <div class="row g-3 mb-4" id="material-based-container">
+            <div class="row g-3 mb-4" id="material-based-container" style="display: none;">
                 <div class="col-md-6">
                     <label class="form-label">Batch Bundle Qty <span style="color: red;">*</span></label>
                     <input type="number" class="form-control" id="batch-bundle-qty"
@@ -147,29 +147,33 @@
                 </div>
             </div>
 
-            <!-- Batch Bundle Qty for Quantity Planned Mode -->
-            <div class="row g-3 mb-4" id="batch-qty-planned-container" style="display: none;">
+            <!-- Recipe Qty for Quantity Planned Mode -->
+            <div class="row g-3 mb-4" id="batch-qty-planned-container">
                 <div class="col-md-6">
-                    <label class="form-label">Batch Bundle Qty <span style="color: red;">*</span></label>
-                    <input type="number" class="form-control" id="batch-qty-planned"
-                        placeholder="1" min="1" step="1" value="1" required />
-                    <small class="form-text text-muted">Berapa batch yang akan diproduksi</small>
+                    <label class="form-label">Recipe Qty <span style="color: red;">*</span></label>
+                    <input type="number" class="form-control" id="recipe-qty-planned"
+                        placeholder="1" min="1" step="0.01" value="" required />
+                    <small class="form-text text-muted">Jumlah resep/batch yang akan dibuat (default dari produk)</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" id="quantity-result-label">Quantity Result</label>
                     <input type="text" class="form-control" id="quantity-result" disabled value="0" />
-                    <small class="form-text text-muted">Hasil produksi = Batch × Bundle Batch Qty</small>
+                    <small class="form-text text-muted">Hasil produksi berdasarkan recipe qty</small>
                 </div>
             </div>
 
             <!-- Quantity Planned (Hidden for Quantity Planned mode, visible for Material-Based) -->
-            <div class="row g-3 mb-4" id="quantity-planned-container">
-                <div class="col-md-6">
+            <div class="row g-3 mb-4" id="quantity-planned-container" style="display: none;">
+                <div class="col-md-12">
                     <label class="form-label" id="quantity-planned-label">Quantity Planned <span style="color: red;">*</span></label>
                     <input type="number" class="form-control" id="quantity-planned" name="quantity_planned"
                         placeholder="0" min="1" step="1" required disabled />
                     <small class="form-text text-muted" id="quantity-planned-note"><span style="color: #ff6b6b;">Dihitung otomatis dari material input</span></small>
                 </div>
+            </div>
+
+            <!-- Biaya Produksi (Always visible in both modes) -->
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Biaya Produksi <span class="text-muted">(Opsional)</span></label>
                     <div class="input-group">
@@ -313,9 +317,10 @@
     <script>
         $(function() {
             // Global state variables
-            let currentProductionMode = 'MATERIAL_BASED'; // QUANTITY_PLANNED or MATERIAL_BASED
+            let currentProductionMode = 'QUANTITY_PLANNED'; // QUANTITY_PLANNED or MATERIAL_BASED (default: QUANTITY_PLANNED)
             let bundleComponents = [];
             let productBundleBatchQty = 0; // Store the product's default bundle_batch_qty
+            let productRecipeQty = 1; // Store the product's default recipe_qty
             $('.currency-input').each(function() {
                 new Cleave(this, {
                     numeral: true,
@@ -593,11 +598,12 @@
                 const bundleProductId = $('#bundle-product').val();
                 const warehouseId = $('#warehouse').val();
 
-                // Get batch-bundle-qty and unit-name from selected option's data attribute
+                // Get recipe-qty, bundle-batch-qty and unit-name from selected option's data attribute
                 const selectedOption = $(this).find('option:selected');
+                productRecipeQty = parseFloat(selectedOption.data('recipe-qty')) || 1;
                 productBundleBatchQty = parseFloat(selectedOption.data('bundle-batch-qty')) || 0;
                 const unitName = selectedOption.data('unit-name') || '';
-                console.log(productBundleBatchQty);
+                console.log('Recipe Qty:', productRecipeQty, 'Bundle Batch Qty:', productBundleBatchQty);
 
                 // Update quantity result label with unit name
                 if (unitName) {
@@ -608,8 +614,8 @@
                     $('#quantity-planned-label').html('Quantity Planned <span style="color: red;">*</span>');
                 }
 
-                // Reset batch-qty-planned to 1 and calculate quantity result
-                $('#batch-qty-planned').val(1);
+                // Reset recipe-qty-planned to product's default recipe_qty and calculate quantity result
+                $('#recipe-qty-planned').val(productRecipeQty);
 
                 // Calculate quantity based on mode
                 if (currentProductionMode === 'QUANTITY_PLANNED') {
@@ -678,20 +684,24 @@
                 }
             });
 
-            // Batch Qty Planned change (Quantity Planned mode) - calculate quantity result
-            $('#batch-qty-planned').on('change input', function() {
+            // Recipe Qty Planned change (Quantity Planned mode) - calculate quantity result
+            $('#recipe-qty-planned').on('change input', function() {
                 if (currentProductionMode === 'QUANTITY_PLANNED') {
                     calculateQuantityPlannedFromBatch();
                 }
             });
 
-            // Calculate quantity planned from batch qty (for Quantity Planned mode)
+            // Calculate quantity planned from recipe qty (for Quantity Planned mode)
             function calculateQuantityPlannedFromBatch() {
-                const batchQty = parseFloat($('#batch-qty-planned').val()) || 0;
-                const quantityPlanned = batchQty * productBundleBatchQty;
+                const recipeQty = parseFloat($('#recipe-qty-planned').val()) || 0;
+                // Formula: (bundle_batch_qty / recipe_qty) * input_recipe_qty
+                const quantityPlanned = (productBundleBatchQty / productRecipeQty) * recipeQty;
 
-                // Update quantity result display
-                $('#quantity-result').val(Math.round(quantityPlanned));
+                // Update quantity result display with max 4 decimals
+                const displayValue = Number.isInteger(quantityPlanned)
+                    ? quantityPlanned.toString()
+                    : parseFloat(quantityPlanned.toFixed(4)).toString();
+                $('#quantity-result').val(displayValue);
 
                 // Update hidden quantity planned field
                 $('#quantity-planned').val(Math.round(quantityPlanned));
@@ -778,14 +788,14 @@
             function displayComponentsPreview(components) {
                 let componentsHtml = '';
                 components.forEach(component => {
-                    // Use batch_qty_planned for total required calculation
-                    const batchQty = parseFloat($('#batch-qty-planned').val()) || 0;
-                    const totalRequired = component.quantity_required * batchQty;
+                    // Use recipe_qty_planned for total required calculation
+                    const recipeQty = parseFloat($('#recipe-qty-planned').val()) || 0;
+                    // Materials are defined per recipe unit, scale proportionally
+                    const totalRequired = component.quantity_required * (recipeQty / productRecipeQty);
 
-                    // Check availability: convert total required to base unit for comparison with stock
-                    // stock_available is already in base unit, so we need to convert totalRequired
-                    const totalRequiredInBaseUnit = totalRequired * component.conversion_factor;
-                    const isAvailable = totalRequiredInBaseUnit <= component.stock_available;
+                    // Check availability: compare in display units
+                    // Both totalRequired and stock_available_display are in the same unit (component.unit)
+                    const isAvailable = totalRequired <= component.stock_available_display;
 
                     componentsHtml += `
                 <tr>
@@ -857,25 +867,23 @@
             });
 
             function updateTotalRequiredQuantities() {
-                // Use batch_qty_planned for total required calculation
-                const batchQty = parseFloat($('#batch-qty-planned').val()) || 0;
+                // Use recipe_qty_planned for total required calculation
+                const recipeQty = parseFloat($('#recipe-qty-planned').val()) || 0;
 
                 $('#components-rows-preview .total-required').each(function() {
                     const qtyPerBundle = $(this).data('qty-per-bundle');
-                    // Total Required = qty_per_bundle × batch_qty
-                    const totalRequired = qtyPerBundle * batchQty;
+                    // Total Required = qty_per_bundle × (recipe_qty / product_recipe_qty)
+                    const totalRequired = qtyPerBundle * (recipeQty / productRecipeQty);
 
                     $(this).text(formatNumber(totalRequired));
 
                     // Update status based on availability
-                    // Convert total required to base unit for comparison with stock_available (which is in base unit)
+                    // Compare in display units (same unit as shown in the table)
                     const row = $(this).closest('tr');
-                    const stockAvailable = $(this).data('stock-available'); // Already in base unit
-                    const conversionFactor = $(this).data('conversion-factor') || 1;
-                    const totalRequiredInBaseUnit = totalRequired * conversionFactor;
+                    const stockAvailableDisplay = $(this).data('stock-available-display');
                     const statusCell = row.find('td').eq(6);
 
-                    if (totalRequiredInBaseUnit <= stockAvailable) {
+                    if (totalRequired <= stockAvailableDisplay) {
                         statusCell.html('<span class="badge bg-label-success">Available</span>');
                     } else {
                         statusCell.html('<span class="badge bg-label-danger">Insufficient Stock</span>');
@@ -1057,9 +1065,9 @@
                     'warehouse', 'pic-user'
                 ];
 
-                // Add batch-qty-planned validation for QUANTITY_PLANNED mode
+                // Add recipe-qty-planned validation for QUANTITY_PLANNED mode
                 if (currentProductionMode === 'QUANTITY_PLANNED') {
-                    requiredFields.push('batch-qty-planned');
+                    requiredFields.push('recipe-qty-planned');
                 }
 
                 requiredFields.forEach(function(fieldId) {
