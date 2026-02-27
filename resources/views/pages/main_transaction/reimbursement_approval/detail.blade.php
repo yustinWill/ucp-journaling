@@ -59,6 +59,19 @@
                 </div>
             @endif
 
+            @if ($reimbursement->attachment)
+                <div class="row g-3 mb-4">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Lampiran</label>
+                        <div>
+                            <a href="{{ asset('storage/' . $reimbursement->attachment) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="icon-base ti tabler-paperclip me-1"></i> Lihat Lampiran
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if ($reimbursement->status === 'PENDING')
                 <hr class="my-4">
 
