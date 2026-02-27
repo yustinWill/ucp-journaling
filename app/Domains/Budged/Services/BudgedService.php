@@ -93,6 +93,31 @@ class BudgedService
         ];
     }
 
+    public function findBudgetPeriodWithBudgets($periodId)
+    {
+        // Get period details
+        $period = $this->findPeriodById($periodId);
+
+        // Get all budgets for this period
+        $budgets = DB::table($this->table_name . ' as b')
+            ->leftJoin('m_budget_categories as bc', 'b.f_budget_category_id', '=', 'bc.id')
+            ->where('b.f_budget_period_id', $periodId)
+            ->select([
+                'b.id',
+                'b.f_budget_category_id',
+                'b.budged_name',
+                'b.budged_limit_value',
+                'bc.category_name',
+            ])
+            ->orderBy('b.budged_name', 'ASC')
+            ->get();
+
+        return [
+            'period' => $period,
+            'budgets' => $budgets,
+        ];
+    }
+
     // ========================================================================
     // BUDGET METHODS
     // ========================================================================

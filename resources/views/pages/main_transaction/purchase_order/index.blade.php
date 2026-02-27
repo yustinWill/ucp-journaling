@@ -123,10 +123,8 @@
                             <th>Tanggal</th>
                             <th>No PO</th>
                             <th>Supplier</th>
-                            <th>Tgl Jatuh Tempo</th>
+                            <th>Status</th>
                             <th>Total</th>
-                            <th>Diinput Oleh</th>
-                            <th>Tag</th>
                         </tr>
                     </thead>
                 </table>
@@ -168,11 +166,11 @@
                     columns: [
                         {
                             data: 'transaction_date',
-                            width: '110px',
+                            width: '210px',
                         },
                         {
                             data: 'transaction_code',
-                            width: '140px',
+                            width: '240px',
                             responsivePriority: 1,
                             render: function(data, type, row) {
                                 if (!data) return '-';
@@ -231,10 +229,6 @@
                             }
                         },
                         {
-                            data: 'payment_term_due_date',
-                            responsivePriority: 10001,
-                        },
-                        {
                             data: 'grand_price',
                             className: 'text-end',
                             render: function(data, type, row) {
@@ -242,33 +236,6 @@
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
                                 }
                                 return data ?? '';
-                            }
-                        },
-                        {
-                            data: 'created_by_name',
-                            responsivePriority: 10002,
-                            render: function(data, type, row) {
-                                if (!data) return '-';
-                                if (canViewUser && row.created_by) {
-                                    const detailUrl =
-                                        `{{ route('master_data.user.detail', ':id') }}`
-                                        .replace(':id', row.created_by);
-                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                                }
-                                return data;
-                            }
-                        },
-                        {
-                            data: 'tags',
-                            responsivePriority: 10003,
-                            render: function(data, type, row) {
-                                let tags = JSON.parse(data);
-                                return tags.map(tag => {
-                                    if (tag.name == null) {
-                                        return ``;
-                                    }
-                                    return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
-                                }).join('');
                             }
                         },
                     ],

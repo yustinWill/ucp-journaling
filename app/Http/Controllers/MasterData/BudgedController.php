@@ -33,11 +33,23 @@ class BudgedController extends Controller
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
-    public function add()
+    public function add(Request $request)
     {
         $budgedlist = app(BudgedService::class)->findAllDatatable();
         $budgetCategories = app(BudgetCategoryService::class)->findAllActive();
-        return view('pages.master_data.budged.add',["budgedlist" => $budgedlist["data"], "budgetCategories" => $budgetCategories]);
+
+        // Check if duplicating from existing budget period
+        $duplicateData = null;
+        if ($request->has('duplicate')) {
+            $duplicateId = $request->get('duplicate');
+            $duplicateData = app(BudgedService::class)->findBudgetPeriodWithBudgets($duplicateId);
+        }
+
+        return view('pages.master_data.budged.add',[
+            "budgedlist" => $budgedlist["data"],
+            "budgetCategories" => $budgetCategories,
+            "duplicateData" => $duplicateData
+        ]);
     }
 
     public function save(Request $request)

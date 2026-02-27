@@ -135,7 +135,7 @@
             <!-- Info Box -->
             <div class="alert alert-info">
                 <i class="icon-base ti tabler-info-circle me-2"></i>
-                Info: Pilih dan masukkan jumlah item yang akan di-invoice. Sistem akan otomatis menghitung total amount.
+                Info: Quantity sudah ditentukan dari Purchase Order. Anda dapat mengubah harga satuan jika diperlukan. Sistem akan otomatis menghitung total amount.
             </div>
 
             <!-- Product Table -->
@@ -210,20 +210,26 @@
                                             <input type="hidden"
                                                 name="products[{{ $counter }}][remaining_qty_before]"
                                                 value="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
-                                            <input type="text"
-                                                data-remaining="{{ $product->remaining_qty_for_invoice ?? $product->qty }}"
-                                                value="{{ $formatted }}" class="form-control invoice-qty-input numeric-input"
-                                                name="products[{{ $counter }}][invoice_qty]" min="0"
-                                                max="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
+                                            <input type="hidden"
+                                                name="products[{{ $counter }}][invoice_qty]"
+                                                value="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
+                                            {{ $formatted }} {{ $product->unit_name }}
                                         </td>
                                         <td>
                                             @php
                                                 $pricePerQty = $product->price_per_qty ?? 0;
-                                                $formattedPricePerQty = 'Rp ' . number_format($pricePerQty, 0, ',', '.');
+                                                if ($pricePerQty == floor($pricePerQty)) {
+                                                    $formattedPrice = number_format($pricePerQty, 0, ',', '.');
+                                                } else {
+                                                    $formattedPriceRaw = number_format($pricePerQty, 2, ',', '.');
+                                                    $formattedPrice = rtrim(rtrim($formattedPriceRaw, '0'), ',');
+                                                }
                                             @endphp
-                                            {{ $formattedPricePerQty }}
-                                            <input type="hidden" name="products[{{ $counter }}][unit_price]"
-                                                value="{{ $product->price_per_qty ?? 0 }}" />
+                                            <input type="text"
+                                                data-qty="{{ $product->remaining_qty_for_invoice ?? $product->qty }}"
+                                                data-index="{{ $counter }}"
+                                                value="{{ $formattedPrice }}" class="form-control invoice-unit-price-input numeric-input"
+                                                name="products[{{ $counter }}][unit_price]" />
                                         </td>
                                         <td>
                                             <span class="total-price" id="total-{{ $counter }}">0</span>
@@ -348,8 +354,9 @@
             // Initialize the form
             initializeForm();
 
-            // Calculate initial totals for pre-filled quantities
-            $('input[name*="[invoice_qty]"]').each(function(index) {
+            // Calculate initial totals for pre-filled unit prices
+            $('.invoice-unit-price-input').each(function() {
+                const index = $(this).data('index');
                 calculateRowTotal(index);
             });
             calculateInvoiceTotal();
@@ -367,26 +374,9 @@
 
                 $('#purchaseInvoiceForm').on('submit', submitForm);
 
-                // Initialize quantity change handlers for pre-filled data
-                $('.invoice-qty-input').on('input change', function() {
-
-                    const remaining = parseFloat($(this).data('remaining')) || 0;
-                    const invoiceQty = convertToIndonesianFormat($(this).val()) || 0;
-
-                    if (invoiceQty > remaining) {
-                        $(this).addClass('is-invalid');
-                        // Optionally show a message below the input
-                        if (!$(this).next('.invalid-feedback').length) {
-                            $(this).after(
-                                '<div class="invalid-feedback">Qty invoice tidak boleh lebih dari remaining.</div>'
-                            );
-                        }
-                    } else {
-                        $(this).removeClass('is-invalid');
-                        $(this).next('.invalid-feedback').remove();
-                    }
-
-                    const index = $(this).closest('tr').index();
+                // Initialize unit price change handlers for pre-filled data
+                $('.invoice-unit-price-input').on('input change', function() {
+                    const index = $(this).data('index');
                     calculateRowTotal(index);
                     calculateInvoiceTotal();
                     updateInvoiceStatus();
@@ -412,8 +402,8 @@
                 const totalSpan = $(`#total-${index}`);
                 const totalHidden = $(`input[name="products[${index}][total_price]"]`);
 
-                const qty = parseCurrency(qtyInput.val()) || 0;
-                const unitPrice = parseFloat(unitPriceInput.val()) || 0;
+                const qty = parseFloat(qtyInput.val()) || 0;
+                const unitPrice = parseCurrency(unitPriceInput.val()) || 0;
                 const total = qty * unitPrice;
 
                 totalSpan.text(formatCurrency(total));

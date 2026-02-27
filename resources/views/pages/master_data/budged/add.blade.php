@@ -65,8 +65,16 @@
         $(function() {
             let budgetItemIndex = 0;
 
+            // Duplicate data from server
+            const duplicateData = @json($duplicateData);
+
             // Budget item template
-            function getBudgetItemTemplate(index) {
+            function getBudgetItemTemplate(index, categoryId = '', limitValue = '') {
+                let categoryOptions = '<option value="">Pilih Kategori</option>';
+                @foreach($budgetCategories as $category)
+                    categoryOptions += `<option value="{{ $category->id }}" ${categoryId == '{{ $category->id }}' ? 'selected' : ''}>{{ $category->category_name }}</option>`;
+                @endforeach
+
                 return `
                     <div class="card mb-3 budget-item" data-index="${index}">
                         <div class="card-body">
@@ -80,16 +88,13 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Kategori Anggaran <span style="color: red;">*</span></label>
                                     <select class="form-select budget-category-select" name="budgets[${index}][f_budget_category_id]" id="category_${index}" required>
-                                        <option value="">Pilih Kategori</option>
-                                        @foreach($budgetCategories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->category_name }}</option>
-                                        @endforeach
+                                        ${categoryOptions}
                                     </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Nilai Limit Anggaran <span style="color: red;">*</span></label>
                                     <input type="text" class="form-control currency-input" name="budgets[${index}][budged_limit_value]"
-                                        placeholder="Rp 0" required>
+                                        placeholder="Rp 0" value="${limitValue}" required>
                                 </div>
                             </div>
                         </div>
@@ -179,8 +184,35 @@
                 addBudgetItem();
             });
 
-            // Initialize with one budget item
-            addBudgetItem();
+            // Initialize: Load duplicate data or start with empty form
+            if (duplicateData && duplicateData.period && duplicateData.budgets) {
+                // Pre-fill period info (but don't set dates - let user choose new period)
+                $('#type').val(duplicateData.period.type);
+
+                // Add budget items from duplicate
+                duplicateData.budgets.forEach(function(budget) {
+                    const limitValue = 'Rp ' + new Intl.NumberFormat('id-ID').format(budget.budged_limit_value);
+                    const template = getBudgetItemTemplate(budgetItemIndex, budget.f_budget_category_id, limitValue);
+                    $('#budget-items-container').append(template);
+
+                    // Initialize currency formatting for new item
+                    initializeCurrencyInput($(`[name="budgets[${budgetItemIndex}][budged_limit_value]"]`));
+
+                    // Initialize select2 for the new dropdown
+                    $(`#category_${budgetItemIndex}`).select2({
+                        placeholder: 'Pilih Kategori',
+                        allowClear: true
+                    });
+
+                    budgetItemIndex++;
+                });
+
+                updateBudgetNumbers();
+                updateCategoryOptions();
+            } else {
+                // Initialize with one budget item
+                addBudgetItem();
+            }
 
             // Currency formatting
             function initializeCurrencyInput($element) {

@@ -147,6 +147,13 @@
                                 </a>`;
                             }
 
+                            if (canWrite) {
+                                const duplicateUrl = `{{ route('master_data.budged.add') }}?duplicate=${row.period_id}`;
+                                actions += `<a href="${duplicateUrl}" class="btn btn-sm btn-info waves-effect waves-light" title="Duplikat">
+                                    <i class="icon-xs icon-base ti tabler-copy"></i>
+                                </a>`;
+                            }
+
                             actions += '</div>';
                             return actions;
                         }
