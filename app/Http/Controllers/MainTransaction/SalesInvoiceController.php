@@ -154,7 +154,7 @@ class SalesInvoiceController extends Controller
 
         $invoice_products = app(SalesInvoiceService::class)->findAllProducts($id);
         $auditLogs = app(SalesInvoiceAuditLogService::class)->findAllBySalesInvoiceId($id);
-
+        $settlements = app(SalesInvoicePaymentService::class)->findAllByInvoiceId($id);
 
         // Get return data for this invoice (one invoice can only have one return)
         $returnData = app(ReturnManagementService::class)->findBySourceInvoiceId($id, 'SALES_RETURN');
@@ -181,6 +181,7 @@ class SalesInvoiceController extends Controller
             'invoice_data' => $invoice_data,
             'invoice_products' => $invoice_products,
             'auditLogs' => $auditLogs,
+            'settlements' => $settlements,
             'returnData' => $returnData,
             'hasCompletedDelivery' => $hasCompletedDelivery,
             // 'taxOptions' => $taxOptions,

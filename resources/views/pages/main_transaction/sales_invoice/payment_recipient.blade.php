@@ -102,7 +102,7 @@
                             <td>Rp {{ number_format($invoice_data->remaining_payment ?? 0, 0, ',', '.') }}</td>
                             <td>
                                 <input type="text" class="form-control" id="remaining_payment" name = "remaining_payment" value="{{ $invoice_data->remaining_payment; }}" hidden/>
-                                <input type="text" class="form-control" id="payment_value" name = "payment_value" placeholder="3,800.00" />
+                                <input type="number" class="form-control" id="payment_value" name = "payment_value" placeholder="0" value="{{ $invoice_data->remaining_payment ?? 0 }}" />
                             </td>
                         </tr>
                     </tbody>
@@ -130,7 +130,7 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <input type="text" class="form-control" name = "deduction_value" id = "deduction_value" placeholder="3,800.00" />
+                            <input type="number" class="form-control" name = "deduction_value" id = "deduction_value" placeholder="0" value="0" />
                         </div>
                     </div>
                     <div class="row g-3 mb-4">
@@ -179,28 +179,35 @@
                 });
             }
 
-            function unformatNumber(value) {
-                if (!value) return 0;
-                return parseFloat(value.replace(/[^0-9.-]/g, "")) || 0;
-            }
-
             function formatRupiah(value) {
-                return "Rp " + value.toLocaleString('id-ID', { minimumFractionDigits: 0 });
+                // Format number with Indonesian thousand separator (dot)
+                if (!value || isNaN(value)) value = 0;
+
+                // Convert to integer to avoid decimal issues
+                const number = Math.round(value);
+
+                // Format with dots as thousand separators
+                const formatted = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+                return "Rp " + formatted;
             }
 
             function updateTotalValue() {
-                const paymentValue = unformatNumber($('#payment_value').val());
-                const deductionValue = unformatNumber($('#deduction_value').val());
+                const paymentValue = parseFloat($('#payment_value').val()) || 0;
+                const deductionValue = parseFloat($('#deduction_value').val()) || 0;
 
                 const total = paymentValue - deductionValue;
 
                 $('#total_value').val(formatRupiah(total));
             }
 
-            // Listen to typing in both fields
-            $('#payment_value, #deduction_value').on('keyup change input', function () {
+            // Listen to changes in payment and deduction fields
+            $('#payment_value, #deduction_value').on('input change', function() {
                 updateTotalValue();
             });
+
+            // Initialize total value on page load
+            updateTotalValue();
             // Auto-generate on page load
             generateTransactionNumber();
 
@@ -219,22 +226,9 @@
 
             const formData = new FormData(document.getElementById('payment-receipt-form'));
 
-                // Add additional data
-                // formData.append('total_amount', totalAmount);
-                // formData.append('sales_order_id', $('#sales_order_id').val());
-                // formData.append('due_date', $('#due_date').val());
-                // formData.append('total_items', $('#total_items_invoice').text().split(' ')[0]);
-
-                // $('.invoice-qty').each(function() {
-                //     const name = $(this).attr('name');
-                //     const rawValue = $(this).val();
-                //     const parsedValue = parseCurrency(rawValue);
-                //     if (name) {
-                //         formData.set(name, parsedValue); // overwrite with parsed numeric value
-                //     }
-                // });
-                const paymentValue = parseFloat($('#payment_value').val().replace(/[^0-9.-]/g, '')) || 0;
-                const remainingValue = parseFloat($('#remaining_payment').val().replace(/[^0-9.-]/g, '')) || 0; 
+                const paymentValue = parseFloat($('#payment_value').val()) || 0;
+                const deductionValue = parseFloat($('#deduction_value').val()) || 0;
+                const remainingValue = parseFloat($('#remaining_payment').val()) || 0; 
                 if (paymentValue > remainingValue) {
                     Swal.fire({
                         title: 'Gagal!',

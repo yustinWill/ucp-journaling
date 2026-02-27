@@ -30,10 +30,36 @@ class SalesInvoicePaymentService
         ]);
     }
 
-    
+    public function findAllByInvoiceId($invoiceId)
+    {
+        return DB::table($this->table_name . ' as sip')
+            ->leftJoin('m_coas as coa', 'sip.account_code', '=', 'coa.code')
+            ->leftJoin('m_coas as deduction_coa', 'sip.deduction_account_code', '=', 'deduction_coa.code')
+            ->leftJoin('users as creator', 'sip.created_by', '=', 'creator.id')
+            ->where('sip.sales_invoice_id', $invoiceId)
+            ->select([
+                'sip.id',
+                'sip.reference_number',
+                'sip.payment_date',
+                'sip.payment_method',
+                'sip.payment_value',
+                'sip.deduction_value',
+                'sip.account_code',
+                'coa.name as account_name',
+                'sip.deduction_account_code',
+                'deduction_coa.name as deduction_account_name',
+                'sip.internal_memo',
+                'sip.attachment',
+                'sip.created_at',
+                'creator.name as created_by_name',
+            ])
+            ->orderBy('sip.created_at', 'desc')
+            ->get();
+    }
+
     public function getRemainingPayment($invoiceId)
     {
-        
+
         return DB::table($this->table_name)
             ->where('sales_invoice_id', $invoiceId)
             ->select(DB::raw('SUM(payment_value - COALESCE(deduction_value, 0)) AS total'))

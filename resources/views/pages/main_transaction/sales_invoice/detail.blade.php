@@ -83,6 +83,11 @@
                             <i class="icon-base ti tabler-package me-2"></i>
                             <b>Items Invoice</b>
                         </a>
+                        <a class="list-group-item list-group-item-action waves-effect" id="settlement-list-item"
+                            data-bs-toggle="list" href="#horizontal-settlement" aria-selected="false" role="tab">
+                            <i class="icon-base ti tabler-credit-card me-2"></i>
+                            <b>Settlement</b>
+                        </a>
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>
@@ -508,6 +513,94 @@
                             </div>
                         </div>
 
+                        <!-- Settlement Tab -->
+                        <div class="tab-pane fade" id="horizontal-settlement" role="tabpanel">
+                            <div class="section-header mt-6">
+                                <h6>Riwayat Pembayaran</h6>
+                                <hr class="mx-n6">
+                            </div>
+
+                            @if($settlements->count() > 0)
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Nomor Transaksi</th>
+                                                <th>Tanggal Pembayaran</th>
+                                                <th>Cara Pembayaran</th>
+                                                <th>Setor Ke</th>
+                                                <th>Jumlah Bayar</th>
+                                                <th>Potongan</th>
+                                                <th>Total</th>
+                                                <th>Dibuat Oleh</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($settlements as $index => $settlement)
+                                                <tr>
+                                                    <td>{{ $index + 1 }}</td>
+                                                    <td>{{ $settlement->reference_number }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($settlement->payment_date)->format('d/m/Y') }}</td>
+                                                    <td>
+                                                        @if($settlement->payment_method == 'CASH')
+                                                            <span class="badge bg-label-success">Kas / Tunai</span>
+                                                        @elseif($settlement->payment_method == 'BANK')
+                                                            <span class="badge bg-label-primary">Transfer Bank</span>
+                                                        @else
+                                                            <span class="badge bg-label-secondary">{{ $settlement->payment_method }}</span>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        {{ $settlement->account_code }} - {{ $settlement->account_name }}
+                                                    </td>
+                                                    <td class="text-end">Rp {{ number_format($settlement->payment_value, 0, ',', '.') }}</td>
+                                                    <td class="text-end">
+                                                        @if($settlement->deduction_value > 0)
+                                                            Rp {{ number_format($settlement->deduction_value, 0, ',', '.') }}
+                                                            <br>
+                                                            <small class="text-muted">{{ $settlement->deduction_account_code }} - {{ $settlement->deduction_account_name }}</small>
+                                                        @else
+                                                            -
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-end fw-bold">
+                                                        Rp {{ number_format($settlement->payment_value - ($settlement->deduction_value ?? 0), 0, ',', '.') }}
+                                                    </td>
+                                                    <td>
+                                                        {{ $settlement->created_by_name }}
+                                                        <br>
+                                                        <small class="text-muted">{{ \Carbon\Carbon::parse($settlement->created_at)->format('d/m/Y H:i') }}</small>
+                                                    </td>
+                                                </tr>
+                                                @if($settlement->internal_memo)
+                                                    <tr>
+                                                        <td colspan="9" class="bg-light">
+                                                            <strong>Memo:</strong> {{ $settlement->internal_memo }}
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                            @endforeach
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="7" class="text-end">Total Pembayaran:</th>
+                                                <th class="text-end">
+                                                    Rp {{ number_format($settlements->sum(fn($s) => $s->payment_value - ($s->deduction_value ?? 0)), 0, ',', '.') }}
+                                                </th>
+                                                <th></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-5">
+                                    <i class="icon-base ti tabler-credit-card-off icon-48px text-muted mb-3"></i>
+                                    <h6 class="text-muted">Belum Ada Pembayaran</h6>
+                                    <p class="text-muted mb-0">Invoice ini belum memiliki riwayat pembayaran.</p>
+                                </div>
+                            @endif
+                        </div>
 
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
