@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('m_products', function (Blueprint $table) {
-            $table->decimal('recipe_qty', 15, 4)->default(1)->after('bundle_batch_qty')
-                ->comment('Number of recipes/batches that produce bundle_batch_qty');
+            $table->decimal('recipe_qty', 15, 4)->nullable()->default(null)->after('bundle_batch_qty')
+                ->comment('Number of recipes/batches that produce bundle_batch_qty (only for bundle type).');
         });
     }
 
