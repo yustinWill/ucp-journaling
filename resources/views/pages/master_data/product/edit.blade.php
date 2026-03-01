@@ -241,6 +241,7 @@
                 </div>
             </div>
 
+            {{-- is-packaging-section (commented out)
             <div class="row g-3 mb-4" id="is-packaging-section" style="display: none;">
                 <div class="col-md-12">
                     <div class="form-check">
@@ -253,6 +254,7 @@
                     <small class="form-text text-muted">Centang jika produk bundle ini digunakan untuk packaging/packing produk lain</small>
                 </div>
             </div>
+            --}}
 
             <!-- Conditional Content Placeholder -->
             <div id="conditional-content" style="display: none;">
@@ -392,7 +394,7 @@
                     </div>
                 </div>
 
-                <!-- Inventory Section -->
+                {{-- Inventory Section (commented out)
                 <div class="mb-4">
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="enable-inventory" name="enable-inventory"
@@ -422,12 +424,6 @@
                                             {{ $account->code }} - {{ $account->name }}</option>
                                     @endforeach
                                 </select>
-                                {{-- @if ($canAddAccounts)
-                                    <a href="{{ route('master_data.coa.add') }}" target="_blank"
-                                        class="btn btn-outline-primary btn-sm" title="Tambah Akun Baru">
-                                        <i class="icon-base ti tabler-plus"></i>
-                                    </a>
-                                @endif --}}
                             </div>
                         </div>
                         <small class="form-text text-muted">*Ketentuan stok awal dapat menggunakan penyesuaian stok</small>
@@ -459,6 +455,7 @@
                         </div>
                     </div>
                 </div>
+                --}}
             </div>
 
             <!-- Bundle Product Content -->
@@ -586,7 +583,7 @@
                             </div>
                         </div>
 
-                        <!-- Inventory Section -->
+                        {{-- Inventory Section (commented out)
                         <div class="mb-4">
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="bundle-enable-inventory"
@@ -649,6 +646,7 @@
                                 </div>
                             </div>
                         </div>
+                        --}}
                     </div>
 
                     <!-- Bundle Configuration Tab -->
@@ -656,11 +654,18 @@
                         <div class="mb-4">
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
+                                    <label class="form-label">Resep Qty <span style="color: red;">*</span></label>
+                                    <input type="text" class="form-control numeric-input text-end"
+                                        id="recipe-qty" placeholder="65"
+                                        value="{{ old('recipe-qty', $product->recipe_qty ?? '') }}" />
+                                    <small class="form-text text-muted">Jumlah resep/batch yang menghasilkan qty batch bundle (contoh: 65 resep)</small>
+                                </div>
+                                <div class="col-md-6">
                                     <label class="form-label">Qty Batch Bundle <span style="color: red;">*</span></label>
                                     <input type="text" class="form-control numeric-input text-end"
                                         id="bundle-batch-qty" placeholder="0"
                                         value="{{ old('bundle-batch-qty', $product->bundle_batch_qty ?? '') }}" />
-                                    <small class="form-text text-muted">Jumlah item per batch untuk bundle ini</small>
+                                    <small class="form-text text-muted">Jumlah item yang dihasilkan dari resep qty (contoh: 73412 pcs)</small>
                                 </div>
                             </div>
                         </div>
@@ -1287,7 +1292,6 @@
                 // Show appropriate content
                 if (type === 'single') {
                     $('#single-content').show();
-                    $('#is-packaging-section').hide();
                     if (isEnableSinglePurchaseChecked === true) {
                         $('#enable-purchase').prop('checked', true);
                         $('#purchase-fields').show();
@@ -1302,7 +1306,6 @@
                     }
                 } else if (type === 'bundle') {
                     $('#bundle-content').show();
-                    $('#is-packaging-section').show();
                     if (isEnableBundlePurchaseChecked === true) {
                         $('#bundle-enable-purchase').prop('checked', true);
                         $('#bundle-purchase-fields').show();
@@ -1578,8 +1581,8 @@
                         ])
                     }
 
-                    // bundle_batch_qty is always required for bundle
-                    requiredFields.push('bundle-batch-qty');
+                    // recipe_qty and bundle_batch_qty are always required for bundle
+                    requiredFields.push('recipe-qty', 'bundle-batch-qty');
                 }
 
                 requiredFields.forEach(function(fieldId) {
@@ -1716,6 +1719,7 @@
                         data.bundle_purchase_enabled = $('#bundle-enable-purchase').is(':checked');
                         data.bundle_sales_enabled = $('#bundle-enable-sales').is(':checked');
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');
+                        data.recipe_qty = parseCurrency($('#recipe-qty').val());
                         data.bundle_batch_qty = parseCurrency($('#bundle-batch-qty').val());
 
                         if (data.bundle_purchase_enabled) {

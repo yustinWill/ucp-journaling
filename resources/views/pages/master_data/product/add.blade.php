@@ -335,7 +335,7 @@
                     </div>
                 </div>
 
-                <!-- Inventory Section -->
+                {{-- Inventory Section (commented out)
                 <div class="mb-4">
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="enable-inventory">
@@ -362,12 +362,6 @@
                                             {{ $account->name }}</option>
                                     @endforeach
                                 </select>
-                                {{-- @if ($canAddAccounts)
-                                    <a href="{{ route('master_data.coa.add') }}" target="_blank"
-                                        class="btn btn-outline-primary btn-sm" title="Tambah Akun Baru">
-                                        <i class="icon-base ti tabler-plus"></i>
-                                    </a>
-                                @endif --}}
                             </div>
                         </div>
                         <small class="form-text text-muted">*Ketentuan stok awal dapat menggunakan penyesuaian stok</small>
@@ -395,6 +389,7 @@
                         </div>
                     </div>
                 </div>
+                --}}
             </div>
 
             <!-- Bundle Product Content -->
@@ -521,7 +516,7 @@
                             </div>
                         </div>
 
-                        <!-- Inventory Section -->
+                        {{-- Inventory Section (commented out)
                         <div class="mb-4">
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="bundle-enable-inventory">
@@ -577,6 +572,7 @@
                                 </div>
                             </div>
                         </div>
+                        --}}
                     </div>
 
                     <!-- Bundle Configuration Tab -->
