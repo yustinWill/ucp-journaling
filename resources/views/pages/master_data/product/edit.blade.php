@@ -994,8 +994,8 @@
             });
             $('.numeric-input').each(function() {
                 const val = $(this).val();
-                // Use toIndonesianNumberFormat for conversion factors to strip trailing zeros
-                if ($(this).hasClass('conversion-factor')) {
+                // Use toIndonesianNumberFormat to strip trailing zeros for these fields
+                if ($(this).hasClass('conversion-factor') || $(this).attr('id') === 'recipe-qty' || $(this).attr('id') === 'bundle-batch-qty') {
                     $(this).val(toIndonesianNumberFormat(val));
                 } else {
                     $(this).val(convertToIndonesianFormat(val));
