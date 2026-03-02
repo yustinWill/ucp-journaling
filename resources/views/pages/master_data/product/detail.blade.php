@@ -314,7 +314,7 @@
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-4">
                                             <label class="form-label">Estimasi HPP</label>
-                                            <input type="text" class="form-control" value="Rp. {{ number_format($product->estimated_hpp, 0, ',', '.') }}" disabled />
+                                            <input type="text" class="form-control" value="Rp. {{ rtrim(rtrim(number_format($product->estimated_hpp, 4, ',', '.'), '0'), ',') }}" disabled />
                                             <small class="form-text text-muted">Harga Pokok Penjualan rata-rata</small>
                                         </div>
                                         {{-- <div class="col-md-4">
