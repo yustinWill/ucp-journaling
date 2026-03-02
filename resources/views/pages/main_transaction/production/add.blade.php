@@ -332,7 +332,7 @@
             });
             function getBundleCost() {
                 const bundleProductId = $('#bundle-product').val();
-                const quantityPlanned = parseFloat($('#quantity-planned').val()) || 1;
+                const quantityPlanned = parseFloat($('#quantity-result').val()) || parseFloat($('#quantity-planned').val()) || 1;
 
                 $.ajax({
                     url: "{{ route('main_transaction.production.get_bundle_price') }}",
@@ -363,7 +363,7 @@
                 });
             }
             function updateFIFOPrices() {
-                const quantityPlanned = parseFloat($('#quantity-planned').val()) || 0;
+                const quantityPlanned = parseFloat($('#quantity-result').val()) || parseFloat($('#quantity-planned').val()) || 0;
                 const bundleProductId = $('#bundle-product').val();
                 
                 if (quantityPlanned <= 0 || !bundleProductId) {
@@ -472,7 +472,7 @@
 
             // Calculate production costs based on component prices
             function calculateProductionCosts() {
-                const quantityPlanned = parseFloat($('#quantity-planned').val()) || 0;
+                const quantityPlanned = parseFloat($('#quantity-result').val()) || parseFloat($('#quantity-planned').val()) || 0;
 
                 if (quantityPlanned <= 0) {
                     $('#hpp-production').val('Rp 0');
@@ -740,7 +740,7 @@
                             }
 
                             // Calculate component cost immediately from bundleComponents array
-                            const quantityPlanned = parseFloat($('#quantity-planned').val()) || 0;
+                            const quantityPlanned = parseFloat($('#quantity-result').val()) || parseFloat($('#quantity-planned').val()) || 0;
                             if (quantityPlanned > 0 && bundleComponents.length > 0) {
                                 let totalComponentCost = 0;
 
@@ -751,13 +751,14 @@
 
                                     if (currentProductionMode === 'QUANTITY_PLANNED') {
                                         // Quantity Planned mode: use quantity_required * quantityPlanned
-                                        const totalRequired = qtyRequired * quantityPlanned;
+                                        const totalRequired = qtyRequired;
                                         totalComponentCost += purchasePrice * totalRequired;
                                     } else {
                                         // Material-Based mode: calculate based on material input (will update later via event)
-                                        const totalRequired = qtyRequired * quantityPlanned;
+                                        const totalRequired = qtyRequired;
                                         totalComponentCost += purchasePrice * totalRequired;
                                     }
+                                    // console.log(' list qty and cost : ',{totalRequired:totalRequired,})
                                 });
 
                                 // Calculate per-unit cost
