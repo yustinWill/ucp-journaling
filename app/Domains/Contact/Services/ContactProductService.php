@@ -42,9 +42,11 @@ class ContactProductService
 
     public function findAllBasedOnContactId($id)
     {
-        return DB::table($this->table_name)
-            ->where('f_contact_id', $id)
-            ->orderBy('id', 'asc')
+        return DB::table($this->table_name . ' as cp')
+            ->select(['cp.*', 'p.name as product_name'])
+            ->leftJoin('m_products as p', 'cp.f_product_code', '=', 'p.code')
+            ->where('cp.f_contact_id', $id)
+            ->orderBy('cp.id', 'asc')
             ->get();
     }
 

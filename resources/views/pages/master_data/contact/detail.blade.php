@@ -10,6 +10,11 @@
                 <div class="col-md-8">
                     <h4 class="mb-3">Informasi Kontak</h4>
                 </div>
+                <div class="col-md-4 text-end">
+                    <a href="{{ route('master_data.contact.edit', $contact->id) }}" class="btn btn-primary">
+                        <i class="ti tabler-edit me-1"></i>Edit Kontak
+                    </a>
+                </div>
 
                 <!-- Action Panel -->
                 <!-- <div class="col-md-4">
@@ -235,10 +240,16 @@
 
 @section('js_script')
     <script>
+        function formatRupiah(amount) {
+            if (!amount) return 'Rp 0';
+            return 'Rp ' + parseFloat(amount).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
         $(function() {
             const contactId = {{ $contact->id }};
 
             const contactBank = JSON.parse('{!! json_encode($contact_bank) !!}');
+            const contactProduct = JSON.parse('{!! json_encode($contact_product) !!}');
             // Contact data from server
             const contactData = {
                 contact_name: "{{ $contact->name }}",
@@ -405,6 +416,33 @@
                             </div>
                         </div>
                         <hr>
+                    `;
+                }
+
+                if (contactProduct.length > 0) {
+                    profilContent += `
+                        <hr class="my-6 mx-n6" />
+                        <h6>8. Info Produk Dibeli Customer</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Kode Produk</th>
+                                        <th>Nama Produk</th>
+                                        <th>Harga Satuan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${contactProduct.map(cp => `
+                                        <tr>
+                                            <td><strong>${cp.f_product_code}</strong></td>
+                                            <td>${cp.product_name ?? '-'}</td>
+                                            <td>${formatRupiah(cp.price_per_qty)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
                     `;
                 }
 

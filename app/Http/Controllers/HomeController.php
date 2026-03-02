@@ -114,16 +114,34 @@ class HomeController extends Controller
 
         // ============================================================
         // Section 3: Top Up Cards (always lifetime)
+        // belum_bayar = sum of remaining SO piutang (porsi_pabrik - already allocated),
+        // same logic as "Lifetime Remaining Amount" on the topup add page.
         // ============================================================
-        $topupStats = DB::table('t_topup')
+        $outstandingSOs = DB::table('t_sales_orders as so')
+            ->join('t_sales_order_revenue_splits as rs', 'so.id', '=', 'rs.f_sales_order_id')
+            ->select([
+                'so.id',
+                DB::raw('SUM(rs.porsi_pabrik) as total_amount'),
+            ])
+            ->where('so.company_code', $companyCode)
+            ->where('rs.is_paid_owner', false)
+            ->groupBy('so.id')
+            ->get();
+
+        $topupBelumBayarAmount = 0;
+        foreach ($outstandingSOs as $so) {
+            $allocated = DB::table('t_topup_sales_order')
+                ->where('sales_order_id', $so->id)
+                ->sum('allocated_amount');
+            $topupBelumBayarAmount += max(0, $so->total_amount - $allocated);
+        }
+
+        $topupTerbayarAmount = DB::table('t_topup')
             ->where('company_code', $companyCode)
-            ->selectRaw("
-                COALESCE(SUM(CASE WHEN status IN ('OPEN', 'PARTIAL') THEN remaining_balance ELSE 0 END), 0) as belum_bayar,
-                COALESCE(SUM(allocated_amount), 0) as terbayar
-            ")
-            ->first();
-        $topupBelumBayar = 'Rp ' . number_format($topupStats->belum_bayar ?? 0, 0, ',', '.');
-        $topupTerbayar = 'Rp ' . number_format($topupStats->terbayar ?? 0, 0, ',', '.');
+            ->sum('allocated_amount');
+
+        $topupBelumBayar = 'Rp ' . number_format($topupBelumBayarAmount, 0, ',', '.');
+        $topupTerbayar = 'Rp ' . number_format($topupTerbayarAmount ?? 0, 0, ',', '.');
 
         // ============================================================
         // Section 4: Target Keuntungan (Revenue Split Cycles)
