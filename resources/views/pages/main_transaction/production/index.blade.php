@@ -130,7 +130,6 @@
                             <th style="width: 180px;">Kode Produk</th>
                             <th style="width: 100px;">Jumlah Produksi</th>
                             <th style="width: 120px;">Unit</th>
-                            <th style="width: 100px;">HPP</th>
                              <th style="width: 100px;">Aksi</th>
                         </tr>
                     </thead>
@@ -202,13 +201,13 @@
                             data: 'unit_code',
                             className: 'text-center',
                         },
-                        {
-                            data: 'hpp_production',
-                            className: 'text-end',
-                            render: function(data, type, row) {
-                                return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);
-                            }
-                        },
+                        // {
+                        //     data: 'hpp_production',
+                        //     className: 'text-end',
+                        //     render: function(data, type, row) {
+                        //         return 'Rp ' + new Intl.NumberFormat('id-ID').format(data || 0);
+                        //     }
+                        // },
                         {
                             data: null,
                             orderable: false,
