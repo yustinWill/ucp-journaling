@@ -132,7 +132,6 @@
                             <th>Tgl Invoice</th>
                             <th>Supplier</th>
                             <th>PO Reference</th>
-                            <th>Tgl Jatuh Tempo</th>
                             <th>Grand Total</th>
                             <th>Status</th>
                             <th>Diinput Oleh</th>
@@ -238,10 +237,6 @@
                                 }
                                 return data;
                             }
-                        },
-                        {
-                            data: 'due_date',
-                            responsivePriority: 10003,
                         },
                         {
                             data: 'grand_total',
