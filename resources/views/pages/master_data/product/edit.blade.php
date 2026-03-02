@@ -1537,8 +1537,8 @@
                     if (isSingleEnablePurchase) {
                         requiredFields.push(...[
                             'purchase-price',
-                            'purchase-account',
-                            'purchase-tax',
+                            // 'purchase-account',
+                            // 'purchase-tax',
                         ])
                     }
                     if (isSingleEnableSales) {
@@ -1560,15 +1560,15 @@
                     if (isBundleEnablePurchase) {
                         requiredFields.push(...[
                             'bundle-purchase-price',
-                            'bundle-purchase-account',
-                            'bundle-purchase-tax',
+                            // 'bundle-purchase-account',
+                            // 'bundle-purchase-tax',
                         ])
                     }
                     if (isBundleEnableSales) {
                         requiredFields.push(...[
                             'bundle-sales-price',
                             // 'bundle-sales-account',
-                            'bundle-sales-tax',
+                            // 'bundle-sales-tax',
                         ])
                     }
                     if (isBundleEnableInventory) {
