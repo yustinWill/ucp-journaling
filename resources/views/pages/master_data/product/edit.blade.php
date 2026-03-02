@@ -482,6 +482,14 @@
                         <!-- Purchase Section -->
                         <div class="mb-4">
                             <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="bundle-packaging"
+                                    {{ old('is-packaging', $product->is_packaging ?? false) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="bundle-packaging">
+                                    Produk Packaging (untuk packing produk)
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="bundle-enable-purchase"
                                     {{ !empty(old('enable-purchase', $product->is_item_purchased == true)) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="bundle-enable-purchase">
@@ -1728,7 +1736,7 @@
 
                     // Bundle product fields
                     if (data.type === 'bundle') {
-                        data.is_packaging = $('#is-packaging').is(':checked') ? 'true' : 'false';
+                        data.is_packaging = $('#bundle-packaging').is(':checked') ? 'true' : 'false';
                         data.bundle_purchase_enabled = $('#bundle-enable-purchase').is(':checked');
                         data.bundle_sales_enabled = $('#bundle-enable-sales').is(':checked');
                         data.bundle_inventory_enabled = $('#bundle-enable-inventory').is(':checked');
