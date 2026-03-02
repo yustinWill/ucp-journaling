@@ -78,6 +78,8 @@
                             <th>No Invoice</th>
                             <th>Customer</th>
                             <th>Grand Total</th>
+                            <th>Total Terbayar</th>
+                            <th>Sisa Pembayaran</th>
                             {{-- <th>Tgl Jatuh Tempo</th> --}}
                             <th>Status</th>
                             {{-- <th>Diinput Oleh</th> --}}
@@ -175,6 +177,27 @@
                             }
                         },
                         {
+                            data: 'total_deduction_value',
+                            className: 'text-end',
+                            render: function(data, type, row) {
+                                const deduction = parseFloat(row.grand_total || 0) - parseFloat(row.remaining_payment || 0);
+                                if (deduction === 0) return '-';
+                                return `Rp ${parseInt(deduction).toLocaleString('id-ID')}`;
+                            }
+                        },
+                        {
+                            data: 'remaining_payment',
+                            className: 'text-end',
+                            render: function(data, type, row) {
+                                if (row.status === 'PAID' || row.status === 'SETTLED') {
+                                    return '<span class="text-success">Lunas</span>';
+                                }
+                                const remaining = parseFloat(data || 0);
+                                return `<span class="text-danger fw-semibold">Rp ${parseInt(remaining).toLocaleString('id-ID')}</span>`;
+                            }
+                        },
+                        
+                        {
                             data: 'status',
                             width: '150px',
                             responsivePriority: 1,
@@ -256,8 +279,8 @@
             // Initialize table
             initSalesInvoiceTable();
 
-            // Tag column hidden by default (0=date,1=code,2=customer,3=total,4=status,5=so_reference,6=tags)
-            salesInvoiceTable.column(6).visible(false);
+            // Tag column hidden by default (0=date,1=code,2=customer,3=total,4=remaining,5=deduction,6=status,7=so_reference,8=tags)
+            salesInvoiceTable.column(8).visible(false);
 
             // Reset Filter
             $('#reset-filter').on('click', function() {
@@ -272,7 +295,7 @@
 
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = salesInvoiceTable.column(6);
+                const tagColumn = salesInvoiceTable.column(8);
                 tagColumn.visible(this.checked);
             });
 

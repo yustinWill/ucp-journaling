@@ -114,7 +114,8 @@ class SalesInvoiceService
                 'c.id AS customer_id',
                 'c.name AS customer_name',
                 'u.name AS created_by_name',
-                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags")
+                DB::raw("JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)) as tags"),
+                DB::raw("(si.grand_total - COALESCE((SELECT SUM(payment_value - COALESCE(deduction_value, 0)) FROM t_sales_invoice_payment WHERE sales_invoice_id = si.id), 0)) as remaining_payment")
             )
             ->leftJoin('t_sales_orders as so', 'so.id', '=', 'si.f_sales_order_id')
             ->leftJoin('m_contacts as c', 'c.id', '=', 'so.f_customer_id')
