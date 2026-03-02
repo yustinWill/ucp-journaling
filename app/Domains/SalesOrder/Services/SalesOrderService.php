@@ -193,23 +193,28 @@ class SalesOrderService
         $length = (int) request()->input('length', 10);
         $recordsFiltered = $filteredQuery->get()->count();
 
-        // Order by status priority (lowest first), then by date
-        // Priority: Menunggu(0) -> Menunggu Pengiriman(1) -> Dikirim(2) -> Terkirim(3) -> Dibayar(4) -> Terbayar(5) -> Selesai(6)
+        // Order by SD status first, then SI status within each SD group
+        // SD priority: Belum Kirim(0) -> Menunggu Pengiriman(1) -> Dikirim(2) -> Terkirim(3)
         $query->orderByRaw("
             CASE
-                WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0
-                     AND (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0
-                THEN 6
-                WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0
-                THEN 5
-                WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) > 0
-                THEN 4
                 WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') > 0
                 THEN 3
                 WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_accepted = 1 AND (sd.is_confirmed = '0' OR sd.is_confirmed IS NULL)) > 0
                 THEN 2
                 WHEN (SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND (sd.is_accepted = 0 OR sd.is_accepted IS NULL)) > 0
                 THEN 1
+                ELSE 0
+            END ASC
+        ");
+        // SI priority within each SD group: Belum Bayar(0) -> Dibayar Sebagian(1) -> Lunas(2)
+        $query->orderByRaw("
+            CASE
+                WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) > 0
+                THEN 2
+                WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status = 'PARTIALLY_PAID') > 0
+                THEN 1
+                WHEN (SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) > 0
+                THEN 0
                 ELSE 0
             END ASC
         ");

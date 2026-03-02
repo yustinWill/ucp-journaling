@@ -343,7 +343,7 @@
                                     badgeClass = 'bg-label-warning';
                                 } else if (siCount > 0) {
                                     status = 'Belum Bayar';
-                                    badgeClass = 'bg-label-info';
+                                    badgeClass = 'bg-label-secondary';
                                 }
 
                                 return `<span class="badge ${badgeClass}">${status}</span>`;
@@ -409,12 +409,12 @@
             // Initialize table
             initSalesOrderTable();
 
-            // Tag column hidden by default (0=date,1=no_so,2=customer,3=total,4=status,5=due_date,6=created_by,7=tags)
-            salesOrderTable.column(7).visible(false);
+            // Tag column hidden by default (0=date,1=no_so,2=customer,3=total,4=status_sd,5=status_si,6=due_date,7=created_by,8=tags)
+            salesOrderTable.column(8).visible(false);
 
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = salesOrderTable.column(7);
+                const tagColumn = salesOrderTable.column(8);
                 tagColumn.visible(this.checked);
             });
             let searchTimeout;

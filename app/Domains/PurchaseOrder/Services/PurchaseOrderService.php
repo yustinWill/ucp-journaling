@@ -100,17 +100,21 @@ class PurchaseOrderService
                 DB::raw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id AND pd.delivery_status = 'COMPLETED') as pd_delivered_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id AND pd.delivery_status = 'PARTIAL') as pd_in_transit_count"),
                 DB::raw("CASE
-                    WHEN (SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id) > 0
-                         AND (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status IN ('PAID', 'SETTLED')) > 0
-                    THEN 5
-                    WHEN (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status IN ('PAID', 'SETTLED')) > 0
-                    THEN 4
-                    WHEN (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id) > 0
-                    THEN 3
-                    WHEN (SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id) > 0
+                    WHEN (SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id AND pd.delivery_status = 'COMPLETED') > 0
                     THEN 2
-                    ELSE 1
-                END as status_priority")
+                    WHEN (SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id AND pd.delivery_status = 'PARTIAL') > 0
+                    THEN 1
+                    ELSE 0
+                END as pd_status_priority"),
+                DB::raw("CASE
+                    WHEN (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status IN ('PAID', 'SETTLED')) > 0
+                    THEN 2
+                    WHEN (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status = 'PARTIAL_PAID') > 0
+                    THEN 1
+                    WHEN (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id) > 0
+                    THEN 0
+                    ELSE 0
+                END as pi_status_priority")
             )
             ->leftJoin('m_contacts as mc', 'mc.id', '=', 'po.f_supplier_id')
             ->leftJoin('users as u', 'po.created_by', '=', 'u.id')
@@ -185,7 +189,8 @@ class PurchaseOrderService
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
         $recordsFiltered = $filteredQuery->get()->count();
-        $query->orderBy('status_priority', 'ASC')
+        $query->orderBy('pd_status_priority', 'ASC')
+              ->orderBy('pi_status_priority', 'ASC')
               ->orderBy('po.transaction_date', 'DESC');
         $data = $query->get();
 
