@@ -1070,6 +1070,7 @@
             });
 
             $('.form-repeater-accounts').repeater({
+                initEmpty: true,
                 show: function() {
                     $(this).slideDown(() => {
                         $(this).find('.select2-container').remove();
@@ -1421,6 +1422,19 @@
                 });
 
                 if (!isValid) {
+                    // Switch to the tab containing the first invalid field
+                    const bundlePricingFields = ['bundle-purchase-price', 'bundle-purchase-tax', 'bundle-sales-price', 'bundle-sales-tax', 'bundle-minimum-stock', 'bundle-inventory-account'];
+                    const bundleConfigFields = ['recipe-qty', 'bundle-batch-qty'];
+                    for (const fieldId of requiredFields) {
+                        if ($('#' + fieldId).hasClass('is-invalid')) {
+                            if (bundlePricingFields.includes(fieldId)) {
+                                bootstrap.Tab.getOrCreateInstance(document.getElementById('bundle-pricing-list-item')).show();
+                            } else if (bundleConfigFields.includes(fieldId)) {
+                                bootstrap.Tab.getOrCreateInstance(document.getElementById('bundle-config-list-item')).show();
+                            }
+                            break;
+                        }
+                    }
                     Swal.fire({
                         icon: 'error',
                         title: 'Validasi Gagal',
@@ -1574,7 +1588,7 @@
                         //     });
                         // });
 
-                        $('#bundle-components-tbody tr.bundle-component-row:visible').each(function() {
+                        $('#bundle-components-tbody tr.bundle-component-row').each(function() {
                             const productId = $(this).find('.component-product').val();
                             const unitId = $(this).find('.component-unit-select').val();
                             const qty = parseCurrency($(this).find('.component-qty').val());
