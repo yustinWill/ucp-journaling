@@ -449,7 +449,7 @@ class SalesDeliveryController extends Controller
             }
 
             // Handle file upload
-            if ($request->hasFile('attachment')) {
+            if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
                 $attachment = $request->file('attachment');
                 $data['attachment_path'] = $attachment->store('sales_deliveries', 'public');
             }

@@ -798,16 +798,16 @@
                         </div>
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <label class="form-label">Porsi Perusahaan <span style="color: red;">*</span></label>
+                                <label class="form-label">Porsi Pabrik <span style="color: red;">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">Rp</span>
-                                    <input type="text" class="form-control currency-input" id="porsiPerusahaan"
-                                        name="porsi_perusahaan" placeholder="0" required>
+                                    <input type="text" class="form-control currency-input" id="porsiPabrik"
+                                        name="porsi_pabrik" placeholder="0" required>
                                 </div>
                                 <div class="form-check mt-2">
                                     <input class="form-check-input" type="radio" name="remaining_allocation"
-                                        value="perusahaan" id="remainingPerusahaan">
-                                    <label class="form-check-label text-success" for="remainingPerusahaan">
+                                        value="pabrik" id="remainingPabrik">
+                                    <label class="form-check-label text-success" for="remainingPabrik">
                                         <small>Dapat sisa</small>
                                     </label>
                                 </div>
@@ -828,36 +828,18 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Porsi Pabrik <span style="color: red;">*</span></label>
+                                <label class="form-label">Porsi Perusahaan <span style="color: red;">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">Rp</span>
-                                    <input type="text" class="form-control currency-input" id="porsiPabrik"
-                                        name="porsi_pabrik" placeholder="0" required>
+                                    <input type="text" class="form-control currency-input" id="porsiPerusahaan"
+                                        name="porsi_perusahaan" placeholder="0" required>
                                 </div>
                                 <div class="form-check mt-2">
                                     <input class="form-check-input" type="radio" name="remaining_allocation"
-                                        value="pabrik" id="remainingPabrik">
-                                    <label class="form-check-label text-success" for="remainingPabrik">
+                                        value="perusahaan" id="remainingPerusahaan">
+                                    <label class="form-check-label text-success" for="remainingPerusahaan">
                                         <small>Dapat sisa</small>
                                     </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Total and Remaining Display -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Total Porsi Tetap</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="text" class="form-control" id="totalPorsi" readonly>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Sisa yang Akan Dialokasikan</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="text" class="form-control" id="sisaAlokasi" readonly>
                                 </div>
                             </div>
                         </div>
@@ -939,12 +921,29 @@
 
             // Remaining allocation radio change
             $('input[name="remaining_allocation"]').on('change', function() {
+                updateReadonlyState();
                 calculateTotals();
             });
 
             // Check for existing configuration on page load
             loadExistingConfiguration();
         });
+
+        function updateReadonlyState() {
+            const selected = $('input[name="remaining_allocation"]:checked').val();
+            // Re-enable all three fields first
+            $('#porsiPabrik, #porsiOwner, #porsiPerusahaan')
+                .prop('readonly', false)
+                .removeClass('bg-light');
+            // Make the "Dapat Sisa" field readonly
+            if (selected === 'pabrik') {
+                $('#porsiPabrik').prop('readonly', true).addClass('bg-light');
+            } else if (selected === 'owner') {
+                $('#porsiOwner').prop('readonly', true).addClass('bg-light');
+            } else if (selected === 'perusahaan') {
+                $('#porsiPerusahaan').prop('readonly', true).addClass('bg-light');
+            }
+        }
 
         function formatCurrency(value) {
             if (!value) return '';
@@ -958,22 +957,24 @@
 
         function calculateTotals() {
             const basePrice = parseCurrency($('#basePrice').val());
-            const porsiPerusahaan = parseCurrency($('#porsiPerusahaan').val());
-            const porsiOwner = parseCurrency($('#porsiOwner').val());
-            const porsiPabrik = parseCurrency($('#porsiPabrik').val());
+            const selected = $('input[name="remaining_allocation"]:checked').val();
 
-            const totalPorsi = porsiPerusahaan + porsiOwner + porsiPabrik;
-            const sisaAlokasi = Math.max(0, basePrice - totalPorsi);
+            let porsiPabrik = parseCurrency($('#porsiPabrik').val());
+            let porsiOwner = parseCurrency($('#porsiOwner').val());
+            let porsiPerusahaan = parseCurrency($('#porsiPerusahaan').val());
 
-            $('#totalPorsi').val(formatCurrency(totalPorsi.toString()));
-            $('#sisaAlokasi').val(formatCurrency(sisaAlokasi.toString()));
-
-            // Validation
-            if (totalPorsi > basePrice) {
-                $('#sisaAlokasi').addClass('is-invalid');
-            } else {
-                $('#sisaAlokasi').removeClass('is-invalid');
+            // Auto-calculate the "Dapat Sisa" field
+            if (selected === 'pabrik') {
+                porsiPabrik = Math.max(0, basePrice - porsiOwner - porsiPerusahaan);
+                $('#porsiPabrik').val(formatCurrency(porsiPabrik.toString()));
+            } else if (selected === 'owner') {
+                porsiOwner = Math.max(0, basePrice - porsiPabrik - porsiPerusahaan);
+                $('#porsiOwner').val(formatCurrency(porsiOwner.toString()));
+            } else if (selected === 'perusahaan') {
+                porsiPerusahaan = Math.max(0, basePrice - porsiPabrik - porsiOwner);
+                $('#porsiPerusahaan').val(formatCurrency(porsiPerusahaan.toString()));
             }
+
         }
 
         function openRevenueSplitModal() {
@@ -1003,20 +1004,22 @@
 
         function populateForm(config) {
             $('#basePrice').val(formatCurrency(config.base_price.toString()));
-            $('#porsiPerusahaan').val(formatCurrency(config.porsi_perusahaan.toString()));
-            $('#porsiOwner').val(formatCurrency(config.porsi_owner.toString()));
             $('#porsiPabrik').val(formatCurrency(config.porsi_pabrik.toString()));
+            $('#porsiOwner').val(formatCurrency(config.porsi_owner.toString()));
+            $('#porsiPerusahaan').val(formatCurrency(config.porsi_perusahaan.toString()));
             $('#notes').val(config.notes || '');
             $(`input[name="remaining_allocation"][value="${config.remaining_allocation}"]`).prop('checked', true);
+            updateReadonlyState();
             calculateTotals();
         }
 
         function resetForm() {
             $('#revenueSplitForm')[0].reset();
-            $('#totalPorsi').val('');
-            $('#sisaAlokasi').val('');
             $('#calculationResult').hide();
             $('input[name="remaining_allocation"][value="perusahaan"]').prop('checked', true);
+            // Prefill base price with unit_sell_price when no config exists
+            $('#basePrice').val(formatCurrency('{{ (int) $product->unit_sell_price }}'));
+            updateReadonlyState();
         }
 
         function saveConfiguration() {

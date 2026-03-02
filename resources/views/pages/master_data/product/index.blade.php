@@ -163,8 +163,6 @@
                             <th>Unit</th>
                             <th>Harga Rata-Rata</th>
                             <th>Harga Beli Terakhir</th>
-                            <th>Harga Beli</th>
-                            <th>Harga Jual</th>
                             <th>Status</th>
                             <th>Tag</th>
                         </tr>
@@ -264,32 +262,9 @@
                         }
                     },
                     {
-                        //TO DO
                         data: 'unit_purchase_price',
                         className: 'text-end',
                         responsivePriority: 10,
-                        render: function(data, type, row) {
-                            if (type === 'display' && data != null && !isNaN(data)) {
-                                return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
-                            }
-                            return data ?? 'Rp 0';
-                        }
-                    },
-                    {
-                        data: 'unit_purchase_price',
-                        className: 'text-end',
-                        responsivePriority: 11,
-                        render: function(data, type, row) {
-                            if (type === 'display' && data != null && !isNaN(data)) {
-                                return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
-                            }
-                            return data ?? 'Rp 0';
-                        }
-                    },
-                    {
-                        data: 'unit_sell_price',
-                        className: 'text-end',
-                        responsivePriority: 12,
                         render: function(data, type, row) {
                             if (type === 'display' && data != null && !isNaN(data)) {
                                 return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -352,11 +327,11 @@
             });
 
             // Tag column hidden by default
-            productsTable.column(12).visible(false);
+            productsTable.column(10).visible(false);
 
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                productsTable.column(12).visible(this.checked);
+                productsTable.column(10).visible(this.checked);
             });
 
             // Reset Filter

@@ -890,6 +890,7 @@
 
             // Product Units Repeater
             $('.form-repeater-product-units').repeater({
+                initEmpty: true,
                 show: function() {
                     $(this).slideDown(() => {
                         // Remove existing Select2 containers and reinitialize
@@ -1367,7 +1368,7 @@
                         requiredFields.push(...[
                             'purchase-price',
                             // 'purchase-account',
-                            'purchase-tax',
+                            // 'purchase-tax',
                         ])
                     }
                     if (isSingleEnableSales) {
@@ -1390,14 +1391,14 @@
                         requiredFields.push(...[
                             'bundle-purchase-price',
                             // 'bundle-purchase-account',
-                            'bundle-purchase-tax',
+                            // 'bundle-purchase-tax',
                         ])
                     }
                     if (isBundleEnableSales) {
                         requiredFields.push(...[
                             'bundle-sales-price',
                             // 'bundle-sales-account',
-                            'bundle-sales-tax',
+                            // 'bundle-sales-tax',
                         ])
                     }
                     if (isBundleEnableInventory) {

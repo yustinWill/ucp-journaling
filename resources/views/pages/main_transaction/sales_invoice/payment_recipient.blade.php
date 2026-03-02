@@ -27,7 +27,7 @@
                         data-allow-clear="false" required>
                         <option value="">Pilih Akun</option>
                         @foreach ($coa_accounts as $account)
-                            <option value="{{ $account->code }}">
+                            <option value="{{ $account->code }}" {{ $loop->first ? 'selected' : '' }}>
                                 {{ $account->code }} - {{ $account->name }}</option>
                         @endforeach
                     </select>
@@ -41,7 +41,9 @@
                         data-allow-clear="false" required>
                         <option value="">Pilih Cara Pembayaran</option>
                         @foreach ($payment_method as $row)
-                            <option value="{{ $row["value"]; }}">{{ $row["label"]; }}</option>
+                            <option value="{{ $row["value"]; }}" @if ($row["value"] == "BANK")
+                                selected                                
+                            @endif>{{ $row["label"]; }}</option>
                         @endforeach
                         
                     </select>

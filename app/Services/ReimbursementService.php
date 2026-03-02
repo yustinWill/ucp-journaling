@@ -44,6 +44,7 @@ class ReimbursementService
                 't.id',
                 't.transaction_code',
                 't.reimbursement_name',
+                't.reimbursement_date',
                 't.amount',
                 't.description',
                 't.status',

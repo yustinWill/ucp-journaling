@@ -415,9 +415,18 @@
             $(document).on('change', '.discount-checkbox', function() {
                 const row = $(this).closest('tr');
                 const unitPriceInput = row.find('.unit-price-input')[0];
+                const quantityInput = row.find('.quantity-input')[0];
                 const isBonus = $(this).is(':checked');
 
                 if (isBonus) {
+                    // Set quantity to 0 when bonus is checked
+                    $(quantityInput).val('0');
+                    if (quantityInput && quantityInput.cleave) {
+                        quantityInput.cleave.setRawValue(0);
+                    }
+                    // Disable quantity input when bonus is applied
+                    $(quantityInput).prop('disabled', true);
+
                     // Set unit price to 0 when bonus is checked
                     $(unitPriceInput).val('0');
                     if (unitPriceInput && unitPriceInput.cleave) {
@@ -426,6 +435,14 @@
                     // Disable unit price input when bonus is applied
                     $(unitPriceInput).prop('disabled', true);
                 } else {
+                    // Re-enable quantity input when bonus is unchecked
+                    $(quantityInput).prop('disabled', false);
+                    // Set quantity back to 1 as default
+                    $(quantityInput).val('1');
+                    if (quantityInput && quantityInput.cleave) {
+                        quantityInput.cleave.setRawValue(1);
+                    }
+
                     // Re-enable unit price input when bonus is unchecked
                     $(unitPriceInput).prop('disabled', false);
                     // Optionally restore original price from product selection
@@ -817,7 +834,24 @@
                     }
                 });
 
-                if (perPrice) {
+                // Check if bonus is already checked
+                const isBonusChecked = row.find('.discount-checkbox').is(':checked');
+
+                if (isBonusChecked) {
+                    // If bonus is checked, keep quantity and price at 0
+                    const quantityInput = row.find('.quantity-input')[0];
+                    $(quantityInput).val('0');
+                    if (quantityInput && quantityInput.cleave) {
+                        quantityInput.cleave.setRawValue(0);
+                    }
+
+                    const unitPriceInput = row.find('.unit-price')[0];
+                    $(unitPriceInput).val('0');
+                    if (unitPriceInput && unitPriceInput.cleave) {
+                        unitPriceInput.cleave.setRawValue(0);
+                    }
+                } else if (perPrice) {
+                    // If bonus is not checked, populate the price normally
                     const unitPriceInput = row.find('.unit-price')[0];
                     $(unitPriceInput).val(perPrice);
 

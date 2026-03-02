@@ -95,6 +95,7 @@ class ReimbursementApprovalController extends Controller
                 'id' => $reimbursement->id,
                 'transaction_code' => $reimbursement->transaction_code,
                 'reimbursement_name' => $reimbursement->reimbursement_name,
+                'reimbursement_date' => $reimbursement->reimbursement_date ? $reimbursement->reimbursement_date->format('d/m/Y') : null,
                 'amount' => $reimbursement->amount,
                 'description' => $reimbursement->description,
                 'attachment' => $reimbursement->attachment,

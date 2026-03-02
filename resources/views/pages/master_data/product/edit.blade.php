@@ -1571,7 +1571,7 @@
                         requiredFields.push(...[
                             'bundle-sales-price',
                             // 'bundle-sales-account',
-                            'bundle-sales-tax',
+                            // 'bundle-sales-tax',
                         ])
                     }
                     if (isBundleEnableInventory) {
