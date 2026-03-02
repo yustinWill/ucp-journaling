@@ -66,8 +66,12 @@ class PurchaseInvoiceController extends Controller
 
         $availableTags = app(TagService::class)->findAll();
 
-        // Get tax options for discount/tax calculations
-        // $taxOptions = app(TaxService::class)->findAllForOptions();
+        $alreadyInvoicedAmount = DB::table('t_purchase_invoices')
+            ->where('f_purchase_order_id', $preselectedPOId)
+            ->whereNotIn('status', ['CANCELLED'])
+            ->sum('grand_total');
+
+        $remainingAmount = ($purchaseOrder->grand_price ?? 0) - $alreadyInvoicedAmount;
 
         // Permission checks for related data creation
         $canAddTags = true;
@@ -76,9 +80,10 @@ class PurchaseInvoiceController extends Controller
             'purchaseOrder' => $purchaseOrder,
             'purchaseOrderProducts' => $purchaseOrderProducts,
             'availableTags' => $availableTags,
-            // 'taxOptions' => $taxOptions,
             'canAddTags' => $canAddTags,
             'preselectedPOId' => $preselectedPOId,
+            'alreadyInvoicedAmount' => $alreadyInvoicedAmount,
+            'remainingAmount' => $remainingAmount,
         ]);
     }
 
@@ -98,16 +103,12 @@ class PurchaseInvoiceController extends Controller
                 'tags.*' => 'integer',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
                 'total_amount' => 'required|numeric|min:0',
-                'total_items' => 'required|integer',
                 'products' => 'required|array',
                 'products.*.product_order_product_id' => 'required|integer|exists:t_purchase_order_products,id',
                 'products.*.product_id' => 'required|integer|exists:m_products,id',
                 'products.*.po_qty' => 'required|numeric|min:0',
-                'products.*.invoiced_qty_before' => 'required|numeric|min:0',
-                'products.*.remaining_qty_before' => 'required|numeric|min:0',
-                'products.*.invoice_qty' => 'required|numeric|min:0',
-                'products.*.unit_price' => 'required|numeric|min:0',
-                'products.*.total_price' => 'required|numeric|min:0',
+                'products.*.unit_price' => 'nullable|numeric|min:0',
+                'products.*.total_price' => 'nullable|numeric|min:0',
             ], [], [
                 'invoice_date' => 'Tanggal Invoice',
                 'invoice_number' => 'Nomor Invoice',
@@ -121,14 +122,10 @@ class PurchaseInvoiceController extends Controller
                 'tags.*' => 'Tag',
                 'attachment' => 'Lampiran',
                 'total_amount' => 'Total Amount',
-                'total_items' => 'Total Item',
                 'products' => 'Produk',
                 'products.*.product_order_product_id' => 'ID Produk PO',
                 'products.*.product_id' => 'ID Produk',
                 'products.*.po_qty' => 'Qty PO',
-                'products.*.invoiced_qty_before' => 'Qty Sudah Diinvoice',
-                'products.*.remaining_qty_before' => 'Qty Sisa',
-                'products.*.invoice_qty' => 'Qty Invoice',
                 'products.*.unit_price' => 'Harga Satuan',
                 'products.*.total_price' => 'Total Harga',
             ]);

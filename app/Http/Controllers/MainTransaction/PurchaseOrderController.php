@@ -404,6 +404,14 @@ class PurchaseOrderController extends Controller
             'purchase_returns' => $purchase_returns,
         ];
 
+        // Delivery completion: all products have remaining_qty <= 0
+        $allItemsDelivered = count($product_delivery_summary) > 0
+            && collect($product_delivery_summary)->every(fn($d) => $d['remaining_qty'] <= 0);
+
+        // Invoice completion: sum of all invoice amounts >= PO total
+        $totalInvoiced = collect($purchase_invoices)->sum('amount');
+        $allAmountInvoiced = $totalInvoiced >= ($po_data->grand_price ?? 0);
+
         $data = [
             'purchaseOrder' => $purchaseOrder,
             'auditLogs' => $auditLogs,
@@ -414,8 +422,8 @@ class PurchaseOrderController extends Controller
             'canViewUser' => true,
             'canViewPurchaseDelivery' => true,
             'canViewPurchaseInvoice' => true,
-            'canCreatePurchaseDelivery' => true,
-            'canCreatePurchaseInvoice' => true,
+            'canCreatePurchaseDelivery' => !$allItemsDelivered,
+            'canCreatePurchaseInvoice' => !$allAmountInvoiced,
             'canViewReturnManagement' => true,
         ];
 

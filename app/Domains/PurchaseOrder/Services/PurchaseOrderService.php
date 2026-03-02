@@ -96,6 +96,9 @@ class PurchaseOrderService
                 DB::raw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id) as pi_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id) as pd_count"),
                 DB::raw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status IN ('PAID', 'SETTLED')) as pi_settled_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status = 'PARTIAL_PAID') as pi_partial_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id AND pd.delivery_status = 'COMPLETED') as pd_delivered_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id AND pd.delivery_status = 'PARTIAL') as pd_in_transit_count"),
                 DB::raw("CASE
                     WHEN (SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id) > 0
                          AND (SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status IN ('PAID', 'SETTLED')) > 0
@@ -136,6 +139,39 @@ class PurchaseOrderService
 
         if ($purchase_order_no_filter = request()->input('purchase_order_no_filter')) {
             $query->where('po.transaction_code', 'like', "%{$purchase_order_no_filter}%");
+        }
+
+        // PD Status filter
+        if ($pdStatusFilter = request()->input('pd_status_filter')) {
+            switch ($pdStatusFilter) {
+                case 'Belum Terima':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id) = 0");
+                    break;
+                case 'Sebagian Diterima':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id AND pd.delivery_status = 'PARTIAL') > 0");
+                    break;
+                case 'Diterima':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_purchase_deliveries pd WHERE pd.f_purchase_order_id = po.id AND pd.delivery_status = 'COMPLETED') > 0");
+                    break;
+            }
+        }
+
+        // PI Status filter
+        if ($piStatusFilter = request()->input('pi_status_filter')) {
+            switch ($piStatusFilter) {
+                case 'Belum Ditagih':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id) = 0");
+                    break;
+                case 'Ditagih':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status NOT IN ('PAID', 'PARTIAL_PAID')) > 0");
+                    break;
+                case 'Dibayar Sebagian':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status = 'PARTIAL_PAID') > 0");
+                    break;
+                case 'Lunas':
+                    $query->havingRaw("(SELECT COUNT(*) FROM t_purchase_invoices pi WHERE pi.f_purchase_order_id = po.id AND pi.status = 'PAID') > 0");
+                    break;
+            }
         }
 
         $query->groupBy('po.id');

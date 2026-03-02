@@ -5,9 +5,7 @@
 @section('content')
     <div class="card mb-6">
         <h4 class="card-header">Tambah Invoice</h4>
-        <form class="card-body" id="purchaseInvoiceForm" autocomplete="off"
-            data-po-data="{{ $purchaseOrder ? base64_encode(json_encode($purchaseOrder)) : '' }}"
-            data-po-products="{{ $purchaseOrderProducts ? base64_encode(json_encode($purchaseOrderProducts)) : '' }}">
+        <form class="card-body" id="purchaseInvoiceForm" autocomplete="off">
             @csrf
 
             <!-- Informasi Dasar Transaksi Section -->
@@ -16,12 +14,12 @@
                 <hr class="mx-n6">
             </div>
 
-            <!-- Row 1: Tanggal Transaksi, Nomor Transaksi -->
+            <!-- Row 1: Invoice Date, Invoice Number -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
+                    <label class="form-label">Tanggal Invoice <span style="color: red;">*</span></label>
                     <input type="date" class="form-control global-single-date-picker" id="invoice-date"
-                        name="invoice_date" value="{{ date('Y-m-d') }}" placeholder="YYYY-MM-DD" required />
+                        name="invoice_date" value="{{ date('Y-m-d') }}" required />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Nomor Transaksi <span style="color: red;">*</span></label>
@@ -50,39 +48,23 @@
                 </div>
             </div>
 
-            <!-- Hidden fields for PO data -->
-            <input type="hidden" id="purchase-order-id" name="purchase_order_id" value="{{ $purchaseOrder->id ?? '' }}" />
+            <!-- Hidden field for PO id -->
+            <input type="hidden" id="purchase-order-id" name="purchase_order_id" value="{{ $purchaseOrder->id ?? $preselectedPOId }}" />
 
             <!-- Informasi Purchase Order Section -->
-            <div class="section-header mt-12" id="po-info-section">
+            <div class="section-header mt-12">
                 <h6>Informasi Purchase Order</h6>
                 <hr class="mx-n6">
             </div>
 
-            <div class="row g-3 mb-4" id="po-info-content">
+            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Supplier</label>
-                    <input type="text" class="form-control" id="po-supplier"
-                        value="{{ $purchaseOrder->supplier_name ?? '' }}" disabled />
+                    <input type="text" class="form-control" value="{{ $purchaseOrder->supplier_name ?? '' }}" disabled />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Email Supplier</label>
-                    <input type="text" class="form-control" id="po-email"
-                        value="{{ $purchaseOrder->supplier_email ?? '' }}" disabled />
-                </div>
-            </div>
-
-            <div class="row g-3 mb-4" id="po-info-content-2">
-                <div class="col-md-6">
-                    <label class="form-label">Status PO</label>
-                    <input type="text" class="form-control" id="po-status" value="{{ $purchaseOrder->status ?? '' }}"
-                        disabled />
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Grand Total PO</label>
-                    <input type="text" class="form-control" id="po-grand-total"
-                        value="{{ $purchaseOrder->grand_price ? 'Rp ' . number_format($purchaseOrder->grand_price, 0, ',', '.') : '' }}"
-                        disabled />
+                    <input type="text" class="form-control" value="{{ $purchaseOrder->supplier_email ?? '' }}" disabled />
                 </div>
             </div>
 
@@ -92,7 +74,6 @@
                 <hr class="mx-n6">
             </div>
 
-            <!-- Row 1: Transaction and Due Dates -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Transaksi <span style="color: red;">*</span></label>
@@ -101,24 +82,22 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Jatuh Tempo</label>
-                    <input type="text" class="form-control" id="due-date" disabled
+                    <input type="text" class="form-control" disabled
                         value="{{ $purchaseOrder->payment_term_due_date ?? 'N/A' }}" />
-                    <small class="text-muted">*Dihitung otomatis dari tanggal transaksi dan payment terms</small>
+                    <small class="text-muted">*Dihitung otomatis dari payment terms PO</small>
                 </div>
             </div>
 
-            <!-- Row 3: Payment Terms -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Termin Pembayaran</label>
-                    <input type="text" class="form-control" id="payment-terms" name="payment_terms"
+                    <input type="text" class="form-control"
                         value="{{ $purchaseOrder->payment_term_name ?? ($purchaseOrder->payment_terms ?? '') }}"
                         disabled />
                     <small class="text-muted">*Dari Purchase Order</small>
                 </div>
             </div>
 
-            <!-- Row 4: Additional Information -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Keterangan</label>
@@ -129,16 +108,10 @@
 
             <!-- Items Invoice Section -->
             <div class="section-header mt-12">
-                <h6>Items Invoice</h6>
+                <h6>Items Purchase Order</h6>
             </div>
 
-            <!-- Info Box -->
-            <div class="alert alert-info">
-                <i class="icon-base ti tabler-info-circle me-2"></i>
-                Info: Quantity sudah ditentukan dari Purchase Order. Anda dapat mengubah harga satuan jika diperlukan. Sistem akan otomatis menghitung total amount.
-            </div>
-
-            <!-- Product Table -->
+            <!-- Product Table (reference only) -->
             <div class="mb-4 mx-n5">
                 <div class="table-responsive">
                     <table class="table table-bordered" id="invoice-items-table">
@@ -146,10 +119,7 @@
                             <tr>
                                 <th>Produk</th>
                                 <th>Qty PO</th>
-                                <th>Invoiced</th>
-                                <th>Remaining</th>
-                                <th>Qty Invoice</th>
-                                <th>Unit Price</th>
+                                <th>Harga Satuan</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
@@ -157,93 +127,45 @@
                             @if ($purchaseOrderProducts && count($purchaseOrderProducts) > 0)
                                 @php $counter = 0; @endphp
                                 @foreach ($purchaseOrderProducts as $product)
+                                    @php
+                                        $qty = $product->qty;
+                                        $unitPrice = $product->price_per_qty ?? 0;
+                                        $rowTotal = $qty * $unitPrice;
+
+                                        $formattedQty = $qty == floor($qty)
+                                            ? number_format($qty, 0, ',', '.')
+                                            : rtrim(rtrim(number_format($qty, 4, ',', '.'), '0'), ',');
+
+                                        $formattedPrice = $unitPrice == floor($unitPrice)
+                                            ? number_format($unitPrice, 0, ',', '.')
+                                            : rtrim(rtrim(number_format($unitPrice, 2, ',', '.'), '0'), ',');
+
+                                        $formattedTotal = number_format($rowTotal, 0, ',', '.');
+                                    @endphp
                                     <tr>
                                         <td>{{ $product->product_code }} - {{ $product->product_name }}</td>
-                                        <td>
-                                            @php
-                                                $qty = $product->qty;
-                                                if ($qty == floor($qty)) {
-                                                    $formattedQty = number_format($qty, 0, ',', '.');
-                                                } else {
-                                                    $formatted = number_format($qty, 4, ',', '.');
-                                                    $formattedQty = rtrim(rtrim($formatted, '0'), ',');
-                                                }
-                                            @endphp
-                                            {{ $formattedQty }} {{ $product->unit_name }}
-                                        </td>
-                                        <td>
-                                            @php
-                                                $invoicedQty = $product->invoiced_qty;
-                                                if ($invoicedQty == floor($invoicedQty)) {
-                                                    $formattedInvoicedQty = number_format($invoicedQty, 0, ',', '.');
-                                                } else {
-                                                    $formatted = number_format($invoicedQty, 4, ',', '.');
-                                                    $formattedInvoicedQty = rtrim(rtrim($formatted, '0'), ',');
-                                                }
-                                            @endphp
-                                            {{ $formattedInvoicedQty }} {{ $product->unit_name }}
-                                        </td>
-                                        <td>
-                                            @php
-                                                $remainingQty = $product->remaining_qty_for_invoice ?? $product->qty;
-                                                if ($remainingQty == floor($remainingQty)) {
-                                                    $formattedRemainingQty = number_format($remainingQty, 0, ',', '.');
-                                                    $formatted = number_format($remainingQty, 0, ',', '.');
-                                                } else {
-                                                    $formatted = number_format($remainingQty, 4, ',', '.');
-                                                    $formattedRemainingQty = rtrim(rtrim($formatted, '0'), ',');
-                                                }
-                                            @endphp
-                                            {{ $formattedRemainingQty }} {{ $product->unit_name }}
-                                        </td>
-                                        <td>
-                                            <input type="hidden"
-                                                name="products[{{ $counter }}][product_order_product_id]"
-                                                value="{{ $product->id }}" />
-                                            <input type="hidden" name="products[{{ $counter }}][product_id]"
-                                                value="{{ $product->f_product_id }}" />
-                                            <input type="hidden" name="products[{{ $counter }}][po_qty]"
-                                                value="{{ $product->qty }}" />
-                                            <input type="hidden"
-                                                name="products[{{ $counter }}][invoiced_qty_before]"
-                                                value="{{ $product->invoiced_qty ?? 0 }}" />
-                                            <input type="hidden"
-                                                name="products[{{ $counter }}][remaining_qty_before]"
-                                                value="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
-                                            <input type="hidden"
-                                                name="products[{{ $counter }}][invoice_qty]"
-                                                value="{{ $product->remaining_qty_for_invoice ?? $product->qty }}" />
-                                            {{ $formatted }} {{ $product->unit_name }}
-                                        </td>
-                                        <td>
-                                            @php
-                                                $pricePerQty = $product->price_per_qty ?? 0;
-                                                if ($pricePerQty == floor($pricePerQty)) {
-                                                    $formattedPrice = number_format($pricePerQty, 0, ',', '.');
-                                                } else {
-                                                    $formattedPriceRaw = number_format($pricePerQty, 2, ',', '.');
-                                                    $formattedPrice = rtrim(rtrim($formattedPriceRaw, '0'), ',');
-                                                }
-                                            @endphp
-                                            <input type="text"
-                                                data-qty="{{ $product->remaining_qty_for_invoice ?? $product->qty }}"
-                                                data-index="{{ $counter }}"
-                                                value="{{ $formattedPrice }}" class="form-control invoice-unit-price-input numeric-input"
-                                                name="products[{{ $counter }}][unit_price]" />
-                                        </td>
-                                        <td>
-                                            <span class="total-price" id="total-{{ $counter }}">0</span>
-                                            <input type="hidden" name="products[{{ $counter }}][total_price]"
-                                                value="0" />
-                                        </td>
+                                        <td>{{ $formattedQty }} {{ $product->unit_name }}</td>
+                                        <td>Rp {{ $formattedPrice }}</td>
+                                        <td>Rp {{ $formattedTotal }}</td>
+                                        {{-- Hidden inputs for store --}}
+                                        <input type="hidden" name="products[{{ $counter }}][product_order_product_id]"
+                                            value="{{ $product->id }}" />
+                                        <input type="hidden" name="products[{{ $counter }}][product_id]"
+                                            value="{{ $product->f_product_id }}" />
+                                        <input type="hidden" name="products[{{ $counter }}][po_qty]"
+                                            value="{{ $product->qty }}" />
+                                        <input type="hidden" name="products[{{ $counter }}][unit_price]"
+                                            value="{{ $unitPrice }}" />
+                                        <input type="hidden" name="products[{{ $counter }}][total_price]"
+                                            value="{{ $rowTotal }}" />
                                     </tr>
                                     @php $counter++; @endphp
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">
+                                    <td colspan="4" class="text-center text-muted py-4">
                                         <i class="icon-base ti tabler-package me-2"></i>
-                                        Data produk akan muncul setelah Purchase Order dipilih
+                                        Data produk tidak ditemukan untuk Purchase Order ini
                                     </td>
                                 </tr>
                             @endif
@@ -269,8 +191,7 @@
                                 <select class="global-select2 form-select" id="invoice-tags" name="tags[]" multiple
                                     data-allow-clear="false">
                                     @foreach ($availableTags as $tag)
-                                        <option value="{{ $tag->id }}">{{ $tag->code }} - {{ $tag->name }}
-                                        </option>
+                                        <option value="{{ $tag->id }}">{{ $tag->code }} - {{ $tag->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -294,48 +215,68 @@
                         <label class="form-label">Lampiran</label>
                         <input type="file" class="form-control" id="invoice-attachment" name="attachment"
                             accept=".xlsx,.xls,.doc,.docx,.pdf,.png,.jpg,.jpeg,.zip" />
-                        <small class="form-text text-muted">File dapat berupa Excel, Word, PDF, PNG, atau Zip (Max:
-                            10MB)</small>
+                        <small class="form-text text-muted">File dapat berupa Excel, Word, PDF, PNG, atau Zip (Max: 10MB)</small>
                     </div>
                 </div>
 
-                <!-- Right Side: Invoice Summary Section -->
+                <!-- Right Side: Invoice Summary -->
                 <div class="col-md-6">
                     <div class="summary-section ps-4">
                         <div class="row mb-3">
                             <div class="col-6">
-                                <label class="form-label">Total Amount</label>
+                                <label class="form-label">Grand Total PO</label>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="total-invoice-amount"
-                                    dir="rtl" value="Rp 0" disabled>
+                                <input type="text" class="form-control" id="po-grand-total-display" dir="rtl" disabled
+                                    value="Rp {{ number_format($purchaseOrder->grand_price ?? 0, 0, ',', '.') }}">
                             </div>
                         </div>
+                        @if ($alreadyInvoicedAmount > 0)
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Sudah Diinvoice</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" class="form-control" id="already-invoiced-display" dir="rtl"
+                                        disabled value="Rp {{ number_format($alreadyInvoicedAmount, 0, ',', '.') }}">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Sisa Belum Diinvoice</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="text" class="form-control" id="remaining-display" dir="rtl" disabled
+                                        value="Rp {{ number_format($remainingAmount, 0, ',', '.') }}">
+                                </div>
+                            </div>
+                        @endif
                         <div class="row mb-3">
                             <div class="col-6">
-                                <label class="form-label">Total Items</label>
+                                <label class="form-label fw-semibold">Jumlah Invoice Ini <span style="color: red;">*</span></label>
                             </div>
                             <div class="col-6">
-                                <input type="text" class="form-control readonly-field" id="total-items-invoice"
-                                    dir="rtl" value="0 items" disabled>
+                                <input type="text" class="form-control numeric-input" id="invoice-amount-input"
+                                    name="total_amount" dir="rtl" required />
+                                <input type="hidden" id="invoice-status-hidden" name="invoice_status" value="PARTIAL" />
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label">Status Invoice</label>
                             </div>
-                            <div class="col-6">
-                                <span class="badge bg-label-warning" id="invoice-status">UNPAID</span>
+                            <div class="col-6 d-flex align-items-center">
+                                <span class="badge bg-label-warning" id="invoice-status">PARTIAL</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Hidden fields for calculations -->
-            <input type="hidden" id="purchase-order-id" name="purchase_order_id" value="{{ $preselectedPOId }}" />
-            <input type="hidden" id="invoice-total-amount" name="total_amount" value="0" />
-            <input type="hidden" id="invoice-total-items" name="total_items" value="0" />
+            <!-- Hidden values for JS -->
+            <input type="hidden" id="po-grand-total-value" value="{{ $purchaseOrder->grand_price ?? 0 }}" />
+            <input type="hidden" id="already-invoiced-value" value="{{ $alreadyInvoicedAmount }}" />
+            <input type="hidden" id="remaining-value" value="{{ $remainingAmount }}" />
 
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
@@ -351,165 +292,63 @@
     <script>
         $(function() {
             initCleaveCurrency(document);
-            // Initialize the form
-            initializeForm();
 
-            // Calculate initial totals for pre-filled unit prices
-            $('.invoice-unit-price-input').each(function() {
-                const index = $(this).data('index');
-                calculateRowTotal(index);
+            const poGrandTotal = parseFloat($('#po-grand-total-value').val()) || 0;
+            const alreadyInvoiced = parseFloat($('#already-invoiced-value').val()) || 0;
+            const remaining = poGrandTotal - alreadyInvoiced;
+
+            // Pre-fill invoice amount with remaining balance
+            const amountInput = document.getElementById('invoice-amount-input');
+            if (amountInput && amountInput.cleave) {
+                amountInput.cleave.setRawValue(remaining);
+            } else {
+                $('#invoice-amount-input').val(remaining > 0 ? remaining : poGrandTotal);
+            }
+
+            updateStatus();
+
+            // Generate initial invoice number
+            generateInvoiceNumber();
+            $('#generate-invoice-number').on('click', generateInvoiceNumber);
+
+            // Update status whenever amount changes
+            $('#invoice-amount-input').on('input change', function() {
+                updateStatus();
             });
-            calculateInvoiceTotal();
-            updateInvoiceStatus();
 
-            function initializeForm() {
-                // Generate initial invoice number
-                generateInvoiceNumber();
+            $('#purchaseInvoiceForm').on('submit', submitForm);
 
-                // Event handlers
-                $('#generate-invoice-number').on('click', generateInvoiceNumber);
-                $('#invoice-date').on('change', function() {
-                    // No due date calculation on invoice date change
-                });
-
-                $('#purchaseInvoiceForm').on('submit', submitForm);
-
-                // Initialize unit price change handlers for pre-filled data
-                $('.invoice-unit-price-input').on('input change', function() {
-                    const index = $(this).data('index');
-                    calculateRowTotal(index);
-                    calculateInvoiceTotal();
-                    updateInvoiceStatus();
-                });
+            function updateStatus() {
+                const amount = parseCurrency($('#invoice-amount-input').val()) || 0;
+                if (amount > 0 && amount >= remaining) {
+                    $('#invoice-status')
+                        .removeClass('bg-label-warning')
+                        .addClass('bg-label-success')
+                        .text('LUNAS');
+                    $('#invoice-status-hidden').val('COMPLETED');
+                } else {
+                    $('#invoice-status')
+                        .removeClass('bg-label-success')
+                        .addClass('bg-label-warning')
+                        .text('PARTIAL');
+                    $('#invoice-status-hidden').val('PARTIAL');
+                }
             }
 
             function generateInvoiceNumber() {
                 $('#generate-invoice-number').prop('disabled', true);
-
-                // Mock generation - in real implementation, call backend
                 const year = new Date().getFullYear();
                 const month = String(new Date().getMonth() + 1).padStart(2, '0');
                 const random = Math.floor(Math.random() * 999) + 1;
-                const number = `INV-${year}${month}-${String(random).padStart(3, '0')}`;
-
-                $('#invoice-number').val(number);
+                $('#invoice-number').val(`INV-${year}${month}-${String(random).padStart(3, '0')}`);
                 $('#generate-invoice-number').prop('disabled', false);
-            }
-
-            function calculateRowTotal(index) {
-                const qtyInput = $(`input[name="products[${index}][invoice_qty]"]`);
-                const unitPriceInput = $(`input[name="products[${index}][unit_price]"]`);
-                const totalSpan = $(`#total-${index}`);
-                const totalHidden = $(`input[name="products[${index}][total_price]"]`);
-
-                const qty = parseFloat(qtyInput.val()) || 0;
-                const unitPrice = parseCurrency(unitPriceInput.val()) || 0;
-                const total = qty * unitPrice;
-
-                totalSpan.text(formatCurrency(total));
-                totalHidden.val(total);
-            }
-
-            function calculateInvoiceTotal() {
-                let totalAmount = 0;
-                let totalItems = 0;
-
-                $('input[name*="[total_price]"]').each(function() {
-                    const amount = parseFloat($(this).val()) || 0;
-                    totalAmount += amount;
-                });
-
-                $('input[name*="[invoice_qty]"]').each(function() {
-                    const qty = parseFloat($(this).val()) || 0;
-                    if (qty > 0) {
-                        totalItems++;
-                    }
-                });
-
-                $('#total-invoice-amount').val(formatCurrency(totalAmount));
-                $('#total-items-invoice').val(`${totalItems} items`);
-                $('#invoice-total-amount').val(totalAmount);
-                $('#invoice-total-items').val(totalItems);
-            }
-
-            function updateInvoiceStatus() {
-                let allCompleted = true;
-
-                $('#invoice-items-tbody tr').each(function() {
-                    const remaining = parseFloat($(this).find('input[name*="[remaining_qty_before]"]')
-                        .val()) || 0;
-                   
-                    const invoiceQty = parseCurrency($(this).find('input[name*="[invoice_qty]"]').val()) || 0;
-                    
-                    if ((remaining - invoiceQty) !== 0) {
-                        allCompleted = false;
-                    }
-                });
-
-                if (allCompleted) {
-                    $('#invoice-status').removeClass('bg-label-warning').addClass('bg-label-success').text(
-                        'COMPLETED');
-                } else {
-                    $('#invoice-status').removeClass('bg-label-success').addClass('bg-label-warning').text(
-                        'PARTIAL');
-                }
-            }
-
-            // Call this function after every quantity change
-            $('.invoice-qty-input, .invoice-qty').on('input change', function() {
-                updateInvoiceStatus();
-            });
-
-            function validateTransactionDate() {
-                const invoiceDate = new Date($('#invoice-date').val());
-                const transactionDate = new Date($('#transaction-date').val());
-
-                if (transactionDate < invoiceDate) {
-                    Swal.fire({
-                        title: 'Tanggal Invalid!',
-                        text: 'Tanggal transaksi tidak boleh lebih awal dari tanggal invoice.',
-                        icon: 'warning',
-                        customClass: {
-                            confirmButton: 'btn btn-primary'
-                        },
-                        buttonsStyling: false
-                    });
-
-                    $('#transaction-date').val($('#invoice-date').val());
-                }
             }
 
             function submitForm(e) {
                 e.preventDefault();
 
-                // Validation
-                if (!validateForm()) {
-                    return;
-                }
+                if (!validateForm()) return;
 
-                // Check if at least one item has quantity > 0
-                let hasItems = false;
-                $('input[name*="[invoice_qty]"]').each(function() {
-                    if (parseFloat($(this).val()) > 0) {
-                        hasItems = true;
-                        return false;
-                    }
-                });
-
-                if (!hasItems) {
-                    Swal.fire({
-                        title: 'Tidak Ada Item!',
-                        text: 'Pilih minimal satu item dengan quantity lebih dari 0.',
-                        icon: 'warning',
-                        customClass: {
-                            confirmButton: 'btn btn-primary'
-                        },
-                        buttonsStyling: false
-                    });
-                    return;
-                }
-
-                // Show confirmation
                 Swal.fire({
                     title: 'Simpan Invoice?',
                     text: 'Pastikan data yang diisi sudah benar.',
@@ -530,7 +369,7 @@
             }
 
             function validateForm() {
-                const requiredFields = ['invoice-number', 'invoice-date', 'transaction-date'];
+                const requiredFields = ['invoice-number', 'invoice-date', 'transaction-date', 'invoice-amount-input'];
                 let isValid = true;
 
                 requiredFields.forEach(fieldId => {
@@ -543,14 +382,18 @@
                     }
                 });
 
+                const amount = parseCurrency($('#invoice-amount-input').val()) || 0;
+                if (amount <= 0) {
+                    $('#invoice-amount-input').addClass('is-invalid');
+                    isValid = false;
+                }
+
                 if (!isValid) {
                     Swal.fire({
                         title: 'Field Wajib!',
                         text: 'Silakan lengkapi semua field yang wajib diisi.',
                         icon: 'warning',
-                        customClass: {
-                            confirmButton: 'btn btn-primary'
-                        },
+                        customClass: { confirmButton: 'btn btn-primary' },
                         buttonsStyling: false
                     });
                 }
@@ -562,24 +405,16 @@
                 const submitBtn = $('#save-invoice-btn');
                 const originalText = submitBtn.text();
 
-                // Show loading state
                 submitBtn.prop('disabled', true).html(
                     '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...'
                 );
 
-                // Prepare form data
                 const formData = new FormData($('#purchaseInvoiceForm')[0]);
-               
-                const invoiceStatus = $('#invoice-status').text().trim();
-                formData.append('invoice_status', invoiceStatus);
 
-                $('input[name*="[invoice_qty]"]').each(function(index) {
-                    const rawQty = $(this).val();
-                    const formattedQty = parseCurrency(rawQty);
-                    formData.append(`products[${index}][invoice_qty]`, formattedQty);
-                });
+                // Ensure the raw numeric value is used for total_amount
+                const rawAmount = parseCurrency($('#invoice-amount-input').val()) || 0;
+                formData.set('total_amount', rawAmount);
 
-                // Submit via AJAX
                 $.ajax({
                     url: "{{ route('main_transaction.purchase_invoice.store') }}",
                     method: 'POST',
@@ -591,9 +426,7 @@
                             title: 'Berhasil!',
                             text: 'Invoice berhasil dibuat.',
                             icon: 'success',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
+                            customClass: { confirmButton: 'btn btn-primary' },
                             buttonsStyling: false
                         }).then(() => {
                             if (response.data && response.data.id) {
@@ -608,18 +441,14 @@
                     },
                     error: function(xhr) {
                         let errorMessage = 'Terjadi kesalahan saat menyimpan invoice.';
-
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
                         }
-
                         Swal.fire({
                             title: 'Gagal!',
                             text: errorMessage,
                             icon: 'error',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            },
+                            customClass: { confirmButton: 'btn btn-primary' },
                             buttonsStyling: false
                         });
                     },
@@ -627,20 +456,6 @@
                         submitBtn.prop('disabled', false).text(originalText);
                     }
                 });
-            }
-
-            function formatDate(dateString) {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                return date.toLocaleDateString('id-ID');
-            }
-
-            function formatCurrency(amount) {
-                return new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0
-                }).format(amount || 0);
             }
         });
     </script>

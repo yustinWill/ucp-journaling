@@ -213,12 +213,12 @@
                     <table class="table table-bordered" id="product-table">
                         <thead>
                             <tr>
-                                <th>Produk</th>
-                                <th>Kuantitas</th>
-                                <th>Satuan</th>
-                                <th>Harga Satuan</th>
+                                <th style="width: 400px;">Produk</th>
+                                <th style="width: 160px;">Kuantitas</th>
+                                <th style="width: 300px;">Satuan</th>
+                                <th style="width: 200px;">Harga Satuan</th>
                                 {{-- <th>Pajak</th> --}}
-                                <th>Jumlah</th>
+                                <th style="width: 200px;">Jumlah</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -543,6 +543,7 @@
                 const selectedOption = $(this).find('option:selected');
                 const productId = $(this).val();
                 const purchasePerPrice = selectedOption.data('purchase-per-price');
+                const baseUnitName = selectedOption.data('unit');
                 const row = $(this).closest('tr');
                 const $unitSelect = row.find('.unit-select');
 
@@ -561,8 +562,11 @@
                         if (response.success && response.data.length > 0) {
                             let options = '<option value="">Pilih Satuan</option>';
                             response.data.forEach(function(unit) {
-                                const badge = unit.is_default == 1 ? ' (Default)' : '';
-                                options += `<option value="${unit.f_unit_id}">${unit.unit_name}${badge}</option>`;
+                                const factor = parseFloat(unit.conversion_factor);
+                                const factorDisplay = Number.isInteger(factor) ? factor : factor;
+                                const suffix = unit.is_default == 1 ? ' - Default' : '';
+                                const label = `${unit.unit_name} (${factorDisplay} ${baseUnitName})${suffix}`;
+                                options += `<option value="${unit.f_unit_id}" data-conversion-factor="${unit.conversion_factor}">${label}</option>`;
                             });
 
                             // Destroy Select2 if exists
@@ -595,6 +599,7 @@
                 });
 
                 if (purchasePerPrice) {
+                    row.data('base-price', purchasePerPrice);
                     const unitPriceInput = row.find('input[name*="[unit_price]"]')[0];
                     $(unitPriceInput).val(purchasePerPrice);
 
@@ -605,6 +610,24 @@
                 }
 
                 calculateTotals();
+            });
+
+            // Unit selection handler - recalculate price based on conversion factor
+            $(document).on('change', '.unit-select', function() {
+                const row = $(this).closest('tr');
+                const basePrice = parseFloat(row.data('base-price')) || 0;
+                const conversionFactor = parseFloat($(this).find('option:selected').data('conversion-factor')) || 1;
+
+                if (basePrice > 0) {
+                    const newPrice = basePrice * conversionFactor;
+                    const unitPriceInput = row.find('input[name*="[unit_price]"]')[0];
+                    if (unitPriceInput && unitPriceInput.cleave) {
+                        unitPriceInput.cleave.setRawValue(newPrice);
+                    } else {
+                        $(unitPriceInput).val(newPrice);
+                    }
+                    calculateTotals();
+                }
             });
 
             function handlePaymentTermsChange() {

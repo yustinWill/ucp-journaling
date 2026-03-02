@@ -58,28 +58,25 @@ class CreatePurchaseInvoiceAction
             // Create the invoice
             $invoiceId = app(PurchaseInvoiceService::class)->create($invoiceData);
 
-            // Create invoice products
+            // Create invoice products (PO quantities used as reference)
             $invoiceProducts = [];
             foreach ($data['products'] as $product) {
-                if ($product['invoice_qty'] > 0) {
-                    $invoicedBefore = floatval($product['invoiced_qty_before'] ?? 0);
-                    $remainingBefore = floatval($product['remaining_qty_before'] ?? $product['po_qty'] ?? 0);
-                    $invoiceQty = floatval($product['invoice_qty']);
+                $poQty = floatval($product['po_qty'] ?? 0);
+                $unitPrice = floatval($product['unit_price'] ?? 0);
 
-                    $invoiceProducts[] = [
-                        'product_id' => $product['product_id'],
-                        'product_order_product_id' => $product['product_order_product_id'],
-                        'invoice_qty' => $invoiceQty,
-                        'unit_price' => $product['unit_price'],
-                        'total_price' => $product['total_price'],
-                        'invoiced_qty_before' => $invoicedBefore,
-                        'remaining_qty_before' => $remainingBefore,
-                        'invoiced_qty_after' => $invoicedBefore + $invoiceQty,
-                        'remaining_qty_after' => $remainingBefore - $invoiceQty,
-                        'note' => $product['note'] ?? null,
-                        'status' => 'ACTIVE',
-                    ];
-                }
+                $invoiceProducts[] = [
+                    'product_id' => $product['product_id'],
+                    'product_order_product_id' => $product['product_order_product_id'],
+                    'invoice_qty' => $poQty,
+                    'unit_price' => $unitPrice,
+                    'total_price' => $poQty * $unitPrice,
+                    'invoiced_qty_before' => 0,
+                    'remaining_qty_before' => $poQty,
+                    'invoiced_qty_after' => $poQty,
+                    'remaining_qty_after' => 0,
+                    'note' => null,
+                    'status' => 'ACTIVE',
+                ];
             }
 
             app(PurchaseInvoiceService::class)->createInvoiceProducts($invoiceId, $invoiceProducts);
