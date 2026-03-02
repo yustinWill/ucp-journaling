@@ -415,43 +415,27 @@
             $(document).on('change', '.discount-checkbox', function() {
                 const row = $(this).closest('tr');
                 const unitPriceInput = row.find('.unit-price-input')[0];
-                const quantityInput = row.find('.quantity-input')[0];
                 const isBonus = $(this).is(':checked');
 
                 if (isBonus) {
-                    // Set quantity to 0 when bonus is checked
-                    $(quantityInput).val('0');
-                    if (quantityInput && quantityInput.cleave) {
-                        quantityInput.cleave.setRawValue(0);
-                    }
-                    // Disable quantity input when bonus is applied
-                    $(quantityInput).prop('disabled', true);
-
-                    // Set unit price to 0 when bonus is checked
-                    $(unitPriceInput).val('0');
+                    // Disable unit price and set to 0; quantity and unit remain editable
+                    $(unitPriceInput).prop('disabled', true);
                     if (unitPriceInput && unitPriceInput.cleave) {
                         unitPriceInput.cleave.setRawValue(0);
+                    } else {
+                        $(unitPriceInput).val('0');
                     }
-                    // Disable unit price input when bonus is applied
-                    $(unitPriceInput).prop('disabled', true);
                 } else {
-                    // Re-enable quantity input when bonus is unchecked
-                    $(quantityInput).prop('disabled', false);
-                    // Set quantity back to 1 as default
-                    $(quantityInput).val('1');
-                    if (quantityInput && quantityInput.cleave) {
-                        quantityInput.cleave.setRawValue(1);
-                    }
-
-                    // Re-enable unit price input when bonus is unchecked
+                    // Re-enable unit price and restore price based on current unit conversion factor
                     $(unitPriceInput).prop('disabled', false);
-                    // Optionally restore original price from product selection
-                    const selectedOption = row.find('.product-select option:selected');
-                    const originalPrice = selectedOption.data('price');
-                    if (originalPrice) {
-                        $(unitPriceInput).val(originalPrice);
+                    const basePrice = parseFloat(row.data('base-price')) || 0;
+                    const conversionFactor = parseFloat(row.find('.unit-select option:selected').data('conversion-factor')) || 1;
+                    const restoredPrice = basePrice * conversionFactor;
+                    if (restoredPrice > 0) {
                         if (unitPriceInput && unitPriceInput.cleave) {
-                            unitPriceInput.cleave.setRawValue(originalPrice);
+                            unitPriceInput.cleave.setRawValue(restoredPrice);
+                        } else {
+                            $(unitPriceInput).val(restoredPrice);
                         }
                     }
                 }
@@ -786,6 +770,9 @@
                     return;
                 }
 
+                // Store base price on row for conversion factor calculation
+                row.data('base-price', perPrice);
+
                 // Load product units via AJAX
                 $.ajax({
                     url: `/master_data/product/${productId}/units`,
@@ -796,11 +783,13 @@
                         console.log('Number of units:', response.data ? response.data.length : 0);
 
                         if (response.success && response.data.length > 0) {
+                            const baseUnitName = selectedOption.data('unit') || '';
                             let options = '<option value="">Pilih Satuan</option>';
                             response.data.forEach(function(unit) {
                                 console.log('Unit:', unit);
-                                const badge = unit.is_default == 1 ? ' (Default)' : '';
-                                options += `<option value="${unit.f_unit_id}">${unit.unit_name}${badge}</option>`;
+                                const factor = parseFloat(unit.conversion_factor);
+                                const suffix = unit.is_default == 1 ? ' - Default' : '';
+                                options += `<option value="${unit.f_unit_id}" data-conversion-factor="${unit.conversion_factor}">${unit.unit_name} (${factor} ${baseUnitName})${suffix}</option>`;
                             });
 
                             // Destroy Select2 if exists
@@ -866,6 +855,29 @@
 
             // Handle unit change
             $(document).on('change', '.unit-select', function() {
+                const row = $(this).closest('tr');
+                const isBonus = row.find('.discount-checkbox').is(':checked');
+                const unitPriceInput = row.find('.unit-price-input')[0];
+
+                if (isBonus) {
+                    // Keep price at 0 for bonus rows
+                    if (unitPriceInput && unitPriceInput.cleave) {
+                        unitPriceInput.cleave.setRawValue(0);
+                    } else {
+                        $(unitPriceInput).val('0');
+                    }
+                } else {
+                    const basePrice = parseFloat(row.data('base-price')) || 0;
+                    const conversionFactor = parseFloat($(this).find('option:selected').data('conversion-factor')) || 1;
+                    if (basePrice > 0) {
+                        const newPrice = basePrice * conversionFactor;
+                        if (unitPriceInput && unitPriceInput.cleave) {
+                            unitPriceInput.cleave.setRawValue(newPrice);
+                        } else {
+                            $(unitPriceInput).val(newPrice);
+                        }
+                    }
+                }
                 calculateTotals();
             });
 

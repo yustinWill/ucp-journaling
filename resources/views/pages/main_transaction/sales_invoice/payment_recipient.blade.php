@@ -118,23 +118,9 @@
                 </div>
                 <div class="col-md-8">
                     
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-4">
-                            <label class="form-label">Masukkan Jumlah Pemotongan</label>
-                        </div>
-                        <div class="col-md-4">
-                            <select class="global-select2 form-select" id="deduction-account" name="deduction_account_code" data-allow-clear="false">
-                                <option value="">Pilih Akun</option>
-                                @foreach ($coa_accounts as $account)
-                                    <option value="{{ $account->code }}">
-                                        {{ $account->code }} - {{ $account->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="number" class="form-control" name = "deduction_value" id = "deduction_value" placeholder="0" value="0" />
-                        </div>
-                    </div>
+                    {{-- Jumlah Pemotongan hidden --}}
+                    <input type="hidden" name="deduction_account_code" value="" />
+                    <input type="hidden" name="deduction_value" id="deduction_value" value="0" />
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">
                             <label class="form-label">Total</label>

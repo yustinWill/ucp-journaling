@@ -38,8 +38,8 @@ class ProductController extends Controller
         $stockStatuses = app(StockStatusService::class)->findAll();
 
         $statuses = [
-            ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
-            ['value' => 'INACTIVE', 'label' => 'INACTIVE - Inaktif'],
+            ['value' => 'ACTIVE', 'label' => 'Aktif'],
+            ['value' => 'INACTIVE', 'label' => 'Inaktif'],
         ];
 
         $permissionData = PermissionHelper::getViewPermissions('master_data_product');
