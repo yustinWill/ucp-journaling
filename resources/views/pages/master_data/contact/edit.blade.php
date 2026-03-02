@@ -409,37 +409,81 @@
 
             <span class="pelanggan-additional-form">
                 <hr class="my-6 mx-n6" />
-                <h6>8. Info Produk Dibeli</h6>
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="products-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 15%;">Kode Produk</th>
-                                <th style="width: 40%;">Nama Produk</th>
-                                <th style="width: 30%;">Harga Satuan</th>
-                            </tr>
-                        </thead>
-                        <tbody id="products-tbody">
-                            @foreach ($products as $product)
-                                @php
-                                    $existingProduct = $contact_product->firstWhere('f_product_code', $product->code);
-                                    $price = $existingProduct ? $existingProduct->price_per_qty : 0;
-                                    // Remove decimal if it's .00
-                                    $price = floor($price) == $price ? (int)$price : $price;
-                                @endphp
-                                <tr data-product-code="{{ $product->code }}">
-                                    <td><strong>{{ $product->code }}</strong></td>
-                                    <td>{{ $product->name }}</td>
-                                    <td>
-                                        <input type="text" class="form-control form-control-sm product-price-input currency-input"
-                                            data-product-code="{{ $product->code }}"
-                                            placeholder="0"
-                                            value="{{ $price }}">
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <h6>8. Info Produk Dibeli Customer</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <span class="form-repeater-product">
+                            <div data-repeater-list="product-list">
+                                @forelse ($contact_product as $cp)
+                                    @php
+                                        $price = floor($cp->price_per_qty) == $cp->price_per_qty ? (int)$cp->price_per_qty : $cp->price_per_qty;
+                                    @endphp
+                                    <div data-repeater-item>
+                                        <input type="hidden" class="product_id" value="{{ $cp->id }}" />
+                                        <div class="row g-6">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Produk</label>
+                                                <div class="position-relative">
+                                                    <select class="select2Product form-select product_code" data-allow-clear="true">
+                                                        <option value="">Pilih Produk</option>
+                                                        @foreach ($products as $product)
+                                                            <option value="{{ $product->code }}"
+                                                                data-name="{{ $product->name }}"
+                                                                {{ $cp->f_product_code === $product->code ? 'selected' : '' }}>
+                                                                {{ $product->code }} - {{ $product->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Harga Satuan</label>
+                                                <input type="text" class="form-control product_price currency-input" placeholder="0" value="{{ $price }}" />
+                                            </div>
+                                            <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
+                                                <button class="btn btn-label-danger mt-xl-6" data-repeater-delete type="button">
+                                                    <i class="icon-base ti tabler-x me-1"></i>
+                                                    <span class="align-middle">Hapus</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div data-repeater-item>
+                                        <div class="row g-6">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Produk</label>
+                                                <div class="position-relative">
+                                                    <select class="select2Product form-select product_code" data-allow-clear="true">
+                                                        <option value="">Pilih Produk</option>
+                                                        @foreach ($products as $product)
+                                                            <option value="{{ $product->code }}" data-name="{{ $product->name }}">{{ $product->code }} - {{ $product->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Harga Satuan</label>
+                                                <input type="text" class="form-control product_price currency-input" placeholder="0" value="0" />
+                                            </div>
+                                            <div class="mb-6 col-lg-12 col-xl-2 col-12 d-flex align-items-center mb-0">
+                                                <button class="btn btn-label-danger mt-xl-6" data-repeater-delete type="button">
+                                                    <i class="icon-base ti tabler-x me-1"></i>
+                                                    <span class="align-middle">Hapus</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforelse
+                            </div>
+                            <div class="mb-0">
+                                <button class="btn btn-primary" data-repeater-create type="button">
+                                    <i class="icon-base ti tabler-plus me-1"></i>
+                                    <span class="align-middle">Tambah Produk Lain</span>
+                                </button>
+                            </div>
+                        </span>
+                    </div>
                 </div>
             </span>
 
@@ -549,10 +593,47 @@
                 });
             }
 
-            // Initialize currency inputs for product prices
-            $('#products-tbody .product-price-input').each(function() {
-                // Cleave.js will handle the formatting, just initialize it with the raw value
-                initCleaveCurrency($(this).parent()[0]);
+            // Initialize select2 for existing product selects
+            $('select.select2Product').each(function() {
+                $(this).select2({
+                    placeholder: "Pilih Produk",
+                    allowClear: true,
+                    dropdownParent: $(this).parent(),
+                    width: '100%'
+                });
+            });
+
+            // Initialize product repeater
+            $('.form-repeater-product').repeater({
+                show: function() {
+                    $(this).slideDown(() => {
+                        // Reinitialize select2 for new product select
+                        $(this).find('.select2-container').remove();
+                        $(this).find('select.select2Product').removeClass(
+                            'select2-hidden-accessible').removeAttr(
+                            'data-select2-id tabindex aria-hidden');
+                        $(this).find('select.select2Product option').removeAttr('selected');
+                        $(this).find('select.select2Product').val('').trigger('change');
+                        $(this).find('select.select2Product').each(function() {
+                            if ($(this).data('select2')) {
+                                $(this).select2('destroy');
+                            }
+                            $(this).select2({
+                                placeholder: "Pilih Produk",
+                                allowClear: true,
+                                dropdownParent: $(this).parent(),
+                                width: '100%'
+                            });
+                        });
+                        $(this).find('input.product_id').val('');
+                        $(this).find('input.product_price').val('0');
+                        // Initialize currency input for new row
+                        initCleaveCurrency($(this)[0]);
+                    });
+                },
+                hide: function(remove) {
+                    $(this).slideUp(remove);
+                }
             });
 
             // Store initial shipping values
@@ -747,19 +828,18 @@
                                                 };
                                             }
                                         }).get(),
-                                    // Product repeater
-                                    // Products - only submit products with price > 0
-                                    products: $('#products-tbody tr').map(function() {
-                                        const productCode = $(this).data('product-code');
-                                        const priceInput = $(this).find('.product-price-input');
+                                    // Products - collect from repeater
+                                    products: $('.form-repeater-product [data-repeater-item]').map(function() {
+                                        const productCode = $(this).find('.product_code').val();
+                                        const priceInput = $(this).find('.product_price');
                                         const price = parseCurrency(priceInput.val());
+                                        const productId = $(this).find('.product_id').val();
 
-                                        // Only include products with price > 0
-                                        if (price > 0) {
-                                            return {
-                                                product: productCode,
-                                                price: price
-                                            };
+                                        // Only include products with code and price > 0
+                                        if (productCode && price > 0) {
+                                            const item = { product: productCode, price: price };
+                                            if (productId) item.product_id = productId;
+                                            return item;
                                         }
                                     }).get()
                                 },
