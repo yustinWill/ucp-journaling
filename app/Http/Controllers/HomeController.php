@@ -59,6 +59,31 @@ class HomeController extends Controller
         $siExpected = 'Rp ' . number_format($siAmounts->expected ?? 0, 0, ',', '.');
         $siSettled = 'Rp ' . number_format($siAmounts->settled ?? 0, 0, ',', '.');
 
+        // Ongkir: Direimburse vs Ditanggung Customer
+        $ongkirQuery = DB::table('t_sales_deliveries as sd')
+            ->join('t_sales_orders as so', 'sd.sales_order_id', '=', 'so.id')
+            ->where('so.company_code', $companyCode)
+            ->where('sd.shipping_cost', '>', 0);
+        if (!$isLifetime) {
+            $ongkirQuery->whereBetween('sd.delivery_date', [$dateFrom, $dateTo]);
+        }
+        $ongkirData = $ongkirQuery->selectRaw("
+            SUM(CASE WHEN EXISTS (
+                SELECT 1 FROM t_reimbursements r
+                WHERE r.reimbursement_name = CONCAT('Reimbursement Ongkir ', sd.delivery_number)
+                  AND r.company_code = so.company_code
+                  AND r.deleted_at IS NULL
+            ) THEN sd.shipping_cost ELSE 0 END) as direimburse,
+            SUM(CASE WHEN NOT EXISTS (
+                SELECT 1 FROM t_reimbursements r
+                WHERE r.reimbursement_name = CONCAT('Reimbursement Ongkir ', sd.delivery_number)
+                  AND r.company_code = so.company_code
+                  AND r.deleted_at IS NULL
+            ) THEN sd.shipping_cost ELSE 0 END) as ditanggung_customer
+        ")->first();
+        $ongkirDireimburse = (float) ($ongkirData->direimburse ?? 0);
+        $ongkirDitanggung = (float) ($ongkirData->ditanggung_customer ?? 0);
+
         // ============================================================
         // Section 2: Daily Sales Chart (filtered by period)
         // ============================================================
@@ -276,6 +301,7 @@ class HomeController extends Controller
 
         return view('pages.dashboard', compact(
             'soTotal', 'sdNonConfirm', 'sdConfirm', 'siExpected', 'siSettled',
+            'ongkirDireimburse', 'ongkirDitanggung',
             'dailySales',
             'topupBelumBayar', 'topupTerbayar',
             'revenueSplitOptions', 'activeRevenueSplit',
