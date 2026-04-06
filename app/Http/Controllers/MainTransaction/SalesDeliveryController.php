@@ -100,6 +100,7 @@ class SalesDeliveryController extends Controller
                 'customer_id' => 'required|integer|exists:m_contacts,id',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
+                'is_reimburse_ongkir' => 'nullable|boolean',
                 'products' => 'required|array',
                 'products.*.sales_order_product_id' => 'required|integer|exists:t_sales_order_products,id',
                 'products.*.product_id' => 'required|integer|exists:m_products,id',
@@ -230,7 +231,14 @@ class SalesDeliveryController extends Controller
         }
 
         $audit_logs = app(SalesDeliveryAuditLogService::class)->findAllBasedOnSalesDeliveryId($id);
-        
+
+        // Check if a reimbursement was auto-created for this SD
+        $hasReimbursement = \Illuminate\Support\Facades\DB::table('t_reimbursements')
+            ->where('company_code', session('user_company_code'))
+            ->where('reimbursement_name', 'Reimbursement Ongkir ' . $salesDeliveryHeader->delivery_number)
+            ->whereNull('deleted_at')
+            ->exists();
+
         return view('pages.main_transaction.sales_delivery.detail', [
             'salesDelivery' => $sales_delivery,
             'customer' => $customer,
@@ -239,6 +247,7 @@ class SalesDeliveryController extends Controller
             'productLines' => $productLines,
             'audit_logs' => $audit_logs,
             'canEdit' => true,
+            'hasReimbursement' => $hasReimbursement,
         ]);
     }
 

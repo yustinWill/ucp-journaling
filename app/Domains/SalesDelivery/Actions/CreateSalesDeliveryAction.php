@@ -5,6 +5,8 @@ namespace App\Domains\SalesDelivery\Actions;
 use App\Domains\SalesDelivery\Services\SalesDeliveryAuditLogService;
 use App\Domains\SalesDelivery\Services\SalesDeliveryService;
 use App\Enums\ActionTypes;
+use App\Services\ReimbursementService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CreateSalesDeliveryAction
@@ -26,6 +28,20 @@ class CreateSalesDeliveryAction
 
             // NOTE: Stock movement logic has been moved to ConfirmSalesDeliveryAction
             // Stock will be updated when the delivery is confirmed via "Konfirm" button
+
+            // Auto-create reimbursement if requested
+            if (!empty($data['is_reimburse_ongkir']) && !empty($data['shipping_cost']) && floatval($data['shipping_cost']) > 0) {
+                $deliveryNumber = $data['delivery_number'];
+                $deliveryDate = $data['delivery_date'] ?? date('Y-m-d');
+                $shippingCost = floatval($data['shipping_cost']);
+
+                app(ReimbursementService::class)->create([
+                    'reimbursement_name' => "Reimbursement Ongkir {$deliveryNumber}",
+                    'reimbursement_date' => $deliveryDate,
+                    'amount' => $shippingCost,
+                    'description' => "Automatic created by system No SD:{$deliveryNumber}",
+                ], Auth::id());
+            }
 
             $log_data = [
                 'action_type' => ActionTypes::CREATE,
