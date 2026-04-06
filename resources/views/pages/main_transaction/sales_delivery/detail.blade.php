@@ -101,13 +101,23 @@
                                 </div>
                             </div>
                             <div class="row g-3 mb-4">
-                                <div class="col-md-12">
+                                <div class="col-md-6">
                                     <label class="form-label">Catatan Pengiriman</label>
                                     <textarea id="delivery-notes" class="form-control" rows="3"
                                         {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }}>{{ $salesDelivery->delivery_notes ?? '' }}</textarea>
                                     @if (!$salesDelivery->is_accepted)
                                         <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
                                     @endif
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label d-block">Reimburse Ongkir ?</label>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="is-reimburse-ongkir"
+                                            {{ $hasReimbursement ? 'checked' : '' }} disabled />
+                                        <label class="form-check-label" for="is-reimburse-ongkir">
+                                            {{ $hasReimbursement ? 'Reimbursement sudah diajukan' : 'Tidak ada reimbursement ongkir' }}
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                             <div class="mb-3">
