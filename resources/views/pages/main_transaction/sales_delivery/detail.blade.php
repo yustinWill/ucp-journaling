@@ -113,9 +113,14 @@
                                     <label class="form-label d-block">Reimburse Ongkir ?</label>
                                     <div class="form-check mt-2">
                                         <input class="form-check-input" type="checkbox" id="is-reimburse-ongkir"
-                                            {{ $hasReimbursement ? 'checked' : '' }} disabled />
+                                            {{ $hasReimbursement ? 'checked' : '' }}
+                                            {{ $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
                                         <label class="form-check-label" for="is-reimburse-ongkir">
-                                            {{ $hasReimbursement ? 'Reimbursement sudah diajukan' : 'Tidak ada reimbursement ongkir' }}
+                                            @if ($salesDelivery->is_confirmed == '1')
+                                                {{ $hasReimbursement ? 'Reimbursement sudah diajukan' : 'Tidak ada reimbursement ongkir' }}
+                                            @else
+                                                Ajukan reimbursement untuk ongkos kirim ini
+                                            @endif
                                         </label>
                                     </div>
                                 </div>
@@ -535,22 +540,13 @@
                 const deliveryId = {{ $salesDelivery->id }};
                 const deliveryNumber = '{{ $salesDelivery->delivery_number }}';
 
-                const shippingCostVal = parseCurrency($('#shipping-cost').val()) || 0;
-
                 Swal.fire({
                     title: 'Konfirmasi Sales Delivery?',
                     html: `Anda akan mengkonfirmasi sales delivery:<br><strong>${deliveryNumber}</strong><br><br>` +
                           `<div class="alert alert-warning">` +
                           `<i class="icon-base ti tabler-alert-triangle me-2"></i>` +
                           `Stock akan otomatis dikurangi dan movement log akan dibuat.` +
-                          `</div>` +
-                          (shippingCostVal > 0
-                              ? `<div class="form-check text-start mt-2">` +
-                                `<input class="form-check-input" type="checkbox" id="swal-reimburse-ongkir">` +
-                                `<label class="form-check-label" for="swal-reimburse-ongkir">` +
-                                `Ajukan reimbursement ongkir (Rp ${shippingCostVal.toLocaleString('id-ID')})` +
-                                `</label></div>`
-                              : ''),
+                          `</div>`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Konfirmasi',
@@ -559,7 +555,7 @@
                     cancelButtonColor: '#82868b'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        const isReimburse = document.getElementById('swal-reimburse-ongkir')?.checked ? 1 : 0;
+                        const isReimburse = $('#is-reimburse-ongkir').is(':checked') ? 1 : 0;
 
                         // Show loading
                         Swal.fire({
@@ -573,7 +569,7 @@
                         });
 
                         // Get field values
-                        const shippingCost = shippingCostVal;
+                        const shippingCost = parseCurrency($('#shipping-cost').val());
                         const customerReference = $('#customer-reference').val();
                         const deliveryNotes = $('#delivery-notes').val();
                         const attachmentFile = $('#attachment-file')[0]?.files[0];
