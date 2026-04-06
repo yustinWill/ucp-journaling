@@ -299,12 +299,15 @@
                 </a>
             </li>
         @endcan
-        {{-- <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">
-            <a href="{{ route('master_data.coa.index') }}" class="menu-link">
-                <i class="menu-icon icon-base ti tabler-notebook"></i>
-                <div data-i18n="Chat">Daftar Akun</div>
-            </a>
-        </li> --}}
+        
+        @can('coa.view')
+            <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">
+                <a href="{{ route('master_data.coa.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-notebook"></i>
+                    <div data-i18n="Chat">Daftar Akun</div>
+                </a>
+            </li>
+        @endcan
         @if (session('CLIENT_CODE') == '001' && (Auth::check() && (Auth::user()->hasPermissionTo('report_journal.view') || Auth::user()->hasPermissionTo('report_ledger.view') || Auth::user()->hasPermissionTo('report_balance_sheet.view') || Auth::user()->hasPermissionTo('report_profit_loss.view'))))
             <li class="menu-item @if (request()->routeIs(['report.jurnal_umum.*', 'report.buku_besar.*', 'report.laba_rugi.*', 'report.neraca.*'])) active open @endif">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
