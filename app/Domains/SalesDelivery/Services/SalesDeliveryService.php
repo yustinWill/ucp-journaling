@@ -168,6 +168,12 @@ class SalesDeliveryService
                 'sd.delivery_address',
                 'u.name as created_by',
                 DB::raw("COALESCE(JSON_ARRAYAGG(JSON_OBJECT('name', m_tags.name, 'preview', m_tag_colors.preview)), JSON_ARRAY()) as tags"),
+                DB::raw("EXISTS (
+                    SELECT 1 FROM t_reimbursements r
+                    WHERE r.reimbursement_name = CONCAT('Reimbursement Ongkir ', sd.delivery_number)
+                      AND r.company_code = sd.company_code
+                      AND r.deleted_at IS NULL
+                ) as is_reimburse"),
             ])
             ->leftJoin('t_sales_orders as so', 'sd.sales_order_id', '=', 'so.id')
             ->leftJoin('m_contacts as c', 'sd.customer_id', '=', 'c.id')

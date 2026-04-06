@@ -175,7 +175,7 @@
                             <th>Alamat</th>
                             <th>Status</th>
                             <th>Referensi SO</th>
-                            <th>Gudang</th>
+                            <th>Direimburse?</th>
                             <th>Ongkir</th>
                             <th>Tag</th>
                         </tr>
@@ -313,17 +313,13 @@
                             }
                         },
                         {
-                            data: 'warehouse',
+                            data: 'is_reimburse',
                             responsivePriority: 10002,
-                            render: function(data, type, row) {
-                                if (!data) return '-';
-                                if (canViewWarehouse && row.warehouse_id) {
-                                    const detailUrl =
-                                        "{{ route('master_data.warehouse.detail', ':id') }}"
-                                        .replace(':id', row.warehouse_id);
-                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            render: function(data) {
+                                if (data == 1 || data === true) {
+                                    return `<span class="badge bg-label-success">Ya</span>`;
                                 }
-                                return data;
+                                return `<span class="badge bg-label-secondary">Tidak</span>`;
                             }
                         },
                         {
@@ -363,7 +359,7 @@
             // Initialize table
             initDataTable();
 
-            // Tag column hidden by default (0=date,1=delivery_number,2=customer,3=delivery_address,4=status,5=so_reference,6=warehouse,7=shipping_cost,8=tags)
+            // Tag column hidden by default (0=date,1=delivery_number,2=customer,3=delivery_address,4=status,5=so_reference,6=direimburse,7=shipping_cost,8=tags)
             salesDeliveryTable.column(8).visible(false);
 
             // Date range picker event - uses global bootstrap daterangepicker (with default last 30 days)
