@@ -282,12 +282,6 @@
                             }
                         },
                         {
-                            data: 'delivery_address',
-                            render: function(data) {
-                                return data || '-';
-                            }
-                        },
-                        {
                             data: null,
                             width: '180px',
                             responsivePriority: 1,
@@ -337,20 +331,6 @@
                             responsivePriority: 10003,
                             render: function(data) {
                                 return `Rp ${parseInt(data || 0).toLocaleString('id-ID')}`;
-                            }
-                        },
-                        {
-                            data: 'tags',
-                            responsivePriority: 10004,
-                            render: function(data, type, row) {
-                                if (!data) return '-';
-                                let tags = JSON.parse(data);
-                                return tags.map(tag => {
-                                    if (tag.name == null) {
-                                        return '';
-                                    }
-                                    return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
-                                }).join('') || '-';
                             }
                         }
                     ],
