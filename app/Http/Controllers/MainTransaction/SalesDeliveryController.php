@@ -100,7 +100,6 @@ class SalesDeliveryController extends Controller
                 'customer_id' => 'required|integer|exists:m_contacts,id',
                 'warehouse_id' => 'required|integer|exists:m_warehouses,id',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
-                'is_reimburse_ongkir' => 'nullable|boolean',
                 'products' => 'required|array',
                 'products.*.sales_order_product_id' => 'required|integer|exists:t_sales_order_products,id',
                 'products.*.product_id' => 'required|integer|exists:m_products,id',
@@ -455,6 +454,9 @@ class SalesDeliveryController extends Controller
             }
             if ($request->has('delivery_notes')) {
                 $data['delivery_notes'] = $request->input('delivery_notes');
+            }
+            if ($request->has('is_reimburse_ongkir')) {
+                $data['is_reimburse_ongkir'] = $request->boolean('is_reimburse_ongkir');
             }
 
             // Handle file upload

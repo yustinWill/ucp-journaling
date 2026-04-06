@@ -315,27 +315,13 @@
                 <hr class="mx-n6">
             </div>
 
-            <!-- Row 1: Notes -->
+            <!-- Row 1: Notes & Memo -->
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Catatan Pengiriman</label>
                     <textarea class="form-control" id="sales-delivery-notes" name="delivery_notes" rows="3"
                         placeholder="Catatan yang terlihat oleh customer"></textarea>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label d-block">Reimburse Ongkir ?</label>
-                    <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" id="is-reimburse-ongkir"
-                            name="is_reimburse_ongkir" value="1" />
-                        <label class="form-check-label" for="is-reimburse-ongkir">
-                            Ya, ajukan reimbursement untuk ongkos kirim ini
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Row 2: Memo -->
-            <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Memo Internal</label>
                     <textarea class="form-control" id="sales-delivery-memo" name="memo" rows="3"
