@@ -300,7 +300,7 @@
             </li>
         @endcan
         
-        @can('coa.view')
+        @can('coa.read')
             <li class="menu-item @if (request()->routeIs(['master_data.coa.*'])) active @endif">
                 <a href="{{ route('master_data.coa.index') }}" class="menu-link">
                     <i class="menu-icon icon-base ti tabler-notebook"></i>
