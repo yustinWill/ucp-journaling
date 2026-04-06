@@ -26,10 +26,10 @@
         </div>
     </div>
 
-    <!-- Section 1: SO / SD / SI Cards -->
+    <!-- Section 1: SO / SD / Ongkir / SI Cards -->
     <div class="row g-4 mb-4">
         <!-- Total SO -->
-        <div class="col-lg-4 col-sm-6">
+        <div class="col-lg-3 col-sm-6">
             <a href="{{ route('main_transaction.sales_order.index') }}" class="text-decoration-none">
                 <div class="card card-border-shadow-primary h-100 card-hover">
                     <div class="card-body">
@@ -51,7 +51,7 @@
         </div>
 
         <!-- Total SD -->
-        <div class="col-lg-4 col-sm-6">
+        <div class="col-lg-3 col-sm-6">
             <a href="{{ route('main_transaction.sales_delivery.index') }}" class="text-decoration-none">
                 <div class="card card-border-shadow-warning h-100 card-hover">
                     <div class="card-body">
@@ -79,8 +79,36 @@
             </a>
         </div>
 
+        <!-- Ongkir -->
+        <div class="col-lg-3 col-sm-6">
+            <div class="card card-border-shadow-info h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-4">
+                            <span class="avatar-initial rounded bg-label-info">
+                                <i class="icon-base ti tabler-package icon-28px"></i>
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">
+                                <span class="text-info">Rp {{ number_format($ongkirDireimburse, 0, ',', '.') }}</span>
+                            </h6>
+                            <h6 class="mb-0">
+                                <span class="text-secondary">Rp {{ number_format($ongkirDitanggung, 0, ',', '.') }}</span>
+                            </h6>
+                        </div>
+                    </div>
+                    <p class="mb-0 fw-semibold">Ongkir</p>
+                    <small class="text-muted">
+                        <span class="text-info">Direimburse</span> /
+                        <span class="text-secondary">Ditanggung Customer</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+
         <!-- Total SI -->
-        <div class="col-lg-4 col-sm-6">
+        <div class="col-lg-3 col-sm-6">
             <a href="{{ route('main_transaction.sales_invoice.index') }}" class="text-decoration-none">
                 <div class="card card-border-shadow-success h-100 card-hover">
                     <div class="card-body">
