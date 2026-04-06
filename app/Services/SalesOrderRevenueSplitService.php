@@ -145,9 +145,10 @@ class SalesOrderRevenueSplitService
 
         // PRIORITY 1: Pabrik gets full share first
         // Pabrik uses total quantity (including bonus items)
+        // If totalAmount is insufficient, record the full target anyway (shortfall absorbed by Owner/Perusahaan)
         $targetPorsiPabrik = $targetPabrikPerUnit * $totalQuantity;
-        $porsiPabrik = min($targetPorsiPabrik, $totalAmount);
-        $remainingAfterPabrik = $totalAmount - $porsiPabrik;
+        $porsiPabrik = $targetPorsiPabrik;
+        $remainingAfterPabrik = max(0, $totalAmount - $porsiPabrik);
 
         // PRIORITY 2: Owner gets from remaining after Pabrik
         // Owner uses only regular quantity (excluding bonus)
