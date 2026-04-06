@@ -88,7 +88,7 @@ class StockMovementLogsService
                 $join->on('latest_stock.product_id', '=', 'm_products.id');
             })
             ->where('m_products.company_code', $companyCode)
-            ->whereNotNull('latest_stock.stock_after'); // Only show products that have movement logs
+            ->where('m_products.status', 'ACTIVE');
 
         if ($categoryId) {
             $query->where('m_products.f_category_id', $categoryId);
