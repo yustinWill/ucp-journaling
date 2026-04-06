@@ -535,13 +535,22 @@
                 const deliveryId = {{ $salesDelivery->id }};
                 const deliveryNumber = '{{ $salesDelivery->delivery_number }}';
 
+                const shippingCostVal = parseCurrency($('#shipping-cost').val()) || 0;
+
                 Swal.fire({
                     title: 'Konfirmasi Sales Delivery?',
                     html: `Anda akan mengkonfirmasi sales delivery:<br><strong>${deliveryNumber}</strong><br><br>` +
                           `<div class="alert alert-warning">` +
                           `<i class="icon-base ti tabler-alert-triangle me-2"></i>` +
                           `Stock akan otomatis dikurangi dan movement log akan dibuat.` +
-                          `</div>`,
+                          `</div>` +
+                          (shippingCostVal > 0
+                              ? `<div class="form-check text-start mt-2">` +
+                                `<input class="form-check-input" type="checkbox" id="swal-reimburse-ongkir">` +
+                                `<label class="form-check-label" for="swal-reimburse-ongkir">` +
+                                `Ajukan reimbursement ongkir (Rp ${shippingCostVal.toLocaleString('id-ID')})` +
+                                `</label></div>`
+                              : ''),
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Konfirmasi',
@@ -550,6 +559,8 @@
                     cancelButtonColor: '#82868b'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        const isReimburse = document.getElementById('swal-reimburse-ongkir')?.checked ? 1 : 0;
+
                         // Show loading
                         Swal.fire({
                             title: 'Memproses...',
@@ -562,7 +573,7 @@
                         });
 
                         // Get field values
-                        const shippingCost = parseCurrency($('#shipping-cost').val());
+                        const shippingCost = shippingCostVal;
                         const customerReference = $('#customer-reference').val();
                         const deliveryNotes = $('#delivery-notes').val();
                         const attachmentFile = $('#attachment-file')[0]?.files[0];
@@ -573,6 +584,7 @@
                         formData.append('shipping_cost', shippingCost);
                         formData.append('customer_reference', customerReference);
                         formData.append('delivery_notes', deliveryNotes);
+                        formData.append('is_reimburse_ongkir', isReimburse);
 
                         if (attachmentFile) {
                             formData.append('attachment', attachmentFile);
