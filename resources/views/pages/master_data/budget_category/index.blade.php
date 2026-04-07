@@ -99,7 +99,10 @@
                             data: 'status'
                         },
                         {
-                            data: 'created_by'
+                            data: 'created_by_name',
+                            render: function(data) {
+                                return data || '-';
+                            }
                         },
                         {
                             data: 'id'

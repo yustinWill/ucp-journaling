@@ -70,23 +70,25 @@ class BudgetCategoryService
 
     public function findAllDatatable()
     {
-        $query = DB::table($this->table_name);
+        $query = DB::table($this->table_name)
+            ->leftJoin('users', 'm_budget_categories.created_by', '=', 'users.id')
+            ->select('m_budget_categories.*', 'users.name as created_by_name');
 
         // Status filter
         if ($status = request()->input('status')) {
-            $query->where('status', $status);
+            $query->where('m_budget_categories.status', $status);
         }
 
         // Category name filter
         if ($categoryName = request()->input('category_name')) {
-            $query->where('category_name', 'like', "%{$categoryName}%");
+            $query->where('m_budget_categories.category_name', 'like', "%{$categoryName}%");
         }
 
         // Global search filter (from DataTables)
         if ($search = request()->input('search.value')) {
             $query->where(function($q) use ($search) {
-                $q->where('category_name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                $q->where('m_budget_categories.category_name', 'like', "%{$search}%")
+                  ->orWhere('m_budget_categories.description', 'like', "%{$search}%");
             });
         }
 
@@ -99,7 +101,7 @@ class BudgetCategoryService
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
         $recordsFiltered = $filteredQuery->count();
-        $query->orderBy('category_name', 'ASC');
+        $query->orderBy('m_budget_categories.category_name', 'ASC');
         $data = $query->get();
 
         return [
