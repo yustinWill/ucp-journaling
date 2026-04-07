@@ -299,7 +299,7 @@
                         ? parseFloat(remainingValueInput.val())
                         : limitValue;
 
-                    if (!categoryId || !limitValue) {
+                    if (!categoryId || limitValue === null || limitValue === '') {
                         hasError = true;
                         return false;
                     }

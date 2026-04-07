@@ -314,7 +314,7 @@
                     const categoryId = $(`[name="budgets[${index}][f_budget_category_id]"]`).val();
                     const limitValue = parseCurrency($(`[name="budgets[${index}][budged_limit_value]"]`).val());
 
-                    if (!categoryId || !limitValue) {
+                    if (!categoryId || limitValue === null || limitValue === '') {
                         hasError = true;
                         return false;
                     }
