@@ -71,6 +71,7 @@ class CoaController extends Controller
 
     public function save(Request $request)
     {
+        $this->authorize('coa.create');
         try {
             $validated = $request->validate([
                 'code' => 'required|string|max:255|unique:m_coas,code',
@@ -168,6 +169,7 @@ class CoaController extends Controller
 
     public function update(Request $request)
     {
+        $this->authorize('coa.edit');
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_coas,id',
