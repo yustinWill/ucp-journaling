@@ -56,6 +56,7 @@ class CoaController extends Controller
 
     public function add()
     {
+        $this->authorize('coa.create');
         $tags = app(TagService::class)->findAll();
 
         $statuses = $this->statuses;
@@ -139,6 +140,7 @@ class CoaController extends Controller
 
     public function detail($id)
     {
+        $this->authorize('coa.view');
         $coa = app(CoaService::class)->findOne($id);
 
         $audit_log_data = app(CoaAuditLogService::class)->findAllBasedOnId($id);
@@ -148,6 +150,7 @@ class CoaController extends Controller
 
     public function edit($id)
     {
+        $this->authorize('coa.edit');
         $tags = app(TagService::class)->findAll();
 
         $statuses = $this->statuses;
