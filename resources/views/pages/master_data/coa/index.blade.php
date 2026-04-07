@@ -119,7 +119,7 @@
 
                     <div class="d-flex gap-2">
                         
-                        @can('coa.write')
+                        @can('coa.create')
                             <a href="{{ route('master_data.coa.add') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
                                     class="icon-xs icon-base ti tabler-plus me-2"></span> Tambah Data</a>
