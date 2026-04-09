@@ -28,7 +28,7 @@
                                 return $delivery->is_confirmed == '1' || in_array($delivery->status, ['CONFIRMED', 'COMPLETE']);
                             });
                         @endphp
-                        @if ($canCreateSalesDelivery && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']) && !$hasConfirmedDelivery)
+                        @if ($canCreateSalesDelivery && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']) && !$hasConfirmedDelivery && ($hasDeliverableQty ?? true))
                             <a href="{{ route('main_transaction.sales_delivery.add', ['so_id' => $salesOrder['id']]) }}"
                                 class="btn btn-warning btn-sm waves-effect waves-light text-nowrap">
                                 <i class="icon-base ti tabler-truck-delivery me-1"></i>Buat Delivery
@@ -40,7 +40,7 @@
                                 return in_array($invoice->status, ['PAID', 'COMPLETE']);
                             });
                         @endphp
-                        @if ($canCreateSalesInvoice && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']) && !$hasCompletedInvoice)
+                        @if ($canCreateSalesInvoice && !in_array($salesOrder['status'], ['DRAFT', 'CANCELLED']) && !$hasCompletedInvoice && ($hasInvoiceableQty ?? true))
                             <a href="{{ route('main_transaction.sales_invoice.add', ['so_id' => $salesOrder['id']]) }}"
                                 class="btn btn-info btn-sm waves-effect waves-light text-nowrap">
                                 <i class="icon-base ti tabler-file-invoice me-1"></i>Buat Invoice

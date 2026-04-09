@@ -258,6 +258,33 @@ class SalesOrderController extends Controller
         $salesDeliveries = app(SalesDeliveryService::class)->findAllById($id);
         $salesInvoices = app(SalesInvoiceService::class)->findAllHeaderBasedOnSoId($id);
 
+        // Check if any product still has remaining qty for delivery (excluding pending unconfirmed SDs)
+        $hasDeliverableQty = DB::table('t_sales_order_products as sop')
+            ->where('sop.f_sales_order_id', $id)
+            ->where('sop.is_bonus', 0)
+            ->where(function ($q) {
+                $q->whereRaw('sop.remaining_qty > 0')
+                  ->whereRaw('sop.remaining_qty > COALESCE((
+                      SELECT SUM(sdp.qty)
+                      FROM t_sales_delivery_products sdp
+                      JOIN t_sales_deliveries sd ON sdp.sales_delivery_id = sd.id
+                      WHERE sdp.sales_order_product_id = sop.id
+                        AND sd.is_confirmed != 1
+                  ), 0)');
+            })
+            ->exists();
+
+        // Check if any product still has remaining qty for invoice
+        $hasInvoiceableQty = DB::table('t_sales_order_products as sop')
+            ->where('sop.f_sales_order_id', $id)
+            ->where('sop.is_bonus', 0)
+            ->whereRaw('sop.quantity > COALESCE((
+                SELECT SUM(sip.qty)
+                FROM t_sales_invoice_products sip
+                WHERE sip.f_sales_order_product_id = sop.id
+            ), 0)')
+            ->exists();
+
         // Format return data
         $sales_returns = [];
         foreach ($salesReturns as $return) {
@@ -287,6 +314,8 @@ class SalesOrderController extends Controller
             'canDelete' => true,
             'canCreateSalesDelivery' => true,
             'canCreateSalesInvoice' => true,
+            'hasDeliverableQty' => $hasDeliverableQty,
+            'hasInvoiceableQty' => $hasInvoiceableQty,
             'canViewUser' => true,
             'canViewReturnManagement' => true,
             'canViewSalesInvoice' => true,
