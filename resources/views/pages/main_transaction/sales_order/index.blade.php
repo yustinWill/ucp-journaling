@@ -201,15 +201,16 @@
                 <table id="sales-order-table" class="table table-bordered">
                     <thead>
                         <tr>
+                            <th></th>
                             <th>Tanggal</th>
                             <th>No SO</th>
                             <th>Customer</th>
                             <th>Total</th>
                             <th>Status SD</th>
                             <th>Status SI</th>
-                            <th>Tgl Jatuh Tempo</th>
                             <th>Diinput Oleh</th>
                             <th>Tag</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                 </table>
@@ -219,6 +220,20 @@
 @stop
 
 @section('js_script')
+    <style>
+        table.dataTable > tbody > tr.child ul.dtr-details > li {
+            display: flex;
+            align-items: baseline;
+            gap: 3rem;
+        }
+        table.dataTable > tbody > tr.child ul.dtr-details > li > span.dtr-title {
+            flex: 0 0 35%;
+        }
+        table.dataTable > tbody > tr.child ul.dtr-details > li > span.dtr-data {
+            flex: 1;
+            text-align: right;
+        }
+    </style>
     <script>
         $(function() {
             // Note: global-select2 initialization is handled globally by layout
@@ -253,13 +268,22 @@
                     },
                     columns: [
                         {
+                            className: 'dtr-control',
+                            orderable: false,
+                            data: null,
+                            defaultContent: '',
+                            width: '18px',
+                            responsivePriority: 1,
+                        },
+                        {
                             data: 'transaction_date',
                             width: '110px',
+                            responsivePriority: 4,
                         },
                         {
                             data: 'transaction_code',
                             width: '140px',
-                            responsivePriority: 1,
+                            responsivePriority: 5,
                             render: function(data, type, row) {
                                 if (!data) return '-';
                                 if (canRead) {
@@ -274,6 +298,7 @@
                         },
                         {
                             data: 'customer_name',
+                            responsivePriority: 2,
                             render: function(data, type, row) {
                                 if (!data) return '-';
                                 if (canViewContact && row.f_customer_id) {
@@ -287,7 +312,7 @@
                         },
                         {
                             data: 'grand_price',
-                            className: 'text-end',
+                            responsivePriority: 6,
                             render: function(data, type, row) {
                                 if (type === 'display' && data != null && !isNaN(data)) {
                                     return 'Rp ' + parseFloat(data).toLocaleString('id-ID');
@@ -298,7 +323,7 @@
                         {
                             data: null,
                             width: '140px',
-                            responsivePriority: 1,
+                            responsivePriority: 7,
                             render: function(data, type, row) {
                                 const sdCount = parseInt(row.sd_count) || 0;
                                 const sdWaitingCount = parseInt(row.sd_waiting_count) || 0;
@@ -326,7 +351,7 @@
                         {
                             data: null,
                             width: '140px',
-                            responsivePriority: 1,
+                            responsivePriority: 8,
                             render: function(data, type, row) {
                                 const siCount = parseInt(row.si_count) || 0;
                                 const siSettledCount = parseInt(row.si_settled_count) || 0;
@@ -351,13 +376,8 @@
                             }
                         },
                         {
-                            data: 'payment_term_due_date',
-                            width: '130px',
-                            responsivePriority: 10001,
-                        },
-                        {
                             data: 'created_by_name',
-                            responsivePriority: 10002,
+                            responsivePriority: 9,
                             render: function(data, type, row) {
                                 if (!data) return '-';
                                 if (canViewUser && row.created_by) {
@@ -371,7 +391,7 @@
                         },
                         {
                             data: 'tags',
-                            responsivePriority: 10003,
+                            responsivePriority: 11,
                             render: function(data, type, row) {
                                 let tags = JSON.parse(data);
                                 return tags.map(tag => {
@@ -383,6 +403,7 @@
                         {
                             data: null,
                             width: '120px',
+                            responsivePriority: 3,
                             render: function(data, type, row) {
                                 // Calculate overall status based on SI and SD
                                 let status = 'Menunggu';
@@ -448,7 +469,12 @@
                             last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
                         }
                     },
-                    responsive: true,
+                    responsive: {
+                        details: {
+                            type: 'column',
+                            target: 0
+                        }
+                    },
                     orderCellsTop: true,
                     ordering: false
                 });
@@ -457,7 +483,7 @@
             // Initialize table
             initSalesOrderTable();
 
-            // Tag column hidden by default (0=date,1=no_so,2=customer,3=total,4=status_sd,5=status_si,6=due_date,7=created_by,8=tags)
+            // Tag column hidden by default (0=control,1=date,2=no_so,3=customer,4=total,5=status_sd,6=status_si,7=created_by,8=tags,9=status)
             salesOrderTable.column(8).visible(false);
 
             // Tag Column Toggle Functionality

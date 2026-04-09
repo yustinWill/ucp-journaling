@@ -110,11 +110,13 @@
                             <i class="icon-base ti tabler-percentage me-2"></i>
                             <b>Revenue Split</b>
                         </a>
+                        @if (count($sales_returns) > 0)
                         <a class="list-group-item list-group-item-action waves-effect" id="return-history-list-item"
                             data-bs-toggle="list" href="#horizontal-return-history" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-arrow-back-up me-2"></i>
                             <b>Return History</b>
                         </a>
+                        @endif
                         <a class="list-group-item list-group-item-action waves-effect" id="audit-log-list-item"
                             data-bs-toggle="list" href="#horizontal-audit-log" aria-selected="false" role="tab">
                             <i class="icon-base ti tabler-history me-2"></i>
@@ -220,16 +222,16 @@
                                 </div>
 
                                 <!-- Product Table -->
-                                <div class="mb-4 mx-n6">
-                                    <table class="table table-bordered" id="product-table">
+                                <div class="mb-4 mx-n6 overflow-x-auto">
+                                    <table class="table table-bordered" id="product-table" style="table-layout: fixed; min-width: 1100px; width: 100%;">
                                         <thead>
                                             <tr>
-                                                <th style="width: 8%;">Is Bonus</th>
-                                                <th style="width: 30%;">Produk</th>
-                                                <th style="width: 15%;">Kuantitas</th>
-                                                <th style="width: 15%;">Satuan</th>
-                                                <th style="width: 20%;">Harga Satuan</th>
-                                                <th style="width: 20%;">Jumlah</th>
+                                                <th style="width: 100px;">Bonus</th>
+                                                <th>Produk</th>
+                                                <th style="width: 140px;">Kuantitas</th>
+                                                <th style="width: 160px;">Satuan</th>
+                                                <th style="width: 200px;">Harga Satuan</th>
+                                                <th style="width: 200px;">Jumlah</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -299,7 +301,7 @@
                                                 @endforeach
                                             @else
                                                 <tr>
-                                                    <td colspan="5" class="text-center text-muted py-3">Tidak ada
+                                                    <td colspan="6" class="text-center text-muted py-3">Tidak ada
                                                         produk</td>
                                                 </tr>
                                             @endif
@@ -395,22 +397,28 @@
                                 <h6>Ringkasan Pengiriman</h6>
                             </div>
 
-                            <div class="mx-n5 my-4">
-                                <table class="table table-bordered">
+                            <div class="mx-n5 my-4 overflow-x-auto">
+                                <table class="table table-bordered" style="table-layout: fixed; min-width: 650px; width: 100%;">
                                     <thead>
                                         <tr>
                                             <th>Produk</th>
-                                            <th>Total Qty</th>
-                                            <th>Qty Terkirim</th>
-                                            <th>Sisa Qty</th>
-                                            <th>Satuan</th>
+                                            <th style="width: 120px;">Total Qty</th>
+                                            <th style="width: 130px;">Qty Terkirim</th>
+                                            <th style="width: 120px;">Sisa Qty</th>
+                                            <th style="width: 100px;">Satuan</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @if (isset($salesOrder['product_lines']) && count($salesOrder['product_lines']) > 0)
                                             @foreach ($salesOrder['product_lines'] as $line)
                                                 <tr>
-                                                    <td>{{ $line['product_code'] }} - {{ $line['product_name'] }}</td>
+                                                    <td>
+                                                        @if ($canViewProduct && isset($line['f_product_id']))
+                                                            <a href="{{ route('master_data.product.detail', $line['f_product_id']) }}" class="text-primary fw-semibold">{{ $line['product_code'] }} - {{ $line['product_name'] }}</a>
+                                                        @else
+                                                            {{ $line['product_code'] }} - {{ $line['product_name'] }}
+                                                        @endif
+                                                    </td>
                                                     <td class="text-end">
                                                         @php
                                                             $quantity = $line['quantity'];
@@ -465,23 +473,24 @@
                                 <h6>Sales Delivery</h6>
                             </div>
 
-                            <div class="mx-n5 my-4">
-                                <table class="table table-bordered">
+                            <div class="mx-n5 my-4 overflow-x-auto">
+                                <table class="table table-bordered" style="table-layout: fixed; min-width: 740px; width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th>Tanggal</th>
-                                            <th>No. Referensi</th>
+                                            <th style="width: 110px;">Tanggal</th>
+                                            <th style="width: 150px;">No. Referensi</th>
                                             <th>Deskripsi</th>
-                                            <th>Status</th>
-                                            <th>Dibuat Oleh</th>
-                                            <th>Aksi</th>
+                                            <th style="width: 160px;">Status</th>
+                                            <th style="width: 140px;">Dibuat Oleh</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($salesDeliveries as $item)
                                             <tr>
                                                 <td>{{ $item->delivery_date }}</td>
-                                                <td>{{ $item->delivery_number }}</td>
+                                                <td>
+                                                    <a href="{{ route('main_transaction.sales_delivery.detail', $item->id) }}" class="text-primary fw-semibold">{{ $item->delivery_number }}</a>
+                                                </td>
                                                 <td>{{ $item->memo }}</td>
                                                 <td>
                                                     @php
@@ -497,18 +506,11 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $item->created_by_name }}</td>
-                                                <td>
-                                                    <a href="{{ route('main_transaction.sales_delivery.detail', $item->id) }}"
-                                                        class="btn btn-sm btn-primary waves-effect waves-light"
-                                                        title="Detail">
-                                                        <i class="icon-xs icon-base ti tabler-eye"></i>
-                                                    </a>
-                                                </td>
                                             </tr>
                                         @endforeach
                                         @if (count($salesDeliveries) == 0)
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted py-4">
+                                                <td colspan="5" class="text-center text-muted py-4">
                                                     <div class="d-flex flex-column align-items-center">
                                                         <i class="icon-base ti tabler-truck-delivery mb-2 text-muted"
                                                             style="font-size: 2rem;"></i>
@@ -533,55 +535,32 @@
                                 <h6>Sales Invoice</h6>
                             </div>
 
-                            <div class="mx-n5 my-4">
-                                <table class="table table-bordered">
+                            <div class="mx-n5 my-4 overflow-x-auto">
+                                <table class="table table-bordered" style="table-layout: fixed; min-width: 720px; width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th>Tanggal</th>
-                                            <th>No. Referensi</th>
-                                            <th>Jumlah</th>
+                                            <th style="width: 110px;">Tanggal</th>
+                                            <th style="width: 150px;">No. Referensi</th>
+                                            <th style="width: 140px;">Jumlah</th>
                                             <th>Deskripsi</th>
-                                            <th>Dibuat Oleh</th>
-                                            <th>Aksi</th>
+                                            <th style="width: 140px;">Dibuat Oleh</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($salesInvoices as $item)
                                             <tr>
                                                 <td>{{ $item->transaction_date }}</td>
-                                                <td>{{ $item->transaction_code }}</td>
-                                                <td>{{ $item->grand_total }}</td>
+                                                <td>
+                                                    <a href="{{ route('main_transaction.sales_invoice.detail', $item->id) }}" class="text-primary fw-semibold">{{ $item->transaction_code }}</a>
+                                                </td>
+                                                <td>Rp {{ number_format($item->grand_total, 0, ',', '.') }}</td>
                                                 <td>{{ $item->description }}</td>
                                                 <td>{{ $item->created_by_name }}</td>
-                                                {{-- <td>
-                                                    <div class="btn-group">
-                                                        <a href="{{ route('main_transaction.sales_invoice.edit', ['id' => $item->id]) }}"
-                                                            class="btn btn-sm btn-primary">
-                                                            <i class="icon-base ti tabler-pencil me-1"></i>Edit
-                                                        </a>
-                                                        <form action="{{ route('main_transaction.sales_invoice.delete', ['id' => $item->id]) }}"
-                                                            method="POST" class="d-inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-danger"
-                                                                onclick="return confirm('Are you sure?')">
-                                                                <i class="icon-base ti tabler-trash me-1"></i>Delete
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </td> --}}
-                                                <td>
-                                                    <a href="{{ route('main_transaction.sales_invoice.detail', $item->id) }}"
-                                                        class="btn btn-sm btn-primary waves-effect waves-light"
-                                                        title="Detail">
-                                                        <i class="icon-xs icon-base ti tabler-eye"></i>
-                                                    </a>
-                                                </td>
                                             </tr>
                                         @endforeach
                                         @if (count($salesInvoices) == 0)
                                             <tr>
-                                                <td colspan="6" class="text-center text-muted py-4">
+                                                <td colspan="5" class="text-center text-muted py-4">
                                                     <div class="d-flex flex-column align-items-center">
                                                         <i class="icon-base ti tabler-file-invoice mb-2 text-muted"
                                                             style="font-size: 2rem;"></i>
@@ -621,6 +600,7 @@
                         </div>
 
                         <!-- Return History Tab -->
+                        @if (count($sales_returns) > 0)
                         <div class="tab-pane fade" id="horizontal-return-history" role="tabpanel">
                             <div class="section-header mt-6">
                                 <h6>Daftar Sales Return</h6>
@@ -630,13 +610,13 @@
                                 <table class="table table-bordered" id="sales-return-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 15%;">Tanggal Return</th>
+                                            <th style="width: 120px;">Tanggal Return</th>
                                             <th>No Return</th>
                                             <th>Invoice Terkait</th>
-                                            <th style="width: 15%;" class="text-end">Total Return</th>
-                                            <th style="width: 12%;" class="text-start">Status</th>
-                                            <th style="width: 12%;" class="text-start">Stock Adjustment</th>
-                                            <th style="width: 8%;" class="text-center">Aksi</th>
+                                            <th style="width: 140px;" class="text-end">Total Return</th>
+                                            <th style="width: 130px;">Status</th>
+                                            <th style="width: 160px;">Stock Adjustment</th>
+                                            <th style="width: 80px;" class="text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -694,6 +674,7 @@
                                 </table>
                             </div>
                         </div>
+                        @endif
 
                         <!-- Audit Log Tab -->
                         <div class="tab-pane fade" id="horizontal-audit-log" role="tabpanel">
@@ -701,13 +682,13 @@
                                 <h6>Riwayat Perubahan</h6>
                             </div>
 
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="audit-log-table">
+                            <div class="mx-n5 my-4 overflow-x-auto">
+                                <table class="table table-bordered" style="table-layout: fixed; min-width: 600px; width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th>Tanggal & Waktu</th>
-                                            <th>Pengguna</th>
-                                            <th>Aksi</th>
+                                            <th style="width: 160px;">Tanggal & Waktu</th>
+                                            <th style="width: 150px;">Pengguna</th>
+                                            <th style="width: 100px;">Aksi</th>
                                             <th>Deskripsi</th>
                                         </tr>
                                     </thead>
@@ -753,24 +734,14 @@
 @section('js_script')
     <script>
         $(document).ready(function() {
-            // Initialize audit log DataTable to match PO pattern
-            $('#audit-log-table').DataTable({
-                orderCellsTop: true,
-                order: [
-                    [0, 'desc']
-                ], // Sort by date descending
-                searching: false,
-                paging: false,
-                info: false
-            });
-
             // Initialize Sales Return Table
             $('#sales-return-table').DataTable({
                 orderCellsTop: true,
                 ordering: false,
                 searching: false,
                 paging: false,
-                info: false
+                info: false,
+                autoWidth: false,
             });
 
             // Revenue Split Tab Loading
