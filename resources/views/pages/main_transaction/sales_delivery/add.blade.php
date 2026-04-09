@@ -288,6 +288,7 @@
                                                 name="products[{{ $counter }}][remaining_qty_before]"
                                                 value="{{ $row->remaining_qty }}" />
                                             <input type="text" data-remaining="{{ $row->remaining_qty }}"
+                                                data-product-name="{{ $row->product_name }}"
                                                 value="{{ $formattedDeliveryQty }}" class="form-control delivery-qty-input numeric-input"
                                                 name="products[{{ $counter }}][delivery_qty]" min="1"
                                                 max="{{ $row->remaining_qty }}" />
@@ -548,6 +549,28 @@
                         formData.set(name, parsedValue); // overwrite with parsed numeric value
                     }
                 });
+
+                // Validate delivery qty against remaining qty
+                let qtyErrors = [];
+                $('.delivery-qty-input').each(function() {
+                    const remaining = parseFloat($(this).data('remaining')) || 0;
+                    const productName = $(this).data('product-name') || 'Produk';
+                    const inputVal = $(this).val();
+                    const deliveryQty = parseCurrency(inputVal);
+                    if (deliveryQty > remaining) {
+                        qtyErrors.push(`"${productName}": qty pengiriman (${deliveryQty}) melebihi sisa qty (${remaining})`);
+                    }
+                });
+                if (qtyErrors.length > 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Qty melebihi batas!',
+                        html: qtyErrors.join('<br>'),
+                        customClass: { confirmButton: 'btn btn-primary' },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
 
                 // Show confirmation
                 Swal.fire({
