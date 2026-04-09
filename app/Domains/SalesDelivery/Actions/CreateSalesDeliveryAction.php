@@ -51,24 +51,37 @@ class CreateSalesDeliveryAction
         foreach ($products as $product) {
             $deliveryQty = floatval($product['delivery_qty'] ?? 0);
             $remainingQty = floatval($product['remaining_qty_before'] ?? 0);
-
-            if ($deliveryQty > $remainingQty) {
-                // Get product name for better error message
-                $productName = $this->getProductName($product['product_id']);
-
-                $errors[] = sprintf(
-                    'Produk "%s": Qty pengiriman (%.2f) melebihi qty tersisa (%.2f)',
-                    $productName,
-                    $deliveryQty,
-                    $remainingQty
-                );
-            }
+            $soProductId = $product['sales_order_product_id'] ?? null;
 
             if ($deliveryQty <= 0) {
                 $productName = $this->getProductName($product['product_id']);
                 $errors[] = sprintf(
                     'Produk "%s": Qty pengiriman harus lebih dari 0',
                     $productName
+                );
+                continue;
+            }
+
+            // Sum qty already taken by other unconfirmed SDs for this SO product line
+            $pendingQty = 0;
+            if ($soProductId) {
+                $pendingQty = (float) DB::table('t_sales_delivery_products as sdp')
+                    ->join('t_sales_deliveries as sd', 'sdp.sales_delivery_id', '=', 'sd.id')
+                    ->where('sdp.sales_order_product_id', $soProductId)
+                    ->where('sd.is_confirmed', '!=', '1')
+                    ->sum('sdp.qty');
+            }
+
+            $effectiveRemaining = $remainingQty - $pendingQty;
+
+            if ($deliveryQty > $effectiveRemaining) {
+                $productName = $this->getProductName($product['product_id']);
+                $errors[] = sprintf(
+                    'Produk "%s": Qty pengiriman (%.2f) melebihi qty tersisa (%.2f)%s',
+                    $productName,
+                    $deliveryQty,
+                    $effectiveRemaining,
+                    $pendingQty > 0 ? sprintf(' (sudah ada %.2f qty dalam pengiriman yang belum dikonfirmasi)', $pendingQty) : ''
                 );
             }
         }
