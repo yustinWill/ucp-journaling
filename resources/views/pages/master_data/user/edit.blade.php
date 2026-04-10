@@ -139,7 +139,7 @@
 
             <!-- Action Buttons -->
             <div class="pt-6 text-end">
-                <button type="button" class="btn btn-label-danger me-3" id="cancel-btn">Batalkan</button>
+                <button type="button" class="btn btn-label-danger me-3" id="cancel-btn" data-no-global-confirm>Batalkan</button>
                 <button type="button" class="btn btn-success" id="submit-btn">Simpan</button>
             </div>
         </form>
