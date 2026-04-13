@@ -74,12 +74,16 @@ class SalesOrderController extends Controller
             ->orderBy('name')
             ->get();
         
-        $stats = app(SalesOrderService::class)->getSummaryStats();
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
         return view('pages.main_transaction.sales_order.index', array_merge([
             'customers' => $customers,
-            'stats' => $stats,
         ], $permissionData));
+    }
+
+    public function summaryStats()
+    {
+        $stats = app(SalesOrderService::class)->getSummaryStats();
+        return response()->json($stats);
     }
 
     public function add()
