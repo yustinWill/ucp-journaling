@@ -17,10 +17,11 @@ class TransactionNumberService
         DB::beginTransaction();
 
         try {
-            // Get module configuration
+            // Lock the row for the duration of this transaction to prevent race conditions
             $config = DB::table($this->table_name)
                 ->where('module_name', $module)
                 ->where('status', 'active')
+                ->lockForUpdate()
                 ->first();
 
             if (! $config) {
@@ -31,23 +32,22 @@ class TransactionNumberService
             $shouldReset = $this->shouldResetCounter($config);
 
             if ($shouldReset) {
-                // Reset counter to 1 and update last reset date
+                $currentCounter = 1;
                 DB::table($this->table_name)
                     ->where('id', $config->id)
                     ->update([
-                        'current_counter' => 1,
+                        'current_counter' => $currentCounter,
                         'last_reset_date' => now()->toDateString(),
                         'updated_at' => now(),
                     ]);
-
-                $currentCounter = 1;
             } else {
-                // Increment counter
+                $currentCounter = $config->current_counter + 1;
                 DB::table($this->table_name)
                     ->where('id', $config->id)
-                    ->increment('current_counter');
-
-                $currentCounter = $config->current_counter + 1;
+                    ->update([
+                        'current_counter' => $currentCounter,
+                        'updated_at' => now(),
+                    ]);
             }
 
             // Generate number using template
