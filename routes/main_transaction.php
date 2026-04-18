@@ -165,6 +165,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::post($base_segment.$sales_order_segment.'/process_export', 'processExport')->name('main_transaction.sales_order.process_export');
 
         // AJAX endpoints
+        Route::get($base_segment.$sales_order_segment.'/summary_stats', 'summaryStats')->name('main_transaction.sales_order.summary_stats');
         Route::get($base_segment.$sales_order_segment.'/get_customer_info/{customer_id}', 'getCustomerInfo')->name('main_transaction.sales_order.get_customer_info');
         Route::get($base_segment.$sales_order_segment.'/get_warehouse_products/{customer_id}', 'getWarehouseProducts')->name('main_transaction.sales_order.get_warehouse_products');
         Route::post($base_segment.$sales_order_segment.'/cancel/{id}', 'cancel')->name('main_transaction.sales_order.cancel');

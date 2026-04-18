@@ -8,11 +8,13 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Detail COA</h5>
             <div class="d-flex gap-2">
+                @can('coa.edit')
                 <a href="{{ route('master_data.coa.edit', ['id' => $coa->id]) }}"
                     class="btn btn-md btn-warning waves-effect waves-light">
                     <i class="icon-base ti tabler-edit me-2"></i>
                     Edit COA
                 </a>
+                @endcan
             </div>
         </div>
     </div>

@@ -47,6 +47,15 @@ class UpdateSalesOrderAction
 
         foreach ($products as $index => $product) {
             if (!empty($product['id'])) {
+                // Get current delivered_qty to recalculate remaining_qty
+                $currentLine = DB::table('t_sales_order_products')
+                    ->where('id', $product['id'])
+                    ->select('delivered_qty')
+                    ->first();
+                $deliveredQty = $currentLine ? (float) $currentLine->delivered_qty : 0;
+                $newQty = (float) $product['quantity'];
+                $newRemainingQty = max(0, $newQty - $deliveredQty);
+
                 // Update existing row
                 DB::table('t_sales_order_products')
                     ->where('id', $product['id'])
@@ -55,7 +64,8 @@ class UpdateSalesOrderAction
                         // 'line_sequence' => $index + 1,
                         'f_product_id' => $product['product_id'],
                         'f_unit_id' => $product['unit_id'] ?? null,
-                        'quantity' => $product['quantity'],
+                        'quantity' => $newQty,
+                        'remaining_qty' => $newRemainingQty,
                         'unit_price' => $this->parsePrice($product['unit_price']),
                         // 'f_tax_id' => $product['tax_id'] ?? null,
                         'line_total' => $this->parsePrice($product['total']),

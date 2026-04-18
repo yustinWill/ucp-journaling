@@ -166,21 +166,7 @@ class PermissionGateProvider extends ServiceProvider
             return $this->hasPermission($user, 'expense', 'approval');
         });
 
-        Gate::define('coa.read', function ($user) {
-            return $this->hasPermission($user, 'coa', 'read');
-        });
-
-        Gate::define('coa.write', function ($user) {
-            return $this->hasPermission($user, 'coa', 'write');
-        });
-
-        Gate::define('coa.delete', function ($user) {
-            return $this->hasPermission($user, 'coa', 'delete');
-        });
-
-        Gate::define('coa.approval', function ($user) {
-            return $this->hasPermission($user, 'coa', 'approval');
-        });
+        // COA permissions are managed by Spatie (coa.view, coa.create, coa.edit, coa.delete)
     }
 
     /**

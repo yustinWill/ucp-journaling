@@ -57,8 +57,10 @@ class TagService
                 DB::raw("CONCAT(tc.preview, ' | ', tc.name) as tag_color"),
                 't.created_by',
                 't.updated_by',
+                'u.name as created_by_name',
             ])
-            ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id');
+            ->leftJoin('m_tag_colors as tc', 't.f_tag_color_id', '=', 'tc.id')
+            ->leftJoin('users as u', 't.created_by', '=', 'u.id');
 
         // Search support
         if ($search = request()->input('search.value')) {

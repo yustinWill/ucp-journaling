@@ -3,7 +3,7 @@
     Tambah Sales Order
 @stop
 @section('content')
-    <div class="card mb-6">
+    <div class="card mb-6" style="position: relative;">
         <h4 class="card-header">Buat Sales Order</h4>
         <form class="card-body" id="sales-order-form" autocomplete="off">
             @csrf
@@ -197,19 +197,19 @@
             </div>
 
             <!-- Product Table -->
-            <div class="mb-4 mx-n5">
+            <div class="mb-4 mx-n5 overflow-x-auto">
                 <div class="form-repeater-product">
-                    <table class="table table-bordered" id="product-table">
+                    <table class="table table-bordered" id="product-table" style="table-layout: fixed; min-width: 1200px; width: 100%;">
                         <thead>
                             <tr>
-                                <th style="width: 8%;">Is Bonus</th>
-                                <th style="width: 25%;">Produk</th>
-                                <th style="width: 12%;">Kuantitas</th>
-                                <th style="width: 10%;">Satuan</th>
-                                <th style="width: 18%;">Harga Satuan</th>
+                                <th style="width: 100px;">Is Bonus</th>
+                                <th>Produk</th>
+                                <th style="width: 140px;">Kuantitas</th>
+                                <th style="width: 160px;">Satuan</th>
+                                <th style="width: 200px;">Harga Satuan</th>
                                 {{-- <th style="width: 15%;">Pajak</th> --}}
-                                <th style="width: 15%;">Jumlah</th>
-                                <th style="width: 5%;">Aksi</th>
+                                <th style="width: 200px;">Jumlah</th>
+                                <th style="width: 100px;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="products-tbody" data-repeater-list>
@@ -466,7 +466,7 @@
                 $(this).select2({
                     placeholder: "Pilih Produk",
                     allowClear: true,
-                    dropdownParent: $(this).parent(),
+                    dropdownParent: $(this).closest('.card'),
                     width: '100%'
                 });
             });
@@ -475,7 +475,7 @@
                 $(this).select2({
                     placeholder: "Pilih Satuan",
                     allowClear: true,
-                    dropdownParent: $(this).parent(),
+                    dropdownParent: $(this).closest('.card'),
                     width: '100%'
                 });
             });
@@ -497,7 +497,7 @@
                             $(this).select2({
                                 placeholder: "Pilih Produk",
                                 allowClear: true,
-                                dropdownParent: $(this).parent(),
+                                dropdownParent: $(this).closest('.card'),
                                 width: '100%'
                             });
                         });
@@ -513,7 +513,7 @@
                             $(this).select2({
                                 placeholder: "Pilih Satuan",
                                 allowClear: true,
-                                dropdownParent: $(this).parent(),
+                                dropdownParent: $(this).closest('.card'),
                                 width: '100%'
                             });
                         });

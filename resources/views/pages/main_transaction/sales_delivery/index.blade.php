@@ -171,10 +171,9 @@
                         <tr>
                             <th>Tanggal</th>
                             <th>No Delivery</th>
-                            <th>Customer</th>
-                            <th>Alamat</th>
-                            <th>Status</th>
                             <th>Referensi SO</th>
+                            <th>Customer</th>
+                            <th>Status</th>
                             <th>Direimburse?</th>
                             <th>Ongkir</th>
                             <th>Tag</th>
@@ -296,20 +295,6 @@
                                 } else {
                                     return `<span class="badge bg-label-dark">Menunggu Pengiriman</span>`;
                                 }
-                            }
-                        },
-                        {
-                            data: 'sales_order_number',
-                            responsivePriority: 10001,
-                            render: function(data, type, row) {
-                                if (!data) return '-';
-                                if (canViewSalesOrder && row.so_id) {
-                                    const detailUrl =
-                                        "{{ route('main_transaction.sales_order.detail', ':id') }}"
-                                        .replace(':id', row.so_id);
-                                    return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
-                                }
-                                return data;
                             }
                         },
                         {

@@ -56,6 +56,7 @@ class CoaController extends Controller
 
     public function add()
     {
+        $this->authorize('coa.create');
         $tags = app(TagService::class)->findAll();
 
         $statuses = $this->statuses;
@@ -70,6 +71,7 @@ class CoaController extends Controller
 
     public function save(Request $request)
     {
+        $this->authorize('coa.create');
         try {
             $validated = $request->validate([
                 'code' => 'required|string|max:255|unique:m_coas,code',
@@ -139,6 +141,7 @@ class CoaController extends Controller
 
     public function detail($id)
     {
+        $this->authorize('coa.view');
         $coa = app(CoaService::class)->findOne($id);
 
         $audit_log_data = app(CoaAuditLogService::class)->findAllBasedOnId($id);
@@ -148,6 +151,7 @@ class CoaController extends Controller
 
     public function edit($id)
     {
+        $this->authorize('coa.edit');
         $tags = app(TagService::class)->findAll();
 
         $statuses = $this->statuses;
@@ -165,6 +169,7 @@ class CoaController extends Controller
 
     public function update(Request $request)
     {
+        $this->authorize('coa.edit');
         try {
             $validated = $request->validate([
                 'id' => 'required|exists:m_coas,id',
