@@ -79,6 +79,23 @@
     <div class="card">
         <h4 class="card-header">My Reimbursements</h4>
         <div class="card-body">
+            <!-- Filters -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <label class="form-label">Dari Tanggal</label>
+                    <input type="text" class="form-control global-single-date-picker" id="date-from" placeholder="yyyy-mm-dd">
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <label class="form-label">Sampai Tanggal</label>
+                    <input type="text" class="form-control global-single-date-picker" id="date-to" placeholder="yyyy-mm-dd">
+                </div>
+                <div class="col-12 col-sm-6 col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary" id="reset-date-filter">
+                        <i class="icon-base ti tabler-filter-off me-1"></i> Reset
+                    </button>
+                </div>
+            </div>
+
             <div class="d-flex justify-content-between mb-4">
                 <div></div>
                 @can('reimbursement.create')
@@ -114,12 +131,41 @@
         $(function() {
             const canRead = @json(auth()->user()->can('reimbursement.view'));
 
+            // Calculate smart default date range
+            function getDefaultDateRange() {
+                const today = new Date();
+                const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+                let dateFrom;
+
+                if (dayOfWeek === 1) {
+                    // Today is Monday: go back 7 days
+                    dateFrom = new Date(today);
+                    dateFrom.setDate(today.getDate() - 7);
+                } else {
+                    // Find the most recent Monday
+                    const daysFromMonday = (dayOfWeek === 0) ? 6 : dayOfWeek - 1;
+                    dateFrom = new Date(today);
+                    dateFrom.setDate(today.getDate() - daysFromMonday);
+                }
+
+                const fmt = d => d.toISOString().slice(0, 10);
+                return { from: fmt(dateFrom), to: fmt(today) };
+            }
+
+            const defaultRange = getDefaultDateRange();
+            $('#date-from').val(defaultRange.from);
+            $('#date-to').val(defaultRange.to);
+
             // Initialize DataTable
             const reimbursementTable = new DataTable('#reimbursement-table', {
                 processing: true,
                 serverSide: true,
                 ajax: {
                     url: '{{ route('main_transaction.reimbursement.index_data_table') }}',
+                    data: function(d) {
+                        d.date_from = $('#date-from').val();
+                        d.date_to   = $('#date-to').val();
+                    }
                 },
                 columns: [
                     {
@@ -198,6 +244,19 @@
                     bottomEnd: 'paging'
                 },
                 ordering: false
+            });
+
+            // Reload table when date filters change
+            $('#date-from, #date-to').on('change', function() {
+                reimbursementTable.ajax.reload();
+            });
+
+            // Reset date filter to defaults
+            $('#reset-date-filter').on('click', function() {
+                const range = getDefaultDateRange();
+                $('#date-from').val(range.from);
+                $('#date-to').val(range.to);
+                reimbursementTable.ajax.reload();
             });
         });
     </script>

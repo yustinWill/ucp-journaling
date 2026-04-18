@@ -69,6 +69,14 @@ class ReimbursementService
             $query->where('t.status', $statusFilter);
         }
 
+        if ($dateFrom = request()->input('date_from')) {
+            $query->whereDate('t.created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo = request()->input('date_to')) {
+            $query->whereDate('t.created_at', '<=', $dateTo);
+        }
+
         return $query;
     }
 
