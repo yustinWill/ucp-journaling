@@ -318,13 +318,25 @@
                 ],
                 layout: {
                     topStart: {
+                        rowClass: 'm-0',
                         features: []
                     },
+                    topEnd: {},
                     bottomStart: {
+                        rowClass: 'row mx-3 justify-content-between',
                         features: ['info']
                     },
                     bottomEnd: 'paging'
                 },
+                language: {
+                    paginate: {
+                        next: '<i class="icon-base ti tabler-chevron-right scaleX-n1-rtl icon-18px"></i>',
+                        previous: '<i class="icon-base ti tabler-chevron-left scaleX-n1-rtl icon-18px"></i>',
+                        first: '<i class="icon-base ti tabler-chevrons-left scaleX-n1-rtl icon-18px"></i>',
+                        last: '<i class="icon-base ti tabler-chevrons-right scaleX-n1-rtl icon-18px"></i>'
+                    }
+                },
+                responsive: true,
                 ordering: false
             });
 
