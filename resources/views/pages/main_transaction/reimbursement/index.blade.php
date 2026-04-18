@@ -81,18 +81,13 @@
         <div class="card-body">
             <!-- Filters -->
             <div class="row g-3 mb-4">
-                <div class="col-12 col-sm-6 col-md-4">
+                <div class="col-12 col-sm-6 col-md-3">
                     <label class="form-label">Dari Tanggal</label>
                     <input type="text" class="form-control global-single-date-picker" id="date-from" placeholder="yyyy-mm-dd">
                 </div>
-                <div class="col-12 col-sm-6 col-md-4">
+                <div class="col-12 col-sm-6 col-md-3">
                     <label class="form-label">Sampai Tanggal</label>
                     <input type="text" class="form-control global-single-date-picker" id="date-to" placeholder="yyyy-mm-dd">
-                </div>
-                <div class="col-12 col-sm-6 col-md-4 d-flex align-items-end">
-                    <button type="button" class="btn btn-outline-secondary" id="reset-date-filter">
-                        <i class="icon-base ti tabler-filter-off me-1"></i> Reset
-                    </button>
                 </div>
             </div>
 
@@ -251,13 +246,6 @@
                 reimbursementTable.ajax.reload();
             });
 
-            // Reset date filter to defaults
-            $('#reset-date-filter').on('click', function() {
-                const range = getDefaultDateRange();
-                $('#date-from').val(range.from);
-                $('#date-to').val(range.to);
-                reimbursementTable.ajax.reload();
-            });
         });
     </script>
 @endsection
