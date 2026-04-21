@@ -186,7 +186,7 @@
                     </div>
                 </div>
 
-                <div class="alert alert-success mb-3">
+                <div class="alert alert-success mb-3" id="allocationSuccessAlert">
                     <i class="icon-base ti tabler-circle-check me-2"></i>
                     <strong>Alokasi Berhasil Dihitung!</strong> Sistem telah mengalokasikan pembayaran secara otomatis.
                     Cek detail alokasi di bawah sebelum submit.
@@ -292,7 +292,7 @@
                                     <td colspan="7" class="text-center py-5">
                                         <i class="icon-base ti tabler-mood-empty" style="font-size: 48px; opacity: 0.3;"></i>
                                         <div class="text-muted mt-2">Tidak Ada Piutang Outstanding</div>
-                                        <small class="text-muted">Semua SO untuk entity ini sudah lunas</small>
+                                        <small class="text-muted">Saldo top up akan disimpan dan dialokasikan otomatis saat piutang baru masuk</small>
                                     </td>
                                 </tr>
                             `);
@@ -353,14 +353,24 @@
                 const entity = $('#entity_type').val();
                 const amountStr = $('#topup_amount').val();
 
-                if (!entity || !amountStr || currentOutstanding.length === 0) {
+                if (!entity || !amountStr) {
                     $('#allocationSection').hide();
                     $('#submitBtn').prop('disabled', true);
                     return;
                 }
 
                 let topupAmount = parseInt(amountStr.replace(/[^0-9]/g, ''));
-                if (topupAmount <= 0) return;
+                if (topupAmount <= 0) {
+                    $('#allocationSection').hide();
+                    $('#submitBtn').prop('disabled', true);
+                    return;
+                }
+
+                // No outstanding: show credit balance info and allow submit
+                if (currentOutstanding.length === 0) {
+                    displayNoOutstandingAllocation(topupAmount);
+                    return;
+                }
 
                 // AJAX call to calculate FIFO allocation
                 $.ajax({
@@ -382,9 +392,31 @@
                 });
             }
 
+            // Show credit balance info when no outstanding exists
+            function displayNoOutstandingAllocation(topupAmount) {
+                allocationData = [];
+
+                $('#summaryTopup').text('Rp ' + formatNumber(topupAmount));
+                $('#summaryAllocated').text('Rp 0');
+                $('#summaryRemaining').text('Rp ' + formatNumber(topupAmount));
+                $('#allocationSuccessAlert').hide();
+
+                $('#allocationList').html(`
+                    <div class="alert alert-info mb-0">
+                        <i class="icon-base ti tabler-info-circle me-2"></i>
+                        <strong>Tidak ada piutang outstanding saat ini.</strong><br>
+                        Saldo sebesar <strong>Rp ${formatNumber(topupAmount)}</strong> akan disimpan dan dialokasikan secara otomatis (FIFO) ketika piutang baru masuk.
+                    </div>
+                `);
+
+                $('#allocationSection').show();
+                $('#submitBtn').prop('disabled', false);
+            }
+
             // Display allocation preview
             function displayAllocation(data) {
                 allocationData = data.allocations;
+                $('#allocationSuccessAlert').show();
 
                 // Update summary
                 $('#summaryTopup').text('Rp ' + formatNumber(data.topup_amount));
