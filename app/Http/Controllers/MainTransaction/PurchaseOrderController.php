@@ -594,6 +594,8 @@ class PurchaseOrderController extends Controller
         $purchaseOrder['description'] = $purchaseOrder['description'] ?? '';
         $purchaseOrder['memo'] = $purchaseOrder['memo'] ?? '';
 
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_purchase_order');
+
         $data = [
             'customers' => $customers,
             'purchaseOrder' => $purchaseOrder,
