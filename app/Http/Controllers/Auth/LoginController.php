@@ -25,7 +25,7 @@ class LoginController extends Controller
 
             $authenticateUserAction->login($credentials);
 
-            return redirect()->route('home.view');
+            return redirect()->route('dashboard.index');
         } catch (ValidationException $e) {
             return redirect()->back()
                 ->withErrors(['error' => $e->getMessage()]);
