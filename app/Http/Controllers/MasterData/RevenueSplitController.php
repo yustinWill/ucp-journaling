@@ -46,7 +46,7 @@ class RevenueSplitController extends Controller
         return response()->json($data, SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
 
-    public function add()
+    public function add(Request $request)
     {
         $statuses = $this->statuses;
         $permissionData = PermissionHelper::getViewPermissions('master_data_revenue_split');
@@ -54,9 +54,15 @@ class RevenueSplitController extends Controller
         // Map permission for blade compatibility
         $canWrite = $permissionData['canCreateRevenueSplit'] ?? false;
 
+        $duplicateFrom = null;
+        if ($request->filled('from')) {
+            $duplicateFrom = DB::table('m_revenue_splits')->where('id', $request->input('from'))->first();
+        }
+
         return view('pages.master_data.revenue_split.add', array_merge([
-            'statuses' => $statuses,
-            'canWrite' => $canWrite,
+            'statuses'      => $statuses,
+            'canWrite'      => $canWrite,
+            'duplicateFrom' => $duplicateFrom,
         ], $permissionData));
     }
 

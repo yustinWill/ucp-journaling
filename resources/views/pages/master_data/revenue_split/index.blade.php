@@ -215,6 +215,7 @@
 
                                 // Secondary actions in dropdown if more than 1 additional action
                                 let additionalActions = 0;
+                                if (canWrite) additionalActions++;
                                 if (canShowEditButton) additionalActions++;
                                 
                                 if (additionalActions > 0) {
@@ -228,6 +229,13 @@
                                     // actions += `<li><a class="dropdown-item" href="javascript:void(0)" onclick="showCyclePreview(${row.id})">
                                     //     <i class="icon-xs icon-base ti tabler-chart-line me-2"></i>Preview Cycle
                                     // </a></li>`;
+
+                                    if (canWrite) {
+                                        const duplicateUrl = `{{ route('master_data.revenue_split.add') }}?from=${row.id}`;
+                                        actions += `<li><a class="dropdown-item" href="${duplicateUrl}">
+                                            <i class="icon-xs icon-base ti tabler-copy me-2"></i>Duplikat
+                                        </a></li>`;
+                                    }
 
                                     if (canShowEditButton) {
                                         actions += `<li><a class="dropdown-item" href="${editUrl}">

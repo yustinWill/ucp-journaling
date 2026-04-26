@@ -17,14 +17,16 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label">Nama Cycle <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="cycle-name" name="cycle_name" 
-                        placeholder="Cycle 6 - Q2 2025" maxlength="255" required />
+                    <input type="text" class="form-control" id="cycle-name" name="cycle_name"
+                        placeholder="Cycle 6 - Q2 2025" maxlength="255" required
+                        value="{{ isset($duplicateFrom) ? $duplicateFrom->cycle_name . ' (Copy)' : '' }}" />
                     <small class="form-text text-muted">Nama cycle tidak boleh sama dengan yang sudah ada</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Deskripsi</label>
-                    <input type="text" class="form-control" id="description" name="description" 
-                        placeholder="Kuartal Kedua 2025" maxlength="255" />
+                    <input type="text" class="form-control" id="description" name="description"
+                        placeholder="Kuartal Kedua 2025" maxlength="255"
+                        value="{{ isset($duplicateFrom) ? $duplicateFrom->description : '' }}" />
                 </div>
             </div>
 
@@ -50,8 +52,9 @@
                     <label class="form-label">Target Keuntungan Pabrik <span style="color: red;">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
-                        <input type="text" class="form-control currency-input" id="target-pabrik" name="target_pabrik" 
-                            placeholder="500000000" required />
+                        <input type="text" class="form-control currency-input" id="target-pabrik" name="target_pabrik"
+                            placeholder="500000000" required
+                            value="{{ isset($duplicateFrom) ? $duplicateFrom->target_pabrik : '' }}" />
                     </div>
                     <small class="form-text text-muted">Input angka (format Rupiah), tidak boleh negatif</small>
                 </div>
@@ -59,8 +62,9 @@
                     <label class="form-label">Target Keuntungan Owner <span style="color: red;">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
-                        <input type="text" class="form-control currency-input" id="target-owner" name="target_owner" 
-                            placeholder="500000000" required />
+                        <input type="text" class="form-control currency-input" id="target-owner" name="target_owner"
+                            placeholder="500000000" required
+                            value="{{ isset($duplicateFrom) ? $duplicateFrom->target_owner : '' }}" />
                     </div>
                 </div>
             </div>
@@ -70,8 +74,9 @@
                     <label class="form-label">Target Keuntungan Perusahaan <span style="color: red;">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
-                        <input type="text" class="form-control currency-input" id="target-perusahaan" name="target_perusahaan" 
-                            placeholder="500000000" required />
+                        <input type="text" class="form-control currency-input" id="target-perusahaan" name="target_perusahaan"
+                            placeholder="500000000" required
+                            value="{{ isset($duplicateFrom) ? $duplicateFrom->target_perusahaan : '' }}" />
                     </div>
                     <small class="form-text text-muted">Hanya menerima numerik, auto-format ke Rupiah</small>
                 </div>
@@ -108,7 +113,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Catatan</label>
                     <textarea class="form-control" id="notes" name="notes" rows="4"
-                        placeholder="Catatan tambahan mengenai cycle ini..."></textarea>
+                        placeholder="Catatan tambahan mengenai cycle ini...">{{ isset($duplicateFrom) ? $duplicateFrom->notes : '' }}</textarea>
                 </div>
                 <div class="col-md-6">
                     <!-- Empty for alignment -->
