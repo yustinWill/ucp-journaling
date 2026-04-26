@@ -48,15 +48,6 @@
                         <div class="col-12">
                             <div class="row g-3">
                                 <div class="col-12 col-sm-6 col-lg-3">
-                                    <label class="form-label">Status:</label>
-                                    <select class="global-select2 form-select" id="status-filter" data-allow-clear="false">
-                                        <option value="">Semua Status</option>
-                                        @foreach ($statuses as $status)
-                                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-12 col-sm-6 col-lg-3">
                                     <label class="form-label">Nama Cycle:</label>
                                     <input type="text" class="form-control" id="cycle-name-filter" placeholder="Cari Berdasarkan Nama Cycle">
                                 </div>
@@ -99,7 +90,6 @@
                             <th>Nama Cycle</th>
                             <th>Periode</th>
                             <th>Target Keuntungan</th>
-                            <th>Status</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -145,7 +135,6 @@
                     ajax: {
                         url: `{{ route('master_data.revenue_split.index_data_table') }}`,
                         data: function(d) {
-                            d.status = $('#status-filter').val();
                             d.cycle_name = $('#cycle-name-filter').val();
                             d.periode = $('#periode-filter').val();
                             d.total_minimal = $('#total-minimal-filter').val();
@@ -201,15 +190,6 @@
                                         Perusahaan: Rp ${Number(row.target_perusahaan).toLocaleString('id-ID')}
                                     </small>
                                 </div>`;
-                            }
-                        },
-                        {
-                            data: 'status',
-                            responsivePriority: 3,
-                            render: function(data, type, row) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-warning' : 
-                                                   data === 'SELESAI' ? 'bg-label-success' : 'bg-label-secondary';
-                                return `<span class="badge ${badgeClass}">${data}</span>`;
                             }
                         },
                         {
