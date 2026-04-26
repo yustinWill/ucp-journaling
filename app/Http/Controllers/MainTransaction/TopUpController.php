@@ -130,35 +130,34 @@ class TopUpController extends Controller
 
         // Validation
         $validated = $request->validate([
-            'topup_date' => 'required|date',
-            // 'entity_type' => 'required|in:KINGDOM,OWNER',
-            'topup_amount' => 'required|numeric|min:0.01',
-            'notes' => 'nullable|string|max:1000',
-            'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'topup_date'      => 'required|date',
+            'topup_amount'    => 'required|numeric|min:0.01',
+            'notes'           => 'nullable|string|max:1000',
+            'selected_so_ids' => 'nullable|array',
+            'selected_so_ids.*' => 'integer',
         ], [], [
-            'topup_date' => 'Tanggal Top Up',
-            // 'entity_type' => 'Entity',
+            'topup_date'   => 'Tanggal Top Up',
             'topup_amount' => 'Jumlah Top Up',
-            'notes' => 'Catatan',
-            'attachment' => 'Lampiran',
+            'notes'        => 'Catatan',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $companyCode = session('user_company_code');
-            $entityType = "OWNER";
-            $topupAmount = $request->topup_amount;
+            $companyCode   = session('user_company_code');
+            $entityType    = 'OWNER';
+            $topupAmount   = $request->topup_amount;
+            $selectedSoIds = $request->input('selected_so_ids', []);
 
             // Generate Top Up Number
             $topupNumber = app(\App\Services\TransactionNumberService::class)
                 ->generateNumber('top_up');
 
-            // Determine which field to update based on entity
+            // Determine which fields to use based on entity
             $isPaidField = $entityType === 'KINGDOM' ? 'is_paid_perusahaan' : 'is_paid_owner';
-            $porsiField = $entityType === 'KINGDOM' ? 'porsi_perusahaan' : 'porsi_pabrik';
+            $porsiField  = $entityType === 'KINGDOM' ? 'porsi_perusahaan' : 'porsi_pabrik';
 
-            // Get outstanding Sales Orders (same logic as getOutstandingSalesOrders)
+            // Get ALL outstanding Sales Orders in FIFO order
             $outstandingSO = DB::table('t_sales_orders as so')
                 ->join('t_sales_order_revenue_splits as rs', 'so.id', '=', 'rs.f_sales_order_id')
                 ->select([
@@ -174,43 +173,45 @@ class TopUpController extends Controller
                 ->orderBy('so.id', 'ASC')
                 ->get();
 
-            // Calculate FIFO allocation
-            $remainingTopup = $topupAmount;
-            $allocations = [];
-            $sequence = 1;
-            $totalAllocated = 0;
-
-            foreach ($outstandingSO as $so) {
-                if ($remainingTopup <= 0) {
-                    break;
-                }
-
-                // Get already allocated deposits
-                $allocatedDeposit = DB::table('t_topup_sales_order')
+            // Attach remaining amounts
+            $outstandingSO = $outstandingSO->map(function ($so) {
+                $allocated = DB::table('t_topup_sales_order')
                     ->where('sales_order_id', $so->id)
                     ->sum('allocated_amount');
+                $so->remaining = $so->total_amount - $allocated;
+                return $so;
+            })->filter(fn($so) => $so->remaining > 0)->values();
 
-                $soRemaining = $so->total_amount - $allocatedDeposit;
+            // Build allocation:
+            // Step 1 – selected SOs first (in FIFO order of the selected subset)
+            // Step 2 – remaining budget goes to unselected SOs via FIFO
+            $remainingTopup = $topupAmount;
+            $allocations    = [];
+            $sequence       = 1;
+            $totalAllocated = 0;
 
-                // Skip if already fully paid
-                if ($soRemaining <= 0) {
-                    continue;
+            $selectedSet   = collect($outstandingSO)->filter(fn($so) => in_array($so->id, $selectedSoIds));
+            $unselectedSet = collect($outstandingSO)->filter(fn($so) => !in_array($so->id, $selectedSoIds));
+
+            foreach ([$selectedSet, $unselectedSet] as $soSet) {
+                foreach ($soSet as $so) {
+                    if ($remainingTopup <= 0) break;
+                    $soRemaining = $so->remaining;
+                    $allocationAmount = min($remainingTopup, $soRemaining);
+
+                    $allocations[] = [
+                        'so_id'              => $so->id,
+                        'so_total'           => $so->total_amount,
+                        'so_remaining_before'=> $soRemaining,
+                        'allocated_amount'   => $allocationAmount,
+                        'so_remaining_after' => $soRemaining - $allocationAmount,
+                        'sequence'           => $sequence,
+                    ];
+
+                    $remainingTopup -= $allocationAmount;
+                    $totalAllocated += $allocationAmount;
+                    $sequence++;
                 }
-
-                $allocationAmount = min($remainingTopup, $soRemaining);
-
-                $allocations[] = [
-                    'so_id' => $so->id,
-                    'so_total' => $so->total_amount,
-                    'so_remaining_before' => $soRemaining,
-                    'allocated_amount' => $allocationAmount,
-                    'so_remaining_after' => $soRemaining - $allocationAmount,
-                    'sequence' => $sequence,
-                ];
-
-                $remainingTopup -= $allocationAmount;
-                $totalAllocated += $allocationAmount;
-                $sequence++;
             }
 
             // Determine Top Up status

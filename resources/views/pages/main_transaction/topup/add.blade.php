@@ -9,200 +9,122 @@
         <h4 class="mb-1">
             <i class="icon-base ti tabler-cash me-2"></i>Form Top Up Pembayaran Pabrik
         </h4>
-        <p class="text-muted">Masukkan data pembayaran. Sistem akan mengalokasikan otomatis menggunakan metode FIFO (First
-            In, First Out)</p>
-    </div>
-
-    <!-- Info Box -->
-    <div class="alert alert-primary d-flex align-items-start mb-4" role="alert">
-        <i class="icon-base ti tabler-info-circle me-3" style="font-size: 24px;"></i>
-        <div>
-            <h5 class="alert-heading mb-1">Cara Kerja Alokasi FIFO</h5>
-            <p class="mb-0">
-                Pembayaran akan dialokasikan otomatis ke SO (Sales Order) tertua terlebih dahulu.
-                Anda tidak perlu memilih SO mana yang dibayar. Sistem akan mengalokasikan hingga saldo habis atau semua
-                piutang terbayar.
-            </p>
-        </div>
+        <p class="text-muted">Pilih Sales Order yang ingin dibayar, atau biarkan kosong untuk alokasi otomatis FIFO.</p>
     </div>
 
     <!-- Form -->
     <form id="topupForm" method="POST">
         @csrf
 
-        <!-- Summary Section -->
-        <div id="outstandingSummary" style="display: none;">
-            <div class="card bg-light border-0 mb-4">
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar me-3">
-                                    <span class="avatar-initial rounded bg-label-primary">
-                                        <i class="icon-base ti tabler-file-invoice icon-24px"></i>
-                                    </span>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block">Total SO Outstanding</small>
-                                    <h5 class="mb-0" id="summaryTotalSO">0 SO</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar me-3">
-                                    <span class="avatar-initial rounded bg-label-warning">
-                                        <i class="icon-base ti tabler-currency-dollar icon-24px"></i>
-                                    </span>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block">Lifetime Outstanding Amount</small>
-                                    <h5 class="mb-0" id="summaryTotalOriginal">Rp 0</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar me-3">
-                                    <span class="avatar-initial rounded bg-label-danger">
-                                        <i class="icon-base ti tabler-alert-circle icon-24px"></i>
-                                    </span>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block">Lifetime Remaining Amount</small>
-                                    <h5 class="mb-0 text-danger" id="summaryTotalRemaining">Rp 0</h5>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Section 1: Input Data Top Up -->
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="icon-base ti tabler-forms me-2"></i>Step 1: Informasi Top Up
+                    <i class="icon-base ti tabler-forms me-2"></i>Informasi Top Up
                 </h5>
             </div>
             <div class="card-body">
+                <input type="hidden" id="entity_type" name="entity_type" value="OWNER">
                 <div class="row g-3 mb-3">
-                    <input type="hidden" id="entity_type" name="entity_type" value="OWNER">
-                    <div class="col-md-6">
-                        <label class="form-label required">Top Up Date</label>
+                    <div class="col-md-4">
+                        <label class="form-label required">Tanggal Top Up</label>
                         <input type="date" class="form-control" id="topup_date" name="topup_date"
                             value="{{ date('Y-m-d') }}" required>
-                        <div class="form-text">
-                            <i class="icon-base ti tabler-calendar me-1"></i> Tanggal pembayaran
-                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label required">Jumlah Top Up</label>
+                        <input type="text" class="form-control" id="topup_amount" name="topup_amount"
+                            placeholder="Rp 0" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Total SO Dipilih</label>
+                        <input type="text" class="form-control bg-light" id="total_selected_so" readonly
+                            placeholder="Rp 0" title="Total remaining amount dari SO yang dipilih">
                     </div>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label required">Top Up Amount (Saldo Pembayaran)</label>
-                    <input type="text" class="form-control form-control-lg" id="topup_amount" name="topup_amount"
-                        placeholder="Rp 0" required style="font-size: 20px; font-weight: 600;">
-                    <div class="form-text">
-                        <i class="icon-base ti tabler-coin me-1"></i> Total saldo yang akan dibayarkan ke Pabrik
-                    </div>
-                </div>
-
                 <div class="mb-0">
                     <label class="form-label">Notes (Optional)</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="3"
-                        placeholder="Contoh: Pembayaran via transfer bank BCA, No. Ref: TRF123456789"></textarea>
-                    <div class="form-text">
-                        <i class="icon-base ti tabler-note me-1"></i> Catatan tambahan untuk referensi internal
-                    </div>
+                    <textarea class="form-control" id="notes" name="notes" rows="2"
+                        placeholder="Catatan tambahan untuk referensi internal"></textarea>
                 </div>
             </div>
         </div>
 
-        <!-- Section 2: Outstanding Piutang -->
+        <!-- Section 2: Outstanding SO Table with Checkboxes -->
         <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
-                    <i class="icon-base ti tabler-list-details me-2"></i>Step 2: Outstanding Piutang (Read Only)
+                    <i class="icon-base ti tabler-list-check me-2"></i>Pilih Sales Order
                 </h5>
+                <div class="d-flex gap-2 align-items-center">
+                    <small class="text-muted" id="selected-count">0 SO dipilih</small>
+                    <button type="button" class="btn btn-sm btn-label-secondary" id="btn-check-all">Pilih Semua</button>
+                    <button type="button" class="btn btn-sm btn-label-secondary" id="btn-uncheck-all">Batal Semua</button>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="alert alert-warning mb-3">
-                    <i class="icon-base ti tabler-alert-circle me-2"></i>
-                    <strong>Informasi Penting:</strong> Tabel di bawah menampilkan semua invoice yang sudah terbayar).
+            <div class="card-body pb-1">
+                <div class="alert alert-info mb-3">
+                    <i class="icon-base ti tabler-info-circle me-2"></i>
+                    Centang SO yang ingin dibayar. Jika tidak ada yang dipilih, sistem akan menggunakan alokasi FIFO otomatis.
+                    Jika jumlah top up melebihi total SO dipilih, sisa akan dialokasikan ke SO lain secara FIFO.
                 </div>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead class="table-light">
-                            <tr>
-                                <th width="80px">Urutan FIFO</th>
-                                <th>SO Date</th>
-                                <th>SO Number</th>
-                                <th>Customer</th>
-                                <th class="text-end">Original Amount</th>
-                                <th class="text-end">Remaining Amount</th>
-                                <th width="100px" class="text-center">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="outstandingTable">
-                            <tr>
-                                <td colspan="7" class="text-center py-5">
-                                    <i class="icon-base ti tabler-inbox" style="font-size: 48px; opacity: 0.3;"></i>
-                                    <div class="text-muted mt-2">Pilih Entity untuk Melihat Data</div>
-                                    <small class="text-muted">Outstanding piutang akan muncul setelah Anda memilih entity di
-                                        atas</small>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="50px" class="text-center">
+                                <input type="checkbox" id="checkAll" class="form-check-input">
+                            </th>
+                            <th width="60px">#</th>
+                            <th>SO Date</th>
+                            <th>SO Number</th>
+                            <th>Customer</th>
+                            <th class="text-end">Original Amount</th>
+                            <th class="text-end">Remaining Amount</th>
+                            <th width="90px" class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="outstandingTable">
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status"></div>
+                                <div class="text-muted mt-2">Memuat data...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Section 3: Preview Alokasi -->
+        <!-- Section 3: Allocation Preview -->
         <div class="card mb-4" id="allocationSection" style="display: none;">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    <i class="icon-base ti tabler-target me-2"></i>Step 3: Preview Alokasi FIFO (Otomatis)
+                    <i class="icon-base ti tabler-target me-2"></i>Preview Alokasi
                 </h5>
             </div>
             <div class="card-body">
-                <!-- Summary Box -->
+                <!-- Summary -->
                 <div class="card bg-primary text-white mb-3">
-                    <div class="card-body">
+                    <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-white border-opacity-25">
-                            <span><i class="icon-base ti tabler-coin me-1"></i> Total Top Up Amount</span>
+                            <span><i class="icon-base ti tabler-coin me-1"></i> Total Top Up</span>
                             <span class="fs-5 fw-bold" id="summaryTopup">Rp 0</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-white border-opacity-25">
-                            <span><i class="icon-base ti tabler-check me-1"></i> Total Allocated</span>
+                            <span><i class="icon-base ti tabler-check me-1"></i> Total Dialokasikan</span>
                             <span class="fs-5 fw-bold" id="summaryAllocated">Rp 0</span>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center pt-2">
-                            <span><i class="icon-base ti tabler-wallet me-1"></i> Remaining Balance</span>
+                        <div class="d-flex justify-content-between align-items-center pt-1">
+                            <span><i class="icon-base ti tabler-wallet me-1"></i> Sisa Saldo</span>
                             <span class="fs-4 fw-bold" id="summaryRemaining">Rp 0</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="alert alert-success mb-3" id="allocationSuccessAlert">
-                    <i class="icon-base ti tabler-circle-check me-2"></i>
-                    <strong>Alokasi Berhasil Dihitung!</strong> Sistem telah mengalokasikan pembayaran secara otomatis.
-                    Cek detail alokasi di bawah sebelum submit.
-                </div>
-
-                <!-- Allocation Preview -->
-                <div class="card bg-light-success border-success">
-                    <div class="card-header bg-success text-white">
-                        <h6 class="mb-0">
-                            <i class="icon-base ti tabler-list me-2"></i>Detail Alokasi Per SO
-                        </h6>
-                    </div>
-                    <div class="card-body" id="allocationList">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
+                <!-- Allocation List -->
+                <div id="allocationList"></div>
             </div>
         </div>
 
@@ -210,17 +132,12 @@
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
-                    <button type="button" class="btn btn-label-secondary" onclick="resetForm()">
-                        <i class="icon-base ti tabler-refresh me-1"></i> Reset Form
+                    <a href="{{ route('main_transaction.topup.index') }}" class="btn btn-label-danger">
+                        <i class="icon-base ti tabler-arrow-left me-1"></i> Kembali
+                    </a>
+                    <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                        <i class="icon-base ti tabler-check me-1"></i> Submit Top Up
                     </button>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('main_transaction.topup.index') }}" class="btn btn-label-secondary">
-                            <i class="icon-base ti tabler-arrow-left me-1"></i> Kembali ke List
-                        </a>
-                        <button type="submit" class="btn btn-success" id="submitBtn" disabled>
-                            <i class="icon-base ti tabler-check me-1"></i> Submit Top Up
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -230,349 +147,321 @@
 @section('js_script')
     <script>
         $(function() {
-            let currentEntity = null;
-            let currentOutstanding = [];
-            let allocationData = [];
+            let currentOutstanding = []; // all outstanding SOs
+            let allocationData = [];     // final allocation for submission
 
-            // Format currency input
+            // ── Format helpers ────────────────────────────────────────────
+            function fmt(num) {
+                return parseInt(num || 0).toLocaleString('id-ID');
+            }
+            function fmtDate(d) {
+                return new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+            function getTopupAmount() {
+                return parseInt($('#topup_amount').val().replace(/[^0-9]/g, '') || 0);
+            }
+
+            // ── Currency input ────────────────────────────────────────────
             $('#topup_amount').on('input', function() {
-                let value = $(this).val().replace(/[^0-9]/g, '');
-                if (value) {
-                    $(this).val('Rp ' + parseInt(value).toLocaleString('id-ID'));
-                } else {
-                    $(this).val('');
-                }
-                calculateAllocation();
+                let v = $(this).val().replace(/[^0-9]/g, '');
+                $(this).val(v ? 'Rp ' + parseInt(v).toLocaleString('id-ID') : '');
+                recalculate();
             });
 
-            // Load outstanding when entity changes
-            $('#entity_type').on('change', function() {
-                loadOutstanding();
-            });
-
-            // Auto-load outstanding on page load (default: OWNER)
+            // ── Load outstanding SOs on page load ─────────────────────────
             loadOutstanding();
 
-            // Load outstanding piutang
             function loadOutstanding() {
-                const entity = $('#entity_type').val();
+                $('#outstandingTable').html(`
+                    <tr><td colspan="8" class="text-center py-4">
+                        <div class="spinner-border text-primary spinner-border-sm"></div>
+                        <span class="ms-2 text-muted">Memuat data...</span>
+                    </td></tr>`);
 
-                if (!entity) {
-                    $('#outstandingTable').html(`
-                        <tr>
-                            <td colspan="7" class="text-center py-5">
-                                <i class="icon-base ti tabler-inbox" style="font-size: 48px; opacity: 0.3;"></i>
-                                <div class="text-muted mt-2">Pilih Entity untuk Melihat Data</div>
-                                <small class="text-muted">Outstanding piutang akan muncul setelah Anda memilih entity</small>
-                            </td>
-                        </tr>
-                    `);
-                    $('#outstandingSummary').hide();
-                    $('#allocationSection').hide();
-                    $('#submitBtn').prop('disabled', true);
-                    return;
-                }
-
-                currentEntity = entity;
-
-                // AJAX call to get outstanding sales orders
                 $.ajax({
                     url: "{{ route('main_transaction.topup.get_outstanding_sales_orders') }}",
                     method: 'GET',
-                    data: {
-                        entity_type: entity
-                    },
+                    data: { entity_type: 'OWNER' },
                     success: function(response) {
                         if (response.success && response.data.length > 0) {
                             currentOutstanding = response.data;
                             renderOutstandingTable(response.data);
                         } else {
-                            $('#outstandingTable').html(`
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">
-                                        <i class="icon-base ti tabler-mood-empty" style="font-size: 48px; opacity: 0.3;"></i>
-                                        <div class="text-muted mt-2">Tidak Ada Piutang Outstanding</div>
-                                        <small class="text-muted">Saldo top up akan disimpan dan dialokasikan otomatis saat piutang baru masuk</small>
-                                    </td>
-                                </tr>
-                            `);
-                            $('#outstandingSummary').hide();
                             currentOutstanding = [];
+                            $('#outstandingTable').html(`
+                                <tr><td colspan="8" class="text-center py-5">
+                                    <i class="icon-base ti tabler-mood-empty" style="font-size:40px;opacity:0.3"></i>
+                                    <div class="text-muted mt-2">Tidak ada piutang outstanding</div>
+                                </td></tr>`);
                         }
-                        calculateAllocation();
+                        recalculate();
                     },
-                    error: function(xhr) {
-                        console.error('Error loading outstanding:', xhr);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Gagal memuat data outstanding piutang'
-                        });
+                    error: function() {
+                        $('#outstandingTable').html(`<tr><td colspan="8" class="text-center text-danger py-3">Gagal memuat data</td></tr>`);
                     }
                 });
             }
 
-            // Render outstanding table
+            // ── Render SO table ───────────────────────────────────────────
             function renderOutstandingTable(data) {
                 let html = '';
-                let totalOriginal = 0;
-                let totalRemaining = 0;
-
                 data.forEach((item, index) => {
-                    const statusClass = item.remaining_amount == item.total_amount ? 'danger' : 'warning';
-                    const statusText = item.remaining_amount == item.total_amount ? 'OPEN' : 'PARTIAL';
-
-                    totalOriginal += parseFloat(item.total_amount);
-                    totalRemaining += parseFloat(item.remaining_amount);
-
+                    const isPartial = parseFloat(item.remaining_amount) < parseFloat(item.total_amount);
+                    const statusClass = isPartial ? 'warning' : 'danger';
+                    const statusText  = isPartial ? 'PARTIAL' : 'OPEN';
                     html += `
-                        <tr>
-                            <td class="text-center"><strong class="text-primary">${index + 1}</strong></td>
-                            <td>${formatDate(item.so_date)}</td>
+                        <tr class="so-row" data-id="${item.id}" data-remaining="${item.remaining_amount}" data-total="${item.total_amount}">
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input so-checkbox" value="${item.id}"
+                                    data-remaining="${item.remaining_amount}">
+                            </td>
+                            <td class="text-center text-muted">${index + 1}</td>
+                            <td>${fmtDate(item.so_date)}</td>
                             <td><strong>${item.so_number}</strong></td>
                             <td>${item.customer_name || '-'}</td>
-                            <td class="text-end">Rp ${formatNumber(item.total_amount)}</td>
-                            <td class="text-end"><strong>Rp ${formatNumber(item.remaining_amount)}</strong></td>
-                            <td class="text-center">
-                                <span class="badge bg-label-${statusClass}">${statusText}</span>
-                            </td>
-                        </tr>
-                    `;
+                            <td class="text-end">Rp ${fmt(item.total_amount)}</td>
+                            <td class="text-end"><strong>Rp ${fmt(item.remaining_amount)}</strong></td>
+                            <td class="text-center"><span class="badge bg-label-${statusClass}">${statusText}</span></td>
+                        </tr>`;
                 });
                 $('#outstandingTable').html(html);
-
-                // Update summary
-                $('#summaryTotalSO').text(data.length + ' SO');
-                $('#summaryTotalOriginal').text('Rp ' + formatNumber(totalOriginal));
-                $('#summaryTotalRemaining').text('Rp ' + formatNumber(totalRemaining));
-                $('#outstandingSummary').show();
             }
 
-            // Calculate FIFO allocation
-            function calculateAllocation() {
-                const entity = $('#entity_type').val();
-                const amountStr = $('#topup_amount').val();
+            // ── Checkbox handlers ─────────────────────────────────────────
+            $(document).on('change', '.so-checkbox', function() {
+                updateCheckAllState();
+                recalculate();
+            });
 
-                if (!entity || !amountStr) {
-                    $('#allocationSection').hide();
-                    $('#submitBtn').prop('disabled', true);
-                    return;
+            $('#checkAll').on('change', function() {
+                $('.so-checkbox').prop('checked', $(this).is(':checked'));
+                recalculate();
+            });
+
+            $('#btn-check-all').on('click', function() {
+                $('.so-checkbox').prop('checked', true);
+                $('#checkAll').prop('checked', true);
+                recalculate();
+            });
+
+            $('#btn-uncheck-all').on('click', function() {
+                $('.so-checkbox').prop('checked', false);
+                $('#checkAll').prop('checked', false);
+                recalculate();
+            });
+
+            function updateCheckAllState() {
+                const total   = $('.so-checkbox').length;
+                const checked = $('.so-checkbox:checked').length;
+                $('#checkAll').prop('checked', total > 0 && checked === total);
+            }
+
+            // ── Get selected SO ids ───────────────────────────────────────
+            function getSelectedIds() {
+                return $('.so-checkbox:checked').map(function() {
+                    return parseInt($(this).val());
+                }).get();
+            }
+
+            // ── Recalculate allocation preview ────────────────────────────
+            function recalculate() {
+                const selectedIds = getSelectedIds();
+                const selectedCount = selectedIds.length;
+
+                // Update selected count badge
+                $('#selected-count').text(selectedCount + ' SO dipilih');
+
+                // Highlight selected rows
+                $('.so-row').removeClass('table-primary');
+                if (selectedCount > 0) {
+                    $('.so-checkbox:checked').closest('tr').addClass('table-primary');
                 }
 
-                let topupAmount = parseInt(amountStr.replace(/[^0-9]/g, ''));
-                if (topupAmount <= 0) {
-                    $('#allocationSection').hide();
-                    $('#submitBtn').prop('disabled', true);
-                    return;
-                }
-
-                // No outstanding: show credit balance info and allow submit
-                if (currentOutstanding.length === 0) {
-                    displayNoOutstandingAllocation(topupAmount);
-                    return;
-                }
-
-                // AJAX call to calculate FIFO allocation
-                $.ajax({
-                    url: "{{ route('main_transaction.topup.calculate_fifo_allocation') }}",
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        entity_type: entity,
-                        topup_amount: topupAmount
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            displayAllocation(response.data);
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Error calculating allocation:', xhr);
-                    }
+                // Compute total selected remaining
+                let totalSelectedRemaining = 0;
+                selectedIds.forEach(id => {
+                    const row = currentOutstanding.find(s => s.id == id);
+                    if (row) totalSelectedRemaining += parseFloat(row.remaining_amount);
                 });
+                $('#total_selected_so').val(totalSelectedRemaining > 0 ? 'Rp ' + fmt(totalSelectedRemaining) : '');
+
+                const topupAmount = getTopupAmount();
+                if (topupAmount <= 0 || currentOutstanding.length === 0) {
+                    $('#allocationSection').hide();
+                    $('#submitBtn').prop('disabled', topupAmount <= 0);
+                    return;
+                }
+
+                // ── Build allocation ──────────────────────────────────────
+                const allocations = [];
+                let remaining = topupAmount;
+                let totalAllocated = 0;
+                let seq = 1;
+
+                // Step 1: allocate to selected SOs first (in FIFO order of selected)
+                const selectedSOs = currentOutstanding.filter(s => selectedIds.includes(s.id));
+                selectedSOs.forEach(so => {
+                    if (remaining <= 0) return;
+                    const soRemaining = parseFloat(so.remaining_amount);
+                    if (soRemaining <= 0) return;
+                    const alloc = Math.min(remaining, soRemaining);
+                    allocations.push({
+                        sequence: seq++,
+                        so_id: so.id,
+                        so_number: so.so_number,
+                        so_date: so.so_date,
+                        so_total: parseFloat(so.total_amount),
+                        so_remaining_before: soRemaining,
+                        allocated_amount: alloc,
+                        so_remaining_after: soRemaining - alloc,
+                        is_selected: true,
+                    });
+                    remaining -= alloc;
+                    totalAllocated += alloc;
+                });
+
+                // Step 2: if still remaining, FIFO on unselected SOs
+                if (remaining > 0) {
+                    const unselectedSOs = currentOutstanding.filter(s => !selectedIds.includes(s.id));
+                    unselectedSOs.forEach(so => {
+                        if (remaining <= 0) return;
+                        const soRemaining = parseFloat(so.remaining_amount);
+                        if (soRemaining <= 0) return;
+                        const alloc = Math.min(remaining, soRemaining);
+                        allocations.push({
+                            sequence: seq++,
+                            so_id: so.id,
+                            so_number: so.so_number,
+                            so_date: so.so_date,
+                            so_total: parseFloat(so.total_amount),
+                            so_remaining_before: soRemaining,
+                            allocated_amount: alloc,
+                            so_remaining_after: soRemaining - alloc,
+                            is_selected: false,
+                        });
+                        remaining -= alloc;
+                        totalAllocated += alloc;
+                    });
+                }
+
+                allocationData = allocations;
+                renderAllocationPreview(topupAmount, totalAllocated, remaining, allocations);
             }
 
-            // Show credit balance info when no outstanding exists
-            function displayNoOutstandingAllocation(topupAmount) {
-                allocationData = [];
+            // ── Render allocation preview ─────────────────────────────────
+            function renderAllocationPreview(topupAmount, totalAllocated, remaining, allocations) {
+                $('#summaryTopup').text('Rp ' + fmt(topupAmount));
+                $('#summaryAllocated').text('Rp ' + fmt(totalAllocated));
+                $('#summaryRemaining').text('Rp ' + fmt(remaining));
 
-                $('#summaryTopup').text('Rp ' + formatNumber(topupAmount));
-                $('#summaryAllocated').text('Rp 0');
-                $('#summaryRemaining').text('Rp ' + formatNumber(topupAmount));
-                $('#allocationSuccessAlert').hide();
-
-                $('#allocationList').html(`
-                    <div class="alert alert-info mb-0">
-                        <i class="icon-base ti tabler-info-circle me-2"></i>
-                        <strong>Tidak ada piutang outstanding saat ini.</strong><br>
-                        Saldo sebesar <strong>Rp ${formatNumber(topupAmount)}</strong> akan disimpan dan dialokasikan secara otomatis (FIFO) ketika piutang baru masuk.
-                    </div>
-                `);
-
-                $('#allocationSection').show();
-                $('#submitBtn').prop('disabled', false);
-            }
-
-            // Display allocation preview
-            function displayAllocation(data) {
-                allocationData = data.allocations;
-                $('#allocationSuccessAlert').show();
-
-                // Update summary
-                $('#summaryTopup').text('Rp ' + formatNumber(data.topup_amount));
-                $('#summaryAllocated').text('Rp ' + formatNumber(data.total_allocated));
-                $('#summaryRemaining').text('Rp ' + formatNumber(data.remaining_balance));
-
-                // Update allocation list
                 let html = '';
-                data.allocations.forEach((alloc, index) => {
-                    const isPaid = alloc.so_remaining_after === 0;
-                    const icon = isPaid ? 'ti-circle-check text-success' : 'ti-circle-dashed text-warning';
+                if (allocations.length === 0) {
+                    html = `<div class="alert alert-info mb-0">
+                        <i class="icon-base ti tabler-info-circle me-2"></i>
+                        Tidak ada piutang yang akan dialokasikan. Saldo akan disimpan sebagai sisa.
+                    </div>`;
+                } else {
+                    allocations.forEach(alloc => {
+                        const isPaid = alloc.so_remaining_after === 0;
+                        const icon   = isPaid ? 'ti-circle-check text-success' : 'ti-circle-dashed text-warning';
+                        const badge  = alloc.is_selected
+                            ? '<span class="badge bg-label-primary ms-1">Dipilih</span>'
+                            : '<span class="badge bg-label-secondary ms-1">FIFO</span>';
+                        html += `
+                            <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-white rounded border">
+                                <div class="flex-fill">
+                                    <div class="fw-bold mb-1">
+                                        <i class="icon-base ti ${icon} me-1"></i>
+                                        ${alloc.sequence}. ${alloc.so_number} ${badge}
+                                    </div>
+                                    <div class="text-muted small">
+                                        ${fmtDate(alloc.so_date)} &middot; Sisa setelah: <strong>Rp ${fmt(alloc.so_remaining_after)}</strong>
+                                        &middot; Status: <strong>${isPaid ? 'PAID' : 'PARTIAL'}</strong>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fs-5 fw-bold text-success">Rp ${fmt(alloc.allocated_amount)}</div>
+                                </div>
+                            </div>`;
+                    });
 
-                    html += `
-                        <div class="d-flex justify-content-between align-items-center p-3 mb-2 bg-white rounded border">
-                            <div class="flex-fill">
-                                <div class="fw-bold mb-1">
-                                    <i class="icon-base ti ${icon} me-1"></i>
-                                    ${index + 1}. ${alloc.so_number}
-                                </div>
-                                <div class="text-muted small">
-                                    ${formatDate(alloc.so_date)} · Status akan menjadi:
-                                    <strong>${isPaid ? 'PAID' : 'PARTIAL'}</strong>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="fs-5 fw-bold text-success">Rp ${formatNumber(alloc.allocated_amount)}</div>
-                                <div class="text-muted small">Sisa: Rp ${formatNumber(alloc.so_remaining_after)}</div>
-                            </div>
-                        </div>
-                    `;
-                });
+                    if (remaining > 0) {
+                        html += `<div class="alert alert-warning mb-0 mt-2">
+                            <i class="icon-base ti tabler-wallet me-2"></i>
+                            Sisa saldo <strong>Rp ${fmt(remaining)}</strong> akan disimpan untuk alokasi berikutnya.
+                        </div>`;
+                    }
+                }
 
                 $('#allocationList').html(html);
                 $('#allocationSection').show();
                 $('#submitBtn').prop('disabled', false);
             }
 
-            // Submit form
+            // ── Submit ────────────────────────────────────────────────────
             $('#topupForm').on('submit', function(e) {
                 e.preventDefault();
 
-                const formData = {
-                    _token: '{{ csrf_token() }}',
-                    entity_type: $('#entity_type').val(),
-                    topup_date: $('#topup_date').val(),
-                    topup_amount: parseInt($('#topup_amount').val().replace(/[^0-9]/g, '')),
-                    notes: $('#notes').val(),
-                    allocations: allocationData
-                };
+                const topupAmount = getTopupAmount();
+                if (topupAmount <= 0) {
+                    Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Masukkan jumlah top up.' });
+                    return;
+                }
 
-                // Show confirmation
+                const selectedCount = getSelectedIds().length;
+                const modeText = selectedCount > 0
+                    ? `${selectedCount} SO dipilih + FIFO untuk sisa`
+                    : 'Alokasi FIFO otomatis (tidak ada SO dipilih)';
+
                 Swal.fire({
                     title: 'Konfirmasi Top Up',
-                    html: `
-                        <div class="text-start">
-                            <p><strong>Entity:</strong> ${formData.entity_type}</p>
-                            <p><strong>Tanggal:</strong> ${formData.topup_date}</p>
-                            <p><strong>Jumlah:</strong> Rp ${formatNumber(formData.topup_amount)}</p>
-                            <p class="text-muted small">Sistem akan mengalokasikan pembayaran secara otomatis menggunakan FIFO.</p>
-                        </div>
-                    `,
+                    html: `<div class="text-start">
+                        <p><strong>Tanggal:</strong> ${$('#topup_date').val()}</p>
+                        <p><strong>Jumlah:</strong> Rp ${fmt(topupAmount)}</p>
+                        <p><strong>Mode:</strong> ${modeText}</p>
+                    </div>`,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Submit!',
                     cancelButtonText: 'Batal',
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#6c757d'
+                    customClass: { confirmButton: 'btn btn-success', cancelButton: 'btn btn-label-secondary' },
+                    buttonsStyling: false
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        submitData(formData);
-                    }
+                    if (result.isConfirmed) submitData();
                 });
             });
 
-            // Submit data via AJAX
-            function submitData(formData) {
+            function submitData() {
+                const formData = {
+                    _token: '{{ csrf_token() }}',
+                    entity_type: 'OWNER',
+                    topup_date: $('#topup_date').val(),
+                    topup_amount: getTopupAmount(),
+                    notes: $('#notes').val(),
+                    selected_so_ids: getSelectedIds(),
+                };
+
+                $('#submitBtn').prop('disabled', true).html(
+                    '<span class="spinner-border spinner-border-sm me-1"></span> Processing...'
+                );
+
                 $.ajax({
                     url: "{{ route('main_transaction.topup.store') }}",
                     method: 'POST',
                     data: formData,
-                    beforeSend: function() {
-                        $('#submitBtn').prop('disabled', true).html(
-                            '<span class="spinner-border spinner-border-sm me-1"></span> Processing...'
-                        );
-                    },
                     success: function(response) {
                         if (response.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil!',
-                                text: response.message || 'Top Up berhasil disimpan',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                window.location.href = "{{ route('main_transaction.topup.index') }}";
-                            });
+                            Swal.fire({ icon: 'success', title: 'Berhasil!', text: response.message })
+                                .then(() => { window.location.href = "{{ route('main_transaction.topup.index') }}"; });
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: response.message || 'Terjadi kesalahan'
-                            });
-                            $('#submitBtn').prop('disabled', false).html(
-                                '<i class="icon-base ti tabler-check me-1"></i> Submit Top Up'
-                            );
+                            Swal.fire({ icon: 'error', title: 'Gagal', text: response.message });
+                            $('#submitBtn').prop('disabled', false).html('<i class="icon-base ti tabler-check me-1"></i> Submit Top Up');
                         }
                     },
                     error: function(xhr) {
-                        let errorMsg = 'Terjadi kesalahan saat menyimpan data';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMsg = xhr.responseJSON.message;
-                        }
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: errorMsg
-                        });
-                        $('#submitBtn').prop('disabled', false).html(
-                            '<i class="icon-base ti tabler-check me-1"></i> Submit Top Up'
-                        );
+                        Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseJSON?.message || 'Terjadi kesalahan' });
+                        $('#submitBtn').prop('disabled', false).html('<i class="icon-base ti tabler-check me-1"></i> Submit Top Up');
                     }
-                });
-            }
-
-            // Reset form
-            window.resetForm = function() {
-                Swal.fire({
-                    title: 'Reset Form?',
-                    text: 'Semua data yang sudah diinput akan hilang',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Reset',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $('#topupForm')[0].reset();
-                        $('#entity_type').val('');
-                        $('#topup_amount').val('');
-                        $('#outstandingSummary').hide();
-                        $('#allocationSection').hide();
-                        $('#submitBtn').prop('disabled', true);
-                        loadOutstanding();
-                    }
-                });
-            };
-
-            // Helper functions
-            function formatNumber(num) {
-                return parseInt(num).toLocaleString('id-ID');
-            }
-
-            function formatDate(dateStr) {
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('id-ID', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
                 });
             }
         });
