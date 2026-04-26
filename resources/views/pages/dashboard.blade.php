@@ -91,17 +91,17 @@
                         </div>
                         <div>
                             <h6 class="mb-0">
-                                <span class="text-info">Rp {{ number_format($ongkirDireimburse, 0, ',', '.') }}</span>
+                                <span class="text-success">Rp {{ number_format($ongkirApproved, 0, ',', '.') }}</span>
                             </h6>
                             <h6 class="mb-0">
-                                <span class="text-secondary">Rp {{ number_format($ongkirDitanggung, 0, ',', '.') }}</span>
+                                <span class="text-secondary">Rp {{ number_format($ongkirTotal, 0, ',', '.') }}</span>
                             </h6>
                         </div>
                     </div>
                     <p class="mb-0 fw-semibold">Ongkir</p>
                     <small class="text-muted">
-                        <span class="text-info">Direimburse</span> /
-                        <span class="text-secondary">Ditanggung Customer</span>
+                        <span class="text-success">Approved</span> /
+                        <span class="text-secondary">Total</span>
                     </small>
                 </div>
             </div>

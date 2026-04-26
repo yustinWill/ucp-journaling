@@ -130,20 +130,19 @@ class ConfirmSalesDeliveryAction
                 ->where('id', $salesDeliveryId)
                 ->update($updateData);
 
-            // Auto-create reimbursement if requested
-            if (!empty($data['is_reimburse_ongkir'])) {
-                $shippingCost = floatval($data['shipping_cost'] ?? $salesDelivery->shipping_cost ?? 0);
-                if ($shippingCost > 0) {
-                    $deliveryNumber = $salesDelivery->delivery_number;
-                    $deliveryDate = $salesDelivery->delivery_date ?? date('Y-m-d');
+            // Auto-create reimbursement ongkir if shipping cost > 0
+            $shippingCost = floatval($data['shipping_cost'] ?? $salesDelivery->shipping_cost ?? 0);
+            if ($shippingCost > 0) {
+                $deliveryNumber = $salesDelivery->delivery_number;
+                $deliveryDate = $salesDelivery->delivery_date ?? date('Y-m-d');
+                $customerName = $salesDelivery->customer_name ?? '';
 
-                    app(ReimbursementService::class)->create([
-                        'reimbursement_name' => "Reimbursement Ongkir {$deliveryNumber}",
-                        'reimbursement_date' => $deliveryDate,
-                        'amount' => $shippingCost,
-                        'description' => "Automatic created by system No SD:{$deliveryNumber}",
-                    ], Auth::id());
-                }
+                app(ReimbursementService::class)->create([
+                    'reimbursement_name' => "Reimbursement Ongkir {$deliveryNumber} - {$customerName}",
+                    'reimbursement_date' => $deliveryDate,
+                    'amount' => $shippingCost,
+                    'description' => "Automatic created by system No SD:{$deliveryNumber}",
+                ], Auth::id());
             }
 
             // Create audit log

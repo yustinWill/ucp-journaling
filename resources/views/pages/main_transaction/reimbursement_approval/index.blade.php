@@ -88,10 +88,10 @@
                         <th>Tanggal</th>
                         <th>Staff</th>
                         <th>Nama Reimbursement</th>
+                        <th>Deskripsi</th>
                         <th>Jumlah</th>
                         <th>Status</th>
                         <th>Budget Category</th>
-                        <th>Aksi</th>
                     </tr>
                 </thead>
             </table>
@@ -263,8 +263,16 @@
                 ajax: {
                     url: '{{ route('main_transaction.reimbursement_approval.index_data_table') }}',
                 },
-                columns: [{
+                columns: [
+                    {
                         data: 'transaction_code',
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            if (canRead) {
+                                return `<a href="javascript:void(0)" class="text-primary fw-semibold btn-open-modal" data-id="${row.id}">${data}</a>`;
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: 'reimbursement_date',
@@ -274,9 +282,15 @@
                     },
                     {
                         data: 'creator_name',
+                        render: function(data) { return data || '-'; }
                     },
                     {
                         data: 'reimbursement_name',
+                        render: function(data) { return data || '-'; }
+                    },
+                    {
+                        data: 'description',
+                        render: function(data) { return data || '-'; }
                     },
                     {
                         data: 'amount',
@@ -298,23 +312,8 @@
                     },
                     {
                         data: 'budget_category_name',
-                        render: function(data) {
-                            return data || '-';
-                        }
+                        render: function(data) { return data || '-'; }
                     },
-                    {
-                        data: null,
-                        width: '80px',
-                        orderable: false,
-                        searchable: false,
-                        render: function(data, type, row) {
-                            const btnClass = row.status === 'PENDING' ? 'btn-warning' : 'btn-primary';
-                            const icon = row.status === 'PENDING' ? 'tabler-eye-check' : 'tabler-eye';
-                            return `<button type="button" class="btn btn-sm ${btnClass} btn-open-modal" data-id="${row.id}">
-                                <i class="icon-xs icon-base ti ${icon}"></i>
-                            </button>`;
-                        }
-                    }
                 ],
                 layout: {
                     topStart: {

@@ -455,9 +455,6 @@ class SalesDeliveryController extends Controller
             if ($request->has('delivery_notes')) {
                 $data['delivery_notes'] = $request->input('delivery_notes');
             }
-            if ($request->has('is_reimburse_ongkir')) {
-                $data['is_reimburse_ongkir'] = $request->boolean('is_reimburse_ongkir');
-            }
 
             // Handle file upload
             if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {

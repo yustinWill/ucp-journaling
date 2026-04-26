@@ -107,13 +107,13 @@
                 <thead>
                     <tr>
                         <th>Tanggal</th>
+                        <th>Kode</th>
                         <th>Nama Reimbursement</th>
                         <th>Jumlah</th>
                         <th>Status</th>
                         <th>Budget Category</th>
                         <th>Diajukan oleh</th>
                         <th>DiApprove oleh</th>
-                        <th>Aksi</th>
                     </tr>
                 </thead>
             </table>
@@ -170,7 +170,23 @@
                         }
                     },
                     {
+                        data: 'transaction_code',
+                        render: function(data, type, row) {
+                            if (!data) return '-';
+                            if (canRead) {
+                                const detailUrl =
+                                    `{{ route('main_transaction.reimbursement.detail', ':id') }}`
+                                    .replace(':id', row.id);
+                                return `<a href="${detailUrl}" class="text-primary fw-semibold">${data}</a>`;
+                            }
+                            return data;
+                        }
+                    },
+                    {
                         data: 'reimbursement_name',
+                        render: function(data) {
+                            return data || '-';
+                        }
                     },
                     {
                         data: 'amount',
@@ -206,26 +222,6 @@
                         data: 'reviewer_name',
                         render: function(data) {
                             return data || '-';
-                        }
-                    },
-                    {
-                        data: null,
-                        width: '80px',
-                        orderable: false,
-                        searchable: false,
-                        render: function(data, type, row) {
-                            const detailUrl =
-                                `{{ route('main_transaction.reimbursement.detail', ':id') }}`
-                                .replace(':id', row.id);
-
-                            let actions = '<div class="d-flex gap-2">';
-                            if (canRead) {
-                                actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary">
-                                    <i class="icon-xs icon-base ti tabler-eye"></i>
-                                </a>`;
-                            }
-                            actions += '</div>';
-                            return actions;
                         }
                     }
                 ],
