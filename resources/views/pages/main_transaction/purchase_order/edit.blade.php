@@ -232,7 +232,7 @@
                                         </td>
                                         <td><input type="text" class="form-control numeric-input"
                                                 name="products[{{ $index }}][quantity]"
-                                                value="{{ $line['quantity'] }}"  /></td>
+                                                value="{{ rtrim(rtrim(number_format($line['quantity'], 3, '.', ''), '0'), '.') }}"  /></td>
                                         <td><input type="text" class="form-control"
                                                 name="products[{{ $index }}][unit]" value="{{ $line['unit'] }}" /></td>
                                         <td><input type="text" class="form-control currency-input"
