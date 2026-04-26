@@ -52,6 +52,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$journal_segment.'/detail/{id}', 'detail')->name('main_transaction.journal.detail');
         Route::get($base_segment.$journal_segment.'/edit/{id}', 'edit')->name('main_transaction.journal.edit');
         Route::post($base_segment.$journal_segment.'/update', 'update')->name('main_transaction.journal.update');
+        Route::get($base_segment.$journal_segment.'/by_reference', 'byReference')->name('main_transaction.journal.by_reference');
     });
 
     Route::controller(PurchaseController::class)->group(function () use ($base_segment, $purchase_segment) {

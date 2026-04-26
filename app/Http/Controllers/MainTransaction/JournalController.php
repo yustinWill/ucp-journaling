@@ -238,6 +238,41 @@ class JournalController extends Controller
         ]);
     }
 
+    public function byReference(Request $request)
+    {
+        $referenceNo = $request->input('reference_no');
+
+        if (!$referenceNo) {
+            return response()->json(['entries' => [], 'total_debit' => 0, 'total_credit' => 0]);
+        }
+
+        $rows = app(AccountingJournalService::class)->findOne($referenceNo);
+
+        if (!$rows) {
+            return response()->json(['entries' => [], 'total_debit' => 0, 'total_credit' => 0]);
+        }
+
+        $totalDebit = 0;
+        $totalCredit = 0;
+        $entries = [];
+
+        foreach ($rows as $row) {
+            if ($row->debit_credit === 'D') {
+                $totalDebit += $row->amount;
+                $entries[] = ['coa_code' => $row->f_coa_code, 'coa_name' => $row->coa_name, 'description' => $row->description, 'debit' => $row->amount, 'credit' => null];
+            } else {
+                $totalCredit += $row->amount;
+                $entries[] = ['coa_code' => $row->f_coa_code, 'coa_name' => $row->coa_name, 'description' => $row->description, 'debit' => null, 'credit' => $row->amount];
+            }
+        }
+
+        return response()->json([
+            'entries' => $entries,
+            'total_debit' => $totalDebit,
+            'total_credit' => $totalCredit,
+        ]);
+    }
+
     public function update(Request $request)
     {
         try {
