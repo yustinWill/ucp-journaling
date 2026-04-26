@@ -12,12 +12,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="d-flex gap-2 justify-content-end">
-                        <button type="button" class="btn btn-info btn-md waves-effect waves-light"
-                            id="btn-lihat-jurnal" data-reference="{{ $salesDelivery->delivery_number }}">
-                            <i class="icon-base ti tabler-book me-2"></i>
-                            Lihat Jurnal
-                        </button>
-                        @if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
+@if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
                             <button type="button" id="btn-confirm-delivery" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-check me-2"></i>
                                 Konfirm
@@ -444,86 +439,6 @@
             });
         });
 
-            $('#btn-lihat-jurnal').on('click', function() {
-                const referenceNo = $(this).data('reference');
-                $('#modal-jurnal-ref').text(referenceNo);
-                $('#modal-jurnal-loading').removeClass('d-none');
-                $('#modal-jurnal-empty').addClass('d-none');
-                $('#modal-jurnal-content').addClass('d-none');
-                $('#modalJurnal').modal('show');
-
-                $.ajax({
-                    url: '{{ route("main_transaction.journal.by_reference") }}',
-                    method: 'GET',
-                    data: { reference_no: referenceNo },
-                    success: function(response) {
-                        $('#modal-jurnal-loading').addClass('d-none');
-                        if (!response.entries || response.entries.length === 0) {
-                            $('#modal-jurnal-empty').removeClass('d-none');
-                            return;
-                        }
-                        const fmt = v => v != null ? 'Rp ' + parseFloat(v).toLocaleString('id-ID') : '-';
-                        let rows = '';
-                        response.entries.forEach(e => {
-                            rows += `<tr>
-                                <td>${e.coa_code}</td>
-                                <td>${e.coa_name ?? e.coa_code}</td>
-                                <td>${e.description ?? ''}</td>
-                                <td class="text-end">${fmt(e.debit)}</td>
-                                <td class="text-end">${fmt(e.credit)}</td>
-                            </tr>`;
-                        });
-                        $('#modal-jurnal-tbody').html(rows);
-                        $('#modal-jurnal-total-debit').text('Rp ' + parseFloat(response.total_debit).toLocaleString('id-ID'));
-                        $('#modal-jurnal-total-credit').text('Rp ' + parseFloat(response.total_credit).toLocaleString('id-ID'));
-                        $('#modal-jurnal-content').removeClass('d-none');
-                    },
-                    error: function() {
-                        $('#modal-jurnal-loading').addClass('d-none');
-                        $('#modal-jurnal-empty').removeClass('d-none');
-                    }
-                });
-            });
     </script>
 
-<!-- Modal Lihat Jurnal -->
-<div class="modal fade" id="modalJurnal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Jurnal - <span id="modal-jurnal-ref"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="modal-jurnal-loading" class="text-center py-4">
-                    <div class="spinner-border text-primary"></div>
-                </div>
-                <div id="modal-jurnal-empty" class="text-center py-4 text-muted d-none">
-                    Tidak ada data jurnal untuk transaksi ini.
-                </div>
-                <div id="modal-jurnal-content" class="d-none">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Kode COA</th>
-                                <th>Nama COA</th>
-                                <th>Deskripsi</th>
-                                <th class="text-end">Debit</th>
-                                <th class="text-end">Kredit</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modal-jurnal-tbody"></tbody>
-                        <tfoot>
-                            <tr class="fw-bold table-active">
-                                <td colspan="3" class="text-end">Total</td>
-                                <td class="text-end" id="modal-jurnal-total-debit"></td>
-                                <td class="text-end" id="modal-jurnal-total-credit"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
