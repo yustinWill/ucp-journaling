@@ -3,23 +3,21 @@
     Dashboard
 @stop
 @section('content')
-    <!-- Filter Periode -->
+    <!-- Filter 1: Periode Bulan (SO, SD, Ongkir, SI, Penjualan Harian) -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-body py-3">
                     <div class="d-flex align-items-center gap-3 flex-wrap">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="icon-base ti tabler-calendar"></i>
+                            <i class="icon-base ti tabler-calendar-month"></i>
                             <span class="fw-semibold">Periode:</span>
                         </div>
-                        <div style="min-width: 220px;">
-                            <input type="text" id="dashboard-date-range" class="form-control form-control-sm" placeholder="Pilih rentang tanggal" />
+                        <div>
+                            <input type="month" id="dashboard-filter-month" class="form-control form-control-sm"
+                                value="{{ $filterMonth }}" style="min-width: 160px;" />
                         </div>
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" id="lifetime-toggle" {{ $isLifetime ? 'checked' : '' }}>
-                            <label class="form-check-label" for="lifetime-toggle">Lifetime</label>
-                        </div>
+                        <small class="text-muted">Berlaku untuk: Total SO, Sales Delivery, Ongkir, Sales Invoice, Penjualan Harian</small>
                     </div>
                 </div>
             </div>
@@ -266,6 +264,29 @@
                                             <div class="progress-bar bg-white" style="width: {{ $activeRevenueSplit->target_owner > 0 ? min(round(($activeRevenueSplit->current_owner / $activeRevenueSplit->target_owner) * 100), 100) : 0 }}%"></div>
                                         </div>
                                         <small class="text-white-50 mt-1 d-block">{{ $activeRevenueSplit->target_owner > 0 ? round(($activeRevenueSplit->current_owner / $activeRevenueSplit->target_owner) * 100) : 0 }}%</small>
+                                        @if($activeRevenueSplit->owner_breakdown->isNotEmpty())
+                                        <hr style="border-color: rgba(255,255,255,0.3);" class="mt-3 mb-2">
+                                        <div style="max-height: 160px; overflow-y: auto;">
+                                            <table class="table table-sm mb-0" style="font-size: 0.78rem; color: rgba(255,255,255,0.9);">
+                                                <thead>
+                                                    <tr style="border-color: rgba(255,255,255,0.2);">
+                                                        <th style="color: rgba(255,255,255,0.7); padding: 2px 4px;">SO</th>
+                                                        <th style="color: rgba(255,255,255,0.7); padding: 2px 4px;">Tgl</th>
+                                                        <th class="text-end" style="color: rgba(255,255,255,0.7); padding: 2px 4px;">Porsi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($activeRevenueSplit->owner_breakdown as $row)
+                                                    <tr style="border-color: rgba(255,255,255,0.15);">
+                                                        <td style="padding: 2px 4px;">{{ $row->transaction_code }}</td>
+                                                        <td style="padding: 2px 4px;">{{ date('d/m', strtotime($row->transaction_date)) }}</td>
+                                                        <td class="text-end" style="padding: 2px 4px;">{{ number_format($row->total_owner, 0, ',', '.') }}</td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -284,6 +305,29 @@
                                             <div class="progress-bar bg-white" style="width: {{ $activeRevenueSplit->target_perusahaan > 0 ? min(round(($activeRevenueSplit->current_perusahaan / $activeRevenueSplit->target_perusahaan) * 100), 100) : 0 }}%"></div>
                                         </div>
                                         <small class="text-white-50 mt-1 d-block">{{ $activeRevenueSplit->target_perusahaan > 0 ? round(($activeRevenueSplit->current_perusahaan / $activeRevenueSplit->target_perusahaan) * 100) : 0 }}%</small>
+                                        @if($activeRevenueSplit->kingdom_breakdown->isNotEmpty())
+                                        <hr style="border-color: rgba(255,255,255,0.3);" class="mt-3 mb-2">
+                                        <div style="max-height: 160px; overflow-y: auto;">
+                                            <table class="table table-sm mb-0" style="font-size: 0.78rem; color: rgba(255,255,255,0.9);">
+                                                <thead>
+                                                    <tr style="border-color: rgba(255,255,255,0.2);">
+                                                        <th style="color: rgba(255,255,255,0.7); padding: 2px 4px;">SO</th>
+                                                        <th style="color: rgba(255,255,255,0.7); padding: 2px 4px;">Tgl</th>
+                                                        <th class="text-end" style="color: rgba(255,255,255,0.7); padding: 2px 4px;">Porsi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($activeRevenueSplit->kingdom_breakdown as $row)
+                                                    <tr style="border-color: rgba(255,255,255,0.15);">
+                                                        <td style="padding: 2px 4px;">{{ $row->transaction_code }}</td>
+                                                        <td style="padding: 2px 4px;">{{ date('d/m', strtotime($row->transaction_date)) }}</td>
+                                                        <td class="text-end" style="padding: 2px 4px;">{{ number_format($row->total_kingdom, 0, ',', '.') }}</td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -326,6 +370,23 @@
                         <a href="{{ route('master_data.budged.detail', $budgetOwner['data']->id) }}" class="btn btn-sm btn-outline-primary">
                             <i class="ti tabler-eye me-1"></i> Detail
                         </a>
+                    </div>
+                    @php
+                        $ownerTotalUsed = collect($budgetOwner['data']->categories)->sum('used');
+                        $ownerTotalLimit = collect($budgetOwner['data']->categories)->sum('limit');
+                        $ownerTotalPct = $ownerTotalLimit > 0 ? round(($ownerTotalUsed / $ownerTotalLimit) * 100) : 0;
+                        $ownerTotalLeft = 100 - $ownerTotalPct;
+                    @endphp
+                    <div class="p-3 mb-3 rounded" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Pengeluaran: <span class="text-dark fw-bold">Rp {{ number_format($ownerTotalUsed, 0, ',', '.') }}</span></span>
+                            <span class="text-muted">Anggaran: <span class="text-dark fw-bold">Rp {{ number_format($ownerTotalLimit, 0, ',', '.') }}</span></span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-semibold {{ $ownerTotalPct >= 90 ? 'text-danger' : ($ownerTotalPct >= 70 ? 'text-warning' : 'text-success') }}">{{ $ownerTotalPct }}% used</span>
+                            <span class="fw-semibold text-muted">{{ max(0, $ownerTotalLeft) }}% anggaran left</span>
+                        </div>
                     </div>
                     @foreach($budgetOwner['data']->categories as $cat)
                     <div class="mb-3">
@@ -376,6 +437,23 @@
                         <a href="{{ route('master_data.budged.detail', $budgetKingdom['data']->id) }}" class="btn btn-sm btn-outline-primary">
                             <i class="ti tabler-eye me-1"></i> Detail
                         </a>
+                    </div>
+                    @php
+                        $kingdomTotalUsed = collect($budgetKingdom['data']->categories)->sum('used');
+                        $kingdomTotalLimit = collect($budgetKingdom['data']->categories)->sum('limit');
+                        $kingdomTotalPct = $kingdomTotalLimit > 0 ? round(($kingdomTotalUsed / $kingdomTotalLimit) * 100) : 0;
+                        $kingdomTotalLeft = 100 - $kingdomTotalPct;
+                    @endphp
+                    <div class="p-3 mb-3 rounded" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Pengeluaran: <span class="text-dark fw-bold">Rp {{ number_format($kingdomTotalUsed, 0, ',', '.') }}</span></span>
+                            <span class="text-muted">Anggaran: <span class="text-dark fw-bold">Rp {{ number_format($kingdomTotalLimit, 0, ',', '.') }}</span></span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-semibold {{ $kingdomTotalPct >= 90 ? 'text-danger' : ($kingdomTotalPct >= 70 ? 'text-warning' : 'text-success') }}">{{ $kingdomTotalPct }}% used</span>
+                            <span class="fw-semibold text-muted">{{ max(0, $kingdomTotalLeft) }}% anggaran left</span>
+                        </div>
                     </div>
                     @foreach($budgetKingdom['data']->categories as $cat)
                     <div class="mb-3">
@@ -454,12 +532,10 @@
 $(function() {
     var baseUrl = '{{ route("dashboard.index") }}';
 
-    // Helper: build URL with all current filter params
+    // Helper: build URL preserving all current filter params
     function buildDashboardUrl(overrides) {
         var params = {
-            date_from: '{{ $dateFrom }}',
-            date_to: '{{ $dateTo }}',
-            lifetime: '{{ $isLifetime ? "1" : "0" }}',
+            filter_month: '{{ $filterMonth }}',
             revenue_split_id: '{{ $selectedCycleId }}',
             budget_owner_id: '{{ $budgetOwner['selectedId'] }}',
             budget_kingdom_id: '{{ $budgetKingdom['selectedId'] }}',
@@ -472,44 +548,9 @@ $(function() {
         return baseUrl + '?' + query;
     }
 
-    // ---- Date Range Filter ----
-    var startDate = moment('{{ $dateFrom }}', 'YYYY-MM-DD');
-    var endDate = moment('{{ $dateTo }}', 'YYYY-MM-DD');
-
-    $('#dashboard-date-range').daterangepicker({
-        startDate: startDate,
-        endDate: endDate,
-        locale: {
-            format: 'DD/MM/YYYY',
-            applyLabel: 'Terapkan',
-            cancelLabel: 'Batal',
-        },
-        ranges: {
-            '7 Hari Terakhir': [moment().subtract(6, 'days'), moment()],
-            '30 Hari Terakhir': [moment().subtract(29, 'days'), moment()],
-            'Bulan Ini': [moment().startOf('month'), moment().endOf('month')],
-            'Bulan Lalu': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-        }
-    });
-
-    @if($isLifetime)
-        $('#dashboard-date-range').prop('disabled', true).css('opacity', 0.5);
-    @endif
-
-    // On date range apply -> reload
-    $('#dashboard-date-range').on('apply.daterangepicker', function(ev, picker) {
-        window.location.href = buildDashboardUrl({
-            date_from: picker.startDate.format('YYYY-MM-DD'),
-            date_to: picker.endDate.format('YYYY-MM-DD'),
-            lifetime: '0',
-        });
-    });
-
-    // On lifetime toggle -> reload
-    $('#lifetime-toggle').on('change', function() {
-        window.location.href = buildDashboardUrl({
-            lifetime: $(this).is(':checked') ? '1' : '0',
-        });
+    // ---- Filter 1: Month picker ----
+    $('#dashboard-filter-month').on('change', function() {
+        window.location.href = buildDashboardUrl({ filter_month: $(this).val() });
     });
 
     // ---- Section Selects -> reload ----

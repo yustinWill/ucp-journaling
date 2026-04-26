@@ -21,10 +21,12 @@ class HomeController extends Controller
     {
         $companyCode = session('user_company_code');
 
-        // Parse date filter (default: 30 days before)
-        $isLifetime = $req->boolean('lifetime', false);
-        $dateFrom = $req->input('date_from', now()->subDays(30)->format('Y-m-d'));
-        $dateTo = $req->input('date_to', now()->format('Y-m-d'));
+        // Filter 1: month-year picker (YYYY-MM), defaults to current month
+        $filterMonth = $req->input('filter_month', now()->format('Y-m'));
+        [$filterYear, $filterMonthNum] = explode('-', $filterMonth);
+        $dateFrom = $filterYear . '-' . $filterMonthNum . '-01';
+        $dateTo = date('Y-m-t', strtotime($dateFrom)); // last day of month
+        $isLifetime = false; // no longer used for filter 1
 
         // ============================================================
         // Section 1: SO / SD / SI Summary Cards (filtered by period)
@@ -37,11 +39,9 @@ class HomeController extends Controller
             ->join('t_sales_orders as so', 'si.f_sales_order_id', '=', 'so.id')
             ->where('so.company_code', $companyCode);
 
-        if (!$isLifetime) {
-            $soQuery->whereBetween('transaction_date', [$dateFrom, $dateTo]);
-            $sdQuery->whereBetween('t_sales_deliveries.delivery_date', [$dateFrom, $dateTo]);
-            $siQuery->whereBetween('si.invoice_date', [$dateFrom, $dateTo]);
-        }
+        $soQuery->whereBetween('transaction_date', [$dateFrom, $dateTo]);
+        $sdQuery->whereBetween('t_sales_deliveries.delivery_date', [$dateFrom, $dateTo]);
+        $siQuery->whereBetween('si.invoice_date', [$dateFrom, $dateTo]);
 
         $soTotal = $soQuery->count();
 
@@ -64,9 +64,7 @@ class HomeController extends Controller
             ->where('company_code', $companyCode)
             ->where('reimbursement_name', 'LIKE', 'Reimbursement Ongkir %')
             ->whereNull('deleted_at');
-        if (!$isLifetime) {
-            $ongkirQuery->whereBetween('reimbursement_date', [$dateFrom, $dateTo]);
-        }
+        $ongkirQuery->whereBetween('reimbursement_date', [$dateFrom, $dateTo]);
         $ongkirData = $ongkirQuery->selectRaw("
             SUM(CASE WHEN status = 'APPROVED' THEN amount ELSE 0 END) as approved,
             SUM(amount) as total
@@ -77,10 +75,8 @@ class HomeController extends Controller
         // ============================================================
         // Section 2: Daily Sales Chart (filtered by period)
         // ============================================================
-        $chartFrom = $isLifetime
-            ? DB::table('t_sales_orders')->where('company_code', $companyCode)->min('transaction_date') ?? now()->subDays(30)->format('Y-m-d')
-            : $dateFrom;
-        $chartTo = $isLifetime ? now()->format('Y-m-d') : $dateTo;
+        $chartFrom = $dateFrom;
+        $chartTo = $dateTo;
 
         // Get daily amounts from SO
         $dailyAmounts = DB::table('t_sales_orders')
@@ -187,6 +183,33 @@ class HomeController extends Controller
                 ")
                 ->first();
 
+            // Breakdown per SO for Owner and Kingdom cards
+            $ownerBreakdown = DB::table('t_sales_order_revenue_splits as rs')
+                ->join('t_sales_orders as so', 'rs.f_sales_order_id', '=', 'so.id')
+                ->where('rs.company_code', $companyCode)
+                ->whereBetween('so.transaction_date', [$selectedCycle->start_date, $selectedCycle->end_date])
+                ->groupBy('rs.f_sales_order_id', 'so.transaction_code', 'so.transaction_date')
+                ->select([
+                    'so.transaction_code',
+                    'so.transaction_date',
+                    DB::raw('SUM(rs.porsi_owner) as total_owner'),
+                ])
+                ->orderBy('so.transaction_date', 'asc')
+                ->get();
+
+            $kingdomBreakdown = DB::table('t_sales_order_revenue_splits as rs')
+                ->join('t_sales_orders as so', 'rs.f_sales_order_id', '=', 'so.id')
+                ->where('rs.company_code', $companyCode)
+                ->whereBetween('so.transaction_date', [$selectedCycle->start_date, $selectedCycle->end_date])
+                ->groupBy('rs.f_sales_order_id', 'so.transaction_code', 'so.transaction_date')
+                ->select([
+                    'so.transaction_code',
+                    'so.transaction_date',
+                    DB::raw('SUM(rs.porsi_perusahaan) as total_kingdom'),
+                ])
+                ->orderBy('so.transaction_date', 'asc')
+                ->get();
+
             $activeRevenueSplit = (object) [
                 'id' => $selectedCycle->id,
                 'cycle_name' => $selectedCycle->cycle_name,
@@ -200,6 +223,8 @@ class HomeController extends Controller
                 'current_pabrik' => (float) ($accumulated->current_pabrik ?? 0),
                 'current_owner' => (float) ($accumulated->current_owner ?? 0),
                 'current_perusahaan' => (float) ($accumulated->current_perusahaan ?? 0),
+                'owner_breakdown' => $ownerBreakdown,
+                'kingdom_breakdown' => $kingdomBreakdown,
             ];
         }
 
@@ -297,7 +322,7 @@ class HomeController extends Controller
             'revenueSplitOptions', 'activeRevenueSplit',
             'budgetOwner', 'budgetKingdom',
             'warehouseOptions', 'warehouseStock',
-            'dateFrom', 'dateTo', 'isLifetime',
+            'filterMonth', 'dateFrom', 'dateTo',
             'selectedCycleId', 'selectedWarehouseId'
         ));
     }
