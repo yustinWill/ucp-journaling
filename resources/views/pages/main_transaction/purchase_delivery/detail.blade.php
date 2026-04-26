@@ -336,7 +336,7 @@
                                     <div class="input-group">
                                         <input type="text" class="form-control"
                                             value="{{ $purchaseDelivery->attachment }}" disabled />
-                                        <a href="{{ $purchaseDelivery->attachment }}" target="_blank"
+                                        <a href="{{ Storage::url($purchaseDelivery->attachment) }}" target="_blank"
                                             class="btn btn-outline-primary">
                                             <i class="icon-base ti tabler-download"></i>
                                         </a>

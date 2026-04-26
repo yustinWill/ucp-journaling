@@ -11,21 +11,13 @@
                     <h4 class="mb-3">Detail Sales Delivery</h4>
                 </div>
                 <div class="col-md-4">
-                    <div class="d-flex gap-2 justify-content-end align-items-center">
-                        @if (!$salesDelivery->is_accepted)
-                            <span class="badge bg-label-dark fs-6 py-2 px-3 me-2">
-                                <i class="icon-base ti tabler-clock me-1"></i>
-                                Menunggu Pengiriman
-                            </span>
-                            <button type="button" id="btn-accept-delivery" class="btn btn-warning btn-md waves-effect waves-light">
-                                <i class="icon-base ti tabler-check me-2"></i>
-                                Terima Pengiriman
-                            </button>
-                        @elseif ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
-                            <span class="badge bg-label-warning fs-6 py-2 px-3 me-2">
-                                <i class="icon-base ti tabler-truck me-1"></i>
-                                Dikirim
-                            </span>
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="button" class="btn btn-info btn-md waves-effect waves-light"
+                            id="btn-lihat-jurnal" data-reference="{{ $salesDelivery->delivery_number }}">
+                            <i class="icon-base ti tabler-book me-2"></i>
+                            Lihat Jurnal
+                        </button>
+                        @if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
                             <button type="button" id="btn-confirm-delivery" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-check me-2"></i>
                                 Konfirm
@@ -33,8 +25,13 @@
                         @else
                             <span class="badge bg-label-success fs-6 py-2 px-3">
                                 <i class="icon-base ti tabler-check me-1"></i>
-                                Terkirim
+                                Sudah Dikonfirmasi
                             </span>
+                            <a href="{{ route('main_transaction.sales_invoice.add') }}?sd_id={{ $salesDelivery->id }}"
+                                class="btn btn-primary btn-md waves-effect waves-light">
+                                <i class="icon-base ti tabler-file-invoice me-2"></i>
+                                Buat Sales Invoice
+                            </a>
                         @endif
                     </div>
                 </div>
@@ -78,75 +75,6 @@
                             <b>Audit Log</b>
                         </a>
                     </div>
-                    @if ($salesDelivery->is_accepted)
-                        <div>
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label">No Resi</label>
-                                    <input type="text" id="customer-reference" class="form-control"
-                                        value="{{ $salesDelivery->customer_reference ?? '' }}"
-                                        {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
-                                    @if (!$salesDelivery->is_accepted)
-                                        <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
-                                    @endif
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Ongkos Kirim</label>
-                                    <input type="text" id="shipping-cost" class="form-control currency-input text-end"
-                                        value="{{ $salesDelivery->shipping_cost ?? 0 }}"
-                                        {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
-                                    @if (!$salesDelivery->is_accepted)
-                                        <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label">Catatan Pengiriman</label>
-                                    <textarea id="delivery-notes" class="form-control" rows="3"
-                                        {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }}>{{ $salesDelivery->delivery_notes ?? '' }}</textarea>
-                                    @if (!$salesDelivery->is_accepted)
-                                        <small class="form-text text-muted">Terima pengiriman terlebih dahulu untuk mengisi field ini</small>
-                                    @endif
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label d-block">Reimburse Ongkir ?</label>
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" id="is-reimburse-ongkir"
-                                            {{ $hasReimbursement ? 'checked' : '' }}
-                                            {{ $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
-                                        <label class="form-check-label" for="is-reimburse-ongkir">
-                                            @if ($salesDelivery->is_confirmed == '1')
-                                                {{ $hasReimbursement ? 'Reimbursement sudah diajukan' : 'Tidak ada reimbursement ongkir' }}
-                                            @else
-                                                Ajukan reimbursement untuk ongkos kirim ini
-                                            @endif
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Lampiran</label>
-                                @if (isset($salesDelivery->attachment) && $salesDelivery->attachment)
-                                    <div>
-                                        <a href="{{ $salesDelivery->attachment }}" target="_blank" class="btn btn-outline-primary">
-                                            <i class="icon-base ti tabler-file me-2"></i>
-                                            {{ basename($salesDelivery->attachment) }}
-                                            <i class="icon-base ti tabler-external-link ms-2"></i>
-                                        </a>
-                                    </div>
-                                @else
-                                    @if ($salesDelivery->is_accepted && $salesDelivery->is_confirmed != '1')
-                                        <input type="file" id="attachment-file" class="form-control"
-                                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
-                                        <small class="text-muted">Format: JPG, PNG, PDF, DOC, DOCX. Max: 5MB</small>
-                                    @else
-                                        <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
-                                    @endif
-                                @endif
-                            </div>
-                        </div>
-                    @endif
                     <div class="tab-content px-0 mt-0">
                         <!-- Information Tab -->
                         <div class="tab-pane fade show active" id="horizontal-sales-delivery-info" role="tabpanel">
@@ -223,9 +151,25 @@
                             <label class="form-label">Alamat Pengiriman</label>
                             <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_address ?? '-' }}</textarea>
                         </div>
-                        
+                        <div class="col-md-6">
+                            <label class="form-label">Customer Reference</label>
+                            <input type="text" class="form-control"
+                                value="{{ $salesDelivery->customer_reference ?? '-' }}" disabled />
+                        </div>
                     </div>
-                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Ongkos Kirim</label>
+                            <input type="text" class="form-control"
+                                value="Rp {{ number_format($salesDelivery->shipping_cost ?? 0, 0, ',', '.') }}" disabled />
+                        </div>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label">Catatan Pengiriman</label>
+                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_notes ?? '-' }}</textarea>
+                        </div>
+                    </div>
 
                     <!-- Items Delivery Section -->
                     <div class="section-header mt-12">
@@ -323,6 +267,22 @@
                                     <div class="text-muted">Tidak ada tag</div>
                                 @endif
                             </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Lampiran</label>
+                                @if (isset($salesDelivery->attachment) && $salesDelivery->attachment)
+                                    <div class="input-group">
+                                        <input type="text" class="form-control"
+                                            value="{{ $salesDelivery->attachment }}" disabled />
+                                        <a href="{{ Storage::url($salesDelivery->attachment) }}" target="_blank"
+                                            class="btn btn-outline-primary">
+                                            <i class="icon-base ti tabler-download"></i>
+                                        </a>
+                                    </div>
+                                @else
+                                    <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
+                                @endif
+                            </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div class="mb-3">
@@ -343,42 +303,12 @@
                             <input type="text" class="form-control" value="{{ $salesDelivery->created_at }}"
                                 disabled />
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Dibuat Oleh</label>
-                            <input type="text" class="form-control" value="{{ $salesDelivery->created_by_name ?? '-' }}"
+                        {{-- <div class="col-md-6">
+                            <label class="form-label">Diupdate Pada</label>
+                            <input type="text" class="form-control" value="{{ $salesDelivery->updated_at ?? 'Belum pernah diupdate' }}"
                                 disabled />
-                        </div>
+                        </div> --}}
                     </div>
-
-                    @if ($salesDelivery->is_accepted)
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Diterima Pada</label>
-                                <input type="text" class="form-control" value="{{ $salesDelivery->accepted_at ?? '-' }}"
-                                    disabled />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Diterima Oleh</label>
-                                <input type="text" class="form-control" value="{{ $salesDelivery->accepted_by_name ?? '-' }}"
-                                    disabled />
-                            </div>
-                        </div>
-                    @endif
-
-                    @if ($salesDelivery->is_confirmed == '1')
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label">Dikonfirmasi Pada</label>
-                                <input type="text" class="form-control" value="{{ $salesDelivery->confirm_at ?? '-' }}"
-                                    disabled />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Dikonfirmasi Oleh</label>
-                                <input type="text" class="form-control" value="{{ $salesDelivery->confirmed_by_name ?? '-' }}"
-                                    disabled />
-                            </div>
-                        </div>
-                    @endif
                             </div>
                         </div>
 
@@ -437,102 +367,12 @@
 @section('js_script')
     <script>
         $(function() {
-            // Format existing currency value before Cleave initialization
-            const shippingCostInput = $('#shipping-cost');
-            if (shippingCostInput.length && shippingCostInput.val()) {
-                const rawValue = shippingCostInput.val();
-                shippingCostInput.val(convertToIndonesianFormat(rawValue));
-            }
-
-            // Initialize currency formatting
-            initCleaveCurrency(document);
-
             $('#audit-log-table').DataTable({
                 orderCellsTop: true,
                 order: [[0, 'desc']], // Sort by date descending
                 searching: false,
                 paging: false,
                 info: false
-            });
-
-            // Handle Terima Pengiriman button click
-            $('#btn-accept-delivery').on('click', function() {
-                const deliveryId = {{ $salesDelivery->id }};
-                const deliveryNumber = '{{ $salesDelivery->delivery_number }}';
-
-                Swal.fire({
-                    title: 'Terima Pengiriman?',
-                    html: `Anda akan menerima sales delivery:<br><strong>${deliveryNumber}</strong><br><br>` +
-                          `<div class="alert alert-info">` +
-                          `<i class="icon-base ti tabler-info-circle me-2"></i>` +
-                          `Setelah diterima, Anda dapat melengkapi detail pengiriman dan konfirmasi.` +
-                          `</div>`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Terima',
-                    cancelButtonText: 'Batal',
-                    confirmButtonColor: '#ff9f43',
-                    cancelButtonColor: '#82868b'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Show loading
-                        Swal.fire({
-                            title: 'Memproses...',
-                            text: 'Mohon tunggu sebentar',
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                            didOpen: () => {
-                                Swal.showLoading();
-                            }
-                        });
-
-                        // Send AJAX request
-                        $.ajax({
-                            url: '{{ route('main_transaction.sales_delivery.accept') }}',
-                            type: 'POST',
-                            data: {
-                                _token: '{{ csrf_token() }}',
-                                id: deliveryId
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil!',
-                                    text: response.message,
-                                    confirmButtonColor: '#28c76f'
-                                }).then(() => {
-                                    // Reload page to show updated status
-                                    location.reload();
-                                });
-                            },
-                            error: function(xhr) {
-                                let errorMessage = 'Terjadi kesalahan saat menerima delivery.';
-                                let shouldReload = false;
-
-                                if (xhr.responseJSON && xhr.responseJSON.message) {
-                                    errorMessage = xhr.responseJSON.message;
-
-                                    // Check if it's an "already accepted" or "already confirmed" error
-                                    if (errorMessage.includes('sudah diterima') ||
-                                        errorMessage.includes('sudah dikonfirmasi')) {
-                                        shouldReload = true;
-                                    }
-                                }
-
-                                Swal.fire({
-                                    icon: 'info',
-                                    title: 'Informasi',
-                                    text: errorMessage,
-                                    confirmButtonColor: '#28c76f'
-                                }).then(() => {
-                                    if (shouldReload) {
-                                        location.reload();
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
             });
 
             // Handle Konfirm button click
@@ -555,8 +395,6 @@
                     cancelButtonColor: '#82868b'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        const isReimburse = $('#is-reimburse-ongkir').is(':checked') ? 1 : 0;
-
                         // Show loading
                         Swal.fire({
                             title: 'Memproses...',
@@ -568,31 +406,13 @@
                             }
                         });
 
-                        // Get field values
-                        const shippingCost = parseCurrency($('#shipping-cost').val());
-                        const customerReference = $('#customer-reference').val();
-                        const deliveryNotes = $('#delivery-notes').val();
-                        const attachmentFile = $('#attachment-file')[0]?.files[0];
-
-                        // Prepare FormData for file upload
-                        const formData = new FormData();
-                        formData.append('_token', '{{ csrf_token() }}');
-                        formData.append('shipping_cost', shippingCost);
-                        formData.append('customer_reference', customerReference);
-                        formData.append('delivery_notes', deliveryNotes);
-                        formData.append('is_reimburse_ongkir', isReimburse);
-
-                        if (attachmentFile) {
-                            formData.append('attachment', attachmentFile);
-                        }
-
                         // Send AJAX request
                         $.ajax({
                             url: `{{ url('main_transaction/sales_delivery/confirm') }}/${deliveryId}`,
                             type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
                             success: function(response) {
                                 Swal.fire({
                                     icon: 'success',
@@ -606,27 +426,16 @@
                             },
                             error: function(xhr) {
                                 let errorMessage = 'Terjadi kesalahan saat mengkonfirmasi delivery.';
-                                let shouldReload = false;
 
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     errorMessage = xhr.responseJSON.message;
-
-                                    // Check if it's an "already confirmed" or "not accepted yet" error
-                                    if (errorMessage.includes('sudah dikonfirmasi') ||
-                                        errorMessage.includes('harus diterima terlebih dahulu')) {
-                                        shouldReload = true;
-                                    }
                                 }
 
                                 Swal.fire({
-                                    icon: 'info',
-                                    title: 'Informasi',
+                                    icon: 'error',
+                                    title: 'Gagal!',
                                     text: errorMessage,
-                                    confirmButtonColor: '#28c76f'
-                                }).then(() => {
-                                    if (shouldReload) {
-                                        location.reload();
-                                    }
+                                    confirmButtonColor: '#ea5455'
                                 });
                             }
                         });
@@ -634,5 +443,87 @@
                 });
             });
         });
+
+            $('#btn-lihat-jurnal').on('click', function() {
+                const referenceNo = $(this).data('reference');
+                $('#modal-jurnal-ref').text(referenceNo);
+                $('#modal-jurnal-loading').removeClass('d-none');
+                $('#modal-jurnal-empty').addClass('d-none');
+                $('#modal-jurnal-content').addClass('d-none');
+                $('#modalJurnal').modal('show');
+
+                $.ajax({
+                    url: '{{ route("main_transaction.journal.by_reference") }}',
+                    method: 'GET',
+                    data: { reference_no: referenceNo },
+                    success: function(response) {
+                        $('#modal-jurnal-loading').addClass('d-none');
+                        if (!response.entries || response.entries.length === 0) {
+                            $('#modal-jurnal-empty').removeClass('d-none');
+                            return;
+                        }
+                        const fmt = v => v != null ? 'Rp ' + parseFloat(v).toLocaleString('id-ID') : '-';
+                        let rows = '';
+                        response.entries.forEach(e => {
+                            rows += `<tr>
+                                <td>${e.coa_code}</td>
+                                <td>${e.coa_name ?? e.coa_code}</td>
+                                <td>${e.description ?? ''}</td>
+                                <td class="text-end">${fmt(e.debit)}</td>
+                                <td class="text-end">${fmt(e.credit)}</td>
+                            </tr>`;
+                        });
+                        $('#modal-jurnal-tbody').html(rows);
+                        $('#modal-jurnal-total-debit').text('Rp ' + parseFloat(response.total_debit).toLocaleString('id-ID'));
+                        $('#modal-jurnal-total-credit').text('Rp ' + parseFloat(response.total_credit).toLocaleString('id-ID'));
+                        $('#modal-jurnal-content').removeClass('d-none');
+                    },
+                    error: function() {
+                        $('#modal-jurnal-loading').addClass('d-none');
+                        $('#modal-jurnal-empty').removeClass('d-none');
+                    }
+                });
+            });
     </script>
+
+<!-- Modal Lihat Jurnal -->
+<div class="modal fade" id="modalJurnal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Jurnal - <span id="modal-jurnal-ref"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-jurnal-loading" class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+                <div id="modal-jurnal-empty" class="text-center py-4 text-muted d-none">
+                    Tidak ada data jurnal untuk transaksi ini.
+                </div>
+                <div id="modal-jurnal-content" class="d-none">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Kode COA</th>
+                                <th>Nama COA</th>
+                                <th>Deskripsi</th>
+                                <th class="text-end">Debit</th>
+                                <th class="text-end">Kredit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-jurnal-tbody"></tbody>
+                        <tfoot>
+                            <tr class="fw-bold table-active">
+                                <td colspan="3" class="text-end">Total</td>
+                                <td class="text-end" id="modal-jurnal-total-debit"></td>
+                                <td class="text-end" id="modal-jurnal-total-credit"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
