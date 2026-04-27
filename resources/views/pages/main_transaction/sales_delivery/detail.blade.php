@@ -13,10 +13,21 @@
                 <div class="col-md-4">
                     <div class="d-flex gap-2 justify-content-end">
 @if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
+                            @if(!$salesDelivery->is_accepted)
+                            <button type="button" id="btn-accept-delivery" class="btn btn-warning btn-md waves-effect waves-light">
+                                <i class="icon-base ti tabler-package-import me-2"></i>
+                                Terima
+                            </button>
+                            @else
+                            <span class="badge bg-label-warning fs-6 py-2 px-3 me-1">
+                                <i class="icon-base ti tabler-package-import me-1"></i>
+                                Sudah Diterima
+                            </span>
                             <button type="button" id="btn-confirm-delivery" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-check me-2"></i>
                                 Konfirm
                             </button>
+                            @endif
                         @else
                             <span class="badge bg-label-success fs-6 py-2 px-3">
                                 <i class="icon-base ti tabler-check me-1"></i>
@@ -368,6 +379,62 @@
                 searching: false,
                 paging: false,
                 info: false
+            });
+
+            // Handle Terima button click
+            $('#btn-accept-delivery').on('click', function() {
+                const deliveryId = {{ $salesDelivery->id }};
+                const deliveryNumber = '{{ $salesDelivery->delivery_number }}';
+
+                Swal.fire({
+                    title: 'Terima Sales Delivery?',
+                    html: `Anda akan menerima sales delivery:<br><strong>${deliveryNumber}</strong>`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Terima',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#ff9f43',
+                    cancelButtonColor: '#82868b'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Memproses...',
+                            text: 'Mohon tunggu sebentar',
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            didOpen: () => { Swal.showLoading(); }
+                        });
+
+                        $.ajax({
+                            url: '{{ route("main_transaction.sales_delivery.accept") }}',
+                            type: 'POST',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                                id: deliveryId
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: response.message,
+                                    confirmButtonColor: '#28c76f'
+                                }).then(() => { location.reload(); });
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'Terjadi kesalahan saat menerima delivery.';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal!',
+                                    text: errorMessage,
+                                    confirmButtonColor: '#ea5455'
+                                });
+                            }
+                        });
+                    }
+                });
             });
 
             // Handle Konfirm button click
