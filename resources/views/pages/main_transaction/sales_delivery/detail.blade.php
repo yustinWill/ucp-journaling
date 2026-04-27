@@ -282,16 +282,21 @@
                             <div class="mb-3">
                                 <label class="form-label">Lampiran</label>
                                 @if (isset($salesDelivery->attachment) && $salesDelivery->attachment)
-                                    <div class="input-group">
-                                        <input type="text" class="form-control"
-                                            value="{{ $salesDelivery->attachment }}" disabled />
-                                        <a href="{{ Storage::url($salesDelivery->attachment) }}" target="_blank"
-                                            class="btn btn-outline-primary">
-                                            <i class="icon-base ti tabler-download"></i>
+                                    <div>
+                                        <a href="{{ Storage::url($salesDelivery->attachment) }}" target="_blank" class="btn btn-outline-primary">
+                                            <i class="icon-base ti tabler-file me-2"></i>
+                                            {{ basename($salesDelivery->attachment) }}
+                                            <i class="icon-base ti tabler-external-link ms-2"></i>
                                         </a>
                                     </div>
                                 @else
-                                    <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
+                                    @if ($salesDelivery->is_accepted && $salesDelivery->is_confirmed != '1')
+                                        <input type="file" id="attachment-file" class="form-control"
+                                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                                        <small class="text-muted">Format: JPG, PNG, PDF, DOC, DOCX. Max: 5MB</small>
+                                    @else
+                                        <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
+                                    @endif
                                 @endif
                             </div>
                         </div>
@@ -480,16 +485,24 @@
                             }
                         });
 
+                        // Prepare FormData for file upload
+                        const formData = new FormData();
+                        formData.append('_token', '{{ csrf_token() }}');
+                        formData.append('shipping_cost', parseCurrency($('#shipping-cost').val()));
+                        formData.append('customer_reference', $('#customer-reference').val());
+                        formData.append('delivery_notes', $('#delivery-notes').val());
+                        const attachmentFile = $('#attachment-file')[0]?.files[0];
+                        if (attachmentFile) {
+                            formData.append('attachment', attachmentFile);
+                        }
+
                         // Send AJAX request
                         $.ajax({
                             url: `{{ url('main_transaction/sales_delivery/confirm') }}/${deliveryId}`,
                             type: 'POST',
-                            data: {
-                                _token: '{{ csrf_token() }}',
-                                shipping_cost: parseCurrency($('#shipping-cost').val()),
-                                customer_reference: $('#customer-reference').val(),
-                                delivery_notes: $('#delivery-notes').val(),
-                            },
+                            data: formData,
+                            processData: false,
+                            contentType: false,
                             success: function(response) {
                                 Swal.fire({
                                     icon: 'success',
