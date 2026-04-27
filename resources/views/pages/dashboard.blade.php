@@ -264,29 +264,6 @@
                                             <div class="progress-bar bg-white" style="width: {{ $activeRevenueSplit->target_owner > 0 ? min(round(($activeRevenueSplit->current_owner / $activeRevenueSplit->target_owner) * 100), 100) : 0 }}%"></div>
                                         </div>
                                         <small class="text-white-50 mt-1 d-block">{{ $activeRevenueSplit->target_owner > 0 ? round(($activeRevenueSplit->current_owner / $activeRevenueSplit->target_owner) * 100) : 0 }}%</small>
-                                        @if($activeRevenueSplit->owner_breakdown->isNotEmpty())
-                                        <hr style="border-color: rgba(255,255,255,0.3);" class="mt-3 mb-2">
-                                        <div style="max-height: 160px; overflow-y: auto;">
-                                            <table class="table table-sm mb-0" style="font-size: 0.78rem; color: rgba(255,255,255,0.9);">
-                                                <thead>
-                                                    <tr style="border-color: rgba(255,255,255,0.2);">
-                                                        <th style="color: rgba(255,255,255,0.7); padding: 2px 4px;">SO</th>
-                                                        <th style="color: rgba(255,255,255,0.7); padding: 2px 4px;">Tgl</th>
-                                                        <th class="text-end" style="color: rgba(255,255,255,0.7); padding: 2px 4px;">Porsi</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($activeRevenueSplit->owner_breakdown as $row)
-                                                    <tr style="border-color: rgba(255,255,255,0.15);">
-                                                        <td style="padding: 2px 4px;">{{ $row->transaction_code }}</td>
-                                                        <td style="padding: 2px 4px;">{{ date('d/m', strtotime($row->transaction_date)) }}</td>
-                                                        <td class="text-end" style="padding: 2px 4px;">{{ number_format($row->total_owner, 0, ',', '.') }}</td>
-                                                    </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -305,33 +282,95 @@
                                             <div class="progress-bar bg-white" style="width: {{ $activeRevenueSplit->target_perusahaan > 0 ? min(round(($activeRevenueSplit->current_perusahaan / $activeRevenueSplit->target_perusahaan) * 100), 100) : 0 }}%"></div>
                                         </div>
                                         <small class="text-white-50 mt-1 d-block">{{ $activeRevenueSplit->target_perusahaan > 0 ? round(($activeRevenueSplit->current_perusahaan / $activeRevenueSplit->target_perusahaan) * 100) : 0 }}%</small>
-                                        @if($activeRevenueSplit->kingdom_breakdown->isNotEmpty())
-                                        <hr style="border-color: rgba(255,255,255,0.3);" class="mt-3 mb-2">
-                                        <div style="max-height: 160px; overflow-y: auto;">
-                                            <table class="table table-sm mb-0" style="font-size: 0.78rem; color: rgba(255,255,255,0.9);">
-                                                <thead>
-                                                    <tr style="border-color: rgba(255,255,255,0.2);">
-                                                        <th style="color: rgba(255,255,255,0.7); padding: 2px 4px;">SO</th>
-                                                        <th style="color: rgba(255,255,255,0.7); padding: 2px 4px;">Tgl</th>
-                                                        <th class="text-end" style="color: rgba(255,255,255,0.7); padding: 2px 4px;">Porsi</th>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Owner & Kingdom Breakdown -->
+                        @if($activeRevenueSplit->owner_breakdown->isNotEmpty() || $activeRevenueSplit->kingdom_breakdown->isNotEmpty())
+                        <div class="row g-4 mt-2">
+                            <!-- Rincian Owner -->
+                            <div class="col-lg-6">
+                                <div class="card h-100">
+                                    <div class="card-header py-2">
+                                        <h6 class="card-title mb-0">
+                                            <i class="icon-base ti tabler-user-circle me-1 text-success"></i> Rincian Owner
+                                        </h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        @if($activeRevenueSplit->owner_breakdown->isNotEmpty())
+                                        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-light sticky-top">
+                                                    <tr>
+                                                        <th>SO</th>
+                                                        <th>Tanggal</th>
+                                                        <th class="text-end">Porsi Owner</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach($activeRevenueSplit->kingdom_breakdown as $row)
-                                                    <tr style="border-color: rgba(255,255,255,0.15);">
-                                                        <td style="padding: 2px 4px;">{{ $row->transaction_code }}</td>
-                                                        <td style="padding: 2px 4px;">{{ date('d/m', strtotime($row->transaction_date)) }}</td>
-                                                        <td class="text-end" style="padding: 2px 4px;">{{ number_format($row->total_kingdom, 0, ',', '.') }}</td>
+                                                    @foreach($activeRevenueSplit->owner_breakdown as $row)
+                                                    <tr>
+                                                        <td class="fw-semibold">{{ $row->transaction_code }}</td>
+                                                        <td class="text-muted">{{ date('d M Y', strtotime($row->transaction_date)) }}</td>
+                                                        <td class="text-end text-success fw-semibold">Rp {{ number_format($row->total_owner, 0, ',', '.') }}</td>
                                                     </tr>
                                                     @endforeach
                                                 </tbody>
                                             </table>
+                                        </div>
+                                        @else
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="ti tabler-database-off mb-2" style="font-size: 1.5rem;"></i>
+                                            <p class="mb-0 small">Belum ada data</p>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Rincian Kingdom -->
+                            <div class="col-lg-6">
+                                <div class="card h-100">
+                                    <div class="card-header py-2">
+                                        <h6 class="card-title mb-0">
+                                            <i class="icon-base ti tabler-building me-1 text-info"></i> Rincian Kingdom
+                                        </h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        @if($activeRevenueSplit->kingdom_breakdown->isNotEmpty())
+                                        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                                            <table class="table table-sm table-hover mb-0">
+                                                <thead class="table-light sticky-top">
+                                                    <tr>
+                                                        <th>SO</th>
+                                                        <th>Tanggal</th>
+                                                        <th class="text-end">Porsi Kingdom</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($activeRevenueSplit->kingdom_breakdown as $row)
+                                                    <tr>
+                                                        <td class="fw-semibold">{{ $row->transaction_code }}</td>
+                                                        <td class="text-muted">{{ date('d M Y', strtotime($row->transaction_date)) }}</td>
+                                                        <td class="text-end text-info fw-semibold">Rp {{ number_format($row->total_kingdom, 0, ',', '.') }}</td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        @else
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="ti tabler-database-off mb-2" style="font-size: 1.5rem;"></i>
+                                            <p class="mb-0 small">Belum ada data</p>
                                         </div>
                                         @endif
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        @endif
                     @else
                         <div class="text-center py-4">
                             <i class="icon-base ti tabler-chart-pie text-muted mb-3" style="font-size: 3rem;"></i>
