@@ -220,7 +220,7 @@
                     @if($activeRevenueSplit)
                         <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                             <div>
-                                <span class="badge bg-label-success me-2">{{ $activeRevenueSplit->status }}</span>
+                                {{-- <span class="badge bg-label-success me-2">{{ $activeRevenueSplit->status }}</span> --}}
                                 <span class="fw-semibold">{{ $activeRevenueSplit->cycle_name }}</span>
                                 <span class="text-muted ms-2">
                                     ({{ date('d M Y', strtotime($activeRevenueSplit->start_date)) }} - {{ date('d M Y', strtotime($activeRevenueSplit->end_date)) }})
@@ -565,9 +565,9 @@ $(function() {
         return baseUrl + '?' + query;
     }
 
-    // ---- Filter 1: Month picker ----
+    // ---- Filter 1: Month picker — reset all other filters ----
     $('#dashboard-filter-month').on('change', function() {
-        window.location.href = buildDashboardUrl({ filter_month: $(this).val() });
+        window.location.href = baseUrl + '?filter_month=' + encodeURIComponent($(this).val());
     });
 
     // ---- Section Selects -> reload ----

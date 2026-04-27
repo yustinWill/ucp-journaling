@@ -165,12 +165,11 @@ class HomeController extends Controller
             return ['id' => $cycle->id, 'label' => $cycle->cycle_name . $statusLabel];
         })->values()->toArray();
 
-        // Default to ACTIVE cycle, or cycle whose date range includes today, or first cycle
-        $defaultCycle = $allCycles->firstWhere('status', 'ACTIVE')
-            ?? $allCycles->first(function ($c) {
-                $today = now()->format('Y-m-d');
-                return $c->start_date <= $today && $c->end_date >= $today;
+        // Default to cycle whose date range includes the selected filter month, then ACTIVE, then first
+        $defaultCycle = $allCycles->first(function ($c) use ($dateFrom, $dateTo) {
+                return $c->start_date <= $dateTo && $c->end_date >= $dateFrom;
             })
+            ?? $allCycles->firstWhere('status', 'ACTIVE')
             ?? $allCycles->first();
         $selectedCycleId = $req->input('revenue_split_id', $defaultCycle->id ?? null);
         $selectedCycle = $selectedCycleId ? $revenueSplitService->findOne($selectedCycleId) : null;
@@ -240,7 +239,7 @@ class HomeController extends Controller
         $budgedService = app(BudgedService::class);
 
         // Helper to build budget card data for a given type
-        $buildBudgetData = function ($type) use ($req, $budgedService) {
+        $buildBudgetData = function ($type) use ($req, $budgedService, $dateFrom, $dateTo) {
             $paramKey = 'budget_' . $type . '_id';
             $periods = DB::table('m_budget_periods')
                 ->where('type', $type)
@@ -254,7 +253,11 @@ class HomeController extends Controller
                 ];
             })->values()->toArray();
 
-            $selectedId = $req->input($paramKey, $periods->first()->id ?? null);
+            // Default to period covering the selected filter month, else first
+            $defaultPeriod = $periods->first(function ($p) use ($dateFrom, $dateTo) {
+                return $p->period_start_date <= $dateTo && $p->period_end_date >= $dateFrom;
+            }) ?? $periods->first();
+            $selectedId = $req->input($paramKey, $defaultPeriod->id ?? null);
             $data = null;
 
             if ($selectedId) {

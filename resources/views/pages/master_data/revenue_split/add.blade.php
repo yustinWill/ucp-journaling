@@ -301,6 +301,14 @@
                 }
             });
 
+            // Format any pre-filled values (e.g. from duplicate)
+            $('.currency-input').each(function() {
+                if (this.value) {
+                    const raw = this.value.replace(/[^\d]/g, '');
+                    this.value = formatCurrency(raw);
+                }
+            });
+
             // Initialize total calculation
             calculateTotal();
         });
