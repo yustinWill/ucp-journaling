@@ -238,7 +238,9 @@ class SalesDeliveryController extends Controller
             ->whereNull('deleted_at')
             ->exists();
 
-        return view('pages.main_transaction.sales_delivery.detail', [
+        $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_delivery');
+
+        return view('pages.main_transaction.sales_delivery.detail', array_merge([
             'salesDelivery' => $sales_delivery,
             'customer' => $customer,
             'warehouse' => $warehouse,
@@ -247,7 +249,7 @@ class SalesDeliveryController extends Controller
             'audit_logs' => $audit_logs,
             'canEdit' => true,
             'hasReimbursement' => $hasReimbursement,
-        ]);
+        ], $permissionData));
     }
 
     public function edit($id)
