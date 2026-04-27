@@ -33,7 +33,7 @@
                                 <i class="icon-base ti tabler-check me-1"></i>
                                 Sudah Dikonfirmasi
                             </span>
-                            @if($canCreateSalesDelivery ?? false)
+                            @if($canCreateSalesInvoice ?? false)
                             <a href="{{ route('main_transaction.sales_invoice.add') }}?sd_id={{ $salesDelivery->id }}"
                                 class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-file-invoice me-2"></i>
@@ -173,6 +173,26 @@
                                 value="{{ $salesDelivery->shipping_cost ?? 0 }}"
                                 {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
                         </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Lampiran</label>
+                            @if (isset($salesDelivery->attachment) && $salesDelivery->attachment)
+                                <div>
+                                    <a href="{{ Storage::url($salesDelivery->attachment) }}" target="_blank" class="btn btn-outline-primary">
+                                        <i class="icon-base ti tabler-file me-2"></i>
+                                        {{ basename($salesDelivery->attachment) }}
+                                        <i class="icon-base ti tabler-external-link ms-2"></i>
+                                    </a>
+                                </div>
+                            @else
+                                @if ($salesDelivery->is_accepted && $salesDelivery->is_confirmed != '1')
+                                    <input type="file" id="attachment-file" class="form-control"
+                                        accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                                    <small class="text-muted">Format: JPG, PNG, PDF, DOC, DOCX. Max: 5MB</small>
+                                @else
+                                    <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
+                                @endif
+                            @endif
+                        </div>
                     </div>
                     <div class="row g-3 mb-4">
                         <div class="col-md-12">
@@ -279,26 +299,6 @@
                                 @endif
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Lampiran</label>
-                                @if (isset($salesDelivery->attachment) && $salesDelivery->attachment)
-                                    <div>
-                                        <a href="{{ Storage::url($salesDelivery->attachment) }}" target="_blank" class="btn btn-outline-primary">
-                                            <i class="icon-base ti tabler-file me-2"></i>
-                                            {{ basename($salesDelivery->attachment) }}
-                                            <i class="icon-base ti tabler-external-link ms-2"></i>
-                                        </a>
-                                    </div>
-                                @else
-                                    @if ($salesDelivery->is_accepted && $salesDelivery->is_confirmed != '1')
-                                        <input type="file" id="attachment-file" class="form-control"
-                                            accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
-                                        <small class="text-muted">Format: JPG, PNG, PDF, DOC, DOCX. Max: 5MB</small>
-                                    @else
-                                        <input type="text" class="form-control" value="Tidak ada lampiran" disabled />
-                                    @endif
-                                @endif
-                            </div>
                         </div>
                         <div class="col-md-6 mb-4">
                             <div class="mb-3">

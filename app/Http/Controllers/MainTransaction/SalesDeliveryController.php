@@ -239,6 +239,7 @@ class SalesDeliveryController extends Controller
             ->exists();
 
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_delivery');
+        $siPermissionData = PermissionHelper::getViewPermissions('main_transaction_sales_invoice');
 
         return view('pages.main_transaction.sales_delivery.detail', array_merge([
             'salesDelivery' => $sales_delivery,
@@ -249,7 +250,7 @@ class SalesDeliveryController extends Controller
             'audit_logs' => $audit_logs,
             'canEdit' => true,
             'hasReimbursement' => $hasReimbursement,
-        ], $permissionData));
+        ], $permissionData, $siPermissionData));
     }
 
     public function edit($id)
