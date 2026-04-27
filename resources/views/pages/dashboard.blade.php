@@ -288,42 +288,55 @@
                         </div>
 
                         <!-- Owner & Kingdom Breakdown -->
-                        @if($activeRevenueSplit->owner_breakdown->isNotEmpty() || $activeRevenueSplit->kingdom_breakdown->isNotEmpty())
                         <div class="row g-4 mt-2">
                             <!-- Rincian Owner -->
                             <div class="col-lg-6">
                                 <div class="card h-100">
                                     <div class="card-header py-2">
                                         <h6 class="card-title mb-0">
-                                            <i class="icon-base ti tabler-user-circle me-1 text-success"></i> Rincian Owner
+                                            <i class="icon-base ti tabler-user-circle me-1 text-success"></i> Owner
                                         </h6>
                                     </div>
-                                    <div class="card-body p-0">
+                                    <div class="card-body">
+                                        @php
+                                            $ownerNet = $activeRevenueSplit->current_owner - $activeRevenueSplit->owner_expense;
+                                        @endphp
+                                        <div class="mb-3">
+                                            <div class="fs-4 fw-bold {{ $ownerNet >= 0 ? 'text-success' : 'text-danger' }}">
+                                                Rp {{ number_format($ownerNet, 0, ',', '.') }}
+                                            </div>
+                                            <small class="text-muted">Pemasukan - Pengeluaran</small>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted">Pemasukan</span>
+                                            <span class="fw-semibold text-success">Rp {{ number_format($activeRevenueSplit->current_owner, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span class="text-muted">Pengeluaran</span>
+                                            <span class="fw-semibold text-danger">Rp {{ number_format($activeRevenueSplit->owner_expense, 0, ',', '.') }}</span>
+                                        </div>
                                         @if($activeRevenueSplit->owner_breakdown->isNotEmpty())
-                                        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                                        <hr class="my-2">
+                                        <small class="text-muted d-block mb-2">Rincian Pemasukan per SO</small>
+                                        <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
                                             <table class="table table-sm table-hover mb-0">
                                                 <thead class="table-light sticky-top">
                                                     <tr>
                                                         <th>SO</th>
                                                         <th>Tanggal</th>
-                                                        <th class="text-end">Porsi Owner</th>
+                                                        <th class="text-end">Porsi</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @foreach($activeRevenueSplit->owner_breakdown as $row)
                                                     <tr>
                                                         <td class="fw-semibold">{{ $row->transaction_code }}</td>
-                                                        <td class="text-muted">{{ date('d M Y', strtotime($row->transaction_date)) }}</td>
-                                                        <td class="text-end text-success fw-semibold">Rp {{ number_format($row->total_owner, 0, ',', '.') }}</td>
+                                                        <td class="text-muted">{{ date('d/m/Y', strtotime($row->transaction_date)) }}</td>
+                                                        <td class="text-end text-success">Rp {{ number_format($row->total_owner, 0, ',', '.') }}</td>
                                                     </tr>
                                                     @endforeach
                                                 </tbody>
                                             </table>
-                                        </div>
-                                        @else
-                                        <div class="text-center py-4 text-muted">
-                                            <i class="ti tabler-database-off mb-2" style="font-size: 1.5rem;"></i>
-                                            <p class="mb-0 small">Belum ada data</p>
                                         </div>
                                         @endif
                                     </div>
@@ -335,42 +348,55 @@
                                 <div class="card h-100">
                                     <div class="card-header py-2">
                                         <h6 class="card-title mb-0">
-                                            <i class="icon-base ti tabler-building me-1 text-info"></i> Rincian Kingdom
+                                            <i class="icon-base ti tabler-building me-1 text-info"></i> Kingdom
                                         </h6>
                                     </div>
-                                    <div class="card-body p-0">
+                                    <div class="card-body">
+                                        @php
+                                            $kingdomNet = $activeRevenueSplit->current_perusahaan - $activeRevenueSplit->kingdom_expense;
+                                        @endphp
+                                        <div class="mb-3">
+                                            <div class="fs-4 fw-bold {{ $kingdomNet >= 0 ? 'text-success' : 'text-danger' }}">
+                                                Rp {{ number_format($kingdomNet, 0, ',', '.') }}
+                                            </div>
+                                            <small class="text-muted">Pemasukan - Pengeluaran</small>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted">Pemasukan</span>
+                                            <span class="fw-semibold text-success">Rp {{ number_format($activeRevenueSplit->current_perusahaan, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span class="text-muted">Pengeluaran</span>
+                                            <span class="fw-semibold text-danger">Rp {{ number_format($activeRevenueSplit->kingdom_expense, 0, ',', '.') }}</span>
+                                        </div>
                                         @if($activeRevenueSplit->kingdom_breakdown->isNotEmpty())
-                                        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                                        <hr class="my-2">
+                                        <small class="text-muted d-block mb-2">Rincian Pemasukan per SO</small>
+                                        <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
                                             <table class="table table-sm table-hover mb-0">
                                                 <thead class="table-light sticky-top">
                                                     <tr>
                                                         <th>SO</th>
                                                         <th>Tanggal</th>
-                                                        <th class="text-end">Porsi Kingdom</th>
+                                                        <th class="text-end">Porsi</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @foreach($activeRevenueSplit->kingdom_breakdown as $row)
                                                     <tr>
                                                         <td class="fw-semibold">{{ $row->transaction_code }}</td>
-                                                        <td class="text-muted">{{ date('d M Y', strtotime($row->transaction_date)) }}</td>
-                                                        <td class="text-end text-info fw-semibold">Rp {{ number_format($row->total_kingdom, 0, ',', '.') }}</td>
+                                                        <td class="text-muted">{{ date('d/m/Y', strtotime($row->transaction_date)) }}</td>
+                                                        <td class="text-end text-info">Rp {{ number_format($row->total_kingdom, 0, ',', '.') }}</td>
                                                     </tr>
                                                     @endforeach
                                                 </tbody>
                                             </table>
-                                        </div>
-                                        @else
-                                        <div class="text-center py-4 text-muted">
-                                            <i class="ti tabler-database-off mb-2" style="font-size: 1.5rem;"></i>
-                                            <p class="mb-0 small">Belum ada data</p>
                                         </div>
                                         @endif
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endif
                     @else
                         <div class="text-center py-4">
                             <i class="icon-base ti tabler-chart-pie text-muted mb-3" style="font-size: 3rem;"></i>

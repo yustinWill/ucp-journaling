@@ -290,6 +290,16 @@ class HomeController extends Controller
         $budgetOwner = $buildBudgetData('owner');
         $budgetKingdom = $buildBudgetData('kingdom');
 
+        // Add expense totals to activeRevenueSplit for Rincian cards
+        if ($activeRevenueSplit) {
+            $activeRevenueSplit->owner_expense = $budgetOwner['data']
+                ? collect($budgetOwner['data']->categories)->sum('used')
+                : 0;
+            $activeRevenueSplit->kingdom_expense = $budgetKingdom['data']
+                ? collect($budgetKingdom['data']->categories)->sum('used')
+                : 0;
+        }
+
         // ============================================================
         // Section 6: Warehouse Stock
         // ============================================================
