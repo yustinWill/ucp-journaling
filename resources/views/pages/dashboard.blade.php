@@ -294,7 +294,7 @@
                                 <div class="card h-100">
                                     <div class="card-header py-2">
                                         <h6 class="card-title mb-0">
-                                            <i class="icon-base ti tabler-user-circle me-1 text-success"></i> Total Owner
+                                            <i class="icon-base ti tabler-user-circle me-1 text-success"></i> Total Keuntungan Owner
                                         </h6>
                                     </div>
                                     <div class="card-body">
@@ -324,7 +324,7 @@
                                 <div class="card h-100">
                                     <div class="card-header py-2">
                                         <h6 class="card-title mb-0">
-                                            <i class="icon-base ti tabler-building me-1 text-info"></i> Total Kingdom
+                                            <i class="icon-base ti tabler-building me-1 text-info"></i> Total Keuntungan Kingdom
                                         </h6>
                                     </div>
                                     <div class="card-body">
