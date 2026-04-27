@@ -33,11 +33,13 @@
                                 <i class="icon-base ti tabler-check me-1"></i>
                                 Sudah Dikonfirmasi
                             </span>
+                            @if($canCreateSalesDelivery ?? false)
                             <a href="{{ route('main_transaction.sales_invoice.add') }}?sd_id={{ $salesDelivery->id }}"
                                 class="btn btn-primary btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-file-invoice me-2"></i>
                                 Buat Sales Invoice
                             </a>
+                            @endif
                         @endif
                     </div>
                 </div>
@@ -159,21 +161,24 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Customer Reference</label>
-                            <input type="text" class="form-control"
-                                value="{{ $salesDelivery->customer_reference ?? '-' }}" disabled />
+                            <input type="text" id="customer-reference" class="form-control"
+                                value="{{ $salesDelivery->customer_reference ?? '' }}"
+                                {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
                         </div>
                     </div>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Ongkos Kirim</label>
-                            <input type="text" class="form-control"
-                                value="Rp {{ number_format($salesDelivery->shipping_cost ?? 0, 0, ',', '.') }}" disabled />
+                            <input type="text" id="shipping-cost" class="form-control currency-input text-end"
+                                value="{{ $salesDelivery->shipping_cost ?? 0 }}"
+                                {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }} />
                         </div>
                     </div>
                     <div class="row g-3 mb-4">
                         <div class="col-md-12">
                             <label class="form-label">Catatan Pengiriman</label>
-                            <textarea class="form-control" rows="3" disabled>{{ $salesDelivery->delivery_notes ?? '-' }}</textarea>
+                            <textarea id="delivery-notes" class="form-control" rows="3"
+                                {{ !$salesDelivery->is_accepted || $salesDelivery->is_confirmed == '1' ? 'disabled' : '' }}>{{ $salesDelivery->delivery_notes ?? '' }}</textarea>
                         </div>
                     </div>
 
@@ -437,6 +442,13 @@
                 });
             });
 
+            // Format existing shipping cost value for Cleave
+            const shippingCostInput = $('#shipping-cost');
+            if (shippingCostInput.length && !shippingCostInput.prop('disabled') && shippingCostInput.val()) {
+                shippingCostInput.val(convertToIndonesianFormat(shippingCostInput.val()));
+            }
+            initCleaveCurrency(document);
+
             // Handle Konfirm button click
             $('#btn-confirm-delivery').on('click', function() {
                 const deliveryId = {{ $salesDelivery->id }};
@@ -473,7 +485,10 @@
                             url: `{{ url('main_transaction/sales_delivery/confirm') }}/${deliveryId}`,
                             type: 'POST',
                             data: {
-                                _token: '{{ csrf_token() }}'
+                                _token: '{{ csrf_token() }}',
+                                shipping_cost: parseCurrency($('#shipping-cost').val()),
+                                customer_reference: $('#customer-reference').val(),
+                                delivery_notes: $('#delivery-notes').val(),
                             },
                             success: function(response) {
                                 Swal.fire({
