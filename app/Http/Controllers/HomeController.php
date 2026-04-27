@@ -165,8 +165,14 @@ class HomeController extends Controller
             return ['id' => $cycle->id, 'label' => $cycle->cycle_name . $statusLabel];
         })->values()->toArray();
 
-        // Default to the selected cycle or the first one
-        $selectedCycleId = $req->input('revenue_split_id', $allCycles->first()->id ?? null);
+        // Default to ACTIVE cycle, or cycle whose date range includes today, or first cycle
+        $defaultCycle = $allCycles->firstWhere('status', 'ACTIVE')
+            ?? $allCycles->first(function ($c) {
+                $today = now()->format('Y-m-d');
+                return $c->start_date <= $today && $c->end_date >= $today;
+            })
+            ?? $allCycles->first();
+        $selectedCycleId = $req->input('revenue_split_id', $defaultCycle->id ?? null);
         $selectedCycle = $selectedCycleId ? $revenueSplitService->findOne($selectedCycleId) : null;
 
         $activeRevenueSplit = null;

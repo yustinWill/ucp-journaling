@@ -315,30 +315,6 @@
                                             <span class="text-muted">Pengeluaran</span>
                                             <span class="fw-semibold text-danger">Rp {{ number_format($activeRevenueSplit->owner_expense, 0, ',', '.') }}</span>
                                         </div>
-                                        @if($activeRevenueSplit->owner_breakdown->isNotEmpty())
-                                        <hr class="my-2">
-                                        <small class="text-muted d-block mb-2">Rincian Pemasukan per SO</small>
-                                        <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
-                                            <table class="table table-sm table-hover mb-0">
-                                                <thead class="table-light sticky-top">
-                                                    <tr>
-                                                        <th>SO</th>
-                                                        <th>Tanggal</th>
-                                                        <th class="text-end">Porsi</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($activeRevenueSplit->owner_breakdown as $row)
-                                                    <tr>
-                                                        <td class="fw-semibold">{{ $row->transaction_code }}</td>
-                                                        <td class="text-muted">{{ date('d/m/Y', strtotime($row->transaction_date)) }}</td>
-                                                        <td class="text-end text-success">Rp {{ number_format($row->total_owner, 0, ',', '.') }}</td>
-                                                    </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -369,30 +345,6 @@
                                             <span class="text-muted">Pengeluaran</span>
                                             <span class="fw-semibold text-danger">Rp {{ number_format($activeRevenueSplit->kingdom_expense, 0, ',', '.') }}</span>
                                         </div>
-                                        @if($activeRevenueSplit->kingdom_breakdown->isNotEmpty())
-                                        <hr class="my-2">
-                                        <small class="text-muted d-block mb-2">Rincian Pemasukan per SO</small>
-                                        <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
-                                            <table class="table table-sm table-hover mb-0">
-                                                <thead class="table-light sticky-top">
-                                                    <tr>
-                                                        <th>SO</th>
-                                                        <th>Tanggal</th>
-                                                        <th class="text-end">Porsi</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($activeRevenueSplit->kingdom_breakdown as $row)
-                                                    <tr>
-                                                        <td class="fw-semibold">{{ $row->transaction_code }}</td>
-                                                        <td class="text-muted">{{ date('d/m/Y', strtotime($row->transaction_date)) }}</td>
-                                                        <td class="text-end text-info">Rp {{ number_format($row->total_kingdom, 0, ',', '.') }}</td>
-                                                    </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        @endif
                                     </div>
                                 </div>
                             </div>
