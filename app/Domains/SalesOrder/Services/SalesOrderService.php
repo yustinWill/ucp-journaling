@@ -219,7 +219,6 @@ class SalesOrderService
             END ASC
         ");
         $query->orderBy('so.transaction_date', 'DESC');
-        $query->orderBy('so.id', 'DESC');
         $query->skip($start)->take($length);
         $data = $query->get();
 
