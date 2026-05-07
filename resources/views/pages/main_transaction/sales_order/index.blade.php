@@ -506,12 +506,11 @@
                 'keyup change',
                 function() {
                     clearTimeout(searchTimeout);
-                    const input = this;
                     searchTimeout = setTimeout(function() {
                         if (salesOrderTable) {
-                            salesOrderTable.search(input.value).draw();
+                            salesOrderTable.draw(); // re-triggers AJAX with updated filter params
                         }
-                    }, 400); // 400ms delay
+                    }, 400);
                 });
 
             // Reset Filter
