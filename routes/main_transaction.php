@@ -257,6 +257,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$expense_segment.'/tags', 'tags')->name('main_transaction.expense.tags');
         Route::get($base_segment.$expense_segment.'/export', 'export')->name('main_transaction.expense.export');
         Route::post($base_segment.$expense_segment.'/import', 'import')->name('main_transaction.expense.import');
+        Route::get($base_segment.$expense_segment.'/budgets-by-date', 'getBudgetsByDate')->name('main_transaction.expense.budgets_by_date');
     });
 
     Route::controller(StockAdjustmentController::class)->group(function () use ($base_segment, $stock_adjustment_segment) {

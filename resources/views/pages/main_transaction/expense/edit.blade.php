@@ -336,8 +336,19 @@
 @section('js_script')
     <script>
         $(function() {
-            // Budget data from backend
-            const allBudgets = @json($activeBudgets);
+            // Budget data from backend (mutable, refreshed on date change)
+            let allBudgets = @json($activeBudgets);
+
+            // Reload budgets when transaction date changes
+            $('#transaction-date').on('change', function() {
+                const date = $(this).val();
+                if (!date) return;
+                $.get("{{ route('main_transaction.expense.budgets_by_date') }}", { date: date }, function(data) {
+                    allBudgets = data;
+                    // Re-trigger entity type filter with new budget data
+                    $('#entity-type').trigger('change');
+                });
+            });
 
             // Initialize entity type filter
             initializeEntityTypeFilter();
