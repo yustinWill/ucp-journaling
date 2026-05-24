@@ -220,7 +220,7 @@
                     @if($activeRevenueSplit)
                         <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                             <div>
-                                <span class="badge bg-label-success me-2">{{ $activeRevenueSplit->status }}</span>
+                                {{-- <span class="badge bg-label-success me-2">{{ $activeRevenueSplit->status }}</span> --}}
                                 <span class="fw-semibold">{{ $activeRevenueSplit->cycle_name }}</span>
                                 <span class="text-muted ms-2">
                                     ({{ date('d M Y', strtotime($activeRevenueSplit->start_date)) }} - {{ date('d M Y', strtotime($activeRevenueSplit->end_date)) }})
@@ -288,44 +288,33 @@
                         </div>
 
                         <!-- Owner & Kingdom Breakdown -->
-                        @if($activeRevenueSplit->owner_breakdown->isNotEmpty() || $activeRevenueSplit->kingdom_breakdown->isNotEmpty())
                         <div class="row g-4 mt-2">
                             <!-- Rincian Owner -->
                             <div class="col-lg-6">
                                 <div class="card h-100">
                                     <div class="card-header py-2">
                                         <h6 class="card-title mb-0">
-                                            <i class="icon-base ti tabler-user-circle me-1 text-success"></i> Rincian Owner
+                                            <i class="icon-base ti tabler-user-circle me-1 text-success"></i> Total Keuntungan Owner
                                         </h6>
                                     </div>
-                                    <div class="card-body p-0">
-                                        @if($activeRevenueSplit->owner_breakdown->isNotEmpty())
-                                        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
-                                            <table class="table table-sm table-hover mb-0">
-                                                <thead class="table-light sticky-top">
-                                                    <tr>
-                                                        <th>SO</th>
-                                                        <th>Tanggal</th>
-                                                        <th class="text-end">Porsi Owner</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($activeRevenueSplit->owner_breakdown as $row)
-                                                    <tr>
-                                                        <td class="fw-semibold">{{ $row->transaction_code }}</td>
-                                                        <td class="text-muted">{{ date('d M Y', strtotime($row->transaction_date)) }}</td>
-                                                        <td class="text-end text-success fw-semibold">Rp {{ number_format($row->total_owner, 0, ',', '.') }}</td>
-                                                    </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
+                                    <div class="card-body">
+                                        @php
+                                            $ownerNet = $activeRevenueSplit->current_owner - $activeRevenueSplit->owner_expense;
+                                        @endphp
+                                        <div class="mb-3">
+                                            <div class="fs-4 fw-bold {{ $ownerNet >= 0 ? 'text-success' : 'text-danger' }}">
+                                                Rp {{ number_format($ownerNet, 0, ',', '.') }}
+                                            </div>
+                                            <small class="text-muted">Pemasukan - Pengeluaran</small>
                                         </div>
-                                        @else
-                                        <div class="text-center py-4 text-muted">
-                                            <i class="ti tabler-database-off mb-2" style="font-size: 1.5rem;"></i>
-                                            <p class="mb-0 small">Belum ada data</p>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted">Pemasukan</span>
+                                            <span class="fw-semibold text-success">Rp {{ number_format($activeRevenueSplit->current_owner, 0, ',', '.') }}</span>
                                         </div>
-                                        @endif
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span class="text-muted">Pengeluaran</span>
+                                            <span class="fw-semibold text-danger">Rp {{ number_format($activeRevenueSplit->owner_expense, 0, ',', '.') }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -335,42 +324,31 @@
                                 <div class="card h-100">
                                     <div class="card-header py-2">
                                         <h6 class="card-title mb-0">
-                                            <i class="icon-base ti tabler-building me-1 text-info"></i> Rincian Kingdom
+                                            <i class="icon-base ti tabler-building me-1 text-info"></i> Total Keuntungan Kingdom
                                         </h6>
                                     </div>
-                                    <div class="card-body p-0">
-                                        @if($activeRevenueSplit->kingdom_breakdown->isNotEmpty())
-                                        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
-                                            <table class="table table-sm table-hover mb-0">
-                                                <thead class="table-light sticky-top">
-                                                    <tr>
-                                                        <th>SO</th>
-                                                        <th>Tanggal</th>
-                                                        <th class="text-end">Porsi Kingdom</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach($activeRevenueSplit->kingdom_breakdown as $row)
-                                                    <tr>
-                                                        <td class="fw-semibold">{{ $row->transaction_code }}</td>
-                                                        <td class="text-muted">{{ date('d M Y', strtotime($row->transaction_date)) }}</td>
-                                                        <td class="text-end text-info fw-semibold">Rp {{ number_format($row->total_kingdom, 0, ',', '.') }}</td>
-                                                    </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
+                                    <div class="card-body">
+                                        @php
+                                            $kingdomNet = $activeRevenueSplit->current_perusahaan - $activeRevenueSplit->kingdom_expense;
+                                        @endphp
+                                        <div class="mb-3">
+                                            <div class="fs-4 fw-bold {{ $kingdomNet >= 0 ? 'text-success' : 'text-danger' }}">
+                                                Rp {{ number_format($kingdomNet, 0, ',', '.') }}
+                                            </div>
+                                            <small class="text-muted">Pemasukan - Pengeluaran</small>
                                         </div>
-                                        @else
-                                        <div class="text-center py-4 text-muted">
-                                            <i class="ti tabler-database-off mb-2" style="font-size: 1.5rem;"></i>
-                                            <p class="mb-0 small">Belum ada data</p>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted">Pemasukan</span>
+                                            <span class="fw-semibold text-success">Rp {{ number_format($activeRevenueSplit->current_perusahaan, 0, ',', '.') }}</span>
                                         </div>
-                                        @endif
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span class="text-muted">Pengeluaran</span>
+                                            <span class="fw-semibold text-danger">Rp {{ number_format($activeRevenueSplit->kingdom_expense, 0, ',', '.') }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        @endif
                     @else
                         <div class="text-center py-4">
                             <i class="icon-base ti tabler-chart-pie text-muted mb-3" style="font-size: 3rem;"></i>
@@ -587,9 +565,9 @@ $(function() {
         return baseUrl + '?' + query;
     }
 
-    // ---- Filter 1: Month picker ----
+    // ---- Filter 1: Month picker — reset all other filters ----
     $('#dashboard-filter-month').on('change', function() {
-        window.location.href = buildDashboardUrl({ filter_month: $(this).val() });
+        window.location.href = baseUrl + '?filter_month=' + encodeURIComponent($(this).val());
     });
 
     // ---- Section Selects -> reload ----

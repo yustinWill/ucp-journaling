@@ -192,9 +192,9 @@ class BudgedService
     // ACTIVE BUDGETS (for expense tracking)
     // ========================================================================
 
-    public function getActiveBudgets($entityType = null)
+    public function getActiveBudgets($entityType = null, $date = null)
     {
-        $currentDate = now()->toDateString();
+        $currentDate = $date ?? now()->toDateString();
 
         $query = DB::table($this->table_name . ' as b')
             ->join($this->period_table . ' as bp', 'b.f_budget_period_id', '=', 'bp.id')

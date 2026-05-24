@@ -301,6 +301,15 @@
                 }
             });
 
+            // Format any pre-filled values (e.g. from duplicate)
+            // Parse as float first to handle decimal(15,2) values like "6000000.00"
+            $('.currency-input').each(function() {
+                if (this.value) {
+                    const raw = Math.floor(parseFloat(this.value) || 0).toString();
+                    this.value = formatCurrency(raw);
+                }
+            });
+
             // Initialize total calculation
             calculateTotal();
         });

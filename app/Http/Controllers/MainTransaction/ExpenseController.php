@@ -440,4 +440,11 @@ class ExpenseController extends Controller
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
+
+    public function getBudgetsByDate(Request $request)
+    {
+        $date = $request->input('date', now()->toDateString());
+        $budgets = app(BudgedService::class)->getActiveBudgets(null, $date);
+        return response()->json($budgets);
+    }
 }
