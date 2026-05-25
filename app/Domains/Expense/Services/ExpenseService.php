@@ -185,7 +185,7 @@ class ExpenseService
             ->where('d.f_expense_id', $id)
             ->get();
 
-        $data_payment = DB::table('t_expense_repayments as ter')
+        $data_payment = DB::table('t_expense_payments as ter')
             ->select([
                 '*',
             ])
