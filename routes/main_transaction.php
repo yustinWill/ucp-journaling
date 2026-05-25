@@ -18,6 +18,7 @@ use App\Http\Controllers\MainTransaction\SalesOrderController;
 use App\Http\Controllers\MainTransaction\SalesOrderRevenueSplitController;
 use App\Http\Controllers\MainTransaction\StockAdjustmentController;
 use App\Http\Controllers\MainTransaction\TopUpController;
+use App\Http\Controllers\MainTransaction\KasBesarController;
 use App\Http\Controllers\MainTransaction\ReimbursementController;
 use App\Http\Controllers\MainTransaction\ReimbursementApprovalController;
 use Illuminate\Support\Facades\Route;
@@ -38,10 +39,11 @@ $production_segment = '/production';
 $packing_segment = '/packing';
 $return_management_segment = '/return_management';
 $topup_segment = '/topup';
+$kas_besar_segment = '/kas_besar';
 $reimbursement_segment = '/reimbursement';
 $reimbursement_approval_segment = '/reimbursement_approval';
 
-Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $packing_segment, $return_management_segment, $topup_segment, $reimbursement_segment, $reimbursement_approval_segment) {
+Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segment, $purchase_segment, $purchase_order_segment, $purchase_delivery_segment, $purchase_invoice_segment, $sales_order_segment, $sales_delivery_segment, $sales_invoice_segment, $credit_memo_segment, $expense_segment, $stock_adjustment_segment, $production_segment, $packing_segment, $return_management_segment, $topup_segment, $kas_besar_segment, $reimbursement_segment, $reimbursement_approval_segment) {
     Route::controller(JournalController::class)->group(function () use ($base_segment, $journal_segment) {
         Route::get($base_segment.$journal_segment.'/index', 'index')->name('main_transaction.journal.index');
         Route::get($base_segment.$journal_segment.'/index_data_table', 'index_data_table')->name('main_transaction.journal.index_data_table');
@@ -391,6 +393,17 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$topup_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.topup.generate_transaction_number');
         Route::get($base_segment.$topup_segment.'/get_outstanding_sales_orders', 'getOutstandingSalesOrders')->name('main_transaction.topup.get_outstanding_sales_orders');
         Route::post($base_segment.$topup_segment.'/calculate_fifo_allocation', 'calculateFifoAllocation')->name('main_transaction.topup.calculate_fifo_allocation');
+    });
+
+    // Kas Besar Routes
+    Route::controller(KasBesarController::class)->group(function () use ($base_segment, $kas_besar_segment) {
+        Route::get($base_segment.$kas_besar_segment.'/index', 'index')->name('main_transaction.kas_besar.index');
+        Route::get($base_segment.$kas_besar_segment.'/index_data_table', 'index_data_table')->name('main_transaction.kas_besar.index_data_table');
+        Route::get($base_segment.$kas_besar_segment.'/add', 'add')->name('main_transaction.kas_besar.add');
+        Route::post($base_segment.$kas_besar_segment.'/store', 'store')->name('main_transaction.kas_besar.store');
+        Route::get($base_segment.$kas_besar_segment.'/detail/{id}', 'detail')->name('main_transaction.kas_besar.detail');
+        Route::get($base_segment.$kas_besar_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.kas_besar.generate_transaction_number');
+        Route::get($base_segment.$kas_besar_segment.'/get_latest_saldo', 'getLatestSaldo')->name('main_transaction.kas_besar.get_latest_saldo');
     });
 
     // Reimbursement Routes (Staff)
