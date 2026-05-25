@@ -22,6 +22,7 @@ use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
+use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -185,6 +186,8 @@ class ExpenseController extends Controller
         try {
             $validated = $request->validate([
                 // Basic transaction fields
+                'payment_method_type' => 'required|string|in:kas_tunai,transfer',
+                'transfer_bank' => 'nullable|string|in:BCA,Mandiri,BTPN',
                 'payment_method' => 'nullable|string|exists:m_payment_methods,id',
                 'pay_later' => 'required|boolean',
                 'transaction_number' => 'required|string|max:50|unique:t_expenses,transaction_no',
@@ -224,6 +227,9 @@ class ExpenseController extends Controller
                 'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB max
             ], [
                 // Custom error messages
+                'payment_method_type.required' => 'Sumber pembayaran wajib dipilih.',
+                'payment_method_type.in' => 'Sumber pembayaran tidak valid.',
+                'transfer_bank.in' => 'Bank transfer tidak valid.',
                 'payment_method.required' => 'Metode pembayaran wajib dipilih.',
                 'payment_method.in' => 'Metode pembayaran tidak valid.',
                 'transaction_number.required' => 'Nomor transaksi wajib diisi.',
@@ -250,10 +256,78 @@ class ExpenseController extends Controller
                 'attachment.mimes' => 'File lampiran harus berformat PDF, JPG, JPEG, atau PNG.',
                 'entity_type.required' => 'Entitas wajib dipilih.',
                 'attachment.max' => 'Ukuran file lampiran maksimal 5MB.',
-                // 'category_type.required' => 'Kategori pengeluaran wajib dipilih.',
-                // 'category_type.in' => 'Kategori pengeluaran harus salah satu dari: Anggaran, Overhead, atau Lainnya.',
             ]);
+
+            // Kas/Tunai: validate saldo and deduct inside the action
+            if ($validated['payment_method_type'] === 'kas_tunai') {
+                $companyCode = session('user_company_code');
+                $latest = DB::table('t_kas_besar')
+                    ->where('company_code', $companyCode)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+                $saldo = $latest ? (float) $latest->saldo_after : 0;
+                $expenseAmount = (float) $validated['final_total'];
+                if ($expenseAmount > $saldo) {
+                    return response()->json([
+                        'message' => "Saldo Kas Besar tidak mencukupi. Saldo saat ini: Rp " . number_format($saldo, 0, ',', '.'),
+                        'error' => 'KAS_BESAR_INSUFFICIENT',
+                    ], 422);
+                }
+            }
+
             app(CreateExpenseAction::class)->execute($validated);
+
+            // Retrieve the newly created expense ID
+            $expenseId = DB::table('t_expenses')
+                ->where('transaction_no', $validated['transaction_number'])
+                ->value('id');
+
+            // Deduct from Kas Besar if payment is Kas/Tunai
+            if ($validated['payment_method_type'] === 'kas_tunai') {
+                $companyCode = session('user_company_code');
+                $latest = DB::table('t_kas_besar')
+                    ->where('company_code', $companyCode)
+                    ->orderBy('id', 'DESC')
+                    ->first();
+                $saldoBefore = $latest ? (float) $latest->saldo_after : 0;
+                $expenseAmount = (float) $validated['final_total'];
+                $saldoAfter = $saldoBefore - $expenseAmount;
+
+                $kasNumber = app(TransactionNumberService::class)->generateNumber('kas_besar');
+                $kasId = DB::table('t_kas_besar')->insertGetId([
+                    'company_code'       => $companyCode,
+                    'transaction_number' => $kasNumber,
+                    'transaction_date'   => $validated['transaction_date'],
+                    'type'               => 'DEDUCTION',
+                    'topup_amount'       => -$expenseAmount,
+                    'saldo_before'       => $saldoBefore,
+                    'saldo_after'        => $saldoAfter,
+                    'f_expense_id'       => $expenseId,
+                    'notes'              => 'Pengeluaran: ' . $validated['transaction_number'],
+                    'created_by'         => auth()->id(),
+                    'updated_by'         => auth()->id(),
+                    'created_at'         => now(),
+                    'updated_at'         => now(),
+                ]);
+
+                if ($expenseId) {
+                    DB::table('t_expenses')
+                        ->where('id', $expenseId)
+                        ->update([
+                            'payment_method_type' => 'kas_tunai',
+                            'f_kas_besar_id'      => $kasId,
+                            'updated_at'          => now(),
+                        ]);
+                }
+            } elseif ($validated['payment_method_type'] === 'transfer' && $expenseId) {
+                DB::table('t_expenses')
+                    ->where('id', $expenseId)
+                    ->update([
+                        'payment_method_type' => 'transfer',
+                        'transfer_bank'       => $validated['transfer_bank'] ?? null,
+                        'updated_at'          => now(),
+                    ]);
+            }
 
             return response()->json([
                 'message' => SuccessCodes::CREATE_EXPENSE_SUCCESS->message(),
