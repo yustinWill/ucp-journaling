@@ -27,14 +27,14 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex align-items-center">
+                    {{-- <div class="col-md-2 d-flex align-items-center">
                         <div class="form-check mt-4">
                             <input class="form-check-input" type="checkbox" id="pay-later" name="pay_later" value="1">
                             <label class="form-check-label" for="pay-later">
                                 Bayar Nanti
                             </label>
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="col-md-6">
                         <label class="form-label">Nomor Transaksi <span class="text-danger">*</span></label>
                         <div class="row g-2">

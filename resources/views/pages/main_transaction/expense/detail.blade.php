@@ -28,10 +28,10 @@
                                     onclick="window.print()">
                                     <i class="icon-base ti tabler-printer me-2"></i>Print
                                 </button> --}}
-                                <a href="{{ route('main_transaction.expense.payment', $expense->id) }}"
+                                {{-- <a href="{{ route('main_transaction.expense.payment', $expense->id) }}"
                                     class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-credit-card-pay me-2"></i>Bayar Tagihan
-                                </a>
+                                </a> --}}
                                 @if ($canEdit)
                                     <a href="{{ route('main_transaction.expense.edit', $expense->id) }}"
                                         class="btn btn-success btn-md waves-effect waves-light">
