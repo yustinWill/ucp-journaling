@@ -13,6 +13,14 @@ $(function () {
                 format: 'YYYY-MM-DD'
             }
         });
+
+        bsRangePickerBasic.on('apply.daterangepicker', function () {
+            $(this).trigger('change');
+        });
+
+        bsRangePickerBasic.on('cancel.daterangepicker', function () {
+            $(this).val('').trigger('change');
+        });
     }
 
     $('#base-date-picker').daterangepicker({
