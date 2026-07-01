@@ -84,7 +84,7 @@ class SalesInvoiceService
             'due_date' => $data['due_date'],
             'description' => $data['description'] ?? null,
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
-            'internal_memo' => $data['memo'] ?? null,
+            'internal_memo' => $data['internal_memo'] ?? null,
             'updated_at' => now(),
             'updated_by' => Auth::id(),
         ];

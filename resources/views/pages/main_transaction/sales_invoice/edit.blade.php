@@ -223,11 +223,12 @@ $(document).ready(function() {
 function submitInvoice() {
     // Prepare form data
     const formData = new FormData(document.getElementById('salesInvoiceEditForm'));
+    formData.append('_method', 'PUT');
     
     // Submit via AJAX
     $.ajax({
         url: '{{ route("main_transaction.sales_invoice.update", $invoice_data->id) }}',
-        method: 'PUT',
+        method: 'POST',
         data: formData,
         processData: false,
         contentType: false,
