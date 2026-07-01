@@ -209,7 +209,7 @@ class ExpenseController extends Controller
                 // 'category_type' => session('user_company_code') === '001' ? 'required|string|in:ANGGARAN,OVERHEAD,LAINNYA' : 'nullable|string',
                 'entity_type' => 'required|string|in:kingdom,owner',
                 // Budget field
-                'budged_history_id' => 'nullable|string|exists:m_budgeds,id', 
+                'budged_history_id' => 'required|string|exists:m_budgeds,id',
 
                 // Expense lines validation
                 'expense_lines' => 'required|array|min:1',
@@ -249,10 +249,27 @@ class ExpenseController extends Controller
                 'tags.*.exists' => 'Tag tidak valid.',
                 'attachment.mimes' => 'File lampiran harus berformat PDF, JPG, JPEG, atau PNG.',
                 'entity_type.required' => 'Entitas wajib dipilih.',
+                'budged_history_id.required' => 'Anggaran wajib dipilih.',
+                'budged_history_id.exists' => 'Anggaran tidak valid.',
                 'attachment.max' => 'Ukuran file lampiran maksimal 5MB.',
                 // 'category_type.required' => 'Kategori pengeluaran wajib dipilih.',
                 // 'category_type.in' => 'Kategori pengeluaran harus salah satu dari: Anggaran, Overhead, atau Lainnya.',
             ]);
+
+            $validBudget = DB::table('m_budgeds as b')
+                ->join('m_budget_periods as bp', 'b.f_budget_period_id', '=', 'bp.id')
+                ->where('b.id', $validated['budged_history_id'])
+                ->where('bp.type', $validated['entity_type'])
+                ->where('bp.period_start_date', '<=', $validated['transaction_date'])
+                ->where('bp.period_end_date', '>=', $validated['transaction_date'])
+                ->exists();
+
+            if (! $validBudget) {
+                throw ValidationException::withMessages([
+                    'budged_history_id' => 'Anggaran tidak sesuai dengan entity type atau tanggal transaksi yang dipilih.',
+                ]);
+            }
+
             app(CreateExpenseAction::class)->execute($validated);
 
             return response()->json([

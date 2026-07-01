@@ -180,9 +180,9 @@
                             <small class="form-text text-muted">Pilih entity type untuk pemetaan anggaran</small>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Anggaran</label>
+                            <label class="form-label">Anggaran <span class="text-danger">*</span></label>
                             <select id="budget" name="budged_history_id" class="global-select2 form-select"
-                                data-allow-clear="true">
+                                required data-allow-clear="false">
                                 <option value="">Pilih Entity Type terlebih dahulu</option>
                             </select>
                             <small class="form-text text-muted">Anggaran akan difilter berdasarkan entity type yang dipilih</small>
@@ -312,6 +312,7 @@
             // Reload budgets when transaction date changes
             $('#transaction-date').on('change', function() {
                 const date = $(this).val();
+                $('#budget').val('').trigger('change');
                 if (!date) return;
                 $.get("{{ route('main_transaction.expense.budgets_by_date') }}", { date: date }, function(data) {
                     allBudgets = data;
@@ -351,7 +352,7 @@
                         budgetSelect.append('<option value="">Pilih Entity Type terlebih dahulu</option>');
                         if (budgetSelect.hasClass('select2-hidden-accessible')) {
                             budgetSelect.select2('destroy');
-                            budgetSelect.select2({ allowClear: true });
+                            budgetSelect.select2({ allowClear: false });
                         }
                         return;
                     }
@@ -381,7 +382,7 @@
                     if (budgetSelect.hasClass('select2-hidden-accessible')) {
                         budgetSelect.select2('destroy');
                     }
-                    budgetSelect.select2({ allowClear: true });
+                    budgetSelect.select2({ allowClear: false });
                 });
             }
 
@@ -896,6 +897,16 @@
                         $('#payment-method').addClass('is-invalid');
                         isValid = false;
                     }
+                }
+
+                if (!$('#entity-type').val()) {
+                    $('#entity-type').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!$('#budget').val()) {
+                    $('#budget').addClass('is-invalid');
+                    isValid = false;
                 }
 
                 // Check expense rows
