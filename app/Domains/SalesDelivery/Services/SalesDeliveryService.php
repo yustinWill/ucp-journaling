@@ -34,19 +34,26 @@ class SalesDeliveryService
 
     public function update(int $id, array $data): int
     {
-        // TODO: Implement sales delivery update logic
+        $updateData = [
+            'status' => $data['status'] ?? null,
+            'delivery_date' => $data['delivery_date'] ?? null,
+            'customer_reference' => $data['customer_reference'] ?? null,
+            'delivery_address' => $data['delivery_address'] ?? null,
+            'delivery_notes' => $data['delivery_notes'] ?? null,
+            'shipping_cost' => $data['shipping_cost'] ?? 0,
+            'memo' => $data['memo'] ?? null,
+            'tags' => isset($data['tags']) ? json_encode($data['tags']) : null,
+            'updated_at' => now(),
+            'updated_by' => Auth::id(),
+        ];
+
+        if (isset($data['attachment_path'])) {
+            $updateData['attachment_path'] = $data['attachment_path'];
+        }
+
         return DB::table($this->table_name)
             ->where('id', $id)
-            ->update([
-                'status' => $data['status'] ?? null,
-                'delivery_date' => $data['delivery_date'] ?? null,
-                'customer_reference' => $data['customer_reference'] ?? null,
-                'delivery_address' => $data['delivery_address'] ?? null,
-                'delivery_notes' => $data['delivery_notes'] ?? null,
-                'shipping_cost' => $data['shipping_cost'] ?? 0,
-                'updated_at' => now(),
-                'updated_by' => Auth::id(),
-            ]);
+            ->update($updateData);
     }
 
     public function findOne($id)

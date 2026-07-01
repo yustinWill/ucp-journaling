@@ -12,7 +12,14 @@
                 </div>
                 <div class="col-md-4">
                     <div class="d-flex gap-2 justify-content-end">
-@if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
+                        @if (($canEditSalesDelivery ?? $canEdit ?? false) && $salesDelivery->is_confirmed != '1')
+                            <a href="{{ route('main_transaction.sales_delivery.edit', $salesDelivery->id) }}"
+                                class="btn btn-success btn-md waves-effect waves-light">
+                                <i class="icon-base ti tabler-edit me-2"></i>
+                                Edit
+                            </a>
+                        @endif
+                        @if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
                             @if(!$salesDelivery->is_accepted)
                             <button type="button" id="btn-accept-delivery" class="btn btn-warning btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-package-import me-2"></i>

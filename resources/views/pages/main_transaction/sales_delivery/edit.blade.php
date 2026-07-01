@@ -392,8 +392,9 @@ $(document).ready(function() {
         e.preventDefault();
         
         // Validate at least one product line
-        const productLines = $('#product-lines-table tbody tr:visible').length - 
-            @if(!in_array($salesDelivery->status, ['DELIVERED', 'CANCELLED'])) 1 @else 0 @endif; // Excluding template if exists
+        const productLines = $('#product-lines-table tbody tr:visible')
+            .not('#product-line-template')
+            .length;
             
         if (productLines === 0) {
             Swal.fire('Error!', 'Minimal harus ada satu produk', 'error');
