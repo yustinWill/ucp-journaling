@@ -208,6 +208,21 @@
                                     <hr class="mx-n6">
                                 </div>
 
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Entity Type</label>
+                                        <input type="text" class="form-control"
+                                            value="{{ $expense->entity_type ? ucfirst($expense->entity_type) : '-' }}"
+                                            disabled />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Anggaran</label>
+                                        <input type="text" class="form-control"
+                                            value="{{ $expense->budget ? $expense->budget->budged_name . ' (' . date('d/m/Y', strtotime($expense->budget->period_start_date)) . ' - ' . date('d/m/Y', strtotime($expense->budget->period_end_date)) . ')' : '-' }}"
+                                            disabled />
+                                    </div>
+                                </div>
+
                                 <!-- Split Layout: Tag, Memo, Attachment & Financial Summary -->
                                 <div class="row">
                                     <!-- Left Side: Tag, Memo and Attachment -->
