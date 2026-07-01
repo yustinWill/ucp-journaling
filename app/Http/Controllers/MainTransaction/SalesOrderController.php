@@ -7,6 +7,7 @@ use App\Domains\PaymentTerm\Services\PaymentTermService;
 use App\Domains\Product\Services\ProductService;
 use App\Domains\ReturnManagement\Services\ReturnManagementService;
 use App\Domains\SalesOrder\Actions\CreateSalesOrderAction;
+use App\Domains\SalesOrder\Actions\DeleteSalesOrderAction;
 use App\Domains\SalesOrder\Actions\UpdateSalesOrderAction;
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
 use App\Domains\SalesDelivery\Services\SalesDeliveryService;
@@ -383,6 +384,26 @@ class SalesOrderController extends Controller
         );
 
         return response()->json(['success' => true, 'message' => 'Sales Order berhasil dibatalkan.']);
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $summary = app(DeleteSalesOrderAction::class)->execute((int) $id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sales Order berhasil dihapus beserta Sales Delivery dan Sales Invoice terkait.',
+                'data' => $summary,
+            ]);
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function edit($id)
