@@ -50,7 +50,8 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Tanggal Pembayaran</label>
-                    <input type="text" class="form-control" name="payment_date" value="{{ now()->format('Y-m-d') }}"  />
+                    <input type="date" class="form-control global-single-date-picker" id="payment_date"
+                        name="payment_date" value="{{ now()->format('Y-m-d') }}" required />
                 </div>
             </div>
 
