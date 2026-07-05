@@ -12,7 +12,7 @@
         
         <!-- Note: Limited Edit Capability -->
         <div class="alert alert-info">
-            <i class="ti ti-info-circle me-2"></i>
+            <i class="icon-base ti tabler-info-circle me-2"></i>
             <strong>Informasi:</strong> Edit invoice hanya dapat mengubah tanggal, keterangan, memo internal, dan lampiran. Data produk tidak dapat diubah setelah invoice dibuat.
         </div>
 
@@ -118,7 +118,7 @@
                     <div class="mt-2">
                         <small class="text-muted">Lampiran saat ini:</small>
                         <a href="{{ $invoice_data->attachment }}" target="_blank" class="d-block">
-                            <i class="ti ti-paperclip me-1"></i>
+                            <i class="icon-base ti tabler-paperclip me-1"></i>
                             Lihat lampiran
                         </a>
                     </div>
@@ -132,7 +132,7 @@
         </div>
 
         <div class="alert alert-warning">
-            <i class="ti ti-alert-triangle me-2"></i>
+            <i class="icon-base ti tabler-alert-triangle me-2"></i>
             Data produk tidak dapat diubah setelah invoice dibuat. Untuk mengubah produk, batalkan invoice ini dan buat invoice baru.
         </div>
 
@@ -174,7 +174,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="text-center text-muted py-4">
-                                <i class="ti ti-package-off fs-1"></i>
+                                <i class="icon-base ti tabler-package-off fs-1"></i>
                                 <div class="mt-2">Tidak ada item dalam invoice ini</div>
                             </td>
                         </tr>
@@ -197,11 +197,11 @@
         <!-- Action Buttons -->
         <div class="d-flex justify-content-end gap-3 mt-6">
             <a href="{{ route('main_transaction.sales_invoice.detail', $invoice_data->id) }}" class="btn btn-secondary">
-                <i class="ti ti-arrow-left me-1"></i>
+                <i class="icon-base ti tabler-arrow-left me-1"></i>
                 Batal
             </a>
             <button type="submit" class="btn btn-primary" id="save-invoice-btn">
-                <i class="ti ti-device-floppy me-1"></i>
+                <i class="icon-base ti tabler-device-floppy me-1"></i>
                 Simpan Perubahan
             </button>
         </div>
@@ -223,11 +223,12 @@ $(document).ready(function() {
 function submitInvoice() {
     // Prepare form data
     const formData = new FormData(document.getElementById('salesInvoiceEditForm'));
+    formData.append('_method', 'PUT');
     
     // Submit via AJAX
     $.ajax({
         url: '{{ route("main_transaction.sales_invoice.update", $invoice_data->id) }}',
-        method: 'PUT',
+        method: 'POST',
         data: formData,
         processData: false,
         contentType: false,
@@ -235,7 +236,9 @@ function submitInvoice() {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         beforeSend: function() {
-            $('#save-invoice-btn').prop('disabled', true).html('<i class="ti ti-loader me-1"></i> Menyimpan...');
+            $('#save-invoice-btn').prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...'
+            );
         },
         success: function(response) {
             Swal.fire({
@@ -262,7 +265,9 @@ function submitInvoice() {
             });
         },
         complete: function() {
-            $('#save-invoice-btn').prop('disabled', false).html('<i class="ti ti-device-floppy me-1"></i> Simpan Perubahan');
+            $('#save-invoice-btn').prop('disabled', false).html(
+                '<i class="icon-base ti tabler-device-floppy me-1"></i> Simpan Perubahan'
+            );
         }
     });
 }

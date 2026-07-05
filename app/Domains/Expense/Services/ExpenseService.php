@@ -182,8 +182,22 @@ class ExpenseService
             ->where('ter.f_expense_id', $id)
             ->get();
 
+        $budget = DB::table('t_budged_expenses as be')
+            ->join('m_budgeds as b', 'be.budged_history_id', '=', 'b.id')
+            ->join('m_budget_periods as bp', 'b.f_budget_period_id', '=', 'bp.id')
+            ->where('be.expense_id', $id)
+            ->select([
+                'b.id as budget_id',
+                'b.budged_name',
+                'bp.period_start_date',
+                'bp.period_end_date',
+                'bp.type as budget_entity_type',
+            ])
+            ->first();
+
         $data->expense_lines = $data_detail;
         $data->payments = $data_payment;
+        $data->budget = $budget;
 
         // dd($data->payments);
         return $data;

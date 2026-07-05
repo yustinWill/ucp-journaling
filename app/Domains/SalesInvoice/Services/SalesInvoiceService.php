@@ -84,7 +84,7 @@ class SalesInvoiceService
             'due_date' => $data['due_date'],
             'description' => $data['description'] ?? null,
             'f_tag_codes' => isset($data['tags']) ? json_encode($data['tags']) : null,
-            'internal_memo' => $data['memo'] ?? null,
+            'internal_memo' => $data['internal_memo'] ?? null,
             'updated_at' => now(),
             'updated_by' => Auth::id(),
         ];
@@ -163,7 +163,9 @@ class SalesInvoiceService
         $start = (int) request()->input('start', 0);
         $length = (int) request()->input('length', 10);
         $query->skip($start)->take($length);
-        $recordsFiltered = $filteredQuery->count();
+        $recordsFiltered = DB::query()
+            ->fromSub($filteredQuery->select('si.id'), 'filtered_sales_invoices')
+            ->count();
         // Order by status priority (OPEN, PARTIAL first, then PAID/SETTLED), then by invoice_date DESC
         $query->orderByRaw("CASE WHEN si.status IN ('PAID', 'SETTLED') THEN 1 ELSE 0 END ASC")
               ->orderBy('si.invoice_date', 'DESC');

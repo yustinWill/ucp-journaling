@@ -29,11 +29,11 @@
                             <i class="icon-base ti tabler-printer me-2"></i>Print
                         </a>
 
-                        {{-- @if ($canEditSalesInvoice)
+                        @if ($canEditSalesInvoice)
                             <a href="{{ route('main_transaction.sales_invoice.edit', $invoice_data->id) }}" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-edit me-2"></i>Edit
                             </a>
-                        @endif --}}
+                        @endif
 
                         @if ($hasCompletedDelivery && !$returnData)
                             <a href="{{ route('main_transaction.return_management.add') }}?return_type=SALES_RETURN&source_invoice_id={{ $invoice_data->id }}"

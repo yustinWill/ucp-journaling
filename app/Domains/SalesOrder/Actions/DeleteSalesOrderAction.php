@@ -3,220 +3,357 @@
 namespace App\Domains\SalesOrder\Actions;
 
 use App\Domains\Product\Services\ProductService;
-use App\Domains\SalesDelivery\Services\SalesDeliveryService;
-use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
-use App\Domains\SalesOrder\Services\SalesOrderService;
-use App\Enums\ActionTypes;
 use App\Services\StockMovementLogService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class DeleteSalesOrderAction
 {
-    /**
-     * Delete sales order and revert all stock movements
-     *
-     * @param int $salesOrderId
-     * @return void
-     */
-    public function execute(int $salesOrderId)
+    public function execute(int $salesOrderId): array
     {
         return DB::transaction(function () use ($salesOrderId) {
-            // Get sales order data
-            $salesOrder = app(SalesOrderService::class)->findOne($salesOrderId);
+            $salesOrder = $this->findSalesOrderById($salesOrderId);
 
-            if (!$salesOrder) {
+            if (! $salesOrder) {
                 throw new \Exception("Sales Order dengan ID {$salesOrderId} tidak ditemukan.");
             }
 
-            // Check if sales order has invoices
-            $invoiceCount = DB::table('t_sales_invoices')
-                ->where('f_sales_order_id', $salesOrderId)
-                ->count();
-
-            if ($invoiceCount > 0) {
-                throw new \Exception("Sales Order tidak dapat dihapus karena sudah memiliki invoice. Hapus invoice terlebih dahulu.");
-            }
-
-            // Get all sales deliveries for this sales order
-            $salesDeliveries = DB::table('t_sales_deliveries')
-                ->where('f_sales_order_id', $salesOrderId)
-                ->get();
-
-            // Process each sales delivery
-            foreach ($salesDeliveries as $delivery) {
-                // If delivery was confirmed, revert stock movements
-                if ($delivery->is_confirmed == '1') {
-                    $this->revertSalesDeliveryStockMovements($delivery->id, $delivery->delivery_number);
-                }
-
-                // Delete sales delivery products
-                DB::table('t_sales_delivery_products')
-                    ->where('f_sales_delivery_id', $delivery->id)
-                    ->delete();
-
-                // Delete sales delivery audit logs
-                DB::table('t_sales_delivery_audit_logs')
-                    ->where('f_sales_delivery_id', $delivery->id)
-                    ->delete();
-
-                // Delete sales delivery
-                DB::table('t_sales_deliveries')
-                    ->where('id', $delivery->id)
-                    ->delete();
-            }
-
-            // Create audit log before deletion
-            $log_data = [
-                'action_type' => ActionTypes::DELETE,
-                'description' => 'Sales Order Deleted - All stock movements reverted',
-                'metadata' => json_encode([
-                    'sales_order' => $salesOrder,
-                    'deleted_at' => now(),
-                    'deleted_by' => Auth::id(),
-                ]),
-            ];
-            app(SalesOrderAuditLogService::class)->create($salesOrderId, $log_data['action_type'], [
-                'description' => $log_data['description'],
-                'before' => $salesOrder,
-                'after' => null,
-            ]);
-
-            // Delete sales order products
-            DB::table('t_sales_order_products')
-                ->where('f_sales_order_id', $salesOrderId)
-                ->delete();
-
-            // Delete sales order audit logs
-            DB::table('t_sales_order_audit_logs')
-                ->where('f_sales_order_id', $salesOrderId)
-                ->delete();
-
-            // Delete sales order
-            DB::table('t_sales_orders')
-                ->where('id', $salesOrderId)
-                ->delete();
-
-            Log::info("Sales Order {$salesOrderId} deleted successfully with stock movements reverted.");
-
-            return true;
+            return $this->deleteSalesOrder($salesOrder);
         });
     }
 
-    /**
-     * Revert stock movements from confirmed sales delivery
-     *
-     * @param int $salesDeliveryId
-     * @param string $deliveryNumber
-     * @return void
-     */
-    private function revertSalesDeliveryStockMovements(int $salesDeliveryId, string $deliveryNumber)
+    public function executeByTransactionCode(string $transactionCode): array
     {
-        // Get delivery details
-        $delivery = DB::table('t_sales_deliveries')
-            ->where('id', $salesDeliveryId)
-            ->first();
+        return DB::transaction(function () use ($transactionCode) {
+            $salesOrder = $this->findSalesOrderByTransactionCode($transactionCode);
 
-        if (!$delivery) {
+            if (! $salesOrder) {
+                throw new \Exception("Sales Order dengan nomor {$transactionCode} tidak ditemukan.");
+            }
+
+            return $this->deleteSalesOrder($salesOrder);
+        });
+    }
+
+    public function executeManyByTransactionCodes(array $transactionCodes): array
+    {
+        return DB::transaction(function () use ($transactionCodes) {
+            $results = [];
+
+            foreach ($transactionCodes as $transactionCode) {
+                $salesOrder = $this->findSalesOrderByTransactionCode($transactionCode);
+
+                if (! $salesOrder) {
+                    throw new \Exception("Sales Order dengan nomor {$transactionCode} tidak ditemukan.");
+                }
+
+                $results[] = $this->deleteSalesOrder($salesOrder);
+            }
+
+            return $results;
+        });
+    }
+
+    private function findSalesOrderById(int $salesOrderId)
+    {
+        $query = DB::table('t_sales_orders')
+            ->where('id', $salesOrderId);
+
+        if (session('user_company_code')) {
+            $query->where('company_code', session('user_company_code'));
+        }
+
+        return $query->lockForUpdate()->first();
+    }
+
+    private function findSalesOrderByTransactionCode(string $transactionCode)
+    {
+        $query = DB::table('t_sales_orders')
+            ->where('transaction_code', $transactionCode);
+
+        if (session('user_company_code')) {
+            $query->where('company_code', session('user_company_code'));
+        }
+
+        return $query->lockForUpdate()->first();
+    }
+
+    private function deleteSalesOrder(object $salesOrder): array
+    {
+        $summary = [
+            'sales_order_id' => $salesOrder->id,
+            'transaction_code' => $salesOrder->transaction_code,
+            'sales_invoices_deleted' => 0,
+            'sales_deliveries_deleted' => 0,
+            'stock_movements_reversed' => 0,
+            'stock_batches_restored' => 0,
+            'topup_allocations_deleted' => 0,
+            'revenue_splits_deleted' => 0,
+        ];
+
+        $invoiceIds = DB::table('t_sales_invoices')
+            ->where('f_sales_order_id', $salesOrder->id)
+            ->pluck('id');
+
+        $this->ensureNoSalesReturns($invoiceIds, $salesOrder->transaction_code);
+        $this->deleteSalesInvoices($invoiceIds, $summary);
+
+        $salesDeliveries = DB::table('t_sales_deliveries')
+            ->where('sales_order_id', $salesOrder->id)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($salesDeliveries as $delivery) {
+            if ($delivery->is_confirmed === '1') {
+                $this->revertConfirmedSalesDelivery($delivery, $summary);
+            }
+
+            $this->deleteSalesDelivery($delivery->id);
+            $summary['sales_deliveries_deleted']++;
+        }
+
+        $this->revertTopupAllocations($salesOrder->id, $summary);
+        $this->deleteRevenueSplits($salesOrder->id, $summary);
+
+        DB::table('t_sales_order_products')
+            ->where('f_sales_order_id', $salesOrder->id)
+            ->delete();
+
+        DB::table('t_sales_order_audit_logs')
+            ->where('f_sales_order_id', $salesOrder->id)
+            ->delete();
+
+        DB::table('t_sales_orders')
+            ->where('id', $salesOrder->id)
+            ->delete();
+
+        Log::info("Sales Order {$salesOrder->transaction_code} deleted with related SI/SD cleanup.", $summary);
+
+        return $summary;
+    }
+
+    private function ensureNoSalesReturns(Collection $invoiceIds, string $transactionCode): void
+    {
+        if ($invoiceIds->isEmpty()) {
             return;
         }
 
-        // Get delivery products
-        $deliveryProducts = DB::table('t_sales_delivery_products')
-            ->where('f_sales_delivery_id', $salesDeliveryId)
-            ->get();
+        $returnCodes = DB::table('t_return_managements')
+            ->where('return_type', 'SALES_RETURN')
+            ->whereIn('f_source_invoice_id', $invoiceIds->all())
+            ->pluck('transaction_code');
 
-        foreach ($deliveryProducts as $product) {
-            if (!isset($product->f_product_id) || !isset($product->quantity_delivered) || $product->quantity_delivered <= 0) {
-                continue;
-            }
-
-            $productId = $product->f_product_id;
-            $deliveryQty = $product->quantity_delivered;
-            $warehouseId = $delivery->f_warehouse_id;
-
-            // Record reversal stock movement (IN to cancel the OUT)
-            app(StockMovementLogService::class)->recordMovement(
-                $warehouseId,
-                $productId,
-                'RETURN_IN',
-                'SALES_DELIVERY_REVERSAL',
-                $deliveryNumber,
-                $deliveryQty,
-                'Sales Delivery Reversal: Stock returned due to Sales Order deletion',
-                $delivery->delivery_date ?? now()
+        if ($returnCodes->isNotEmpty()) {
+            throw new \Exception(
+                'Sales Order '.$transactionCode.' memiliki Sales Return: '.
+                $returnCodes->implode(', ').
+                '. Hapus atau reversal return terlebih dahulu sebelum menghapus SO.'
             );
+        }
+    }
 
-            // Recalculate product total_stock from movement logs
-            app(ProductService::class)->updateStock($productId);
-
-            // Revert stock batch consumption
-            $this->revertStockBatchConsumption($productId, $deliveryQty, $salesDeliveryId);
+    private function deleteSalesInvoices(Collection $invoiceIds, array &$summary): void
+    {
+        if ($invoiceIds->isEmpty()) {
+            return;
         }
 
-        // Delete original stock movement logs for this delivery
-        DB::table('t_stock_movement_logs')
-            ->where('reference_type', 'SALES_DELIVERY')
-            ->where('reference_number', $deliveryNumber)
-            ->where('movement_type', 'SALES_OUT')
+        $invoiceIdValues = $invoiceIds->all();
+
+        DB::table('t_sales_invoice_payment')
+            ->whereIn('sales_invoice_id', array_map('strval', $invoiceIdValues))
+            ->delete();
+
+        DB::table('t_sales_invoice_products')
+            ->whereIn('f_sales_invoice_id', $invoiceIdValues)
+            ->delete();
+
+        DB::table('t_sales_invoice_audit_logs')
+            ->whereIn('f_sales_invoice_id', $invoiceIdValues)
+            ->delete();
+
+        $summary['sales_invoices_deleted'] = DB::table('t_sales_invoices')
+            ->whereIn('id', $invoiceIdValues)
             ->delete();
     }
 
-    /**
-     * Revert stock batch consumption (restore consumed batches)
-     *
-     * @param int $productId
-     * @param float $quantityToRestore
-     * @param int $salesDeliveryId
-     * @return void
-     */
-    private function revertStockBatchConsumption(int $productId, float $quantityToRestore, int $salesDeliveryId)
+    private function revertConfirmedSalesDelivery(object $delivery, array &$summary): void
     {
-        // Get batch consumption transactions for this delivery (in reverse order - LIFO for reversal)
+        $deliveryProducts = DB::table('t_sales_delivery_products')
+            ->where('sales_delivery_id', $delivery->id)
+            ->orderBy('id')
+            ->get();
+
+        $affectedProductIds = [];
+
+        foreach ($deliveryProducts as $product) {
+            $deliveryQty = $this->getDeliveryQuantity($product);
+
+            if (! $product->product_id || $deliveryQty <= 0) {
+                continue;
+            }
+
+            $qtyInBaseUnit = $this->convertDeliveryQtyToBaseUnit(
+                (int) $product->product_id,
+                $product->f_unit_id ? (int) $product->f_unit_id : null,
+                $deliveryQty
+            );
+
+            app(StockMovementLogService::class)->recordMovement(
+                (int) $delivery->warehouse_id,
+                (int) $product->product_id,
+                'RETURN_IN',
+                'SALES_DELIVERY_REVERSAL',
+                $delivery->delivery_number,
+                $qtyInBaseUnit,
+                'Sales Delivery reversal before deleting Sales Order: '.$delivery->delivery_number,
+                $delivery->delivery_date ?? now()
+            );
+
+            $this->restoreStockBatchConsumption((int) $product->product_id, (int) $delivery->id, $summary);
+
+            $affectedProductIds[] = (int) $product->product_id;
+            $summary['stock_movements_reversed']++;
+        }
+
+        foreach (array_unique($affectedProductIds) as $productId) {
+            app(ProductService::class)->updateStock($productId);
+        }
+    }
+
+    private function getDeliveryQuantity(object $deliveryProduct): float
+    {
+        $qty = (float) ($deliveryProduct->qty ?? 0);
+
+        if ($qty > 0) {
+            return $qty;
+        }
+
+        return (float) ($deliveryProduct->quantity_delivered ?? 0);
+    }
+
+    private function convertDeliveryQtyToBaseUnit(int $productId, ?int $unitId, float $quantity): float
+    {
+        if (! $unitId) {
+            return $quantity;
+        }
+
+        $productUnit = DB::table('m_product_units')
+            ->where('f_product_id', $productId)
+            ->where('f_unit_id', $unitId)
+            ->select('conversion_factor', 'is_default')
+            ->first();
+
+        if (! $productUnit || $productUnit->is_default) {
+            return $quantity;
+        }
+
+        return $quantity * (float) ($productUnit->conversion_factor ?? 1);
+    }
+
+    private function restoreStockBatchConsumption(int $productId, int $salesDeliveryId, array &$summary): void
+    {
         $batchTransactions = DB::table('t_product_batch_transactions')
             ->where('f_product_id', $productId)
             ->where('source_type', 'SALES_DELIVERY')
             ->where('f_source_transaction_id', $salesDeliveryId)
             ->where('transaction_type', 'OUT')
-            ->orderBy('created_at', 'desc')
             ->get();
 
-        foreach ($batchTransactions as $transaction) {
-            $batchId = $transaction->f_product_batch_id;
-            $qtyToRestore = $transaction->qty_moved;
+        foreach ($batchTransactions->groupBy('f_product_batch_id') as $batchId => $transactions) {
+            $qtyToRestore = (float) $transactions->sum('qty_moved');
 
-            // Restore the batch quantity
             DB::table('t_product_stock_batches')
                 ->where('id', $batchId)
-                ->increment('remaining_qty', $qtyToRestore, [
+                ->update([
+                    'remaining_qty' => DB::raw('remaining_qty + '.$qtyToRestore),
                     'updated_at' => now(),
                     'updated_by' => Auth::id(),
                 ]);
 
-            // Create reversal transaction record (IN)
-            DB::table('t_product_batch_transactions')->insert([
-                'company_code' => session('user_company_code'),
-                'f_product_batch_id' => $batchId,
-                'f_product_id' => $productId,
-                'transaction_type' => 'IN',
-                'source_type' => 'SALES_DELIVERY_REVERSAL',
-                'f_source_transaction_id' => $salesDeliveryId,
-                'transaction_date' => now(),
-                'qty_moved' => $qtyToRestore,
-                'reference_code' => 'SD-REV-' . $salesDeliveryId,
-                'notes' => 'Stock batch restored due to Sales Order deletion',
-                'created_at' => now(),
-                'created_by' => Auth::id(),
-            ]);
+            $summary['stock_batches_restored']++;
         }
 
-        // Delete original consumption transactions
         DB::table('t_product_batch_transactions')
             ->where('f_product_id', $productId)
             ->where('source_type', 'SALES_DELIVERY')
             ->where('f_source_transaction_id', $salesDeliveryId)
             ->where('transaction_type', 'OUT')
+            ->delete();
+    }
+
+    private function deleteSalesDelivery(int $salesDeliveryId): void
+    {
+        DB::table('t_sales_delivery_products')
+            ->where('sales_delivery_id', $salesDeliveryId)
+            ->delete();
+
+        DB::table('t_sales_delivery_audit_logs')
+            ->where('f_sales_delivery_id', $salesDeliveryId)
+            ->delete();
+
+        DB::table('t_sales_deliveries')
+            ->where('id', $salesDeliveryId)
+            ->delete();
+    }
+
+    private function revertTopupAllocations(int $salesOrderId, array &$summary): void
+    {
+        $allocations = DB::table('t_topup_sales_order')
+            ->where('sales_order_id', $salesOrderId)
+            ->get();
+
+        if ($allocations->isEmpty()) {
+            return;
+        }
+
+        foreach ($allocations->groupBy('topup_id') as $topupId => $topupAllocations) {
+            $amountToRestore = (float) $topupAllocations->sum('allocated_amount');
+            $topup = DB::table('t_topup')
+                ->where('id', $topupId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $topup) {
+                continue;
+            }
+
+            $allocatedAmount = max(0, (float) $topup->allocated_amount - $amountToRestore);
+            $remainingBalance = min(
+                (float) $topup->topup_amount,
+                (float) $topup->remaining_balance + $amountToRestore
+            );
+
+            $status = 'PARTIAL';
+            if ($allocatedAmount <= 0) {
+                $status = 'OPEN';
+            } elseif ($remainingBalance <= 0) {
+                $status = 'PAID';
+            }
+
+            DB::table('t_topup')
+                ->where('id', $topupId)
+                ->update([
+                    'allocated_amount' => $allocatedAmount,
+                    'remaining_balance' => $remainingBalance,
+                    'status' => $status,
+                    'updated_at' => now(),
+                    'updated_by' => Auth::id(),
+                ]);
+        }
+
+        $summary['topup_allocations_deleted'] = DB::table('t_topup_sales_order')
+            ->where('sales_order_id', $salesOrderId)
+            ->delete();
+    }
+
+    private function deleteRevenueSplits(int $salesOrderId, array &$summary): void
+    {
+        $summary['revenue_splits_deleted'] = DB::table('t_sales_order_revenue_splits')
+            ->where('f_sales_order_id', $salesOrderId)
             ->delete();
     }
 }

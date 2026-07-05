@@ -212,7 +212,7 @@
                         @if(!in_array($salesDelivery->status, ['DELIVERED', 'CANCELLED']))
                         <tr id="product-line-template" style="display: none;">
                             <td>
-                                <select class="form-select product-select" name="products[INDEX][product_id]" required>
+                                <select class="form-select product-select" name="products[INDEX][product_id]" required disabled>
                                     <option value="">Pilih Produk</option>
                                     @foreach ($products as $product)
                                         <option value="{{ $product->id }}" 
@@ -228,13 +228,13 @@
                             </td>
                             <td>
                                 <input type="number" class="form-control qty-delivered" name="products[INDEX][quantity_delivered]" 
-                                    step="0.01" min="0" required />
+                                    step="0.01" min="0" required disabled />
                             </td>
                             <td>
                                 <input type="text" class="form-control product-unit" disabled />
                             </td>
                             <td>
-                                <select class="form-select delivery-status" name="products[INDEX][delivery_status]">
+                                <select class="form-select delivery-status" name="products[INDEX][delivery_status]" disabled>
                                     <option value="PENDING" selected>PENDING</option>
                                     <option value="DELIVERED">DELIVERED</option>
                                     <option value="PARTIAL">PARTIAL</option>
@@ -242,7 +242,7 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="text" class="form-control" name="products[INDEX][description]" placeholder="Keterangan" />
+                                <input type="text" class="form-control line-description" name="products[INDEX][description]" placeholder="Keterangan" disabled />
                             </td>
                             <td>
                                 <button type="button" class="btn btn-outline-danger btn-sm delete-line-btn">
@@ -355,6 +355,8 @@ $(document).ready(function() {
         const template = $('#product-line-template').clone();
         template.attr('id', `product-line-${productLineIndex}`);
         template.show();
+        template.find('.product-select, .qty-delivered, .delivery-status, .line-description')
+            .prop('disabled', false);
         
         // Update indexes
         template.find('[name*="INDEX"]').each(function() {
@@ -392,8 +394,9 @@ $(document).ready(function() {
         e.preventDefault();
         
         // Validate at least one product line
-        const productLines = $('#product-lines-table tbody tr:visible').length - 
-            @if(!in_array($salesDelivery->status, ['DELIVERED', 'CANCELLED'])) 1 @else 0 @endif; // Excluding template if exists
+        const productLines = $('#product-lines-table tbody tr:visible')
+            .not('#product-line-template')
+            .length;
             
         if (productLines === 0) {
             Swal.fire('Error!', 'Minimal harus ada satu produk', 'error');

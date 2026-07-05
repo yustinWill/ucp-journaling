@@ -358,8 +358,8 @@
             // Initialize table
             initDataTable();
 
-            // Tag column hidden by default (0=date,1=delivery_number,2=customer,3=delivery_address,4=status,5=so_reference,6=direimburse,7=shipping_cost,8=tags)
-            salesDeliveryTable.column(8).visible(false);
+            // Tag column hidden by default
+            salesDeliveryTable.column(7).visible(false);
 
             // Date range picker event - uses global bootstrap daterangepicker (with default last 30 days)
             $('#date-range-picker').on('apply.daterangepicker', function(ev, picker) {
@@ -404,7 +404,7 @@
 
             // Tag Column Toggle Functionality
             $('#toggleTagColumn').on('change', function() {
-                const tagColumn = salesDeliveryTable.column(8);
+                const tagColumn = salesDeliveryTable.column(7);
                 tagColumn.visible(this.checked);
             });
         });

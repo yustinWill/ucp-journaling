@@ -18,6 +18,7 @@ use App\Helpers\PermissionHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
@@ -261,10 +262,51 @@ class SalesDeliveryController extends Controller
             abort(404, 'Sales Delivery tidak ditemukan');
         }
 
-        $customers = app(ContactService::class)->findAllByFlag('customer');
-        $warehouses = app(WarehouseService::class)->findAll();
+        $customer = DB::table('m_contacts as c')
+            ->leftJoin('m_contact_addresses as ca', function ($join) {
+                $join->on('c.id', '=', 'ca.f_contact_id')
+                    ->where('ca.type', '=', 'SHIPPING');
+            })
+            ->where('c.id', $salesDelivery->customer_id)
+            ->where('c.company_code', session('user_company_code'))
+            ->select('c.id', 'c.name', 'c.email', 'ca.address')
+            ->first();
+
+        $warehouse = DB::table('m_warehouses')
+            ->where('id', $salesDelivery->warehouse_id)
+            ->where('company_code', session('user_company_code'))
+            ->first(['id', 'code', 'name']);
+
+        $salesOrder = null;
+        if ($salesDelivery->sales_order_id) {
+            $salesOrder = DB::table('t_sales_orders as so')
+                ->leftJoin('m_contacts as c', 'c.id', '=', 'so.f_customer_id')
+                ->where('so.id', $salesDelivery->sales_order_id)
+                ->where('so.company_code', session('user_company_code'))
+                ->select('so.id', 'so.transaction_code as reference_no', 'c.name as customer_name')
+                ->first();
+        }
+
         $products = app(\App\Domains\Product\Services\ProductService::class)->findAll();
-        $productLines = app(SalesDeliveryService::class)->findProductLines($id);
+        $productLines = collect(app(SalesDeliveryService::class)->findProductLines($id))
+            ->map(function ($line) {
+                $deliveredQty = (float) ($line->qty ?? 0);
+                if ($deliveredQty <= 0) {
+                    $deliveredQty = (float) ($line->quantity_delivered ?? 0);
+                }
+
+                return [
+                    'product_id' => $line->product_id,
+                    'product_code' => $line->product_code,
+                    'product_name' => $line->product_name,
+                    'quantity_ordered' => (float) ($line->delivered_qty_after + $line->remaining_qty_after),
+                    'quantity_delivered' => $deliveredQty,
+                    'unit_name' => $line->unit_name,
+                    'delivery_status' => $line->delivery_status,
+                    'description' => $line->description,
+                ];
+            })
+            ->toArray();
         $tags = app(TagService::class)->findAll();
 
         // Get selected tags
@@ -278,8 +320,9 @@ class SalesDeliveryController extends Controller
 
         return view('pages.main_transaction.sales_delivery.edit', [
             'salesDelivery' => $salesDelivery,
-            'customers' => $customers,
-            'warehouses' => $warehouses,
+            'customer' => $customer,
+            'warehouse' => $warehouse,
+            'salesOrder' => $salesOrder,
             'products' => $products,
             'productLines' => $productLines,
             'tags' => $tags,
@@ -290,6 +333,12 @@ class SalesDeliveryController extends Controller
     public function update(Request $request)
     {
         try {
+            if ($request->has('shipping_cost')) {
+                $request->merge([
+                    'shipping_cost' => preg_replace('/[^\d]/', '', (string) $request->input('shipping_cost')) ?: 0,
+                ]);
+            }
+
             $validated = $request->validate([
                 'id' => 'required|integer',
                 'status' => 'required|string',
@@ -301,10 +350,15 @@ class SalesDeliveryController extends Controller
                 'memo' => 'nullable|string|max:500',
                 'tags' => 'nullable|array',
                 'tags.*' => 'integer|exists:m_tags,id',
+                'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
             ]);
 
             $id = $validated['id'];
             unset($validated['id']);
+
+            if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
+                $validated['attachment_path'] = $request->file('attachment')->store('sales_delivery', 'public');
+            }
 
             app(UpdateSalesDeliveryAction::class)->execute($id, $validated);
 
