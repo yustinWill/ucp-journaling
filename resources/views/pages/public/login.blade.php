@@ -16,7 +16,7 @@
     <meta name="robots" content="nofollow">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../custom_assets/company_logo.png" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -69,7 +69,7 @@
         <!-- Logo -->
         <a href="index.html" class="app-brand auth-cover-brand">
             <span class="app-brand-logo demo">
-                <img src="../../custom_assets/company_logo.png" alt="Company Logo" width="10%;">
+                <img src="{{ asset('assets/img/branding/logo.png') }}" alt="Company Logo" style="width: 96px; height: auto;">
             </span>
         </a>
         <!-- /Logo -->
