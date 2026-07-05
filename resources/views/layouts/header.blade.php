@@ -9,7 +9,7 @@
 
     @vite(['resources/js/app.js']) {{-- Load JS --}}
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../../custom_assets/company_logo.png" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
 
     <base href="{{ url('/') }}/">
     <!-- Fonts -->
