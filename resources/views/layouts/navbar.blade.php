@@ -120,10 +120,19 @@
             </li>
             <!--/ Notification -->
             <!-- User -->
+            @php
+                $userName = Auth::user()->name ?? 'User';
+                $userInitials = collect(preg_split('/\s+/', trim($userName)))
+                    ->filter()
+                    ->map(fn ($namePart) => \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($namePart, 0, 1)))
+                    ->take(2)
+                    ->implode('');
+                $userInitials = $userInitials ?: 'U';
+            @endphp
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        <img src="../../assets/img/avatars/1.png" alt class="rounded-circle" />
+                        <span class="avatar-initial rounded-circle bg-label-primary fw-semibold">{{ $userInitials }}</span>
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -132,8 +141,7 @@
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
-                                        <img src="../../assets/img/avatars/1.png" alt
-                                            class="w-px-40 h-auto rounded-circle" />
+                                        <span class="avatar-initial rounded-circle bg-label-primary fw-semibold">{{ $userInitials }}</span>
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
