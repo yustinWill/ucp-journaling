@@ -171,7 +171,7 @@
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label">Akun Penyusutan</label>
+                                    <label class="form-label">Akun Beban Penyusutan</label>
                                     <input type="text" class="form-control" value="{{ $depreciationAccount ? $depreciationAccount->code . ' - ' . $depreciationAccount->name : '-' }}" disabled />
                                 </div>
                                 <div class="col-md-6">

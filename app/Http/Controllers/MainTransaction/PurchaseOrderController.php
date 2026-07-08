@@ -396,6 +396,8 @@ class PurchaseOrderController extends Controller
                 'url' => $po_data->attachment,
             ],
             'created_at' => $po_data->created_at,
+            'created_by_id' => $po_data->created_by,
+            'created_by_name' => $po_data->created_by_name,
             'updated_at' => $po_data->updated_at,
             'product_lines' => $product_lines,
             'delivery_summary' => $product_delivery_summary,
