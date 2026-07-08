@@ -171,7 +171,7 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label">Akun Beban Penyusutan <span style="color: red;">*</span></label>
+                    <label class="form-label">Akun Penyusutan <span style="color: red;">*</span></label>
                     <select class="form-select global-select2" name="depreciation_account" id="depreciation_account" data-allow-clear="false">
                         <option value="">Pilih Akun</option>
                         @foreach($coaAccounts as $coa)
@@ -182,6 +182,26 @@
                 <div class="col-md-6">
                     <label class="form-label">Akun Akumulasi Penyusutan <span style="color: red;">*</span></label>
                     <select class="form-select global-select2" name="accumulated_depreciation_account" id="accumulated_depreciation_account" data-allow-clear="false">
+                        <option value="">Pilih Akun</option>
+                        @foreach($coaAccounts as $coa)
+                            <option value="{{ $coa->code }}">{{ $coa->code }} - {{ $coa->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Akun Penyusutan Debit <span style="color: red;">*</span></label>
+                    <select class="form-select global-select2" name="depreciation_account_debit" id="depreciation_account_debit" data-allow-clear="false">
+                        <option value="">Pilih Akun</option>
+                        @foreach($coaAccounts as $coa)
+                            <option value="{{ $coa->code }}">{{ $coa->code }} - {{ $coa->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Akun Penyusutan Credit <span style="color: red;">*</span></label>
+                    <select class="form-select global-select2" name="depreciation_account_credit" id="depreciation_account_credit" data-allow-clear="false">
                         <option value="">Pilih Akun</option>
                         @foreach($coaAccounts as $coa)
                             <option value="{{ $coa->code }}">{{ $coa->code }} - {{ $coa->name }}</option>
@@ -322,7 +342,7 @@ $(function() {
     });
 
     // Initialize depreciation Select2 elements (hidden initially)
-    $('#depreciation_account, #accumulated_depreciation_account').select2({
+    $('#depreciation_account, #accumulated_depreciation_account,#depreciation_account_debit ,#depreciation_account_credit').select2({
         allowClear: false
     });
 
@@ -332,12 +352,12 @@ $(function() {
 
         // Update required attributes based on checkbox state
         if (this.checked) {
-            $('#depreciation_rate_per_year, #depreciation_period_months, #depreciation_account, #accumulated_depreciation_account').prop('required', true);
+            $('#depreciation_rate_per_year, #depreciation_period_months, #depreciation_account, #accumulated_depreciation_account, #depreciation_account_debit, #depreciation_account_credit').prop('required', true);
         } else {
-            $('#depreciation_rate_per_year, #depreciation_period_months, #depreciation_account, #accumulated_depreciation_account').prop('required', false);
+            $('#depreciation_rate_per_year, #depreciation_period_months, #depreciation_account, #accumulated_depreciation_account,#depreciation_account_debit, #depreciation_account_credit').prop('required', false);
             // Clear depreciation fields when unchecked
             $('#depreciation_rate_per_year, #depreciation_period_months').val('');
-            $('#depreciation_account, #accumulated_depreciation_account').val('').trigger('change');
+            $('#depreciation_account, #accumulated_depreciation_account,#depreciation_account_debit, #depreciation_account_credit').val('').trigger('change');
             $('#total_depreciation, #book_value').val('');
         }
     });
