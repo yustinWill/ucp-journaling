@@ -84,7 +84,17 @@ class SalesInvoiceController extends Controller
     public function store(Request $request)
     {
         try {
-            $validated = $request->validate([
+            if ($this->salesInvoiceNumberExists($request->input('invoice_number'))) {
+                return response()->json([
+                    'message' => 'Nomor Invoice sudah digunakan. Silakan gunakan nomor invoice lain.',
+                    'errors' => [
+                        'invoice_number' => ['Nomor Invoice sudah digunakan. Silakan gunakan nomor invoice lain.'],
+                    ],
+                    'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
+                ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+            }
+
+            $validator = Validator::make($request->all(), [
                 'invoice_number' => 'required|string|max:50|unique:t_sales_invoices,transaction_code',
                 'invoice_date' => 'required|date',
                 'transaction_date' => 'required|date',
@@ -103,7 +113,9 @@ class SalesInvoiceController extends Controller
                 'products.*.invoice_qty' => 'required|numeric|min:0.01',
                 'products.*.remaining_qty_before' => 'required|numeric|min:0',
                 'products.*.unit_price' => 'required|numeric|min:0',
-            ], [], [
+            ], [
+                'invoice_number.unique' => 'Nomor Invoice sudah digunakan. Silakan gunakan nomor invoice lain.',
+            ], [
                 'invoice_number' => 'Nomor Invoice',
                 'invoice_date' => 'Tanggal Invoice',
                 'transaction_date' => 'Tanggal Transaksi',
@@ -123,6 +135,16 @@ class SalesInvoiceController extends Controller
                 'products.*.remaining_qty_before' => 'Qty Sisa Sebelum',
                 'products.*.unit_price' => 'Harga Satuan',
             ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors(),
+                    'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
+                ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+            }
+
+            $validated = $validator->validated();
 
             app(CreateSalesInvoiceAction::class)->execute($request->all());
 
@@ -235,8 +257,7 @@ class SalesInvoiceController extends Controller
     public function generateTransactionNumber()
     {
         try {
-            $transactionNumber = app(TransactionNumberService::class)->generateNumber('asset_purchase'); 
-            // sementara ntar module nya ganti
+            $transactionNumber = $this->generateUniqueSalesInvoiceNumber();
 
             return response()->json([
                 'success' => true,
@@ -249,6 +270,30 @@ class SalesInvoiceController extends Controller
                 'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
+    }
+
+    private function generateUniqueSalesInvoiceNumber(): string
+    {
+        for ($attempt = 0; $attempt < 10; $attempt++) {
+            $transactionNumber = app(TransactionNumberService::class)->generateNumber('sales_invoice');
+
+            if (! $this->salesInvoiceNumberExists($transactionNumber)) {
+                return $transactionNumber;
+            }
+        }
+
+        throw new \RuntimeException('Unable to generate a unique sales invoice number.');
+    }
+
+    private function salesInvoiceNumberExists(?string $transactionNumber): bool
+    {
+        if (empty($transactionNumber)) {
+            return false;
+        }
+
+        return DB::table('t_sales_invoices')
+            ->where('transaction_code', $transactionNumber)
+            ->exists();
     }
     public function auditLogDataTable($id)
     {
