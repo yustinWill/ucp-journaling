@@ -808,50 +808,33 @@
 
         // Edit Revenue Split Function
         function editRevenueSplit(productId, productName, splitData) {
-            // Populate modal with data
             $('#editProductId').val(productId);
             $('#editProductName').text(productName);
             $('#editProductTotal').val(splitData.product_total_amount);
             $('#editTotalDisplay').text('Rp ' + formatNumber(splitData.product_total_amount));
-
-            // Store original quantity and unit price
             $('#editOriginalQuantity').val(splitData.product_quantity);
-            $('#editOriginalUnitPrice').val(splitData.product_unit_price);
+            $('#editBonusQuantity').val(splitData.bonus_qty || 0);
+            $('#editOriginalTotalAmount').val(
+                splitData.original_total_amount > 0
+                    ? splitData.original_total_amount
+                    : Math.round(splitData.product_unit_price * splitData.product_quantity)
+            );
             $('#editOriginalQtyDisplay').val(formatNumber(splitData.product_quantity));
-
-            // Calculate config values per unit (if exists)
-            // Use effective_qty if available, otherwise use product_quantity
-            const qtyForConfig = splitData.effective_qty > 0 ? splitData.effective_qty : splitData.product_quantity;
-
-            if (qtyForConfig > 0) {
-                const configPabrik = splitData.porsi_pabrik / qtyForConfig;
-                const configOwner = splitData.porsi_owner / qtyForConfig;
-                const configPerusahaan = splitData.porsi_perusahaan / qtyForConfig;
-
-                $('#editConfigPabrik').val(configPabrik);
-                $('#editConfigOwner').val(configOwner);
-                $('#editConfigPerusahaan').val(configPerusahaan);
-            }
-
-            // Set return qty (if exists from previous edit)
+            $('#editBonusQtyDisplay').val(formatNumber(splitData.bonus_qty || 0));
+            $('#editConfigPabrik').val(splitData.config_pabrik || 0);
+            $('#editConfigOwner').val(splitData.config_owner || 0);
+            $('#editConfigPerusahaan').val(splitData.config_perusahaan || 0);
             $('#editReturnQty').val(splitData.return_qty || 0);
-
-            // Set split amounts
+            $('#editReturnQty').attr(
+                'max',
+                Math.max(0, Number(splitData.product_quantity) - Number(splitData.bonus_qty || 0))
+            );
             $('#editPorsiPabrik').val(formatNumber(splitData.porsi_pabrik));
             $('#editPorsiOwner').val(formatNumber(splitData.porsi_owner));
             $('#editPorsiPerusahaan').val(formatNumber(splitData.porsi_perusahaan));
-
-            // Set remaining allocation radio
             $(`input[name="edit_remaining_allocation"][value="${splitData.remaining_allocation}"]`).prop('checked', true);
-
-            // Set notes
             $('#editSplitNotes').val(splitData.split_notes || '');
-
-            // Calculate totals
-            calculateEditSplitTotals();
-            updateEffectiveQuantity();
-
-            // Show modal
+            recalculateRevenueSplit(!splitData.is_custom_split);
             $('#editRevenueSplitModal').modal('show');
         }
 
@@ -888,112 +871,125 @@
 
         // Initialize Currency Formatting
         function initializeCurrencyFormatting() {
-            // Currency input formatting for edit modal
-            $('.currency-input').on('input', function() {
-                let value = $(this).val().replace(/[^\d]/g, '');
-                $(this).val(formatNumber(value));
-                calculateEditSplitTotals();
-            });
+            $('.currency-input')
+                .off('input.revenueSplit')
+                .on('input.revenueSplit', function() {
+                    const value = $(this).val().replace(/[^\d]/g, '');
+                    $(this).val(formatNumber(value));
+                    calculateEditSplitTotals();
+                });
 
-            // Handle return qty input
-            $('#editReturnQty').on('input', function() {
-                updateEffectiveQuantity();
-            });
+            $('#editReturnQty')
+                .off('input.revenueSplit')
+                .on('input.revenueSplit', function() {
+                    recalculateRevenueSplit(true);
+                });
 
-            // Handle edit revenue split form submission
-            $('#editRevenueSplitForm').on('submit', function(e) {
-                console.log('=== Form submit event triggered ===');
-                e.preventDefault();
-                console.log('Default prevented, calling saveRevenueSplit()');
-                saveRevenueSplit();
-            });
+            $('input[name="edit_remaining_allocation"]')
+                .off('change.revenueSplit')
+                .on('change.revenueSplit', function() {
+                    recalculateRevenueSplit(true);
+                });
+
+            $('#editRevenueSplitForm')
+                .off('submit.revenueSplit')
+                .on('submit.revenueSplit', function(e) {
+                    e.preventDefault();
+                    saveRevenueSplit();
+                });
         }
 
-        // Update Effective Quantity and Recalculate Revenue Splits
-        function updateEffectiveQuantity() {
-            const originalQty = parseFloat($('#editOriginalQuantity').val()) || 0;
-            const returnQty = parseFloat($('#editReturnQty').val()) || 0;
-            const unitPrice = parseFloat($('#editOriginalUnitPrice').val()) || 0;
+        // New specification: bonus is paid to Pabrik and deducted from Owner.
+        function recalculateRevenueSplit(applyCalculatedPortions = true) {
+            const qtyTotal = Number($('#editOriginalQuantity').val()) || 0;
+            const qtyBonus = Number($('#editBonusQuantity').val()) || 0;
+            const qtyAnulir = Number($('#editReturnQty').val()) || 0;
+            const originalTotal = Math.round(Number($('#editOriginalTotalAmount').val()) || 0);
+            const ratePabrik = Math.round(Number($('#editConfigPabrik').val()) || 0);
+            const rateOwner = Math.round(Number($('#editConfigOwner').val()) || 0);
+            const ratePerusahaan = Math.round(Number($('#editConfigPerusahaan').val()) || 0);
+            const sisaKe = $('input[name="edit_remaining_allocation"]:checked').val();
+            const $error = $('#editCalculationError');
+            const $warning = $('#editCalculationWarning');
 
-            // Validate return qty doesn't exceed original
-            if (returnQty > originalQty) {
-                toastr.warning('Qty retur tidak boleh lebih besar dari qty original');
-                $('#editReturnQty').val(originalQty);
+            $error.addClass('d-none').text('');
+            $warning.addClass('d-none').text('');
+            $('#saveEditSplitBtn').prop('disabled', false);
+
+            if (!Number.isInteger(qtyAnulir) || qtyAnulir < 0 || qtyAnulir + qtyBonus > qtyTotal) {
+                $error
+                    .removeClass('d-none')
+                    .text('Qty anulir + qty bonus tidak boleh melebihi qty original.');
+                $('#saveEditSplitBtn').prop('disabled', true);
                 return;
             }
 
-            // Calculate effective quantity
-            const effectiveQty = originalQty - returnQty;
-            $('#editEffectiveQty').val(formatNumber(effectiveQty));
+            if (!sisaKe) {
+                $error.removeClass('d-none').text('Penerima sisa harus dipilih.');
+                $('#saveEditSplitBtn').prop('disabled', true);
+                return;
+            }
 
-            // Calculate effective total amount
-            const effectiveTotal = effectiveQty * unitPrice;
+            const qtyNormal = qtyTotal - qtyAnulir - qtyBonus;
+            const effectiveTotal = qtyTotal === 0
+                ? 0
+                : Math.round((qtyNormal * originalTotal) / qtyTotal);
+            let porsiPabrik = (qtyNormal + qtyBonus) * ratePabrik;
+            let porsiOwner = (qtyNormal * rateOwner) - (qtyBonus * ratePabrik);
+            let porsiPerusahaan = qtyNormal * ratePerusahaan;
+            const ownerBeforeRemainder = porsiOwner;
+            const totalBeforeRemainder = porsiPabrik + porsiOwner + porsiPerusahaan;
+            const selisih = effectiveTotal - totalBeforeRemainder;
+
+            if (sisaKe === 'pabrik') {
+                porsiPabrik += selisih;
+            } else if (sisaKe === 'owner') {
+                porsiOwner += selisih;
+            } else {
+                porsiPerusahaan += selisih;
+            }
+
+            $('#editEffectiveQty').val(formatNumber(qtyNormal));
             $('#editEffectiveTotal').val(formatNumber(effectiveTotal));
-
-            // Update the product total for validation
             $('#editProductTotal').val(effectiveTotal);
             $('#editTotalDisplay').text('Rp ' + formatNumber(effectiveTotal));
 
-            // Recalculate revenue splits based on effective quantity
-            recalculateRevenueSplits(effectiveQty, effectiveTotal);
-        }
-
-        // Recalculate Revenue Splits based on new quantity
-        // Uses PRIORITY/WATERFALL logic: Pabrik → Owner → Kingdom
-        function recalculateRevenueSplits(effectiveQty, effectiveTotal) {
-            // Get per-unit config values
-            const configPabrik = parseFloat($('#editConfigPabrik').val()) || 0;
-            const configOwner = parseFloat($('#editConfigOwner').val()) || 0;
-            const configPerusahaan = parseFloat($('#editConfigPerusahaan').val()) || 0;
-
-            // PRIORITY 1: Pabrik gets full share first
-            const targetPorsiPabrik = configPabrik * effectiveQty;
-            const newPorsiPabrik = Math.min(targetPorsiPabrik, effectiveTotal);
-            const remainingAfterPabrik = effectiveTotal - newPorsiPabrik;
-
-            // PRIORITY 2: Owner gets from remaining after Pabrik
-            const targetPorsiOwner = configOwner * effectiveQty;
-            const newPorsiOwner = Math.min(targetPorsiOwner, remainingAfterPabrik);
-            const remainingAfterOwner = remainingAfterPabrik - newPorsiOwner;
-
-            // PRIORITY 3: Kingdom (Perusahaan) gets whatever is left
-            const newPorsiPerusahaan = remainingAfterOwner;
-
-            // Update the input fields
-            $('#editPorsiPabrik').val(formatNumber(Math.round(newPorsiPabrik)));
-            $('#editPorsiOwner').val(formatNumber(Math.round(newPorsiOwner)));
-            $('#editPorsiPerusahaan').val(formatNumber(Math.round(newPorsiPerusahaan)));
-
-            // Update remaining allocation radio based on who absorbed the shortfall
-            if (newPorsiPerusahaan < configPerusahaan * effectiveQty) {
-                $('#editRemainingPerusahaan').prop('checked', true);
-            } else if (newPorsiOwner < targetPorsiOwner) {
-                $('#editRemainingOwner').prop('checked', true);
-            } else if (newPorsiPabrik < targetPorsiPabrik) {
-                $('#editRemainingPabrik').prop('checked', true);
-            } else {
-                $('#editRemainingPerusahaan').prop('checked', true);
+            if (applyCalculatedPortions) {
+                $('#editPorsiPabrik').val(formatNumber(porsiPabrik));
+                $('#editPorsiOwner').val(formatNumber(porsiOwner));
+                $('#editPorsiPerusahaan').val(formatNumber(porsiPerusahaan));
             }
 
-            // Recalculate totals
+            if (ownerBeforeRemainder < 0) {
+                $error
+                    .removeClass('d-none')
+                    .text(`Porsi Owner negatif (Rp ${formatNumber(ownerBeforeRemainder)}). Kurangi qty bonus atau sesuaikan rate.`);
+                $('#saveEditSplitBtn').prop('disabled', true);
+            }
+
+            if (effectiveTotal > 0 && Math.abs(selisih) * 100 > effectiveTotal) {
+                $warning
+                    .removeClass('d-none')
+                    .text(`Selisih Rp ${formatNumber(Math.abs(selisih))} melebihi 1% dari total efektif. Periksa rate dan total produk.`);
+                $('#saveEditSplitBtn').prop('disabled', true);
+            }
+
             calculateEditSplitTotals();
         }
 
         // Calculate Edit Split Totals
         function calculateEditSplitTotals() {
-            const pabrik = parseNumber($('#editPorsiPabrik').val()) || 0;
-            const owner = parseNumber($('#editPorsiOwner').val()) || 0;
-            const perusahaan = parseNumber($('#editPorsiPerusahaan').val()) || 0;
-            const productTotal = parseNumber($('#editProductTotal').val()) || 0;
-
+            const pabrik = parseNumber($('#editPorsiPabrik').val());
+            const owner = parseNumber($('#editPorsiOwner').val());
+            const perusahaan = parseNumber($('#editPorsiPerusahaan').val());
+            const productTotal = parseNumber($('#editProductTotal').val());
             const totalSplit = pabrik + owner + perusahaan;
-            const difference = totalSplit - productTotal;
+            const difference = productTotal - totalSplit;
 
             $('#editTotalSplit').val(formatNumber(totalSplit));
-            $('#editDifference').val(formatNumber(Math.abs(difference)));
+            $('#editDifference').val(formatNumber(difference));
 
-            // Update difference styling
-            if (Math.abs(difference) > 0.01) {
+            if (difference !== 0) {
                 $('#editDifference').removeClass('text-success').addClass('text-danger');
             } else {
                 $('#editDifference').removeClass('text-danger').addClass('text-success');
@@ -1002,39 +998,25 @@
 
         // Save Revenue Split
         function saveRevenueSplit() {
-            console.log('=== saveRevenueSplit called ===');
-
             const productId = $('#editProductId').val();
             const salesOrderId = {{ $salesOrder['id'] }};
-            console.log('Product ID:', productId, 'Sales Order ID:', salesOrderId);
-
-            const returnQty = parseFloat($('#editReturnQty').val()) || 0;
-            const effectiveQty = parseFloat($('#editEffectiveQty').val().replace(/[^\d]/g, '')) || 0;
-
             const formData = {
                 porsi_pabrik: parseNumber($('#editPorsiPabrik').val()),
                 porsi_owner: parseNumber($('#editPorsiOwner').val()),
                 porsi_perusahaan: parseNumber($('#editPorsiPerusahaan').val()),
                 remaining_allocation: $('input[name="edit_remaining_allocation"]:checked').val(),
-                product_total_amount: parseNumber($('#editProductTotal').val()),
-                return_qty: returnQty,
-                effective_qty: effectiveQty,
+                return_qty: Number($('#editReturnQty').val()) || 0,
                 split_notes: $('#editSplitNotes').val()
             };
-            console.log('Form Data:', formData);
-
-            // Validate totals match
             const totalSplit = formData.porsi_pabrik + formData.porsi_owner + formData.porsi_perusahaan;
-            console.log('Total Split:', totalSplit, 'Product Total:', formData.product_total_amount);
+            const effectiveTotal = parseNumber($('#editProductTotal').val());
 
-            if (Math.abs(totalSplit - formData.product_total_amount) > 0.01) {
-                console.log('Validation failed - totals do not match');
-                const difference = totalSplit - formData.product_total_amount;
-                toastr.error(`Total porsi (Rp ${formatNumber(totalSplit)}) harus sama dengan total produk (Rp ${formatNumber(formData.product_total_amount)}). Selisih: Rp ${formatNumber(Math.abs(difference))}`);
+            if (totalSplit !== effectiveTotal) {
+                toastr.error(`Total porsi harus sama dengan total efektif Rp ${formatNumber(effectiveTotal)}.`);
                 return;
             }
 
-            console.log('Validation passed, sending AJAX request...');
+            $('#saveEditSplitBtn').prop('disabled', true);
             $.ajax({
                 url: `/main_transaction/sales_order/revenue-split/${salesOrderId}/product/${productId}`,
                 type: 'PUT',
@@ -1043,7 +1025,6 @@
                 },
                 data: formData,
                 success: function(response) {
-                    console.log('AJAX Success:', response);
                     if (response.success) {
                         toastr.success(response.message);
                         $('#editRevenueSplitModal').modal('hide');
@@ -1053,10 +1034,6 @@
                     }
                 },
                 error: function(xhr) {
-                    console.log('AJAX Error:', xhr);
-                    console.log('Status:', xhr.status, 'Status Text:', xhr.statusText);
-                    console.log('Response:', xhr.responseJSON);
-
                     let errorMessage = 'Terjadi kesalahan saat menyimpan revenue split';
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         errorMessage = xhr.responseJSON.message;
@@ -1064,6 +1041,9 @@
                         errorMessage = Object.values(xhr.responseJSON.errors).flat().join('<br>');
                     }
                     toastr.error(errorMessage);
+                },
+                complete: function() {
+                    $('#saveEditSplitBtn').prop('disabled', false);
                 }
             });
         }
@@ -1305,7 +1285,9 @@
 
         function parseNumber(value) {
             if (!value) return 0;
-            return parseInt(value.toString().replace(/[^\d]/g, '')) || 0;
+            const text = value.toString();
+            const sign = text.trim().startsWith('-') ? -1 : 1;
+            return sign * (parseInt(text.replace(/[^\d]/g, '')) || 0);
         }
     </script>
 

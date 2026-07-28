@@ -530,6 +530,11 @@ class SalesInvoiceController extends Controller
                 'message' => $e->getMessage(),
                 'error' => $e->getCodeValue(),
             ], $e->getCode());
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
         } catch (\Exception $e) {
             DiscordNotifier::reportException($e);
 
