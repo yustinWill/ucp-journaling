@@ -369,7 +369,7 @@
                     <div class="alert alert-warning d-none" id="editCalculationWarning" role="alert"></div>
 
                     <!-- Quantity Information Section -->
-                    <div class="row g-3 mb-4">
+                    <div class="row g-3 mb-2">
                         <div class="col-md">
                             <label class="form-label">Qty Original</label>
                             <input type="text" class="form-control" id="editOriginalQtyDisplay" readonly>
@@ -391,6 +391,19 @@
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
                                 <input type="text" class="form-control bg-label-success" id="editEffectiveTotal" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info py-2 mb-4" role="status" aria-live="polite">
+                        <div class="d-flex align-items-start">
+                            <i class="icon-base ti tabler-calculator me-2 mt-1"></i>
+                            <div>
+                                <strong>Rumus Porsi Default:</strong>
+                                <div class="small mt-1" id="editFormulaPabrik">Pabrik = (Qty Efektif + Qty Bonus) x Rate Pabrik</div>
+                                <div class="small" id="editFormulaOwner">Owner = (Qty Efektif x Rate Owner) - (Qty Bonus x Rate Pabrik)</div>
+                                <div class="small" id="editFormulaPerusahaan">Perusahaan = Qty Efektif x Rate Perusahaan</div>
+                                <div class="small mt-1 fw-semibold" id="editFormulaSisa">Selisih dialokasikan ke entity yang dipilih sebagai penerima sisa.</div>
                             </div>
                         </div>
                     </div>

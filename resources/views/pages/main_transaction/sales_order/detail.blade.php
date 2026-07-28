@@ -824,7 +824,7 @@
             $('#editConfigPabrik').val(splitData.config_pabrik || 0);
             $('#editConfigOwner').val(splitData.config_owner || 0);
             $('#editConfigPerusahaan').val(splitData.config_perusahaan || 0);
-            $('#editReturnQty').val(splitData.return_qty || 0);
+            $('#editReturnQty').val(Number(splitData.return_qty || 0));
             $('#editReturnQty').attr(
                 'max',
                 Math.max(0, Number(splitData.product_quantity) - Number(splitData.bonus_qty || 0))
@@ -916,6 +916,35 @@
             $warning.addClass('d-none').text('');
             $('#saveEditSplitBtn').prop('disabled', false);
 
+            const qtyNormal = qtyTotal - qtyAnulir - qtyBonus;
+            const effectiveTotal = qtyTotal === 0
+                ? 0
+                : Math.round((qtyNormal * originalTotal) / qtyTotal);
+            let porsiPabrik = (qtyNormal + qtyBonus) * ratePabrik;
+            let porsiOwner = (qtyNormal * rateOwner) - (qtyBonus * ratePabrik);
+            let porsiPerusahaan = qtyNormal * ratePerusahaan;
+            const ownerBeforeRemainder = porsiOwner;
+            const totalBeforeRemainder = porsiPabrik + porsiOwner + porsiPerusahaan;
+            const selisih = effectiveTotal - totalBeforeRemainder;
+            const sisaLabel = {
+                pabrik: 'Pabrik',
+                owner: 'Owner',
+                perusahaan: 'Perusahaan'
+            }[sisaKe] || '-';
+
+            $('#editFormulaPabrik').text(
+                `Pabrik = (${formatNumber(qtyNormal)} + ${formatNumber(qtyBonus)}) x Rp ${formatNumber(ratePabrik)} = Rp ${formatNumber(porsiPabrik)}`
+            );
+            $('#editFormulaOwner').text(
+                `Owner = (${formatNumber(qtyNormal)} x Rp ${formatNumber(rateOwner)}) - (${formatNumber(qtyBonus)} x Rp ${formatNumber(ratePabrik)}) = Rp ${formatNumber(porsiOwner)}`
+            );
+            $('#editFormulaPerusahaan').text(
+                `Perusahaan = ${formatNumber(qtyNormal)} x Rp ${formatNumber(ratePerusahaan)} = Rp ${formatNumber(porsiPerusahaan)}`
+            );
+            $('#editFormulaSisa').text(
+                `Selisih Rp ${formatNumber(selisih)} dialokasikan ke ${sisaLabel} sebagai penerima sisa.`
+            );
+
             if (!Number.isInteger(qtyAnulir) || qtyAnulir < 0 || qtyAnulir + qtyBonus > qtyTotal) {
                 $error
                     .removeClass('d-none')
@@ -930,17 +959,6 @@
                 return;
             }
 
-            const qtyNormal = qtyTotal - qtyAnulir - qtyBonus;
-            const effectiveTotal = qtyTotal === 0
-                ? 0
-                : Math.round((qtyNormal * originalTotal) / qtyTotal);
-            let porsiPabrik = (qtyNormal + qtyBonus) * ratePabrik;
-            let porsiOwner = (qtyNormal * rateOwner) - (qtyBonus * ratePabrik);
-            let porsiPerusahaan = qtyNormal * ratePerusahaan;
-            const ownerBeforeRemainder = porsiOwner;
-            const totalBeforeRemainder = porsiPabrik + porsiOwner + porsiPerusahaan;
-            const selisih = effectiveTotal - totalBeforeRemainder;
-
             if (sisaKe === 'pabrik') {
                 porsiPabrik += selisih;
             } else if (sisaKe === 'owner') {
@@ -948,6 +966,15 @@
             } else {
                 porsiPerusahaan += selisih;
             }
+
+            const finalPorsiPenerimaSisa = {
+                pabrik: porsiPabrik,
+                owner: porsiOwner,
+                perusahaan: porsiPerusahaan
+            }[sisaKe];
+            $('#editFormulaSisa').text(
+                `Selisih Rp ${formatNumber(selisih)} dialokasikan ke ${sisaLabel}; porsi akhir ${sisaLabel} = Rp ${formatNumber(finalPorsiPenerimaSisa)}.`
+            );
 
             $('#editEffectiveQty').val(formatNumber(qtyNormal));
             $('#editEffectiveTotal').val(formatNumber(effectiveTotal));
