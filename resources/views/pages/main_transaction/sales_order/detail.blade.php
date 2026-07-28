@@ -926,24 +926,6 @@
             const ownerBeforeRemainder = porsiOwner;
             const totalBeforeRemainder = porsiPabrik + porsiOwner + porsiPerusahaan;
             const selisih = effectiveTotal - totalBeforeRemainder;
-            const sisaLabel = {
-                pabrik: 'Pabrik',
-                owner: 'Owner',
-                perusahaan: 'Perusahaan'
-            }[sisaKe] || '-';
-
-            $('#editFormulaPabrik').text(
-                `Pabrik = (${formatNumber(qtyNormal)} + ${formatNumber(qtyBonus)}) x Rp ${formatNumber(ratePabrik)} = Rp ${formatNumber(porsiPabrik)}`
-            );
-            $('#editFormulaOwner').text(
-                `Owner = (${formatNumber(qtyNormal)} x Rp ${formatNumber(rateOwner)}) - (${formatNumber(qtyBonus)} x Rp ${formatNumber(ratePabrik)}) = Rp ${formatNumber(porsiOwner)}`
-            );
-            $('#editFormulaPerusahaan').text(
-                `Perusahaan = ${formatNumber(qtyNormal)} x Rp ${formatNumber(ratePerusahaan)} = Rp ${formatNumber(porsiPerusahaan)}`
-            );
-            $('#editFormulaSisa').text(
-                `Selisih Rp ${formatNumber(selisih)} dialokasikan ke ${sisaLabel} sebagai penerima sisa.`
-            );
 
             if (!Number.isInteger(qtyAnulir) || qtyAnulir < 0 || qtyAnulir + qtyBonus > qtyTotal) {
                 $error
@@ -966,15 +948,6 @@
             } else {
                 porsiPerusahaan += selisih;
             }
-
-            const finalPorsiPenerimaSisa = {
-                pabrik: porsiPabrik,
-                owner: porsiOwner,
-                perusahaan: porsiPerusahaan
-            }[sisaKe];
-            $('#editFormulaSisa').text(
-                `Selisih Rp ${formatNumber(selisih)} dialokasikan ke ${sisaLabel}; porsi akhir ${sisaLabel} = Rp ${formatNumber(finalPorsiPenerimaSisa)}.`
-            );
 
             $('#editEffectiveQty').val(formatNumber(qtyNormal));
             $('#editEffectiveTotal').val(formatNumber(effectiveTotal));

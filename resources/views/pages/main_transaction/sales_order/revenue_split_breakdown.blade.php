@@ -395,15 +395,16 @@
                         </div>
                     </div>
 
-                    <div class="alert alert-info py-2 mb-4" role="status" aria-live="polite">
+                    <div class="alert alert-info py-2 mb-4">
                         <div class="d-flex align-items-start">
                             <i class="icon-base ti tabler-calculator me-2 mt-1"></i>
                             <div>
-                                <strong>Rumus Porsi Default:</strong>
-                                <div class="small mt-1" id="editFormulaPabrik">Pabrik = (Qty Efektif + Qty Bonus) x Rate Pabrik</div>
-                                <div class="small" id="editFormulaOwner">Owner = (Qty Efektif x Rate Owner) - (Qty Bonus x Rate Pabrik)</div>
-                                <div class="small" id="editFormulaPerusahaan">Perusahaan = Qty Efektif x Rate Perusahaan</div>
-                                <div class="small mt-1 fw-semibold" id="editFormulaSisa">Selisih dialokasikan ke entity yang dipilih sebagai penerima sisa.</div>
+                                <strong>Rumus Revenue Split:</strong>
+                                <div class="small mt-1"><code>qty_normal = qty_total &minus; qty_anulir &minus; qty_bonus</code></div>
+                                <div class="small"><strong>Pabrik:</strong> <code>porsi_pabrik = (qty_normal + qty_bonus) &times; rate_pabrik</code></div>
+                                <div class="small"><strong>Owner:</strong> <code>porsi_owner = (qty_normal &times; rate_owner) &minus; (qty_bonus &times; rate_pabrik)</code></div>
+                                <div class="small"><strong>Perusahaan:</strong> <code>porsi_perusahaan = qty_normal &times; rate_perusahaan</code></div>
+                                <div class="small mt-1"><code>porsi[sisa_ke] = porsi[sisa_ke] + selisih</code></div>
                             </div>
                         </div>
                     </div>
