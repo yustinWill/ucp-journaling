@@ -404,7 +404,7 @@
                                 <div class="small"><strong>Pabrik:</strong> <code>porsi_pabrik = (qty_normal + qty_bonus) &times; rate_pabrik</code></div>
                                 <div class="small"><strong>Owner:</strong> <code>porsi_owner = (qty_normal &times; rate_owner) &minus; (qty_bonus &times; rate_pabrik)</code></div>
                                 <div class="small"><strong>Perusahaan:</strong> <code>porsi_perusahaan = qty_normal &times; rate_perusahaan</code></div>
-                                <div class="small mt-1"><code>porsi[sisa_ke] = porsi[sisa_ke] + selisih</code></div>
+                                {{-- <div class="small mt-1"><code>porsi[sisa_ke] = porsi[sisa_ke] + selisih</code></div> --}}
                             </div>
                         </div>
                     </div>
