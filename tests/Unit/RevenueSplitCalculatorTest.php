@@ -129,6 +129,73 @@ class RevenueSplitCalculatorTest extends TestCase
         $this->assertSame(232_500_000, $result['total_split']);
     }
 
+    public function test_remainder_above_one_percent_does_not_block_save(): void
+    {
+        $result = $this->calculator->calculate([
+            'qty_total' => 3,
+            'qty_anulir' => 0,
+            'qty_bonus' => 0,
+            'rate_pabrik' => 250_000,
+            'rate_owner' => 120_000,
+            'rate_perusahaan' => 30_000,
+            'total_produk' => 1_500_000,
+            'sisa_ke' => 'perusahaan',
+        ]);
+
+        $this->assertSame(300_000, $result['remaining_amount']);
+        $this->assertSame(390_000, $result['porsi_perusahaan']);
+        $this->assertSame(1_500_000, $result['total_split']);
+        $this->assertSame([], $result['errors']);
+
+        $this->calculator->assertSavable($result);
+    }
+
+    public function test_shortage_is_allocated_by_factory_owner_company_priority(): void
+    {
+        foreach (['pabrik', 'owner', 'perusahaan'] as $sisaKe) {
+            $result = $this->calculator->calculate([
+                'qty_total' => 1,
+                'qty_anulir' => 0,
+                'qty_bonus' => 0,
+                'rate_pabrik' => 450_000,
+                'rate_owner' => 360_000,
+                'rate_perusahaan' => 90_000,
+                'total_produk' => 800_000,
+                'sisa_ke' => $sisaKe,
+            ]);
+
+            $this->assertSame(450_000, $result['porsi_pabrik']);
+            $this->assertSame(350_000, $result['porsi_owner']);
+            $this->assertSame(0, $result['porsi_perusahaan']);
+            $this->assertSame(-100_000, $result['remaining_amount']);
+            $this->assertSame(800_000, $result['total_split']);
+            $this->assertSame([], $result['errors']);
+
+            $this->calculator->assertSavable($result);
+        }
+    }
+
+    public function test_shortage_cannot_allocate_more_than_effective_total_to_factory(): void
+    {
+        $result = $this->calculator->calculate([
+            'qty_total' => 1,
+            'qty_anulir' => 0,
+            'qty_bonus' => 0,
+            'rate_pabrik' => 450_000,
+            'rate_owner' => 360_000,
+            'rate_perusahaan' => 90_000,
+            'total_produk' => 400_000,
+            'sisa_ke' => 'perusahaan',
+        ]);
+
+        $this->assertSame(400_000, $result['porsi_pabrik']);
+        $this->assertSame(0, $result['porsi_owner']);
+        $this->assertSame(0, $result['porsi_perusahaan']);
+        $this->assertSame(400_000, $result['total_split']);
+
+        $this->calculator->assertSavable($result);
+    }
+
     public function test_anulir_and_bonus_cannot_exceed_total_quantity(): void
     {
         $this->expectException(\InvalidArgumentException::class);

@@ -920,12 +920,15 @@
             const effectiveTotal = qtyTotal === 0
                 ? 0
                 : Math.round((qtyNormal * originalTotal) / qtyTotal);
-            let porsiPabrik = (qtyNormal + qtyBonus) * ratePabrik;
-            let porsiOwner = (qtyNormal * rateOwner) - (qtyBonus * ratePabrik);
-            let porsiPerusahaan = qtyNormal * ratePerusahaan;
-            const ownerBeforeRemainder = porsiOwner;
-            const totalBeforeRemainder = porsiPabrik + porsiOwner + porsiPerusahaan;
+            const porsiPabrikBase = (qtyNormal + qtyBonus) * ratePabrik;
+            const ownerBeforeRemainder = (qtyNormal * rateOwner) - (qtyBonus * ratePabrik);
+            const porsiOwnerBase = ownerBeforeRemainder;
+            const porsiPerusahaanBase = qtyNormal * ratePerusahaan;
+            const totalBeforeRemainder = porsiPabrikBase + porsiOwnerBase + porsiPerusahaanBase;
             const selisih = effectiveTotal - totalBeforeRemainder;
+            let porsiPabrik;
+            let porsiOwner;
+            let porsiPerusahaan;
 
             if (!Number.isInteger(qtyAnulir) || qtyAnulir < 0 || qtyAnulir + qtyBonus > qtyTotal) {
                 $error
@@ -941,12 +944,25 @@
                 return;
             }
 
-            if (sisaKe === 'pabrik') {
-                porsiPabrik += selisih;
-            } else if (sisaKe === 'owner') {
-                porsiOwner += selisih;
+            if (selisih < 0) {
+                let availableAmount = effectiveTotal;
+                porsiPabrik = Math.min(porsiPabrikBase, availableAmount);
+                availableAmount -= porsiPabrik;
+                porsiOwner = Math.min(Math.max(0, porsiOwnerBase), availableAmount);
+                availableAmount -= porsiOwner;
+                porsiPerusahaan = Math.min(porsiPerusahaanBase, availableAmount);
             } else {
-                porsiPerusahaan += selisih;
+                porsiPabrik = porsiPabrikBase;
+                porsiOwner = porsiOwnerBase;
+                porsiPerusahaan = porsiPerusahaanBase;
+
+                if (sisaKe === 'pabrik') {
+                    porsiPabrik += selisih;
+                } else if (sisaKe === 'owner') {
+                    porsiOwner += selisih;
+                } else {
+                    porsiPerusahaan += selisih;
+                }
             }
 
             $('#editEffectiveQty').val(formatNumber(qtyNormal));
@@ -967,12 +983,14 @@
                 $('#saveEditSplitBtn').prop('disabled', true);
             }
 
-            if (effectiveTotal > 0 && Math.abs(selisih) * 100 > effectiveTotal) {
-                $warning
-                    .removeClass('d-none')
-                    .text(`Selisih Rp ${formatNumber(Math.abs(selisih))} melebihi 1% dari total efektif. Periksa rate dan total produk.`);
-                $('#saveEditSplitBtn').prop('disabled', true);
-            }
+            // Guard selisih maksimal 1% dinonaktifkan karena seluruh selisih
+            // dialokasikan ke entity yang dipilih sebagai penerima sisa.
+            // if (effectiveTotal > 0 && Math.abs(selisih) * 100 > effectiveTotal) {
+            //     $warning
+            //         .removeClass('d-none')
+            //         .text(`Selisih Rp ${formatNumber(Math.abs(selisih))} melebihi 1% dari total efektif. Periksa rate dan total produk.`);
+            //     $('#saveEditSplitBtn').prop('disabled', true);
+            // }
 
             calculateEditSplitTotals();
         }

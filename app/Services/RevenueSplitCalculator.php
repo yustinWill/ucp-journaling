@@ -32,22 +32,38 @@ final class RevenueSplitCalculator
 
         $qtyNormal = $qtyTotal - $qtyAnulir - $qtyBonus;
         $rateTotal = $ratePabrik + $rateOwner + $ratePerusahaan;
-        $porsiPabrik = ($qtyNormal + $qtyBonus) * $ratePabrik;
+        $porsiPabrikBase = ($qtyNormal + $qtyBonus) * $ratePabrik;
         $ownerBeforeRemainder = ($qtyNormal * $rateOwner) - ($qtyBonus * $ratePabrik);
-        $porsiOwner = $ownerBeforeRemainder;
-        $porsiPerusahaan = $qtyNormal * $ratePerusahaan;
-        $totalSplitBeforeRemainder = $porsiPabrik + $porsiOwner + $porsiPerusahaan;
+        $porsiOwnerBase = $ownerBeforeRemainder;
+        $porsiPerusahaanBase = $qtyNormal * $ratePerusahaan;
+        $totalSplitBeforeRemainder = $porsiPabrikBase + $porsiOwnerBase + $porsiPerusahaanBase;
         $totalEfektif = $qtyTotal === 0
             ? 0
             : $this->roundFraction($qtyNormal * $totalProduk, $qtyTotal);
         $selisih = $totalEfektif - $totalSplitBeforeRemainder;
 
-        if ($sisaKe === 'pabrik') {
-            $porsiPabrik += $selisih;
-        } elseif ($sisaKe === 'owner') {
-            $porsiOwner += $selisih;
+        if ($selisih < 0) {
+            // Ketika nilai penjualan tidak cukup untuk seluruh porsi dasar,
+            // distribusikan nilai yang tersedia dengan prioritas Pabrik,
+            // kemudian Owner, lalu Perusahaan.
+            $availableAmount = $totalEfektif;
+            $porsiPabrik = min($porsiPabrikBase, $availableAmount);
+            $availableAmount -= $porsiPabrik;
+            $porsiOwner = min(max(0, $porsiOwnerBase), $availableAmount);
+            $availableAmount -= $porsiOwner;
+            $porsiPerusahaan = min($porsiPerusahaanBase, $availableAmount);
         } else {
-            $porsiPerusahaan += $selisih;
+            $porsiPabrik = $porsiPabrikBase;
+            $porsiOwner = $porsiOwnerBase;
+            $porsiPerusahaan = $porsiPerusahaanBase;
+
+            if ($sisaKe === 'pabrik') {
+                $porsiPabrik += $selisih;
+            } elseif ($sisaKe === 'owner') {
+                $porsiOwner += $selisih;
+            } else {
+                $porsiPerusahaan += $selisih;
+            }
         }
 
         $errors = [];
@@ -59,12 +75,14 @@ final class RevenueSplitCalculator
             );
         }
 
-        if ($totalEfektif > 0 && (abs($selisih) * 100) > $totalEfektif) {
-            $errors[] = sprintf(
-                'Selisih Rp %s melebihi 1%% dari total efektif. Periksa rate dan total produk.',
-                number_format(abs($selisih), 0, ',', '.')
-            );
-        }
+        // Guard selisih maksimal 1% dinonaktifkan karena seluruh selisih memang
+        // dialokasikan ke entity yang dipilih sebagai penerima sisa.
+        // if ($totalEfektif > 0 && (abs($selisih) * 100) > $totalEfektif) {
+        //     $errors[] = sprintf(
+        //         'Selisih Rp %s melebihi 1%% dari total efektif. Periksa rate dan total produk.',
+        //         number_format(abs($selisih), 0, ',', '.')
+        //     );
+        // }
 
         return [
             'qty_total' => $qtyTotal,

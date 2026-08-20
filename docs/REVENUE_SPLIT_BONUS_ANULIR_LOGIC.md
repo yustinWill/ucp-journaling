@@ -3,8 +3,8 @@
 ## Status
 
 This document defines the revenue-split calculation used by new or recalculated Sales Order
-revenue splits. It replaces the previous waterfall behavior where the bonus cost reduced the
-Perusahaan portion.
+revenue splits. Bonus cost is funded by Owner, while a sales-value shortage is distributed using
+the Pabrik, Owner, then Perusahaan priority.
 
 This is a calculation-only change and requires no database migration. Existing stored split
 amounts are not rewritten automatically. Resetting or editing an existing split recalculates it
@@ -16,8 +16,8 @@ with this logic.
 - **Qty Bonus**: free pieces. They produce no revenue, but Pabrik is paid for producing them.
 - **Qty Anulir**: canceled pieces. They produce no revenue and no party is paid for them.
 - **Qty Efektif / Normal**: pieces that produce revenue.
-- **Sisa Ke**: party receiving the difference between the effective Sales Order value and the
-  configured per-piece rates.
+- **Sisa Ke**: party receiving a positive difference between the effective Sales Order value and
+  the configured per-piece rates. A negative difference uses the fixed shortage priority instead.
 
 Bonus production is funded by **Owner**:
 
@@ -70,8 +70,14 @@ total_efektif =
 selisih =
     total_efektif - total_split_base
 
-porsi[sisa_ke] =
-    porsi[sisa_ke] + selisih
+if selisih >= 0:
+    porsi[sisa_ke] = porsi[sisa_ke] + selisih
+
+if selisih < 0:
+    allocate total_efektif in order:
+        1. Pabrik, up to porsi_pabrik_base
+        2. Owner, up to porsi_owner_base
+        3. Perusahaan, up to porsi_perusahaan_base
 ```
 
 When `qty_total` is zero, `total_efektif` is zero and no division is performed.
@@ -87,13 +93,9 @@ porsi_owner_base >= 0
 porsi_pabrik + porsi_owner + porsi_perusahaan == total_efektif
 ```
 
-The calculation is blocked when the absolute remainder exceeds 1% of the effective total:
-
-```text
-abs(selisih) × 100 > total_efektif
-```
-
-This indicates that the configured rates and Sales Order price are unusually far apart.
+The former 1% remainder guard is disabled. A positive remainder is fully assigned to `sisa_ke`.
+When the base split exceeds the effective total, the available value is distributed by the
+Pabrik, Owner, then Perusahaan priority so no party receives a negative final portion.
 
 ## Negative Owner validation
 
@@ -148,6 +150,23 @@ selisih          = Rp 431.034
 
 With `sisa_ke = perusahaan`, the final Perusahaan portion becomes Rp 15.431.034.
 
+## Shortage example
+
+If the base portions are Pabrik Rp 450.000, Owner Rp 360.000, and Perusahaan Rp 90.000 while
+the effective sales value is only Rp 800.000:
+
+```text
+total_split_base = Rp 900.000
+selisih          = -Rp 100.000
+
+porsi_pabrik     = Rp 450.000
+porsi_owner      = Rp 350.000
+porsi_perusahaan = Rp 0
+total_split      = Rp 800.000
+```
+
+The configured `sisa_ke` is ignored for this shortage because the fixed priority applies.
+
 ## Manual overrides
 
 The edit screen calculates the recommended portions whenever Qty Anulir or Sisa Ke changes.
@@ -165,7 +184,8 @@ server-calculated effective total.
 - Money is calculated as whole Rupiah.
 - Intermediate percentage or floating-point calculations are not used.
 - Division occurs only for `total_efektif`, which is rounded once to the nearest Rupiah.
-- `sisa_ke` absorbs the final difference so the total invariant remains exact.
+- `sisa_ke` absorbs a positive difference. A shortage uses the Pabrik, Owner, then Perusahaan
+  priority so the total invariant remains exact.
 
 ## Existing fields and data
 
@@ -196,7 +216,10 @@ or edit the split when an existing row should adopt the new formula.
 7. Rounding remainder.
 8. Anulir, bonus, and remainder together.
 9. Remainder allocation to a non-Perusahaan party.
-10. Invalid combined quantity.
+10. Remainder above 1%.
+11. Shortage allocation priority.
+12. Sales value below the Pabrik base portion.
+13. Invalid combined quantity.
 
 ## Operational note
 
