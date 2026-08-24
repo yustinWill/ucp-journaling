@@ -11,7 +11,7 @@ return new class extends Migration
             'module_name'         => 'kas_besar',
             'module_display_name' => 'Kas Besar',
             'module_initial'      => 'KB',
-            'format_template'     => 'KB-{YEAR}-{MONTH}-{COUNTER}',
+            'format_template'     => 'KB-{YEAR}-{MM}-{COUNTER}',
             'current_counter'     => 0,
             'counter_padding'     => 4,
             'reset_frequency'     => 'monthly',
