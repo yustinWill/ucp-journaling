@@ -123,10 +123,11 @@
                     <tr>
                         <th>Produk</th>
                         <th class="text-end">Harga</th>
-                        <th class="text-end">Qty</th>
-                        <th class="text-end">Retur</th>
+                        <th class="text-end">Qty Total</th>
+                        <th class="text-end">Bonus</th>
+                        <th class="text-end">Anulir</th>
                         <th class="text-end">Efektif</th>
-                        <th class="text-end">Total</th>
+                        <th class="text-end">Total Efektif</th>
                         <th class="text-end">Porsi Pabrik</th>
                         <th class="text-end">Porsi Owner</th>
                         <th class="text-end">Porsi Perusahaan</th>
@@ -155,6 +156,13 @@
                             <td class="text-end">Rp {{ number_format($split->product_unit_price, 0, ',', '.') }}</td>
                             <td class="text-end">{{ number_format($split->product_quantity, 0, ',', '.') }} {{ $split->unit_name }}</td>
                             <td class="text-end">
+                                @if($split->bonus_qty > 0)
+                                    <span class="badge bg-label-info">{{ number_format($split->bonus_qty, 0, ',', '.') }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="text-end">
                                 @if($split->return_qty > 0)
                                     <span class="badge bg-label-danger">{{ number_format($split->return_qty, 0, ',', '.') }}</span>
                                 @else
@@ -162,7 +170,7 @@
                                 @endif
                             </td>
                             <td class="text-end">
-                                @if($split->return_qty > 0)
+                                @if($split->return_qty > 0 || $split->bonus_qty > 0)
                                     <span class="badge bg-label-success">{{ number_format($split->effective_qty, 0, ',', '.') }}</span>
                                 @else
                                     {{ number_format($split->product_quantity, 0, ',', '.') }}
@@ -346,35 +354,58 @@
                     <input type="hidden" id="editProductId">
                     <input type="hidden" id="editProductTotal">
                     <input type="hidden" id="editOriginalQuantity">
-                    <input type="hidden" id="editOriginalUnitPrice">
+                    <input type="hidden" id="editBonusQuantity">
+                    <input type="hidden" id="editOriginalTotalAmount">
                     <input type="hidden" id="editConfigPabrik">
                     <input type="hidden" id="editConfigOwner">
                     <input type="hidden" id="editConfigPerusahaan">
 
                     <div class="alert alert-info">
                         <i class="icon-base ti tabler-info-circle me-2"></i>
-                        Total porsi harus sama dengan total produk: <strong id="editTotalDisplay"></strong>
+                        Bonus dibayar ke Pabrik dan dipotong dari porsi Owner. Total porsi harus sama
+                        dengan total efektif: <strong id="editTotalDisplay"></strong>
                     </div>
+                    <div class="alert alert-danger d-none" id="editCalculationError" role="alert"></div>
+                    <div class="alert alert-warning d-none" id="editCalculationWarning" role="alert"></div>
 
                     <!-- Quantity Information Section -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-3">
+                    <div class="row g-3 mb-2">
+                        <div class="col-md">
                             <label class="form-label">Qty Original</label>
                             <input type="text" class="form-control" id="editOriginalQtyDisplay" readonly>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Qty Anulir</label>
-                            <input type="number" class="form-control" id="editReturnQty" min="0" value="0">
+                        <div class="col-md">
+                            <label class="form-label">Qty Bonus</label>
+                            <input type="text" class="form-control bg-label-info" id="editBonusQtyDisplay" readonly>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md">
+                            <label class="form-label">Qty Anulir</label>
+                            <input type="number" class="form-control" id="editReturnQty" min="0" step="1" value="0">
+                        </div>
+                        <div class="col-md">
                             <label class="form-label">Qty Efektif</label>
                             <input type="text" class="form-control bg-label-success" id="editEffectiveQty" readonly>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md">
                             <label class="form-label">Total Efektif</label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
                                 <input type="text" class="form-control bg-label-success" id="editEffectiveTotal" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info py-2 mb-4">
+                        <div class="d-flex align-items-start">
+                            <i class="icon-base ti tabler-calculator me-2 mt-1"></i>
+                            <div>
+                                <strong>Rumus Revenue Split:</strong>
+                                <div class="small mt-1"><code>qty_normal = qty_total &minus; qty_anulir &minus; qty_bonus</code></div>
+                                <div class="small"><strong>Pabrik:</strong> <code>porsi_pabrik = (qty_normal + qty_bonus) &times; rate_pabrik</code></div>
+                                <div class="small"><strong>Owner:</strong> <code>porsi_owner = (qty_normal &times; rate_owner) &minus; (qty_bonus &times; rate_pabrik)</code></div>
+                                <div class="small"><strong>Perusahaan:</strong> <code>porsi_perusahaan = qty_normal &times; rate_perusahaan</code></div>
+                                <div class="small mt-1"><strong>Surplus:</strong> <code>porsi[sisa_ke] = porsi[sisa_ke] + selisih</code></div>
+                                <div class="small"><strong>Defisit:</strong> <code>total_efektif dialokasikan berurutan ke Pabrik &rarr; Owner &rarr; Perusahaan</code></div>
                             </div>
                         </div>
                     </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MasterData;
 
 use App\Http\Controllers\Controller;
+use App\Services\RevenueSplitCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -234,12 +235,12 @@ class ProductRevenueSplitController extends Controller
     /**
      * Calculate revenue split for a given price
      */
-    public function calculateSplit(Request $request, $productId)
+    public function calculateSplit(Request $request, $productId, RevenueSplitCalculator $calculator)
     {
         try {
             $validator = Validator::make($request->all(), [
                 'selling_price' => 'required|numeric|min:0',
-                'quantity' => 'required|numeric|min:0'
+                'quantity' => 'required|integer|min:0'
             ]);
 
             if ($validator->fails()) {
@@ -265,44 +266,29 @@ class ProductRevenueSplitController extends Controller
                 ], 404);
             }
 
-            $sellingPrice = $request->selling_price;
-            $quantity = $request->quantity;
-            $totalAmount = $sellingPrice * $quantity;
-
-            // Calculate proportional splits based on base price
-            $basePrice = $config->base_price;
-            $ratio = $sellingPrice / $basePrice;
-
-            $porsiPerusahaan = $config->porsi_perusahaan * $ratio * $quantity;
-            $porsiOwner = $config->porsi_owner * $ratio * $quantity;
-            $porsiPabrik = $config->porsi_pabrik * $ratio * $quantity;
-
-            // Calculate remaining amount
-            $totalFixed = $porsiPerusahaan + $porsiOwner + $porsiPabrik;
-            $remainingAmount = $totalAmount - $totalFixed;
-
-            // Allocate remaining to specified category
-            switch ($config->remaining_allocation) {
-                case 'perusahaan':
-                    $porsiPerusahaan += $remainingAmount;
-                    break;
-                case 'owner':
-                    $porsiOwner += $remainingAmount;
-                    break;
-                case 'pabrik':
-                    $porsiPabrik += $remainingAmount;
-                    break;
-            }
+            $quantity = $calculator->wholeQuantity($request->quantity, 'Qty');
+            $totalAmount = $calculator->grossTotal($request->selling_price, $quantity);
+            $calculation = $calculator->calculate([
+                'qty_total' => $quantity,
+                'qty_anulir' => 0,
+                'qty_bonus' => 0,
+                'rate_pabrik' => $config->porsi_pabrik,
+                'rate_owner' => $config->porsi_owner,
+                'rate_perusahaan' => $config->porsi_perusahaan,
+                'total_produk' => $totalAmount,
+                'sisa_ke' => $config->remaining_allocation,
+            ]);
+            $calculator->assertSavable($calculation);
 
             return response()->json([
                 'success' => true,
                 'data' => [
                     'total_amount' => $totalAmount,
-                    'porsi_perusahaan' => round($porsiPerusahaan, 2),
-                    'porsi_owner' => round($porsiOwner, 2),
-                    'porsi_pabrik' => round($porsiPabrik, 2),
-                    'remaining_allocation' => $config->remaining_allocation,
-                    'remaining_amount' => round($remainingAmount, 2),
+                    'porsi_perusahaan' => $calculation['porsi_perusahaan'],
+                    'porsi_owner' => $calculation['porsi_owner'],
+                    'porsi_pabrik' => $calculation['porsi_pabrik'],
+                    'remaining_allocation' => $calculation['remaining_allocation'],
+                    'remaining_amount' => $calculation['remaining_amount'],
                     'config' => $config
                 ]
             ]);

@@ -25,8 +25,10 @@ use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use App\Services\TransactionNumberService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Events\MessageSent;
 
@@ -137,8 +139,12 @@ class SalesOrderController extends Controller
     public function store(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'reference_no' => 'required|string|max:255',
+            if ($this->salesOrderNumberExists($request->input('reference_no'))) {
+                return $this->duplicateSalesOrderNumberResponse();
+            }
+
+            $validator = Validator::make($request->all(), [
+                'reference_no' => 'required|string|max:255|unique:t_sales_orders,transaction_code',
                 'date' => 'required|date|before_or_equal:today',
                 'customer_id' => 'required|integer|exists:m_contacts,id',
                 'email' => 'nullable|email|max:255',
@@ -167,7 +173,9 @@ class SalesOrderController extends Controller
                 'products.*.total' => 'required|string',
                 'products.*.is_bonus' => 'nullable|boolean',
                 'attachment' => 'nullable|file|mimes:xlsx,xls,doc,docx,pdf,png,jpg,jpeg,zip|max:5120',
-            ], [], [
+            ], [
+                'reference_no.unique' => 'Nomor Sales Order sudah digunakan. Silakan gunakan nomor sales order lain.',
+            ], [
                 'reference_no' => 'Nomor Referensi',
                 'date' => 'Tanggal',
                 'customer_id' => 'Pelanggan',
@@ -191,6 +199,16 @@ class SalesOrderController extends Controller
                 'products.*.is_bonus' => 'Apakah Bonus',
                 'attachment' => 'Lampiran',
             ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors(),
+                    'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
+                ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+            }
+
+            $validated = $validator->validated();
 
             $sales_order_id = app(CreateSalesOrderAction::class)->execute($validated);
 
@@ -234,6 +252,18 @@ class SalesOrderController extends Controller
                 'message' => $e->getMessage(),
                 'error' => $e->getCodeValue(),
             ], $e->getCode());
+        } catch (QueryException $e) {
+            if ($this->isDuplicateKeyException($e)) {
+                return $this->duplicateSalesOrderNumberResponse();
+            }
+
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
+                'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
+                'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         } catch (\Throwable $e) {
             DiscordNotifier::reportException($e);
 
@@ -243,6 +273,33 @@ class SalesOrderController extends Controller
                 'trace' => $e->getMessage(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
+    }
+
+    private function salesOrderNumberExists(?string $transactionNumber): bool
+    {
+        if (empty($transactionNumber)) {
+            return false;
+        }
+
+        return DB::table('t_sales_orders')
+            ->where('transaction_code', $transactionNumber)
+            ->exists();
+    }
+
+    private function duplicateSalesOrderNumberResponse()
+    {
+        return response()->json([
+            'message' => 'Nomor Sales Order sudah digunakan. Silakan gunakan nomor sales order lain.',
+            'errors' => [
+                'reference_no' => ['Nomor Sales Order sudah digunakan. Silakan gunakan nomor sales order lain.'],
+            ],
+            'error' => ErrorCodes::FORM_VALIDATION_ERROR->code(),
+        ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+    }
+
+    private function isDuplicateKeyException(QueryException $e): bool
+    {
+        return ($e->errorInfo[1] ?? null) === 1062;
     }
 
     public function detail($id)

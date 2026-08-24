@@ -2,200 +2,166 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class SalesOrderRevenueSplitService
 {
-    private $tableName = 't_sales_order_revenue_splits';
-    private $configTableName = 'm_product_revenue_split_configs';
+    private string $tableName = 't_sales_order_revenue_splits';
+
+    private string $configTableName = 'm_product_revenue_split_configs';
+
+    public function __construct(
+        private readonly RevenueSplitCalculator $calculator
+    ) {}
 
     /**
-     * Create revenue splits for all products in a sales order
+     * Create one aggregate split per product in a sales order.
      */
     public function createRevenueSplitsForSalesOrder($salesOrderId, $salesOrderProducts)
     {
         try {
-            $companyCode = session('user_company_code');
-            $userId = Auth::id();
+            return DB::transaction(function () use ($salesOrderId, $salesOrderProducts) {
+                $companyCode = session('user_company_code');
+                $userId = Auth::id();
+                $processedProductIds = [];
 
-            // Delete existing splits if any
-            $this->deleteRevenueSplitsForSalesOrder($salesOrderId);
+                $this->deleteRevenueSplitsForSalesOrder($salesOrderId);
 
-            foreach ($salesOrderProducts as $product) {
-                $this->createRevenueSplitForProduct($salesOrderId, $product, $companyCode, $userId);
-            }
+                foreach ($salesOrderProducts as $product) {
+                    $product = (array) $product;
+                    $productId = $product['f_product_id'];
 
-            return true;
+                    if (isset($processedProductIds[$productId])) {
+                        continue;
+                    }
+
+                    $this->createRevenueSplitForProduct(
+                        $salesOrderId,
+                        $product,
+                        $companyCode,
+                        $userId
+                    );
+                    $processedProductIds[$productId] = true;
+                }
+
+                return true;
+            });
+        } catch (InvalidArgumentException $e) {
+            throw $e;
         } catch (Exception $e) {
-            throw new Exception('Failed to create revenue splits: ' . $e->getMessage());
+            throw new Exception('Failed to create revenue splits: '.$e->getMessage(), 0, $e);
         }
     }
 
     /**
-     * Create revenue split for a single product in sales order
-     * This method aggregates regular and bonus items for the same product
+     * Aggregate regular and bonus rows for one product, then apply the
+     * specification formula. Bonus production is funded by Owner.
      */
     public function createRevenueSplitForProduct($salesOrderId, $product, $companyCode, $userId)
     {
+        $product = (array) $product;
         $productId = $product['f_product_id'];
-
-        // Query ALL rows with the same product_id from sales order to aggregate bonus items
         $allProductRows = DB::table('t_sales_order_products')
             ->where('f_sales_order_id', $salesOrderId)
             ->where('f_product_id', $productId)
             ->select('quantity', 'unit_price', 'is_bonus', 'id')
             ->get();
 
-        // Aggregate quantities
         $totalQuantity = 0;
         $regularQuantity = 0;
         $bonusQuantity = 0;
-        $unitPrice = $product['unit_price'];
+        $unitPrice = $product['unit_price'] ?? 0;
         $firstRowId = $product['id'] ?? null;
 
         foreach ($allProductRows as $row) {
-            $qty = $row->quantity;
+            $qty = $this->calculator->wholeQuantity($row->quantity, 'Qty produk');
             $totalQuantity += $qty;
 
             if ($row->is_bonus) {
                 $bonusQuantity += $qty;
             } else {
                 $regularQuantity += $qty;
-                // Use unit price from non-bonus row (bonus has 0 price)
                 $unitPrice = $row->unit_price;
                 $firstRowId = $row->id;
             }
         }
 
-        // Total amount is only based on regular quantity (bonus has 0 price)
-        $totalAmount = $unitPrice * $regularQuantity;
+        if ($allProductRows->isEmpty()) {
+            $regularQuantity = $this->calculator->wholeQuantity(
+                $product['quantity'] ?? 0,
+                'Qty produk'
+            );
+            $totalQuantity = $regularQuantity;
+        }
 
-        // Get product revenue split configuration
-        $config = DB::table($this->configTableName)
-            ->where('company_code', $companyCode)
-            ->where('f_product_id', $productId)
-            ->where('status', 'ACTIVE')
-            ->first();
+        $originalTotalAmount = $this->calculator->grossTotal($unitPrice, $totalQuantity);
+        $config = $this->findActiveConfig($companyCode, $productId);
 
         if ($config) {
-            // Use configuration to calculate split with bonus consideration
-            $hasBonus = $bonusQuantity > 0;
-            $split = $this->calculateSplitFromConfig($config, $unitPrice, $totalQuantity, $regularQuantity, $hasBonus);
+            $split = $this->calculator->calculate([
+                'qty_total' => $totalQuantity,
+                'qty_anulir' => 0,
+                'qty_bonus' => $bonusQuantity,
+                'rate_pabrik' => $config->porsi_pabrik,
+                'rate_owner' => $config->porsi_owner,
+                'rate_perusahaan' => $config->porsi_perusahaan,
+                'total_produk' => $originalTotalAmount,
+                'sisa_ke' => $config->remaining_allocation,
+            ]);
+            $this->calculator->assertSavable($split);
             $configId = $config->id;
-            $isCustom = false;
         } else {
-            // Default split if no configuration exists (all goes to company)
+            $effectiveTotal = $this->calculator->grossTotal($unitPrice, $regularQuantity);
             $split = [
-                'porsi_perusahaan' => $totalAmount,
+                'qty_efektif' => $regularQuantity,
+                'total_efektif' => $effectiveTotal,
+                'porsi_perusahaan' => $effectiveTotal,
                 'porsi_owner' => 0,
                 'porsi_pabrik' => 0,
                 'remaining_allocation' => 'perusahaan',
-                'remaining_amount' => 0
+                'remaining_amount' => 0,
             ];
             $configId = null;
-            $isCustom = false;
         }
 
-        // Insert revenue split record
         DB::table($this->tableName)->insert([
             'company_code' => $companyCode,
             'f_sales_order_id' => $salesOrderId,
             'f_sales_order_product_id' => $firstRowId,
             'f_product_id' => $productId,
-            'product_unit_price' => $unitPrice,
+            'product_unit_price' => $this->calculator->rupiah($unitPrice),
             'product_quantity' => $totalQuantity,
-            'product_total_amount' => $totalAmount,
+            'return_qty' => 0,
+            'effective_qty' => $split['qty_efektif'],
+            'product_total_amount' => $split['total_efektif'],
             'porsi_perusahaan' => $split['porsi_perusahaan'],
             'porsi_owner' => $split['porsi_owner'],
             'porsi_pabrik' => $split['porsi_pabrik'],
             'remaining_allocation' => $split['remaining_allocation'],
             'remaining_amount' => $split['remaining_amount'],
             'f_revenue_split_config_id' => $configId,
-            'is_custom_split' => $isCustom,
+            'is_custom_split' => false,
             'created_by' => $userId,
             'updated_by' => $userId,
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
+
+        return $split;
     }
 
-    /**
-     * Calculate revenue split based on configuration
-     * Uses PRIORITY/WATERFALL logic: Pabrik → Owner → Kingdom
-     * Higher priority parties get their full share first before lower priority parties
-     *
-     * @param object $config Revenue split configuration
-     * @param float $unitPrice Unit price of the product
-     * @param int $totalQuantity Total quantity including bonus items
-     * @param int $regularQuantity Regular quantity excluding bonus items
-     * @param bool $hasBonus Whether this product has bonus items
-     * @return array
-     */
-    private function calculateSplitFromConfig($config, $unitPrice, $totalQuantity, $regularQuantity, $hasBonus = false)
-    {
-        // Total amount is based on regular quantity only (bonus items have 0 price)
-        $totalAmount = $unitPrice * $regularQuantity;
-
-        // Calculate target amounts per unit from config
-        $targetPabrikPerUnit = $config->porsi_pabrik;
-        $targetOwnerPerUnit = $config->porsi_owner;
-        $targetPerusahaanPerUnit = $config->porsi_perusahaan;
-
-        // PRIORITY 1: Pabrik gets full share first
-        // Pabrik uses total quantity (including bonus items)
-        // If totalAmount is insufficient, record the full target anyway (shortfall absorbed by Owner/Perusahaan)
-        $targetPorsiPabrik = $targetPabrikPerUnit * $totalQuantity;
-        $porsiPabrik = $targetPorsiPabrik;
-        $remainingAfterPabrik = max(0, $totalAmount - $porsiPabrik);
-
-        // PRIORITY 2: Owner gets from remaining after Pabrik
-        // Owner uses only regular quantity (excluding bonus)
-        $targetPorsiOwner = $targetOwnerPerUnit * $regularQuantity;
-        $porsiOwner = min($targetPorsiOwner, $remainingAfterPabrik);
-        $remainingAfterOwner = $remainingAfterPabrik - $porsiOwner;
-
-        // PRIORITY 3: Kingdom (Perusahaan) gets whatever is left
-        $porsiPerusahaan = $remainingAfterOwner;
-
-        // Calculate remaining amount for tracking
-        $totalConfigured = ($targetPabrikPerUnit * $totalQuantity) +
-                          ($targetOwnerPerUnit * $regularQuantity) +
-                          ($targetPerusahaanPerUnit * $regularQuantity);
-        $remainingAmount = $totalAmount - $totalConfigured;
-
-        // Determine which party absorbed the shortfall (if any)
-        $actualRemaining = 'perusahaan'; // Default
-        if ($porsiPerusahaan < $targetPerusahaanPerUnit * $regularQuantity) {
-            $actualRemaining = 'perusahaan';
-        } elseif ($porsiOwner < $targetPorsiOwner) {
-            $actualRemaining = 'owner';
-        } elseif ($porsiPabrik < $targetPorsiPabrik) {
-            $actualRemaining = 'pabrik';
-        }
-
-        return [
-            'porsi_perusahaan' => round($porsiPerusahaan, 2),
-            'porsi_owner' => round($porsiOwner, 2),
-            'porsi_pabrik' => round($porsiPabrik, 2),
-            'remaining_allocation' => $actualRemaining,
-            'remaining_amount' => round($remainingAmount, 2)
-        ];
-    }
-
-    /**
-     * Get revenue splits for a sales order
-     */
     public function getRevenueSplitsForSalesOrder($salesOrderId)
     {
         try {
             $companyCode = session('user_company_code');
 
-            return DB::table($this->tableName . ' as rs')
+            return DB::table($this->tableName.' as rs')
                 ->leftJoin('m_products as p', 'rs.f_product_id', '=', 'p.id')
                 ->leftJoin('m_units as u', 'p.f_unit_id', '=', 'u.id')
-                ->leftJoin($this->configTableName . ' as rc', 'rs.f_revenue_split_config_id', '=', 'rc.id')
+                ->leftJoin($this->configTableName.' as rc', 'rs.f_revenue_split_config_id', '=', 'rc.id')
                 ->where('rs.company_code', $companyCode)
                 ->where('rs.f_sales_order_id', $salesOrderId)
                 ->select(
@@ -203,93 +169,136 @@ class SalesOrderRevenueSplitService
                     'p.code as product_code',
                     'p.name as product_name',
                     'u.name as unit_name',
-                    'rc.base_price as config_base_price'
+                    'rc.base_price as config_base_price',
+                    'rc.porsi_pabrik as config_pabrik',
+                    'rc.porsi_owner as config_owner',
+                    'rc.porsi_perusahaan as config_perusahaan',
+                    DB::raw('(
+                        SELECT COALESCE(SUM(sop_bonus.quantity), 0)
+                        FROM t_sales_order_products AS sop_bonus
+                        WHERE sop_bonus.f_sales_order_id = rs.f_sales_order_id
+                            AND sop_bonus.f_product_id = rs.f_product_id
+                            AND sop_bonus.is_bonus = 1
+                    ) AS bonus_qty'),
+                    DB::raw('(rs.product_unit_price * rs.product_quantity) AS original_total_amount')
                 )
                 ->orderBy('rs.id')
                 ->get();
         } catch (Exception $e) {
-            throw new Exception('Failed to get revenue splits: ' . $e->getMessage());
+            throw new Exception('Failed to get revenue splits: '.$e->getMessage(), 0, $e);
         }
     }
 
     /**
-     * Update revenue split for a specific product (custom override)
+     * Save a custom override after recalculating all trusted quantity and total
+     * fields on the server.
      */
     public function updateRevenueSplit($salesOrderId, $productId, $splitData)
     {
-        try {
-            $companyCode = session('user_company_code');
-            $userId = Auth::id();
+        $companyCode = session('user_company_code');
+        $userId = Auth::id();
+        $existingSplit = DB::table($this->tableName)
+            ->where('company_code', $companyCode)
+            ->where('f_sales_order_id', $salesOrderId)
+            ->where('f_product_id', $productId)
+            ->first();
 
-            // Validate that split totals match product total
-            $totalSplit = $splitData['porsi_perusahaan'] + $splitData['porsi_owner'] + $splitData['porsi_pabrik'];
-            $productTotal = $splitData['product_total_amount'];
-
-            if (abs($totalSplit - $productTotal) > 0.01) {
-                throw new Exception('Total revenue split must equal product total amount');
-            }
-
-            // Calculate effective qty if return_qty is provided
-            $returnQty = $splitData['return_qty'] ?? 0;
-            $effectiveQty = $splitData['effective_qty'] ?? 0;
-
-            DB::table($this->tableName)->updateOrInsert(
-                [
-                    'company_code' => $companyCode,
-                    'f_sales_order_id' => $salesOrderId,
-                    'f_product_id' => $productId
-                ],
-                [
-                    'porsi_perusahaan' => $splitData['porsi_perusahaan'],
-                    'porsi_owner' => $splitData['porsi_owner'],
-                    'porsi_pabrik' => $splitData['porsi_pabrik'],
-                    'remaining_allocation' => $splitData['remaining_allocation'],
-                    'remaining_amount' => $splitData['remaining_amount'] ?? 0,
-                    'return_qty' => $returnQty,
-                    'effective_qty' => $effectiveQty,
-                    'is_custom_split' => true,
-                    'split_notes' => $splitData['split_notes'] ?? null,
-                    'updated_by' => $userId,
-                    'updated_at' => now(),
-                    'created_at' => now()
-                ]
-            );
-
-            return true;
-        } catch (Exception $e) {
-            throw new Exception('Failed to update revenue split: ' . $e->getMessage());
+        if (! $existingSplit) {
+            throw new InvalidArgumentException('Revenue split produk tidak ditemukan.');
         }
+
+        $config = $existingSplit->f_revenue_split_config_id
+            ? DB::table($this->configTableName)
+                ->where('id', $existingSplit->f_revenue_split_config_id)
+                ->first()
+            : null;
+        $config ??= $this->findActiveConfig($companyCode, $productId);
+
+        if (! $config) {
+            throw new InvalidArgumentException('Konfigurasi revenue split produk tidak ditemukan.');
+        }
+
+        $returnQty = $this->calculator->wholeQuantity(
+            $splitData['return_qty'] ?? 0,
+            'Qty anulir'
+        );
+        $bonusQuantity = DB::table('t_sales_order_products')
+            ->where('f_sales_order_id', $salesOrderId)
+            ->where('f_product_id', $productId)
+            ->where('is_bonus', true)
+            ->sum('quantity');
+        $originalTotalAmount = $this->calculator->grossTotal(
+            $existingSplit->product_unit_price,
+            $existingSplit->product_quantity
+        );
+
+        $calculation = $this->calculator->calculate([
+            'qty_total' => $existingSplit->product_quantity,
+            'qty_anulir' => $returnQty,
+            'qty_bonus' => $bonusQuantity,
+            'rate_pabrik' => $config->porsi_pabrik,
+            'rate_owner' => $config->porsi_owner,
+            'rate_perusahaan' => $config->porsi_perusahaan,
+            'total_produk' => $originalTotalAmount,
+            'sisa_ke' => $splitData['remaining_allocation'],
+        ]);
+        $this->calculator->assertSavable($calculation);
+
+        $submittedPabrik = $this->calculator->rupiah($splitData['porsi_pabrik']);
+        $submittedOwner = $this->calculator->rupiah($splitData['porsi_owner']);
+        $submittedPerusahaan = $this->calculator->rupiah($splitData['porsi_perusahaan']);
+        $submittedTotal = $submittedPabrik + $submittedOwner + $submittedPerusahaan;
+
+        if ($submittedPabrik < 0 || $submittedOwner < 0 || $submittedPerusahaan < 0) {
+            throw new InvalidArgumentException('Porsi revenue tidak boleh negatif.');
+        }
+
+        if ($submittedTotal !== $calculation['total_efektif']) {
+            throw new InvalidArgumentException(sprintf(
+                'Total porsi harus sama dengan total efektif Rp %s.',
+                number_format($calculation['total_efektif'], 0, ',', '.')
+            ));
+        }
+
+        DB::table($this->tableName)
+            ->where('id', $existingSplit->id)
+            ->update([
+                'product_total_amount' => $calculation['total_efektif'],
+                'porsi_perusahaan' => $submittedPerusahaan,
+                'porsi_owner' => $submittedOwner,
+                'porsi_pabrik' => $submittedPabrik,
+                'remaining_allocation' => $calculation['remaining_allocation'],
+                'remaining_amount' => $calculation['remaining_amount'],
+                'return_qty' => $calculation['qty_anulir'],
+                'effective_qty' => $calculation['qty_efektif'],
+                'is_custom_split' => true,
+                'split_notes' => $splitData['split_notes'] ?? null,
+                'updated_by' => $userId,
+                'updated_at' => now(),
+            ]);
+
+        return $calculation;
     }
 
-    /**
-     * Delete revenue splits for a sales order
-     */
     public function deleteRevenueSplitsForSalesOrder($salesOrderId)
     {
         try {
-            $companyCode = session('user_company_code');
-
             DB::table($this->tableName)
-                ->where('company_code', $companyCode)
+                ->where('company_code', session('user_company_code'))
                 ->where('f_sales_order_id', $salesOrderId)
                 ->delete();
 
             return true;
         } catch (Exception $e) {
-            throw new Exception('Failed to delete revenue splits: ' . $e->getMessage());
+            throw new Exception('Failed to delete revenue splits: '.$e->getMessage(), 0, $e);
         }
     }
 
-    /**
-     * Get revenue split summary for a sales order
-     */
     public function getRevenueSplitSummary($salesOrderId)
     {
         try {
-            $companyCode = session('user_company_code');
-
-            $summary = DB::table($this->tableName)
-                ->where('company_code', $companyCode)
+            return DB::table($this->tableName)
+                ->where('company_code', session('user_company_code'))
                 ->where('f_sales_order_id', $salesOrderId)
                 ->selectRaw('
                     SUM(porsi_perusahaan) as total_perusahaan,
@@ -300,80 +309,26 @@ class SalesOrderRevenueSplitService
                     SUM(CASE WHEN is_custom_split = 1 THEN 1 ELSE 0 END) as custom_splits
                 ')
                 ->first();
-
-            return $summary;
         } catch (Exception $e) {
-            throw new Exception('Failed to get revenue split summary: ' . $e->getMessage());
+            throw new Exception('Failed to get revenue split summary: '.$e->getMessage(), 0, $e);
         }
     }
 
     /**
-     * Recalculate revenue splits when sales order is updated
+     * Rebuild splits from the current sales order and active configurations.
+     * Custom portions are intentionally not carried across changed quantities.
      */
     public function recalculateRevenueSplits($salesOrderId, $updatedProducts)
     {
-        try {
-            // Get existing splits to preserve custom overrides
-            $existingSplits = $this->getRevenueSplitsForSalesOrder($salesOrderId);
-            $existingSplitsById = $existingSplits->keyBy('f_product_id');
+        return $this->createRevenueSplitsForSalesOrder($salesOrderId, $updatedProducts);
+    }
 
-            // Delete all existing splits
-            $this->deleteRevenueSplitsForSalesOrder($salesOrderId);
-
-            $companyCode = session('user_company_code');
-            $userId = Auth::id();
-
-            // Recreate splits, preserving custom ones
-            foreach ($updatedProducts as $product) {
-                $productId = $product['f_product_id'];
-                $existingSplit = $existingSplitsById->get($productId);
-
-                if ($existingSplit && $existingSplit->is_custom_split) {
-                    // Preserve custom split but update quantities/amounts
-                    $newTotalAmount = $product['unit_price'] * $product['quantity'];
-                    $ratio = $newTotalAmount / $existingSplit->product_total_amount;
-
-                    $splitData = [
-                        'porsi_perusahaan' => round($existingSplit->porsi_perusahaan * $ratio, 2),
-                        'porsi_owner' => round($existingSplit->porsi_owner * $ratio, 2),
-                        'porsi_pabrik' => round($existingSplit->porsi_pabrik * $ratio, 2),
-                        'remaining_allocation' => $existingSplit->remaining_allocation,
-                        'remaining_amount' => round($existingSplit->remaining_amount * $ratio, 2),
-                        'split_notes' => $existingSplit->split_notes,
-                        'product_total_amount' => $newTotalAmount
-                    ];
-
-                    // Manually insert the preserved custom split
-                    DB::table($this->tableName)->insert([
-                        'company_code' => $companyCode,
-                        'f_sales_order_id' => $salesOrderId,
-                        'f_sales_order_product_id' => $product['id'] ?? null,
-                        'f_product_id' => $productId,
-                        'product_unit_price' => $product['unit_price'],
-                        'product_quantity' => $product['quantity'],
-                        'product_total_amount' => $newTotalAmount,
-                        'porsi_perusahaan' => $splitData['porsi_perusahaan'],
-                        'porsi_owner' => $splitData['porsi_owner'],
-                        'porsi_pabrik' => $splitData['porsi_pabrik'],
-                        'remaining_allocation' => $splitData['remaining_allocation'],
-                        'remaining_amount' => $splitData['remaining_amount'],
-                        'f_revenue_split_config_id' => $existingSplit->f_revenue_split_config_id,
-                        'is_custom_split' => true,
-                        'split_notes' => $splitData['split_notes'],
-                        'created_by' => $userId,
-                        'updated_by' => $userId,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
-                } else {
-                    // Create new split based on current configuration
-                    $this->createRevenueSplitForProduct($salesOrderId, $product, $companyCode, $userId);
-                }
-            }
-
-            return true;
-        } catch (Exception $e) {
-            throw new Exception('Failed to recalculate revenue splits: ' . $e->getMessage());
-        }
+    private function findActiveConfig($companyCode, $productId)
+    {
+        return DB::table($this->configTableName)
+            ->where('company_code', $companyCode)
+            ->where('f_product_id', $productId)
+            ->where('status', 'ACTIVE')
+            ->first();
     }
 }
