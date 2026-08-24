@@ -16,6 +16,34 @@
                     <hr class="mx-n6">
                 </div>
 
+                <!-- Row 0: Kas/Transfer Source -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Sumber Pembayaran <span class="text-danger">*</span></label>
+                        <select id="payment-method-type" name="payment_method_type" class="form-select" required>
+                            <option value="">Pilih Sumber Pembayaran</option>
+                            <option value="kas_tunai">Kas / Tunai</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4" id="transfer-bank-wrapper" style="display:none;">
+                        <label class="form-label">Bank Transfer <span class="text-danger">*</span></label>
+                        <select id="transfer-bank" name="transfer_bank" class="form-select">
+                            <option value="">Pilih Bank</option>
+                            <option value="BCA">BCA</option>
+                            <option value="Mandiri">Mandiri</option>
+                            <option value="BTPN">BTPN</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4" id="kas-saldo-wrapper" style="display:none;">
+                        <label class="form-label">Saldo Kas Besar</label>
+                        <div class="input-group">
+                            <span class="input-group-text">Rp</span>
+                            <input type="text" class="form-control bg-light text-end" id="kas-saldo-display" readonly placeholder="Memuat...">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Row 1: Payment Method, Pay Later, Transaction Number -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
@@ -542,6 +570,36 @@
                 // });
             }
 
+            // ── Kas Besar / Transfer source logic ────────────────────────────
+            let kasBesarSaldo = 0;
+
+            function loadKasSaldo() {
+                $.get('{{ route('main_transaction.kas_besar.get_latest_saldo') }}', function(res) {
+                    if (res.success) {
+                        kasBesarSaldo = parseFloat(res.saldo_after) || 0;
+                        $('#kas-saldo-display').val(kasBesarSaldo.toLocaleString('id-ID'));
+                    }
+                });
+            }
+
+            $('#payment-method-type').on('change', function() {
+                const val = $(this).val();
+                if (val === 'transfer') {
+                    $('#transfer-bank-wrapper').show();
+                    $('#kas-saldo-wrapper').hide();
+                    $('#transfer-bank').prop('required', true);
+                } else if (val === 'kas_tunai') {
+                    $('#transfer-bank-wrapper').hide();
+                    $('#kas-saldo-wrapper').show();
+                    $('#transfer-bank').prop('required', false).val('');
+                    loadKasSaldo();
+                } else {
+                    $('#transfer-bank-wrapper').hide();
+                    $('#kas-saldo-wrapper').hide();
+                    $('#transfer-bank').prop('required', false).val('');
+                }
+            });
+
             function initializeFormLogic() {
                 // Pay Later checkbox logic
                 $('#pay-later').on('change', function() {
@@ -758,6 +816,8 @@
 
                 // Basic fields
                 formData.append('_token', '{{ csrf_token() }}');
+                formData.append('payment_method_type', $('#payment-method-type').val() || '');
+                formData.append('transfer_bank', $('#transfer-bank').val() || '');
                 formData.append('payment_method', $('#payment-method').val());
                 formData.append('pay_later', $('#pay-later').is(':checked') ? '1' : '0');
                 formData.append('transaction_number', $('#transaction-number').val());
@@ -881,6 +941,27 @@
 
             function validateForm() {
                 let isValid = true;
+
+                // Check sumber pembayaran
+                const paymentMethodType = $('#payment-method-type').val();
+                if (!paymentMethodType) {
+                    $('#payment-method-type').addClass('is-invalid');
+                    isValid = false;
+                } else if (paymentMethodType === 'transfer' && !$('#transfer-bank').val()) {
+                    $('#transfer-bank').addClass('is-invalid');
+                    isValid = false;
+                } else if (paymentMethodType === 'kas_tunai') {
+                    // Validate saldo
+                    const finalTotal = parseCurrency($('#final-total').val()) || 0;
+                    if (finalTotal > kasBesarSaldo) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Saldo Tidak Mencukupi',
+                            html: `Saldo Kas Besar <strong>Rp ${kasBesarSaldo.toLocaleString('id-ID')}</strong> tidak mencukupi untuk pengeluaran <strong>Rp ${finalTotal.toLocaleString('id-ID')}</strong>.`
+                        });
+                        return false;
+                    }
+                }
 
                 // Check pay later requirements
                 if ($('#pay-later').is(':checked')) {

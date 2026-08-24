@@ -153,7 +153,7 @@
             {{-- @endif --}}
         @endcan
 
-        @if(Auth::check() && (Auth::user()->hasPermissionTo('budget.view') || Auth::user()->hasPermissionTo('topup.view') || Auth::user()->hasPermissionTo('revenue_split.view')))
+        @if(Auth::check() && (Auth::user()->hasPermissionTo('budget.view') || Auth::user()->hasPermissionTo('topup.view') || Auth::user()->hasPermissionTo('revenue_split.view') || Auth::user()->hasPermissionTo('kas_besar.view')))
             <li class="menu-header small">
                 <span class="menu-header-text" data-i18n="Apps & Pages">Finansial</span>
             </li>
@@ -168,6 +168,14 @@
             </li>
         @endcan
         
+        @can('kas_besar.view')
+            <li class="menu-item @if (request()->routeIs(['main_transaction.kas_besar.*'])) active @endif">
+                <a href="{{ route('main_transaction.kas_besar.index') }}" class="menu-link">
+                    <i class="menu-icon icon-base ti tabler-cash-register"></i>
+                    <div data-i18n="Kas Besar">Kas Besar</div>
+                </a>
+            </li>
+        @endcan
         @can('topup.view')
             <li class="menu-item @if (request()->routeIs(['main_transaction.topup.*'])) active @endif">
                 <a href="{{ route('main_transaction.topup.index') }}" class="menu-link">
