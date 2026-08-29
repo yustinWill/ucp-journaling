@@ -14,31 +14,15 @@
                 <!-- Action Panel -->
                 <div class="col-md-4">
                     <div class="text-end">
-                        @php
-                            $totalActions = 1; // Edit always present
-                        @endphp
-
-                        @if ($totalActions < 3)
-                            <!-- Show buttons directly when less than 3 actions -->
+                        @if ($user->deleted_at === null)
+                            @can('user.edit')
                             <div class="d-flex gap-2 justify-content-end">
                                 <a href="{{ route('master_data.user.edit', $user->id) }}"
                                     class="btn btn-primary btn-md waves-effect waves-light">
                                     <i class="icon-base ti tabler-edit me-2"></i>Edit
                                 </a>
                             </div>
-                        @else
-                            <!-- Show dropdown for 3 or more actions -->
-                            <div class="dropdown">
-                                <button type="button"
-                                    class="btn btn-primary btn-md waves-effect waves-light dropdown-toggle"
-                                    data-bs-toggle="dropdown">
-                                    Aksi
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="{{ route('master_data.user.edit', $user->id) }}">
-                                            <i class="icon-base ti tabler-edit me-2"></i>Edit</a></li>
-                                </ul>
-                            </div>
+                            @endcan
                         @endif
                     </div>
                 </div>
@@ -57,8 +41,8 @@
                     <label class="form-label">Status</label>
                     <div class="form-control-plaintext">
                         <span
-                            class="badge {{ ($user->status ?? 'ACTIVE') === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary' }}">
-                            {{ $user->status ?? 'ACTIVE' }}
+                            class="badge {{ $user->deleted_at !== null ? 'bg-label-danger' : (($user->status ?? 'ACTIVE') === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary') }}">
+                            {{ $user->deleted_at !== null ? 'DELETED' : ($user->status ?? 'ACTIVE') }}
                         </span>
                     </div>
                 </div>

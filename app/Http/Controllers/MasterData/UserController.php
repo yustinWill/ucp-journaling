@@ -6,6 +6,7 @@ namespace App\Http\Controllers\MasterData;
 use App\Domains\Role\Services\RoleService;
 use App\Domains\Tag\Services\TagService;
 use App\Domains\User\Actions\CreateUserAction;
+use App\Domains\User\Actions\DeleteUserAction;
 use App\Domains\User\Actions\UpdateUserAction;
 use App\Domains\User\Services\UserAuditLogService;
 use App\Domains\User\Services\UserService;
@@ -29,6 +30,7 @@ class UserController extends Controller
     private $statuses = [
         ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
         ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
+        ['value' => 'DELETED', 'label' => 'DELETED - Dihapus'],
     ];
 
     public function index()
@@ -74,7 +76,7 @@ class UserController extends Controller
                 'role' => 'required|exists:roles,id',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->statuses, 'value')),
+                    Rule::in(['ACTIVE', 'INACTIVE']),
                 ],
                 'password' => 'required|string|min:8|max:50|same:password_confirmation',
                 'password_confirmation' => 'required|string|min:8|max:50',
@@ -120,7 +122,7 @@ class UserController extends Controller
     {
         $user = app(UserService::class)->findOne($id);
 
-        if ($user == null) {
+        if ($user == null || $user->deleted_at !== null) {
             abort(404);
         }
 
@@ -144,14 +146,17 @@ class UserController extends Controller
     {
         try {
             $validated = $request->validate([
-                'id' => 'required|exists:users,id',
+                'id' => [
+                    'required',
+                    Rule::exists('users', 'id')->whereNull('deleted_at'),
+                ],
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,'.$request->id,
                 'phone' => 'nullable|string|max:255|unique:users,phone,'.$request->id,
                 'role' => 'required|exists:roles,id',
                 'status' => [
                     'required',
-                    Rule::in(array_column($this->statuses, 'value')),
+                    Rule::in(['ACTIVE', 'INACTIVE']),
                 ],
                 'password' => 'nullable|string|min:8|max:50|same:password_confirmation',
                 'password_confirmation' => 'nullable|string|min:8|max:50',
@@ -190,6 +195,50 @@ class UserController extends Controller
                 'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
                 'error' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->code(),
                 'trace' => $e->getMessage(),
+            ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        if (! $request->user()->can('user.delete')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk menghapus user.',
+            ], 403);
+        }
+
+        try {
+            $validated = $request->validate([
+                'id' => [
+                    'required',
+                    Rule::exists('users', 'id')->whereNull('deleted_at'),
+                ],
+            ], [], ['id' => 'ID User']);
+
+            if ((int) $validated['id'] === (int) $request->user()->id) {
+                throw ValidationException::withMessages([
+                    'id' => 'Anda tidak dapat menghapus akun yang sedang digunakan.',
+                ]);
+            }
+
+            app(DeleteUserAction::class)->execute((int) $validated['id']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User berhasil dinonaktifkan. Data user tetap tersimpan.',
+            ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => ValidationHelper::formatErrors($e->errors()),
+            ], ErrorCodes::FORM_VALIDATION_ERROR->httpStatus());
+        } catch (\Throwable $e) {
+            DiscordNotifier::reportException($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->message(),
             ], ErrorCodes::GENERAL_INTERNAL_SERVER_ERROR->httpStatus());
         }
     }
