@@ -30,7 +30,6 @@ class UserController extends Controller
     private $statuses = [
         ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
         ['value' => 'INACTIVE', 'label' => 'INACTIVE - Tidak Aktif'],
-        ['value' => 'DELETED', 'label' => 'DELETED - Dihapus'],
     ];
 
     public function index()

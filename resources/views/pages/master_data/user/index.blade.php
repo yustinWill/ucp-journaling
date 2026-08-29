@@ -244,10 +244,8 @@
                         {
                             targets: [6],
                             render: function(data) {
-                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' :
-                                    (data === 'DELETED' ? 'bg-label-danger' : 'bg-label-secondary');
-                                const statusText = data === 'ACTIVE' ? 'Aktif' :
-                                    (data === 'DELETED' ? 'Dihapus' : 'Tidak Aktif');
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const statusText = data === 'ACTIVE' ? 'Aktif' : 'Tidak Aktif';
                                 return `<span class="badge ${badgeClass}">${statusText}</span>`;
                             }
                         }

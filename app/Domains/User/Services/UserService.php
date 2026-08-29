@@ -71,7 +71,7 @@ class UserService
                 't.deleted_at',
                 't.created_at',
                 't.updated_at',
-                DB::raw("CASE WHEN t.deleted_at IS NOT NULL THEN 'DELETED' ELSE t.status END as account_status"),
+                't.status as account_status',
                 DB::raw("COALESCE(r.name, 'N/A') as role_name"),
                 DB::raw('COALESCE(r.id, 0) as role_id'),
             ])
@@ -80,7 +80,8 @@ class UserService
                 $join->on('t.id', '=', 'mhr.model_id')
                     ->where('mhr.model_type', '=', \App\Models\User::class);
             })
-            ->leftJoin('roles as r', 'mhr.role_id', '=', 'r.id');
+            ->leftJoin('roles as r', 'mhr.role_id', '=', 'r.id')
+            ->whereNull('t.deleted_at');
 
         // Filter by name
         if ($name = request()->input('name')) {
@@ -97,17 +98,13 @@ class UserService
             $query->where('r.id', $role);
         }
 
-        // Filter by active, inactive, or soft-deleted state.
+        // Deleted users remain in the database but never appear in this list.
         if ($status = request()->input('status')) {
-            if ($status === 'DELETED') {
-                $query->whereNotNull('t.deleted_at');
-            } else {
-                $query->whereNull('t.deleted_at')->where('t.status', $status);
-            }
+            $query->where('t.status', $status);
         }
 
         $draw = (int) request()->input('draw', 1);
-        $recordsTotal = DB::table($this->table_name)->count();
+        $recordsTotal = DB::table($this->table_name)->whereNull('deleted_at')->count();
         $filteredQuery = clone $query;
 
         // Pagination

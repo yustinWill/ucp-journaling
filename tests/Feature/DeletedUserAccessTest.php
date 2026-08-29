@@ -29,10 +29,23 @@ class DeletedUserAccessTest extends TestCase
             $table->timestamps();
             $table->softDeletes();
         });
+
+        Schema::create('roles', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+        });
+
+        Schema::create('model_has_roles', function (Blueprint $table) {
+            $table->unsignedBigInteger('role_id');
+            $table->string('model_type');
+            $table->unsignedBigInteger('model_id');
+        });
     }
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('model_has_roles');
+        Schema::dropIfExists('roles');
         Schema::dropIfExists('users');
 
         parent::tearDown();
@@ -77,6 +90,19 @@ class DeletedUserAccessTest extends TestCase
             'email' => $user->email,
             'password' => 'password',
         ]);
+    }
+
+    public function test_deleted_users_are_not_returned_in_the_master_user_list(): void
+    {
+        $visibleUser = $this->createUser();
+        $deletedUser = $this->createUser(['email' => 'deleted@example.com']);
+        app(UserService::class)->softDelete($deletedUser->id);
+
+        $result = app(UserService::class)->findAllDatatable();
+
+        $this->assertSame(1, $result['recordsTotal']);
+        $this->assertSame(1, $result['recordsFiltered']);
+        $this->assertSame([$visibleUser->id], $result['data']->pluck('id')->all());
     }
 
     private function createUser(array $attributes = []): User
