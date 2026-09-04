@@ -141,10 +141,11 @@
                     @foreach($splits as $split)
                         @php
                             // Calculate percentages per product
-                            $productTotal = $split->product_total_amount > 0 ? $split->product_total_amount : 1;
-                            $pabrikPct = ($split->porsi_pabrik / $productTotal) * 100;
-                            $ownerPct = ($split->porsi_owner / $productTotal) * 100;
-                            $perusahaanPct = ($split->porsi_perusahaan / $productTotal) * 100;
+                            $productSplitTotal = $split->porsi_pabrik + $split->porsi_owner + $split->porsi_perusahaan;
+                            $productDistributionBase = $productSplitTotal > 0 ? $productSplitTotal : 1;
+                            $pabrikPct = ($split->porsi_pabrik / $productDistributionBase) * 100;
+                            $ownerPct = ($split->porsi_owner / $productDistributionBase) * 100;
+                            $perusahaanPct = ($split->porsi_perusahaan / $productDistributionBase) * 100;
                         @endphp
                         <tr>
                             <td>
@@ -317,7 +318,7 @@
         <div id="addRevenueSplitFormContainer" style="display: none;">
             <div class="alert alert-info">
                 <i class="icon-base ti tabler-info-circle me-2"></i>
-                <strong>Petunjuk:</strong> Masukkan porsi revenue untuk setiap produk. Total porsi harus sama dengan total harga produk.
+                <strong>Petunjuk:</strong> Masukkan porsi setiap produk. Kewajiban Pabrik untuk bonus dapat membuat total split melebihi total efektif.
             </div>
 
             <form id="addRevenueSplitForm">
@@ -359,11 +360,14 @@
                     <input type="hidden" id="editConfigPabrik">
                     <input type="hidden" id="editConfigOwner">
                     <input type="hidden" id="editConfigPerusahaan">
+                    <input type="hidden" id="editRequiredSplitTotal">
+                    <input type="hidden" id="editFactoryObligation">
 
                     <div class="alert alert-info">
                         <i class="icon-base ti tabler-info-circle me-2"></i>
-                        Bonus dibayar ke Pabrik dan dipotong dari porsi Owner. Total porsi harus sama
-                        dengan total efektif: <strong id="editTotalDisplay"></strong>
+                        Pabrik selalu dibayar penuh, termasuk untuk bonus. Owner dan Perusahaan hanya
+                        menerima nilai yang masih tersedia. Total efektif: <strong id="editTotalDisplay"></strong>;
+                        total wajib dibagikan: <strong id="editRequiredTotalDisplay"></strong>.
                     </div>
                     <div class="alert alert-danger d-none" id="editCalculationError" role="alert"></div>
                     <div class="alert alert-warning d-none" id="editCalculationWarning" role="alert"></div>
@@ -402,10 +406,10 @@
                                 <strong>Rumus Revenue Split:</strong>
                                 <div class="small mt-1"><code>qty_normal = qty_total &minus; qty_anulir &minus; qty_bonus</code></div>
                                 <div class="small"><strong>Pabrik:</strong> <code>porsi_pabrik = (qty_normal + qty_bonus) &times; rate_pabrik</code></div>
-                                <div class="small"><strong>Owner:</strong> <code>porsi_owner = (qty_normal &times; rate_owner) &minus; (qty_bonus &times; rate_pabrik)</code></div>
+                                <div class="small"><strong>Owner:</strong> <code>porsi_owner = qty_normal &times; rate_owner</code></div>
                                 <div class="small"><strong>Perusahaan:</strong> <code>porsi_perusahaan = qty_normal &times; rate_perusahaan</code></div>
                                 <div class="small mt-1"><strong>Surplus:</strong> <code>porsi[sisa_ke] = porsi[sisa_ke] + selisih</code></div>
-                                <div class="small"><strong>Defisit:</strong> <code>total_efektif dialokasikan berurutan ke Pabrik &rarr; Owner &rarr; Perusahaan</code></div>
+                                <div class="small"><strong>Defisit:</strong> <code>Pabrik tetap penuh; sisa nilai dialokasikan ke Owner &rarr; Perusahaan</code></div>
                             </div>
                         </div>
                     </div>
@@ -461,7 +465,7 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Selisih</label>
+                            <label class="form-label">Selisih terhadap Total Wajib</label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
                                 <input type="text" class="form-control" id="editDifference" readonly>

@@ -761,7 +761,7 @@
                     <div id="addRevenueSplitFormContainer" style="display: none;">
                         <div class="alert alert-info">
                             <i class="icon-base ti tabler-info-circle me-2"></i>
-                            <strong>Petunjuk:</strong> Masukkan porsi revenue untuk setiap produk. Total porsi harus sama dengan total harga produk.
+                            <strong>Petunjuk:</strong> Masukkan porsi setiap produk. Kewajiban Pabrik untuk bonus dapat membuat total split melebihi total efektif.
                         </div>
 
                         <form id="addRevenueSplitForm">
@@ -908,7 +908,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Selisih</label>
+                                    <label class="form-label">Selisih terhadap Total Wajib</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
                                         <input type="text" class="form-control difference-${index}" readonly>
@@ -946,13 +946,14 @@
             const productTotal = parseNumberInvoice($('.product-total').eq(index).val());
 
             const totalSplit = pabrik + owner + perusahaan;
-            const difference = totalSplit - productTotal;
+            const requiredSplitTotal = Math.max(productTotal, pabrik);
+            const difference = requiredSplitTotal - totalSplit;
 
             $(`.total-split-${index}`).val(formatNumberInvoice(totalSplit));
-            $(`.difference-${index}`).val(formatNumberInvoice(Math.abs(difference)));
+            $(`.difference-${index}`).val(formatNumberInvoice(difference));
 
             // Update difference styling
-            if (Math.abs(difference) > 0.01) {
+            if (difference !== 0) {
                 $(`.difference-${index}`).removeClass('text-success').addClass('text-danger');
             } else {
                 $(`.difference-${index}`).removeClass('text-danger').addClass('text-success');
@@ -974,10 +975,11 @@
                 const remainingAllocation = $(this).find(`.remaining-allocation:checked`).val();
 
                 const totalSplit = porsiPabrik + porsiOwner + porsiPerusahaan;
+                const requiredSplitTotal = Math.max(productTotal, porsiPabrik);
 
                 // Validate totals match
-                if (Math.abs(totalSplit - productTotal) > 0.01) {
-                    toastr.error(`Total porsi untuk produk index ${index + 1} tidak sesuai`);
+                if (totalSplit !== requiredSplitTotal) {
+                    toastr.error(`Total porsi untuk produk index ${index + 1} harus Rp ${formatNumberInvoice(requiredSplitTotal)}`);
                     hasError = true;
                     return false;
                 }

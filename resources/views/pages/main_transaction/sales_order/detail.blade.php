@@ -812,6 +812,12 @@
             $('#editProductName').text(productName);
             $('#editProductTotal').val(splitData.product_total_amount);
             $('#editTotalDisplay').text('Rp ' + formatNumber(splitData.product_total_amount));
+            $('#editRequiredSplitTotal').val(
+                Number(splitData.porsi_pabrik || 0)
+                + Number(splitData.porsi_owner || 0)
+                + Number(splitData.porsi_perusahaan || 0)
+            );
+            $('#editFactoryObligation').val(splitData.porsi_pabrik || 0);
             $('#editOriginalQuantity').val(splitData.product_quantity);
             $('#editBonusQuantity').val(splitData.bonus_qty || 0);
             $('#editOriginalTotalAmount').val(
@@ -899,7 +905,8 @@
                 });
         }
 
-        // New specification: bonus is paid to Pabrik and deducted from Owner.
+        // Pabrik is always paid in full. Owner and Company only receive the
+        // sales value that remains after the factory obligation.
         function recalculateRevenueSplit(applyCalculatedPortions = true) {
             const qtyTotal = Number($('#editOriginalQuantity').val()) || 0;
             const qtyBonus = Number($('#editBonusQuantity').val()) || 0;
@@ -921,11 +928,12 @@
                 ? 0
                 : Math.round((qtyNormal * originalTotal) / qtyTotal);
             const porsiPabrikBase = (qtyNormal + qtyBonus) * ratePabrik;
-            const ownerBeforeRemainder = (qtyNormal * rateOwner) - (qtyBonus * ratePabrik);
-            const porsiOwnerBase = ownerBeforeRemainder;
+            const porsiOwnerBase = qtyNormal * rateOwner;
             const porsiPerusahaanBase = qtyNormal * ratePerusahaan;
             const totalBeforeRemainder = porsiPabrikBase + porsiOwnerBase + porsiPerusahaanBase;
             const selisih = effectiveTotal - totalBeforeRemainder;
+            const requiredSplitTotal = Math.max(effectiveTotal, porsiPabrikBase);
+            const factoryFundingShortfall = Math.max(0, porsiPabrikBase - effectiveTotal);
             let porsiPabrik;
             let porsiOwner;
             let porsiPerusahaan;
@@ -945,9 +953,8 @@
             }
 
             if (selisih < 0) {
-                let availableAmount = effectiveTotal;
-                porsiPabrik = Math.min(porsiPabrikBase, availableAmount);
-                availableAmount -= porsiPabrik;
+                porsiPabrik = porsiPabrikBase;
+                let availableAmount = Math.max(0, effectiveTotal - porsiPabrik);
                 porsiOwner = Math.min(Math.max(0, porsiOwnerBase), availableAmount);
                 availableAmount -= porsiOwner;
                 porsiPerusahaan = Math.min(porsiPerusahaanBase, availableAmount);
@@ -969,6 +976,9 @@
             $('#editEffectiveTotal').val(formatNumber(effectiveTotal));
             $('#editProductTotal').val(effectiveTotal);
             $('#editTotalDisplay').text('Rp ' + formatNumber(effectiveTotal));
+            $('#editRequiredSplitTotal').val(requiredSplitTotal);
+            $('#editFactoryObligation').val(porsiPabrikBase);
+            $('#editRequiredTotalDisplay').text('Rp ' + formatNumber(requiredSplitTotal));
 
             if (applyCalculatedPortions) {
                 $('#editPorsiPabrik').val(formatNumber(porsiPabrik));
@@ -976,15 +986,14 @@
                 $('#editPorsiPerusahaan').val(formatNumber(porsiPerusahaan));
             }
 
-            if (ownerBeforeRemainder < 0) {
-                $error
+            if (factoryFundingShortfall > 0) {
+                $warning
                     .removeClass('d-none')
-                    .text(`Porsi Owner negatif (Rp ${formatNumber(ownerBeforeRemainder)}). Kurangi qty bonus atau sesuaikan rate.`);
-                $('#saveEditSplitBtn').prop('disabled', true);
+                    .text(`Total efektif tidak menutup kewajiban Pabrik. Kekurangan Rp ${formatNumber(factoryFundingShortfall)} tetap dibayarkan ke Pabrik; Owner dan Perusahaan menjadi Rp 0.`);
             }
 
-            // Guard selisih maksimal 1% dinonaktifkan karena seluruh selisih
-            // dialokasikan ke entity yang dipilih sebagai penerima sisa.
+            // Guard selisih maksimal 1% dinonaktifkan. Surplus dialokasikan ke
+            // penerima sisa, sedangkan defisit mengikuti prioritas kewajiban.
             // if (effectiveTotal > 0 && Math.abs(selisih) * 100 > effectiveTotal) {
             //     $warning
             //         .removeClass('d-none')
@@ -1000,9 +1009,9 @@
             const pabrik = parseNumber($('#editPorsiPabrik').val());
             const owner = parseNumber($('#editPorsiOwner').val());
             const perusahaan = parseNumber($('#editPorsiPerusahaan').val());
-            const productTotal = parseNumber($('#editProductTotal').val());
+            const requiredSplitTotal = parseNumber($('#editRequiredSplitTotal').val());
             const totalSplit = pabrik + owner + perusahaan;
-            const difference = productTotal - totalSplit;
+            const difference = requiredSplitTotal - totalSplit;
 
             $('#editTotalSplit').val(formatNumber(totalSplit));
             $('#editDifference').val(formatNumber(difference));
@@ -1027,10 +1036,16 @@
                 split_notes: $('#editSplitNotes').val()
             };
             const totalSplit = formData.porsi_pabrik + formData.porsi_owner + formData.porsi_perusahaan;
-            const effectiveTotal = parseNumber($('#editProductTotal').val());
+            const requiredSplitTotal = parseNumber($('#editRequiredSplitTotal').val());
+            const factoryObligation = parseNumber($('#editFactoryObligation').val());
 
-            if (totalSplit !== effectiveTotal) {
-                toastr.error(`Total porsi harus sama dengan total efektif Rp ${formatNumber(effectiveTotal)}.`);
+            if (formData.porsi_pabrik < factoryObligation) {
+                toastr.error(`Porsi Pabrik minimal Rp ${formatNumber(factoryObligation)}.`);
+                return;
+            }
+
+            if (totalSplit !== requiredSplitTotal) {
+                toastr.error(`Total porsi harus sama dengan total wajib dibagikan Rp ${formatNumber(requiredSplitTotal)}.`);
                 return;
             }
 
@@ -1187,7 +1202,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Selisih</label>
+                                    <label class="form-label">Selisih terhadap Total Wajib</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
                                         <input type="text" class="form-control difference-${index}" readonly>
@@ -1219,13 +1234,14 @@
             const productTotal = parseNumber($('.product-total').eq(index).val());
 
             const totalSplit = pabrik + owner + perusahaan;
-            const difference = totalSplit - productTotal;
+            const requiredSplitTotal = Math.max(productTotal, pabrik);
+            const difference = requiredSplitTotal - totalSplit;
 
             $(`.total-split-${index}`).val(formatNumber(totalSplit));
-            $(`.difference-${index}`).val(formatNumber(Math.abs(difference)));
+            $(`.difference-${index}`).val(formatNumber(difference));
 
             // Update difference styling
-            if (Math.abs(difference) > 0.01) {
+            if (difference !== 0) {
                 $(`.difference-${index}`).removeClass('text-success').addClass('text-danger');
             } else {
                 $(`.difference-${index}`).removeClass('text-danger').addClass('text-success');
@@ -1250,10 +1266,11 @@
                 const remainingAllocation = $(this).find(`.remaining-allocation:checked`).val();
 
                 const totalSplit = porsiPabrik + porsiOwner + porsiPerusahaan;
+                const requiredSplitTotal = Math.max(productTotal, porsiPabrik);
 
                 // Validate totals match
-                if (Math.abs(totalSplit - productTotal) > 0.01) {
-                    toastr.error(`Total porsi untuk produk index ${index + 1} tidak sesuai`);
+                if (totalSplit !== requiredSplitTotal) {
+                    toastr.error(`Total porsi untuk produk index ${index + 1} harus Rp ${formatNumber(requiredSplitTotal)}`);
                     hasError = true;
                     return false;
                 }
