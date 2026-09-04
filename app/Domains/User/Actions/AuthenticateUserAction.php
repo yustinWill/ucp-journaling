@@ -14,6 +14,8 @@ class AuthenticateUserAction
 {
     public function login($req)
     {
+        $req['status'] = 'ACTIVE';
+
         if (Auth::attempt($req)) {
             // $permissions = app(RolePermissionService::class)->findAllBasedOnRoleId(Auth::user()->role_id);
             // if (empty($permissions)) {

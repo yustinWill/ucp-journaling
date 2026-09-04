@@ -33,8 +33,7 @@ final class RevenueSplitCalculator
         $qtyNormal = $qtyTotal - $qtyAnulir - $qtyBonus;
         $rateTotal = $ratePabrik + $rateOwner + $ratePerusahaan;
         $porsiPabrikBase = ($qtyNormal + $qtyBonus) * $ratePabrik;
-        $ownerBeforeRemainder = ($qtyNormal * $rateOwner) - ($qtyBonus * $ratePabrik);
-        $porsiOwnerBase = $ownerBeforeRemainder;
+        $porsiOwnerBase = $qtyNormal * $rateOwner;
         $porsiPerusahaanBase = $qtyNormal * $ratePerusahaan;
         $totalSplitBeforeRemainder = $porsiPabrikBase + $porsiOwnerBase + $porsiPerusahaanBase;
         $totalEfektif = $qtyTotal === 0
@@ -43,13 +42,12 @@ final class RevenueSplitCalculator
         $selisih = $totalEfektif - $totalSplitBeforeRemainder;
 
         if ($selisih < 0) {
-            // Ketika nilai penjualan tidak cukup untuk seluruh porsi dasar,
-            // distribusikan nilai yang tersedia dengan prioritas Pabrik,
-            // kemudian Owner, lalu Perusahaan.
-            $availableAmount = $totalEfektif;
-            $porsiPabrik = min($porsiPabrikBase, $availableAmount);
-            $availableAmount -= $porsiPabrik;
-            $porsiOwner = min(max(0, $porsiOwnerBase), $availableAmount);
+            // Pabrik selalu menerima kewajiban penuh, termasuk produksi bonus.
+            // Hanya nilai yang tersisa setelah Pabrik yang dapat dibagikan ke
+            // Owner lalu Perusahaan.
+            $porsiPabrik = $porsiPabrikBase;
+            $availableAmount = max(0, $totalEfektif - $porsiPabrik);
+            $porsiOwner = min($porsiOwnerBase, $availableAmount);
             $availableAmount -= $porsiOwner;
             $porsiPerusahaan = min($porsiPerusahaanBase, $availableAmount);
         } else {
@@ -67,16 +65,11 @@ final class RevenueSplitCalculator
         }
 
         $errors = [];
+        $requiredSplitTotal = max($totalEfektif, $porsiPabrikBase);
+        $factoryFundingShortfall = max(0, $porsiPabrikBase - $totalEfektif);
 
-        if ($ownerBeforeRemainder < 0) {
-            $errors[] = sprintf(
-                'Porsi Owner negatif (Rp %s). Kurangi qty bonus atau sesuaikan rate.',
-                number_format($ownerBeforeRemainder, 0, ',', '.')
-            );
-        }
-
-        // Guard selisih maksimal 1% dinonaktifkan karena seluruh selisih memang
-        // dialokasikan ke entity yang dipilih sebagai penerima sisa.
+        // Guard selisih maksimal 1% dinonaktifkan. Surplus dialokasikan ke
+        // penerima sisa, sedangkan defisit mengikuti prioritas kewajiban.
         // if ($totalEfektif > 0 && (abs($selisih) * 100) > $totalEfektif) {
         //     $errors[] = sprintf(
         //         'Selisih Rp %s melebihi 1%% dari total efektif. Periksa rate dan total produk.',
@@ -100,6 +93,9 @@ final class RevenueSplitCalculator
             'porsi_owner' => $porsiOwner,
             'porsi_perusahaan' => $porsiPerusahaan,
             'total_split' => $porsiPabrik + $porsiOwner + $porsiPerusahaan,
+            'required_split_total' => $requiredSplitTotal,
+            'factory_obligation' => $porsiPabrikBase,
+            'factory_funding_shortfall' => $factoryFundingShortfall,
             'remaining_allocation' => $sisaKe,
             'remaining_amount' => $selisih,
             'errors' => $errors,
@@ -117,8 +113,18 @@ final class RevenueSplitCalculator
             throw new InvalidArgumentException(implode(' ', $errors));
         }
 
-        if (($result['total_split'] ?? null) !== ($result['total_efektif'] ?? null)) {
-            throw new InvalidArgumentException('Total porsi harus sama dengan total efektif.');
+        $porsiPabrik = $result['porsi_pabrik'] ?? null;
+        $factoryObligation = $result['factory_obligation'] ?? null;
+
+        if (! is_int($porsiPabrik) || ! is_int($factoryObligation) || $porsiPabrik < $factoryObligation) {
+            throw new InvalidArgumentException('Porsi Pabrik tidak boleh kurang dari kewajiban Pabrik.');
+        }
+
+        $requiredSplitTotal = $result['required_split_total']
+            ?? max((int) ($result['total_efektif'] ?? 0), $factoryObligation);
+
+        if (($result['total_split'] ?? null) !== $requiredSplitTotal) {
+            throw new InvalidArgumentException('Total porsi harus sama dengan total wajib dibagikan.');
         }
     }
 

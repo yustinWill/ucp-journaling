@@ -145,7 +145,7 @@ class SalesOrderRevenueSplitController extends Controller
             $soProduct = DB::table('t_sales_order_products as sop')
                 ->where('sop.f_sales_order_id', $salesOrderId)
                 ->where('sop.f_product_id', $productId)
-                ->where('sop.is_bonus', 0)
+                ->orderBy('sop.is_bonus')
                 ->first();
 
             if (! $soProduct) {

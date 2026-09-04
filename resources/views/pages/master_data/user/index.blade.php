@@ -107,19 +107,8 @@
             <hr class="my-6 mx-n6" />
             <!-- Action Buttons -->
             <div class="mt-4">
-                <div class="d-flex justify-content-between">
-                    <!-- Column Toggle -->
-                    <div class="d-flex align-items-center">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="toggleTagColumn" checked>
-                            <label class="form-check-label" for="toggleTagColumn">
-                                <i class="icon-base ti tabler-tag me-1"></i>Tampilkan Kolom Tag
-                            </label>
-                        </div>
-                    </div>
-
+                <div class="d-flex justify-content-end">
                     <div class="d-flex gap-2">
-                        
                         @can('user.create')
                             <a href="{{ route('master_data.user.add') }}"
                                 class="btn btn-md btn-primary waves-effect waves-light"><span
@@ -139,9 +128,8 @@
                         <th>Email User</th>
                         <th>Phone</th>
                         <th>Role</th>
-                        {{-- <th>Tag</th> --}}
                         <th>Terakhir Login</th>
-                        {{-- <th>Status</th> --}}
+                        <th>Status</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -152,6 +140,11 @@
 @section('js_script')
     <script>
         $(function() {
+            const canView = @json(auth()->user()->can('user.view'));
+            const canEdit = @json(auth()->user()->can('user.edit'));
+            const canDelete = @json(auth()->user()->can('user.delete'));
+            const currentUserId = @json(auth()->id());
+
             //DataTable
             const main_table = document.querySelector('#main-table');
             let dt_adv_filter;
@@ -189,31 +182,17 @@
                             data: 'role_name',
                             responsivePriority: 5
                         },
-                        // {
-                        //     data: 'tags',
-                        //     responsivePriority: 6,
-                        //     render: function(data, type, row) {
-                        //         // let tags = JSON.parse(data);
-                        //         // return tags.map(tag => {
-                        //         //     if (tag.name == null) {
-                        //         //         return ``;
-                        //         //     }
-                        //         //     return `<span class="badge ${tag.preview} me-1">${tag.name}</span>`;
-                        //         // }).join('');
-                        //         return ''
-                        //     }
-                        // },
                         {
                             data: 'last_login',
                             responsivePriority: 6
                         },
-                        // {
-                        //     data: 'status',
-                        //     responsivePriority: 9
-                        // },
+                        {
+                            data: 'account_status',
+                            responsivePriority: 7
+                        },
                         {
                             data: null,
-                            responsivePriority: 7
+                            responsivePriority: 8
                         }
                     ],
                     columnDefs: [{
@@ -226,16 +205,29 @@
                                     .replace(':id', row.id);
                                 const editUrl = "{{ route('master_data.user.edit', ':id') }}"
                                     .replace(':id', row.id);
-                                return `
-                                <div class="d-flex gap-2">
-                                    <a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
+                                let actions = '<div class="d-flex gap-2">';
+
+                                if (canView) {
+                                    actions += `<a href="${detailUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Detail">
                                         <i class="icon-base ti tabler-eye"></i>
-                                    </a>
-                                    <a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
+                                    </a>`;
+                                }
+
+                                if (canEdit && row.deleted_at === null) {
+                                    actions += `<a href="${editUrl}" class="btn btn-sm btn-primary waves-effect waves-light" title="Edit">
                                         <i class="icon-base ti tabler-edit"></i>
-                                    </a>
-                                </div>
-                            `;
+                                    </a>`;
+                                }
+
+                                if (canDelete && row.deleted_at === null && Number(row.id) !== Number(currentUserId)) {
+                                    actions += `<button type="button" class="btn btn-sm btn-danger waves-effect waves-light delete-btn"
+                                        data-id="${row.id}" title="Hapus dan nonaktifkan">
+                                        <i class="icon-base ti tabler-trash"></i>
+                                    </button>`;
+                                }
+
+                                actions += '</div>';
+                                return actions;
                             }
                         },
                         {
@@ -249,15 +241,14 @@
                             targets: [1], // Name column
                             responsivePriority: 3
                         },
-                        // {
-                        //     targets: [7], // Status column
-                        //     render: function(data, type, row) {
-                        //         const badgeClass = data == 'ACTIVE' ? 'bg-label-success' :
-                        //             'bg-label-secondary';
-                        //         const statusText = data == 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
-                        //         return `<span class="badge ${badgeClass}">${statusText}</span>`;
-                        //     }
-                        // }
+                        {
+                            targets: [6],
+                            render: function(data) {
+                                const badgeClass = data === 'ACTIVE' ? 'bg-label-success' : 'bg-label-secondary';
+                                const statusText = data === 'ACTIVE' ? 'Aktif' : 'Tidak Aktif';
+                                return `<span class="badge ${badgeClass}">${statusText}</span>`;
+                            }
+                        }
                     ],
                     layout: {
                         topStart: {
@@ -284,16 +275,6 @@
                 });
             }
 
-            // Tag Column Toggle Functionality
-            $('#toggleTagColumn').on('change', function() {
-                const tagColumn = dt_adv_filter.column(5); // Tag column index (0-based)
-                tagColumn.visible(this.checked);
-            });
-
-            // Initialize tag column visibility based on checkbox state
-            const initialTagVisibility = $('#toggleTagColumn').is(':checked');
-            dt_adv_filter.column(5).visible(initialTagVisibility);
-
             let searchTimeout;
             $('#user-name, #user-email, #user-role, #user-status').on('keyup change',
                 function() {
@@ -305,6 +286,62 @@
                         }
                     }, 400); // 400ms delay
                 });
+
+            $(document).on('click', '.delete-btn', function() {
+                const id = $(this).data('id');
+                const row = dt_adv_filter.row($(this).closest('tr')).data();
+                const name = row?.name || 'user ini';
+
+                Swal.fire({
+                    title: 'Hapus user?',
+                    html: `Akun <strong>${$('<div>').text(name).html()}</strong> akan dinonaktifkan dan tidak dapat mengakses aplikasi lagi.<br><small>Data user tidak akan dihapus dari database.</small>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Hapus',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-secondary'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        return;
+                    }
+
+                    $.ajax({
+                        url: "{{ route('master_data.user.delete') }}",
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            id: id
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: response.message,
+                                customClass: {
+                                    confirmButton: 'btn btn-success'
+                                },
+                                buttonsStyling: false
+                            });
+                            dt_adv_filter.ajax.reload(null, false);
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal menghapus user',
+                                html: xhr.responseJSON?.message || 'Terjadi kesalahan saat memproses permintaan.',
+                                customClass: {
+                                    confirmButton: 'btn btn-primary'
+                                },
+                                buttonsStyling: false
+                            });
+                        }
+                    });
+                });
+            });
         });
     </script>
 @endsection

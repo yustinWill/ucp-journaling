@@ -58,7 +58,8 @@ class SalesOrderRevenueSplitService
 
     /**
      * Aggregate regular and bonus rows for one product, then apply the
-     * specification formula. Bonus production is funded by Owner.
+     * specification formula. Bonus units add to the guaranteed factory
+     * obligation; Owner and Company receive the remaining available value.
      */
     public function createRevenueSplitForProduct($salesOrderId, $product, $companyCode, $userId)
     {
@@ -253,10 +254,17 @@ class SalesOrderRevenueSplitService
             throw new InvalidArgumentException('Porsi revenue tidak boleh negatif.');
         }
 
-        if ($submittedTotal !== $calculation['total_efektif']) {
+        if ($submittedPabrik < $calculation['factory_obligation']) {
             throw new InvalidArgumentException(sprintf(
-                'Total porsi harus sama dengan total efektif Rp %s.',
-                number_format($calculation['total_efektif'], 0, ',', '.')
+                'Porsi Pabrik minimal Rp %s.',
+                number_format($calculation['factory_obligation'], 0, ',', '.')
+            ));
+        }
+
+        if ($submittedTotal !== $calculation['required_split_total']) {
+            throw new InvalidArgumentException(sprintf(
+                'Total porsi harus sama dengan total wajib dibagikan Rp %s.',
+                number_format($calculation['required_split_total'], 0, ',', '.')
             ));
         }
 
