@@ -443,8 +443,36 @@ class SalesOrderController extends Controller
         return response()->json(['success' => true, 'message' => 'Sales Order berhasil dibatalkan.']);
     }
 
-    public function destroy($id)
+    public function revertIndex(Request $request)
     {
+        return view('pages.main_transaction.sales_order.revert', [
+            'canExecuteRevert' => $request->user()->can('sales_order.delete'),
+        ]);
+    }
+
+    public function revertIndexData()
+    {
+        return response()->json(
+            app(SalesOrderService::class)->findAllRevertCandidatesDatatable()
+        );
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        if (! $request->user()->can('sales_order.delete')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk melakukan revert Sales Order.',
+            ], 403);
+        }
+
+        if (! session('user_company_code')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Company aktif tidak ditemukan. Silakan login ulang sebelum melakukan revert.',
+            ], 403);
+        }
+
         try {
             $summary = app(DeleteSalesOrderAction::class)->execute((int) $id);
 

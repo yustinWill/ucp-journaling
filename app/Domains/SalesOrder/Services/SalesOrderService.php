@@ -230,6 +230,105 @@ class SalesOrderService
         ];
     }
 
+    /**
+     * Return a company-scoped list of Sales Orders for the revert tool.
+     *
+     * The additional counters let the user understand the destructive impact
+     * before selecting an order. The actual mutation remains owned by
+     * DeleteSalesOrderAction.
+     */
+    public function findAllRevertCandidatesDatatable(): array
+    {
+        $companyCode = session('user_company_code');
+        $draw = (int) request()->input('draw', 1);
+
+        if (! $companyCode) {
+            return [
+                'draw' => $draw,
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => [],
+            ];
+        }
+
+        $query = DB::table($this->table_name.' as so')
+            ->select([
+                'so.id',
+                'so.transaction_code',
+                'so.transaction_date',
+                'so.grand_price',
+                'so.status',
+                'mc.name as customer_name',
+                'u.name as created_by_name',
+                DB::raw('(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id) as delivery_count'),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_deliveries sd WHERE sd.sales_order_id = so.id AND sd.is_confirmed = '1') as confirmed_delivery_count"),
+                DB::raw('(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id) as invoice_count'),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status IN ('PAID', 'SETTLED')) as paid_invoice_count"),
+                DB::raw("(SELECT COUNT(*) FROM t_sales_invoices si WHERE si.f_sales_order_id = so.id AND si.status = 'PARTIALLY_PAID') as partial_invoice_count"),
+                DB::raw('(SELECT COALESCE(SUM(sip.payment_value), 0)
+                    FROM t_sales_invoice_payment sip
+                    INNER JOIN t_sales_invoices si ON si.id = sip.sales_invoice_id
+                    WHERE si.f_sales_order_id = so.id) as payment_total'),
+                DB::raw("(SELECT COUNT(*)
+                    FROM t_return_managements rm
+                    INNER JOIN t_sales_invoices si ON si.id = rm.f_source_invoice_id
+                    WHERE si.f_sales_order_id = so.id
+                      AND rm.return_type = 'SALES_RETURN') as sales_return_count"),
+                DB::raw("(SELECT COUNT(*)
+                    FROM t_reimbursements r
+                    WHERE r.company_code = so.company_code
+                      AND r.deleted_at IS NULL
+                      AND EXISTS (
+                          SELECT 1
+                          FROM t_sales_deliveries sd
+                          WHERE sd.sales_order_id = so.id
+                            AND r.description = CONCAT('Automatic created by system No SD:', sd.delivery_number)
+                      )) as reimbursement_count"),
+            ])
+            ->leftJoin('m_contacts as mc', 'mc.id', '=', 'so.f_customer_id')
+            ->leftJoin('users as u', 'u.id', '=', 'so.created_by')
+            ->where('so.company_code', $companyCode);
+
+        $search = trim((string) request()->input('search.value', ''));
+        if ($search !== '') {
+            $query->where(function ($subQuery) use ($search) {
+                $subQuery
+                    ->where('so.transaction_code', 'like', "%{$search}%")
+                    ->orWhere('mc.name', 'like', "%{$search}%");
+            });
+        }
+
+        if ($dateFrom = request()->input('date_from')) {
+            $query->whereDate('so.transaction_date', '>=', $dateFrom);
+        }
+
+        if ($dateTo = request()->input('date_to')) {
+            $query->whereDate('so.transaction_date', '<=', $dateTo);
+        }
+
+        $recordsTotal = DB::table($this->table_name)
+            ->where('company_code', $companyCode)
+            ->count();
+        $recordsFiltered = (clone $query)->count();
+
+        $start = max(0, (int) request()->input('start', 0));
+        $length = min(100, max(1, (int) request()->input('length', 10)));
+
+        $data = $query
+            ->orderByDesc('so.transaction_date')
+            ->orderByDesc('so.id')
+            ->skip($start)
+            ->take($length)
+            ->get();
+
+        return [
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ];
+    }
+
     public function getSummaryStats()
     {
         $companyCode = session('user_company_code');

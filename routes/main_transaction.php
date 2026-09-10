@@ -170,7 +170,15 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_order_segment.'/get_customer_info/{customer_id}', 'getCustomerInfo')->name('main_transaction.sales_order.get_customer_info');
         Route::get($base_segment.$sales_order_segment.'/get_warehouse_products/{customer_id}', 'getWarehouseProducts')->name('main_transaction.sales_order.get_warehouse_products');
         Route::post($base_segment.$sales_order_segment.'/cancel/{id}', 'cancel')->name('main_transaction.sales_order.cancel');
-        Route::delete($base_segment.$sales_order_segment.'/delete/{id}', 'destroy')->name('main_transaction.sales_order.delete');
+        Route::get($base_segment.$sales_order_segment.'/revert', 'revertIndex')
+            ->middleware('can:sales_order_revert.view')
+            ->name('main_transaction.sales_order_revert.index');
+        Route::get($base_segment.$sales_order_segment.'/revert/index_data_table', 'revertIndexData')
+            ->middleware('can:sales_order_revert.view')
+            ->name('main_transaction.sales_order_revert.index_data_table');
+        Route::delete($base_segment.$sales_order_segment.'/delete/{id}', 'destroy')
+            ->middleware('can:sales_order.delete')
+            ->name('main_transaction.sales_order.delete');
     });
 
     // Sales Order Revenue Split Routes

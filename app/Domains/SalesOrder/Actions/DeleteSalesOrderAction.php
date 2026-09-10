@@ -4,6 +4,7 @@ namespace App\Domains\SalesOrder\Actions;
 
 use App\Domains\Product\Services\ProductService;
 use App\Services\StockMovementLogService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -58,26 +59,35 @@ class DeleteSalesOrderAction
 
     private function findSalesOrderById(int $salesOrderId)
     {
-        $query = DB::table('t_sales_orders')
-            ->where('id', $salesOrderId);
+        $companyCode = $this->companyCode();
 
-        if (session('user_company_code')) {
-            $query->where('company_code', session('user_company_code'));
-        }
+        $query = DB::table('t_sales_orders')
+            ->where('id', $salesOrderId)
+            ->where('company_code', $companyCode);
 
         return $query->lockForUpdate()->first();
     }
 
     private function findSalesOrderByTransactionCode(string $transactionCode)
     {
-        $query = DB::table('t_sales_orders')
-            ->where('transaction_code', $transactionCode);
+        $companyCode = $this->companyCode();
 
-        if (session('user_company_code')) {
-            $query->where('company_code', session('user_company_code'));
-        }
+        $query = DB::table('t_sales_orders')
+            ->where('transaction_code', $transactionCode)
+            ->where('company_code', $companyCode);
 
         return $query->lockForUpdate()->first();
+    }
+
+    private function companyCode(): string
+    {
+        $companyCode = session('user_company_code');
+
+        if (! $companyCode) {
+            throw new AuthorizationException('Company context is required to revert a Sales Order.');
+        }
+
+        return (string) $companyCode;
     }
 
     private function deleteSalesOrder(object $salesOrder): array
