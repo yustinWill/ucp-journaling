@@ -95,7 +95,11 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Log tidak dapat dimuat',
-                            text: xhr.responseJSON?.message || 'Silakan muat ulang halaman dan coba lagi.'
+                            text: xhr.responseJSON?.message || 'Silakan muat ulang halaman dan coba lagi.',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            },
+                            buttonsStyling: false
                         });
                     }
                 },
@@ -222,7 +226,11 @@
                         </div>
                     `,
                     confirmButtonText: 'Tutup',
-                    customClass: { popup: 'text-start' }
+                    customClass: {
+                        popup: 'text-start',
+                        confirmButton: 'btn btn-primary'
+                    },
+                    buttonsStyling: false
                 });
             });
         });
