@@ -3,22 +3,24 @@
 namespace App\Http\Controllers\MainTransaction;
 
 use App\Domains\Contact\Services\ContactService;
+use App\Domains\Notification\Services\NotificationService;
 use App\Domains\PaymentTerm\Services\PaymentTermService;
 use App\Domains\Product\Services\ProductService;
 use App\Domains\ReturnManagement\Services\ReturnManagementService;
+use App\Domains\SalesDelivery\Services\SalesDeliveryService;
+use App\Domains\SalesInvoice\Services\SalesInvoiceService;
 use App\Domains\SalesOrder\Actions\CreateSalesOrderAction;
 use App\Domains\SalesOrder\Actions\DeleteSalesOrderAction;
 use App\Domains\SalesOrder\Actions\UpdateSalesOrderAction;
 use App\Domains\SalesOrder\Services\SalesOrderAuditLogService;
-use App\Domains\SalesDelivery\Services\SalesDeliveryService;
-use App\Domains\SalesInvoice\Services\SalesInvoiceService;
+use App\Domains\SalesOrder\Services\SalesOrderRevertLogService;
 use App\Domains\SalesOrder\Services\SalesOrderService;
 use App\Domains\SalesPerson\Services\SalesPersonService;
 use App\Domains\Tag\Services\TagService;
-use App\Domains\Notification\Services\NotificationService;
 use App\Domains\Warehouse\Services\WarehouseService;
 use App\Enums\ErrorCodes;
 use App\Enums\SuccessCodes;
+use App\Events\MessageSent;
 use App\Exceptions\AppException;
 use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
@@ -30,7 +32,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use App\Events\MessageSent;
 
 class SalesOrderController extends Controller
 {
@@ -76,8 +77,9 @@ class SalesOrderController extends Controller
             ->select('id', 'name')
             ->orderBy('name')
             ->get();
-        
+
         $permissionData = PermissionHelper::getViewPermissions('main_transaction_sales_order');
+
         return view('pages.main_transaction.sales_order.index', array_merge([
             'customers' => $customers,
         ], $permissionData));
@@ -86,6 +88,7 @@ class SalesOrderController extends Controller
     public function summaryStats()
     {
         $stats = app(SalesOrderService::class)->getSummaryStats();
+
         return response()->json($stats);
     }
 
@@ -103,7 +106,6 @@ class SalesOrderController extends Controller
         $canAddPaymentTerms = true;
         $canAddTags = true;
         $canAddWarehouses = true;
-
 
         return view('pages.main_transaction.sales_order.add', [
             'customers' => $customers,
@@ -131,7 +133,7 @@ class SalesOrderController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate transaction number: ' . $e->getMessage(),
+                'message' => 'Failed to generate transaction number: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -213,7 +215,7 @@ class SalesOrderController extends Controller
             $sales_order_id = app(CreateSalesOrderAction::class)->execute($validated);
 
             $title = 'Sales Order Baru Dibuat';
-            $message = 'Sales Order dengan nomor ' . $validated['reference_no'] . ' telah dibuat.';
+            $message = 'Sales Order dengan nomor '.$validated['reference_no'].' telah dibuat.';
             $icon_text = 'ti tabler-shopping-cart';
             $notification_type = 'SALES_ORDER';
             app(NotificationService::class)->create([
@@ -326,7 +328,7 @@ class SalesOrderController extends Controller
             ->where('sop.is_bonus', 0)
             ->where(function ($q) {
                 $q->whereRaw('sop.remaining_qty > 0')
-                  ->whereRaw('sop.remaining_qty > COALESCE((
+                    ->whereRaw('sop.remaining_qty > COALESCE((
                       SELECT SUM(sdp.qty)
                       FROM t_sales_delivery_products sdp
                       JOIN t_sales_deliveries sd ON sdp.sales_delivery_id = sd.id
@@ -454,6 +456,18 @@ class SalesOrderController extends Controller
     {
         return response()->json(
             app(SalesOrderService::class)->findAllRevertCandidatesDatatable()
+        );
+    }
+
+    public function revertLogIndex()
+    {
+        return view('pages.main_transaction.sales_order.revert_log');
+    }
+
+    public function revertLogIndexData()
+    {
+        return response()->json(
+            app(SalesOrderRevertLogService::class)->findAllDatatable()
         );
     }
 
@@ -755,6 +769,7 @@ class SalesOrderController extends Controller
             ])
             ->orderBy('p.name')
             ->get();
+
         return response()->json([
             'success' => true,
             'data' => $products,

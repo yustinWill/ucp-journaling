@@ -31,6 +31,8 @@ const SALES_ORDER_PERMISSIONS = [
     'sales_order.create' => 'Can create new sales orders',
     'sales_order.edit' => 'Can edit sales orders',
     'sales_order.delete' => 'Can delete sales orders',
+    'sales_order_revert.view' => 'Can view the Sales Order revert tool',
+    'sales_order_revert_log.view' => 'Can view Sales Order revert logs',
 ];
 
 // Usage in controller:

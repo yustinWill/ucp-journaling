@@ -176,6 +176,12 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_order_segment.'/revert/index_data_table', 'revertIndexData')
             ->middleware('can:sales_order_revert.view')
             ->name('main_transaction.sales_order_revert.index_data_table');
+        Route::get($base_segment.$sales_order_segment.'/revert-log', 'revertLogIndex')
+            ->middleware('can:sales_order_revert_log.view')
+            ->name('main_transaction.sales_order_revert_log.index');
+        Route::get($base_segment.$sales_order_segment.'/revert-log/index_data_table', 'revertLogIndexData')
+            ->middleware('can:sales_order_revert_log.view')
+            ->name('main_transaction.sales_order_revert_log.index_data_table');
         Route::delete($base_segment.$sales_order_segment.'/delete/{id}', 'destroy')
             ->middleware('can:sales_order.delete')
             ->name('main_transaction.sales_order.delete');

@@ -53,7 +53,7 @@
                 <div data-i18n="Chat">Anggaran - wip</div>
             </a>
         </li> --}}
-        @if(Auth::check() && (Auth::user()->hasPermissionTo('sales_order.view') || Auth::user()->can('sales_order_revert.view') || Auth::user()->hasPermissionTo('sales_delivery.view') || Auth::user()->hasPermissionTo('sales_invoice.view') || Auth::user()->hasPermissionTo('purchase_order.view') || Auth::user()->hasPermissionTo('purchase_delivery.view') || Auth::user()->hasPermissionTo('purchase_invoice.view') || Auth::user()->hasPermissionTo('expense.view')))
+        @if(Auth::check() && (Auth::user()->hasPermissionTo('sales_order.view') || Auth::user()->can('sales_order_revert.view') || Auth::user()->can('sales_order_revert_log.view') || Auth::user()->hasPermissionTo('sales_delivery.view') || Auth::user()->hasPermissionTo('sales_invoice.view') || Auth::user()->hasPermissionTo('purchase_order.view') || Auth::user()->hasPermissionTo('purchase_delivery.view') || Auth::user()->hasPermissionTo('purchase_invoice.view') || Auth::user()->hasPermissionTo('expense.view')))
             <li class="menu-header small">
                 <span class="menu-header-text" data-i18n="Apps & Pages">Transaksi</span>
             </li>
@@ -66,10 +66,11 @@
                 </a>
             </li>
         @endif
-        @if(Auth::check() && (Auth::user()->hasPermissionTo('sales_order.view') || Auth::user()->can('sales_order_revert.view') || Auth::user()->hasPermissionTo('sales_delivery.view') || Auth::user()->hasPermissionTo('sales_invoice.view')))
+        @if(Auth::check() && (Auth::user()->hasPermissionTo('sales_order.view') || Auth::user()->can('sales_order_revert.view') || Auth::user()->can('sales_order_revert_log.view') || Auth::user()->hasPermissionTo('sales_delivery.view') || Auth::user()->hasPermissionTo('sales_invoice.view')))
             <li class="menu-item @if (request()->routeIs([
                     'main_transaction.sales_order.*',
                     'main_transaction.sales_order_revert.*',
+                    'main_transaction.sales_order_revert_log.*',
                     'main_transaction.sales_delivery.*',
                     'main_transaction.sales_invoice.*',
                 ])) open @endif">
@@ -89,6 +90,13 @@
                         <li class="menu-item @if (request()->routeIs(['main_transaction.sales_order_revert.*'])) active @endif">
                             <a href="{{ route('main_transaction.sales_order_revert.index') }}" class="menu-link">
                                 <div data-i18n="Chat">Revert Sales Order</div>
+                            </a>
+                        </li>
+                    @endcan
+                    @can('sales_order_revert_log.view')
+                        <li class="menu-item @if (request()->routeIs(['main_transaction.sales_order_revert_log.*'])) active @endif">
+                            <a href="{{ route('main_transaction.sales_order_revert_log.index') }}" class="menu-link">
+                                <div data-i18n="Chat">Log Revert Sales Order</div>
                             </a>
                         </li>
                     @endcan

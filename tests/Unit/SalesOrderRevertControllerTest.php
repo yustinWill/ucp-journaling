@@ -42,4 +42,15 @@ class SalesOrderRevertControllerTest extends TestCase
         $this->assertSame(403, $response->getStatusCode());
         $this->assertFalse($response->getData(true)['success']);
     }
+
+    public function test_revert_log_page_uses_its_own_view_permission(): void
+    {
+        $view = app(SalesOrderController::class)->revertLogIndex();
+        $route = app('router')->getRoutes()->getByName('main_transaction.sales_order_revert_log.index');
+        $dataRoute = app('router')->getRoutes()->getByName('main_transaction.sales_order_revert_log.index_data_table');
+
+        $this->assertSame('pages.main_transaction.sales_order.revert_log', $view->name());
+        $this->assertContains('can:sales_order_revert_log.view', $route->gatherMiddleware());
+        $this->assertContains('can:sales_order_revert_log.view', $dataRoute->gatherMiddleware());
+    }
 }
