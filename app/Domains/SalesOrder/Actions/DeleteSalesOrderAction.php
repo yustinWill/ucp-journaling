@@ -3,6 +3,7 @@
 namespace App\Domains\SalesOrder\Actions;
 
 use App\Domains\Product\Services\ProductService;
+use App\Domains\SalesOrder\Services\SalesOrderRevertLogService;
 use App\Services\StockMovementLogService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
@@ -96,16 +97,28 @@ class DeleteSalesOrderAction
             'sales_order_id' => $salesOrder->id,
             'transaction_code' => $salesOrder->transaction_code,
             'sales_invoices_deleted' => 0,
+            'sales_invoice_codes' => [],
+            'invoice_payments_deleted' => 0,
+            'payment_value_deleted' => 0,
             'sales_deliveries_deleted' => 0,
+            'sales_delivery_codes' => [],
             'stock_movements_reversed' => 0,
             'stock_batches_restored' => 0,
             'topup_allocations_deleted' => 0,
             'revenue_splits_deleted' => 0,
+            'sales_order_products_deleted' => 0,
         ];
 
-        $invoiceIds = DB::table('t_sales_invoices')
+        $invoices = DB::table('t_sales_invoices')
             ->where('f_sales_order_id', $salesOrder->id)
-            ->pluck('id');
+            ->select(['id', 'transaction_code'])
+            ->get();
+        $invoiceIds = $invoices->pluck('id');
+        $summary['sales_invoice_codes'] = $invoices
+            ->pluck('transaction_code')
+            ->filter()
+            ->values()
+            ->all();
 
         $this->ensureNoSalesReturns($invoiceIds, $salesOrder->transaction_code);
         $this->deleteSalesInvoices($invoiceIds, $summary);
@@ -117,6 +130,10 @@ class DeleteSalesOrderAction
             ->get();
 
         foreach ($salesDeliveries as $delivery) {
+            if ($delivery->delivery_number) {
+                $summary['sales_delivery_codes'][] = $delivery->delivery_number;
+            }
+
             if ($delivery->is_confirmed === '1') {
                 $this->revertConfirmedSalesDelivery($delivery, $summary);
             }
@@ -128,7 +145,7 @@ class DeleteSalesOrderAction
         $this->revertTopupAllocations($salesOrder->id, $summary);
         $this->deleteRevenueSplits($salesOrder->id, $summary);
 
-        DB::table('t_sales_order_products')
+        $summary['sales_order_products_deleted'] = DB::table('t_sales_order_products')
             ->where('f_sales_order_id', $salesOrder->id)
             ->delete();
 
@@ -139,6 +156,8 @@ class DeleteSalesOrderAction
         DB::table('t_sales_orders')
             ->where('id', $salesOrder->id)
             ->delete();
+
+        app(SalesOrderRevertLogService::class)->create($salesOrder, $summary);
 
         Log::info("Sales Order {$salesOrder->transaction_code} deleted with related SI/SD cleanup.", $summary);
 
@@ -172,6 +191,14 @@ class DeleteSalesOrderAction
         }
 
         $invoiceIdValues = $invoiceIds->all();
+
+        $paymentSummary = DB::table('t_sales_invoice_payment')
+            ->whereIn('sales_invoice_id', array_map('strval', $invoiceIdValues))
+            ->selectRaw('COUNT(*) as payment_count, COALESCE(SUM(payment_value), 0) as payment_value')
+            ->first();
+
+        $summary['invoice_payments_deleted'] = (int) ($paymentSummary->payment_count ?? 0);
+        $summary['payment_value_deleted'] = (float) ($paymentSummary->payment_value ?? 0);
 
         DB::table('t_sales_invoice_payment')
             ->whereIn('sales_invoice_id', array_map('strval', $invoiceIdValues))
