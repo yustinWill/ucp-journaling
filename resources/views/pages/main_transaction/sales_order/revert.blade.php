@@ -148,7 +148,11 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Daftar tidak dapat dimuat',
-                            text: xhr.responseJSON?.message || 'Silakan muat ulang halaman dan coba lagi.'
+                            text: xhr.responseJSON?.message || 'Silakan muat ulang halaman dan coba lagi.',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            },
+                            buttonsStyling: false
                         });
                     }
                 },
@@ -338,7 +342,11 @@
                     showCancelButton: true,
                     confirmButtonText: 'Revert sekarang',
                     cancelButtonText: 'Batal',
-                    confirmButtonColor: '#d33',
+                    customClass: {
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-label-secondary'
+                    },
+                    buttonsStyling: false,
                     reverseButtons: true,
                     focusCancel: true
                 });
@@ -358,7 +366,11 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Sales Order berhasil direvert',
-                            html: `${escapeHtml(response.message)}<br><small>${asCount(summary.sales_deliveries_deleted)} delivery dan ${asCount(summary.sales_invoices_deleted)} invoice dihapus.</small>`
+                            html: `${escapeHtml(response.message)}<br><small>${asCount(summary.sales_deliveries_deleted)} delivery dan ${asCount(summary.sales_invoices_deleted)} invoice dihapus.</small>`,
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            },
+                            buttonsStyling: false
                         });
                     },
                     error: function(xhr) {
@@ -366,7 +378,11 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Revert gagal',
-                            text: xhr.responseJSON?.message || 'Terjadi kesalahan saat menjalankan revert.'
+                            text: xhr.responseJSON?.message || 'Terjadi kesalahan saat menjalankan revert.',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            },
+                            buttonsStyling: false
                         });
                     },
                     complete: function() {
