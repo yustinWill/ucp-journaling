@@ -15,7 +15,7 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-        @can('dashboard.view')
+        @if(Auth::user()?->canAccessDashboard())
             <li class="menu-header small">
                 <span class="menu-header-text" data-i18n="Apps & Pages">Dashboard & Laporan</span>
             </li>
@@ -25,7 +25,7 @@
                     <div data-i18n="Dashboard">Dashboard</div>
                 </a>
             </li>
-        @endcan
+        @endif
         {{-- <li class="menu-item @if (request()->routeIs(['dashboard.summary'])) active @endif">
             <a href="{{ route('dashboard.summary') }}" class="menu-link">
                 <i class="menu-icon icon-base ti tabler-chart-pie"></i>
