@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUserIsActive::class);
 
         $middleware->alias([
+            'dashboard.access' => \App\Http\Middleware\EnsureDashboardAccess::class,
             'role.permission' => \App\Http\Middleware\RolePermissionMiddleware::class,
         ]);
     })

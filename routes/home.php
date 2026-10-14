@@ -1,17 +1,18 @@
 <?php
 
+use App\Events\MessageSent;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
-use App\Events\MessageSent;
 
 Route::middleware(['auth'])->group(function () {
     Route::controller(HomeController::class)->group(function () {
         Route::get('/home', 'index')->name('home.view');
-        Route::get('/dashboard', 'dashboard')->name('dashboard.index');
-        Route::get('/dashboard/summary', 'dashboardSummary')->name('dashboard.summary');
+        Route::middleware('dashboard.access')->group(function () {
+            Route::get('/dashboard', 'dashboard')->name('dashboard.index');
+            Route::get('/dashboard/summary', 'dashboardSummary')->name('dashboard.summary');
+        });
     });
 });
-
 
 Route::get('/send-message', function () {
     $message = [

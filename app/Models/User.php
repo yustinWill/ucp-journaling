@@ -16,6 +16,13 @@ class User extends Authenticatable
     use HasFactory, HasPermissions, HasRoles, Notifiable, SoftDeletes;
 
     /**
+     * Role IDs that are allowed to view the management dashboard.
+     *
+     * @var list<int>
+     */
+    public const DASHBOARD_ROLE_IDS = [1, 2];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -56,5 +63,10 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function canAccessDashboard(): bool
+    {
+        return in_array((int) $this->role_id, self::DASHBOARD_ROLE_IDS, true);
     }
 }
