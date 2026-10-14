@@ -67,6 +67,8 @@ class User extends Authenticatable
 
     public function canAccessDashboard(): bool
     {
-        return in_array((int) $this->role_id, self::DASHBOARD_ROLE_IDS, true);
+        return $this->roles()
+            ->whereIn('roles.id', self::DASHBOARD_ROLE_IDS)
+            ->exists();
     }
 }
