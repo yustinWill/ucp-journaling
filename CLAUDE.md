@@ -97,7 +97,7 @@ php artisan budget:recalculate   # recompute budget remaining values
 - **Revenue split** on SO lines (`SalesOrderRevenueSplitService`, `RevenueSplitCalculator`; see `docs/REVENUE_SPLIT_BONUS_ANULIR_LOGIC.md`), and **Topup**.
 
 ## Gotchas
-- **`app/Console/Kernel.php` is dead code.** Laravel 12 never loads it, and `bootstrap/app.php` has no `withSchedule`, so the daily `backup:run --only-db` (01:00) and `backup:clean` (02:00) it defines **never run** from `schedule:run`. The committed `routes/console.php` schedules nothing. Production adds its schedule (`backup:run` daily, `telescope:prune`) as an uncommitted local edit to that file, so a deploy that changes it will conflict there. Commit the schedule to fix this.
+- **Schedules live in `routes/console.php`** (`backup:run` 00:00, `backup:clean` 01:00, `telescope:prune` 02:00). Laravel 12 never loads `app/Console/Kernel.php`, so don't recreate it. The servers need the `schedule:run` cron. Backups go to the same server's `local` disk (`storage/app/private/<APP_NAME>/`), and without `backup:clean` they fill it (production reached 99% on 2026-11-16).
 - **`SalesOrderController::cancel`** calls `PermissionHelper::hasPermission('main_transaction_sales_order', 'write')`, which doesn't match the `(User, string)` signature. The `TypeError` makes cancel return a 500.
 - **`TransactionNumberService::generateNumber`** locks the module's `m_transaction_numbers` row (`lockForUpdate`) and throws a plain `\Exception` when that row is missing. A new numbered module needs a seed migration (e.g. `2026_05_24_000003_seed_kas_besar_transaction_number.php`).
 - **`env()` returns null under `config:cache`.** Use `config()` in code and views.
