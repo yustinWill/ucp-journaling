@@ -25,9 +25,6 @@ npm-debug.log
 Thumbs.db
 yarn-error.log
 
-# Claude Code configuration
-CLAUDE.md
-
 # Claude session knowledge base
 .claude-sessions/
 
