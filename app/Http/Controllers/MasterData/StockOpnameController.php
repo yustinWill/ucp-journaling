@@ -96,7 +96,7 @@ class StockOpnameController extends Controller
         $tags = app(TagService::class)->findAll();
 
         // Permission check for adding new tags
-        $canAddTags = true; // Mock permission check
+        $canAddTags = auth()->user()->can('tag.create');
 
         return view('pages.master_data.stock_opname.add', [
             'warehouses' => $warehouses,
@@ -254,7 +254,7 @@ class StockOpnameController extends Controller
         ];
 
         // Permission check for adding new tags
-        $canAddTags = true; // Mock permission check
+        $canAddTags = auth()->user()->can('tag.create');
 
         return view('pages.master_data.stock_opname.edit', [
             'stockOpname' => $stockOpname,

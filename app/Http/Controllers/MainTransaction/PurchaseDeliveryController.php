@@ -28,8 +28,8 @@ class PurchaseDeliveryController extends Controller
 
         // Map permissions to view variables
         $canAddPurchaseDelivery = auth()->user()->can('purchase_delivery.create');
-        $canImportPurchaseDelivery = true;
-        $canExportPurchaseDelivery = true;
+        $canImportPurchaseDelivery = auth()->user()->can('purchase_delivery.create');
+        $canExportPurchaseDelivery = auth()->user()->can('purchase_delivery.view');
         $canViewPurchaseDelivery = auth()->user()->can('purchase_delivery.view');
         $canEditPurchaseDelivery = auth()->user()->can('purchase_delivery.edit');
 
@@ -40,8 +40,8 @@ class PurchaseDeliveryController extends Controller
             'canExportPurchaseDelivery' => $canExportPurchaseDelivery,
             'canViewPurchaseDelivery' => $canViewPurchaseDelivery,
             'canEditPurchaseDelivery' => $canEditPurchaseDelivery,
-            'canViewUser' => true,
-            'canViewPurchaseOrder' => true,
+            'canViewUser' => auth()->user()->can('user.view'),
+            'canViewPurchaseOrder' => auth()->user()->can('purchase_order.view'),
         ];
 
         return view('pages.main_transaction.purchase_delivery.index', array_merge($data));
@@ -67,8 +67,8 @@ class PurchaseDeliveryController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Permission checks for related data creation
-        $canAddStorages = true;
-        $canAddTags = true;
+        $canAddStorages = auth()->user()->can('warehouse.create');
+        $canAddTags = auth()->user()->can('tag.create');
 
         return view('pages.main_transaction.purchase_delivery.add', [
             'purchaseOrder' => $purchaseOrder,
@@ -163,8 +163,8 @@ class PurchaseDeliveryController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Permission checks
-        $canAddStorages = true;
-        $canAddTags = true;
+        $canAddStorages = auth()->user()->can('warehouse.create');
+        $canAddTags = auth()->user()->can('tag.create');
 
         return view('pages.main_transaction.purchase_delivery.edit', [
             'purchaseDelivery' => $purchaseDelivery,

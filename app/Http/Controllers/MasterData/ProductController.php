@@ -118,11 +118,11 @@ class ProductController extends Controller
         $products = app(ProductService::class)->findAll();
 
         // Permission checks for adding new options
-        $canAddTags = true; // Mock permission check
-        $canAddUnits = true; // Mock permission check
-        $canAddCategories = true; // Mock permission check
-        $canAddAccounts = true; // Mock permission check
-        $canAddTaxes = true; // Mock permission check
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddUnits = auth()->user()->can('unit.create');
+        $canAddCategories = auth()->user()->can('product_category.create');
+        $canAddAccounts = auth()->user()->can('coa.create');
+        $canAddTaxes = auth()->user()->can('tax.create');
 
         $statuses = [
             ['value' => 'ACTIVE', 'label' => 'ACTIVE - Aktif'],
@@ -646,11 +646,11 @@ class ProductController extends Controller
         ];
 
         // Permission checks for adding new options
-        $canAddTags = true; // Mock permission check
-        $canAddUnits = true; // Mock permission check
-        $canAddCategories = true; // Mock permission check
-        $canAddAccounts = true; // Mock permission check
-        $canAddTaxes = true; // Mock permission check
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddUnits = auth()->user()->can('unit.create');
+        $canAddCategories = auth()->user()->can('product_category.create');
+        $canAddAccounts = auth()->user()->can('coa.create');
+        $canAddTaxes = auth()->user()->can('tax.create');
         $product->f_tag_codes = [23];
 
         $defaultNoTaxCode = 'NOTAX';

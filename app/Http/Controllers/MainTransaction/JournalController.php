@@ -54,7 +54,7 @@ class JournalController extends Controller
 
         return view('pages.main_transaction.journal.add', [
             'today' => date('Y-m-d'),
-            'canAddTags' => true,
+            'canAddTags' => auth()->user()->can('tag.create'),
             'tags' => $tags,
             'coas' => $coas,
             'referenceNo' => $referenceNo,
@@ -234,7 +234,7 @@ class JournalController extends Controller
             'journal' => $journal,
             'coas' => $coas,
             'tags' => $tags,
-            'canAddTags' => true,
+            'canAddTags' => auth()->user()->can('tag.create'),
         ]);
     }
 
