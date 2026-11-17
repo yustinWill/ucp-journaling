@@ -712,6 +712,7 @@
 
             function loadRevenueSplit() {
                 const salesOrderId = {{ $invoice_data->f_sales_order_id ?? 0 }};
+                const canEditRevenueSplit = @json(auth()->user()->can('revenue_split.edit'));
 
                 // Try to load existing revenue split first
                 $.ajax({
@@ -723,12 +724,12 @@
                             loadExistingBreakdown(salesOrderId);
                         } else {
                             // No splits yet - show input form
-                            loadInputForm(salesOrderId);
+                            canEditRevenueSplit ? loadInputForm(salesOrderId) : loadExistingBreakdown(salesOrderId);
                         }
                     },
                     error: function() {
                         // On error, try to show input form
-                        loadInputForm(salesOrderId);
+                        canEditRevenueSplit ? loadInputForm(salesOrderId) : loadExistingBreakdown(salesOrderId);
                     }
                 });
             }

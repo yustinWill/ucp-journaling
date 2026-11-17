@@ -108,7 +108,7 @@ class SalesOrderRevenueSplitController extends Controller
         try {
             $splits = $this->revenueSplitService->getRevenueSplitsForSalesOrder($salesOrderId);
             $summary = $this->revenueSplitService->getRevenueSplitSummary($salesOrderId);
-            $readonly = $request->boolean('readonly', false);
+            $readonly = $request->boolean('readonly', false) || ! $request->user()->can('revenue_split.edit');
 
             $html = view('pages.main_transaction.sales_order.revenue_split_breakdown', [
                 'splits' => $splits,
