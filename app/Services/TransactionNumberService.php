@@ -222,13 +222,14 @@ class TransactionNumberService
     /**
      * Interpolate template with actual values
      */
-    private function interpolateTemplate(string $template, string $moduleInitial, string $moduleName, int $counter, int $padding): string
+    public function interpolateTemplate(string $template, string $moduleInitial, string $moduleName, int $counter, int $padding, ?int $timestamp = null): string
     {
+        $timestamp ??= time();
         $replacements = [
-            '{YEAR}' => date('Y'),
-            '{YY}' => date('y'),
-            '{MM}' => date('m'),
-            '{DD}' => date('d'),
+            '{YEAR}' => date('Y', $timestamp),
+            '{YY}' => date('y', $timestamp),
+            '{MM}' => date('m', $timestamp),
+            '{DD}' => date('d', $timestamp),
             '{MODULE_INITIAL}' => strtoupper($moduleInitial),
             '{MODULE_NAME}' => strtoupper($moduleName),
             '{COUNTER}' => str_pad($counter, $padding, '0', STR_PAD_LEFT),
