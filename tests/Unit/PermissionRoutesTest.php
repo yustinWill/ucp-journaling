@@ -42,6 +42,12 @@ class PermissionRoutesTest extends TestCase
             'purchase_invoice.update' => 'purchase_invoice.edit',
             'return_management.add' => 'return_management.create',
             'return_management.store' => 'return_management.create',
+            'kas_besar.index' => 'kas_besar.view',
+            'kas_besar.index_data_table' => 'kas_besar.view',
+            'kas_besar.detail' => 'kas_besar.view',
+            'kas_besar.add' => 'kas_besar.create',
+            'kas_besar.store' => 'kas_besar.create',
+            'kas_besar.generate_transaction_number' => 'kas_besar.create',
         ];
 
         foreach ($routes as $name => $permission) {
