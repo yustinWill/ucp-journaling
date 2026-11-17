@@ -20,15 +20,18 @@ class KasBesarService
             // so no other Kas Besar write can read the same saldo in the meantime.
             $number = $this->numberFor($date);
 
+            // The saldo runs in date order: the new row follows every row dated on or before it.
             $saldoBefore = (float) DB::table('t_kas_besar')
                 ->where('company_code', $companyCode)
+                ->where('transaction_date', '<=', $date)
+                ->orderBy('transaction_date', 'DESC')
                 ->orderBy('id', 'DESC')
                 ->value('saldo_after');
             $saldoAfter = $saldoBefore + $amount;
 
             if ($amount < 0 && $saldoAfter < 0) {
                 throw ValidationException::withMessages([
-                    'kas_besar' => 'Saldo Kas Besar tidak mencukupi. Saldo saat ini: Rp '.number_format($saldoBefore, 0, ',', '.'),
+                    'kas_besar' => 'Saldo Kas Besar tidak mencukupi. Saldo pada '.date('d/m/Y', strtotime($date)).': Rp '.number_format($saldoBefore, 0, ',', '.'),
                 ]);
             }
 
@@ -47,6 +50,25 @@ class KasBesarService
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            // A backdated row shifts the saldo of every later-dated row; carry it forward.
+            $saldo = $saldoAfter;
+            $later = DB::table('t_kas_besar')
+                ->where('company_code', $companyCode)
+                ->where('transaction_date', '>', $date)
+                ->orderBy('transaction_date')
+                ->orderBy('id')
+                ->get(['id', 'transaction_number', 'topup_amount']);
+            foreach ($later as $row) {
+                $before = $saldo;
+                $saldo += (float) $row->topup_amount;
+                if ($saldo < 0) {
+                    throw ValidationException::withMessages([
+                        'kas_besar' => 'Saldo Kas Besar tidak mencukupi: transaksi '.$row->transaction_number.' sesudahnya akan menjadi minus.',
+                    ]);
+                }
+                DB::table('t_kas_besar')->where('id', $row->id)->update(['saldo_before' => $before, 'saldo_after' => $saldo]);
+            }
 
             return ['id' => $id, 'transaction_number' => $number];
         });
