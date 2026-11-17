@@ -79,7 +79,7 @@ class BudgetCategoryController extends Controller
     public function edit($id)
     {
         $category = app(BudgetCategoryService::class)->findById($id);
-        $canWrite = true;
+        $canWrite = auth()->user()->can('budget_category.edit');
 
         return view('pages.master_data.budget_category.edit', compact('category', 'canWrite'));
     }

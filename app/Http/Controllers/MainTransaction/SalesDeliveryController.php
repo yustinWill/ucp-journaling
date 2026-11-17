@@ -249,7 +249,7 @@ class SalesDeliveryController extends Controller
             'salesOrder' => $salesOrder,
             'productLines' => $productLines,
             'audit_logs' => $audit_logs,
-            'canEdit' => true,
+            'canEdit' => auth()->user()->can('sales_delivery.edit'),
             'hasReimbursement' => $hasReimbursement,
         ], $permissionData, $siPermissionData));
     }

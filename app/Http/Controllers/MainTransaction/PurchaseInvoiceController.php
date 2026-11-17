@@ -74,7 +74,7 @@ class PurchaseInvoiceController extends Controller
         $remainingAmount = ($purchaseOrder->grand_price ?? 0) - $alreadyInvoicedAmount;
 
         // Permission checks for related data creation
-        $canAddTags = true;
+        $canAddTags = auth()->user()->can('tag.create');
 
         return view('pages.main_transaction.purchase_invoice.add', [
             'purchaseOrder' => $purchaseOrder,
@@ -247,7 +247,7 @@ class PurchaseInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks for related data creation
-        $canAddTags = true;
+        $canAddTags = auth()->user()->can('tag.create');
 
         return view('pages.main_transaction.purchase_invoice.edit', [
             'invoice_data' => $invoice_data,

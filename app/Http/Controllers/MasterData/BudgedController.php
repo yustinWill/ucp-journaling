@@ -129,7 +129,7 @@ class BudgedController extends Controller
         // $id is now the period_id
         $period = app(BudgedService::class)->findPeriodById($id);
         $budgetCategories = app(BudgetCategoryService::class)->findAllActive();
-        $canWrite = true;
+        $canWrite = auth()->user()->can('budget.edit');
 
         return view('pages.master_data.budged.edit', [
             'period_id' => $period->id,

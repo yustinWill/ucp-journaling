@@ -66,7 +66,7 @@ class ContactController extends Controller
             'banks' => $banks,
             'products' => $products,
             'tags' => $tags,
-            'canAddTags' => true, // Mock permission check
+            'canAddTags' => auth()->user()->can('tag.create'),
         ];
 
         return view('pages.master_data.contact.add', $selectData);
@@ -235,7 +235,7 @@ class ContactController extends Controller
             'sales_users' => $sales_users,
             'payable_accounts' => $coa_accounts,
             'receivable_accounts' => $coa_accounts,
-            'canAddTags' => true, // Mock permission check
+            'canAddTags' => auth()->user()->can('tag.create'),
             'products' => $products,
         ]);
     }

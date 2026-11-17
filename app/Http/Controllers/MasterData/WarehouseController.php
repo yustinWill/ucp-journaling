@@ -177,10 +177,10 @@ class WarehouseController extends Controller
         }
 
         // Permission checks for add buttons
-        $canAddTags = true;
-        $canAddWarehouses = true;
-        $canAddContacts = true;
-        $canAddCategories = true;
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddWarehouses = auth()->user()->can('warehouse.create');
+        $canAddContacts = auth()->user()->can('contact.create');
+        $canAddCategories = auth()->user()->can('product_category.create');
 
         $header_data = [];
         $items = [];

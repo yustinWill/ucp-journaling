@@ -148,10 +148,10 @@ class StockAdjustmentController extends Controller
         }
 
         // Permission checks for add buttons
-        $canAddTags = true;
-        $canAddWarehouses = true;
-        $canAddContacts = true;
-        $canAddCategories = true;
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddWarehouses = auth()->user()->can('warehouse.create');
+        $canAddContacts = auth()->user()->can('contact.create');
+        $canAddCategories = auth()->user()->can('product_category.create');
 
         $header_data = [];
         $items = [];
@@ -304,10 +304,10 @@ class StockAdjustmentController extends Controller
         // }
 
         // Permission checks for add buttons
-        $canAddTags = true;
-        $canAddWarehouses = true;
-        $canAddContacts = true;
-        $canAddCategories = true;
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddWarehouses = auth()->user()->can('warehouse.create');
+        $canAddContacts = auth()->user()->can('contact.create');
+        $canAddCategories = auth()->user()->can('product_category.create');
 
         return view('pages.main_transaction.stock_adjustment.edit', [
             'stockAdjustment' => $stockAdjustment,
@@ -328,10 +328,10 @@ class StockAdjustmentController extends Controller
     public function detail($id)
     {
         // Permission checks for detail page actions
-        $canEditStockAdjustment = true;
-        $canApproveStockAdjustment = true;
-        $canRejectStockAdjustment = true;
-        $canApplyStockAdjustment = true;
+        $canEditStockAdjustment = auth()->user()->can('stock_adjustment.edit');
+        $canApproveStockAdjustment = auth()->user()->can('stock_adjustment.edit');
+        $canRejectStockAdjustment = auth()->user()->can('stock_adjustment.edit');
+        $canApplyStockAdjustment = auth()->user()->can('stock_adjustment.edit');
 
         // Get stock adjustment data from service
         $stockAdjustment = app(StockAdjustmentService::class)->findOne($id);

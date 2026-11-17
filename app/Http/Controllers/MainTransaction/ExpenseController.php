@@ -55,9 +55,9 @@ class ExpenseController extends Controller
         $coa_accounts = app(CoaService::class)->findAll();
         $activeBudgets = app(BudgedService::class)->getActiveBudgets();
         return view('pages.main_transaction.expense.add', [
-            'canAddTags' => true,
-            'canAddContacts' => true,
-            'canAddPaymentTerms' => true,
+            'canAddTags' => auth()->user()->can('tag.create'),
+            'canAddContacts' => auth()->user()->can('contact.create'),
+            'canAddPaymentTerms' => auth()->user()->can('payment_term.create'),
             'taxOptions' => $taxOptions,
             'availableTags' => $availableTags,
             'suppliers' => $suppliers,
@@ -110,9 +110,9 @@ class ExpenseController extends Controller
 
         return view('pages.main_transaction.expense.edit', [
             'expense' => $expense,
-            'canAddTags' => true,
-            'canAddContacts' => true,
-            'canAddPaymentTerms' => true,
+            'canAddTags' => auth()->user()->can('tag.create'),
+            'canAddContacts' => auth()->user()->can('contact.create'),
+            'canAddPaymentTerms' => auth()->user()->can('payment_term.create'),
             'paymentMethods' => $paymentMethods,
             'paymentTerms' => $paymentTerms,
             'suppliers' => $suppliers,
@@ -127,9 +127,9 @@ class ExpenseController extends Controller
     public function payment($id)
     {
         // Check permissions for adding related data
-        $canAddTags = true;
-        $canAddContacts = true;
-        $canAddPaymentTerms = true;
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddContacts = auth()->user()->can('contact.create');
+        $canAddPaymentTerms = auth()->user()->can('payment_term.create');
 
         $taxOptions = app(TaxService::class)->findAll();
         $availableTags = app(TagService::class)->findAll();
@@ -171,7 +171,7 @@ class ExpenseController extends Controller
         $auditLogs = app(ExpenseAuditLogService::class)->findAllBasedOnExpenseId($id);
 
         // Permission checks for action buttons
-        $canEdit = true;
+        $canEdit = auth()->user()->can('expense.edit');
 
         return view('pages.main_transaction.expense.detail', [
             'expense' => $expense,
