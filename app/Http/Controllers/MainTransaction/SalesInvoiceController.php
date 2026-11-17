@@ -70,7 +70,7 @@ class SalesInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAll();
 
         // Permission checks for related data creation
-        $canAddTags = true;
+        $canAddTags = auth()->user()->can('tag.create');
 
         return view('pages.main_transaction.sales_invoice.add', [
             'availableSalesOrders' => $availableSalesOrders,
@@ -317,7 +317,7 @@ class SalesInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks for related data creation
-        $canAddTags = true;
+        $canAddTags = auth()->user()->can('tag.create');
 
         return view('pages.main_transaction.sales_invoice.edit', [
             'invoice_data' => $invoice_data,

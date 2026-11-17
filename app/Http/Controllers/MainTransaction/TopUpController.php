@@ -318,8 +318,8 @@ class TopUpController extends Controller
         return view('pages.main_transaction.topup.detail', [
             'topup' => $topup,
             'allocations' => $allocations,
-            'canEdit' => true, // Permission disabled - always allow
-            'canDelete' => true, // Permission disabled - always allow
+            'canEdit' => auth()->user()->can('topup.edit'),
+            'canDelete' => auth()->user()->can('topup.delete'),
         ]);
     }
 

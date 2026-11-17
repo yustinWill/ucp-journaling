@@ -54,8 +54,8 @@ class UserController extends Controller
         $tags = app(TagService::class)->findAll();
 
         // Permission checks for add buttons
-        $canAddTags = true;
-        $canAddRoles = true;
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddRoles = auth()->user()->can('role.create');
 
         return view('pages.master_data.user.add', [
             'roles' => $roles,
@@ -129,8 +129,8 @@ class UserController extends Controller
         $tags = app(TagService::class)->findAll();
 
         // Permission checks for add buttons
-        $canAddTags = true;
-        $canAddRoles = true;
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddRoles = auth()->user()->can('role.create');
 
         return view('pages.master_data.user.edit', [
             'user' => $user,

@@ -102,10 +102,10 @@ class SalesOrderController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
-        $canAddCustomers = true;
-        $canAddPaymentTerms = true;
-        $canAddTags = true;
-        $canAddWarehouses = true;
+        $canAddCustomers = auth()->user()->can('contact.create');
+        $canAddPaymentTerms = auth()->user()->can('payment_term.create');
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddWarehouses = auth()->user()->can('warehouse.create');
 
         return view('pages.main_transaction.sales_order.add', [
             'customers' => $customers,
@@ -523,10 +523,10 @@ class SalesOrderController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
-        $canAddCustomers = true;
-        $canAddPaymentTerms = true;
-        $canAddTags = true;
-        $canAddWarehouses = true;
+        $canAddCustomers = auth()->user()->can('contact.create');
+        $canAddPaymentTerms = auth()->user()->can('payment_term.create');
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddWarehouses = auth()->user()->can('warehouse.create');
 
         return view('pages.main_transaction.sales_order.edit', [
             'salesOrder' => $salesOrder,
