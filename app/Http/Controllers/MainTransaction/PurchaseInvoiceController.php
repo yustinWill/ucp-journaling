@@ -182,11 +182,11 @@ class PurchaseInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks
-        $canEditPurchaseInvoice = true;
-        $canViewUser = true;
-        $canViewPurchaseOrder = true;
-        $canViewReturnManagement = true;
-        $canViewProduct = true;
+        $canEditPurchaseInvoice = auth()->user()->can('purchase_invoice.edit');
+        $canViewUser = auth()->user()->can('user.view');
+        $canViewPurchaseOrder = auth()->user()->can('purchase_order.view');
+        $canViewReturnManagement = auth()->user()->can('return_management.view');
+        $canViewProduct = auth()->user()->can('product.view');
 
         return view('pages.main_transaction.purchase_invoice.detail', [
             'invoice_data' => $invoice_data,
