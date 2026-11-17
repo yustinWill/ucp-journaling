@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class RecalculateBudgetRemainingValues extends Command
 {
     protected $signature = 'budget:recalculate';
-    protected $description = 'Recalculate all budget remaining values based on existing expenses';
+    protected $description = 'Recalculate all budget remaining values based on existing expenses and reimbursements';
 
     public function handle()
     {
@@ -24,15 +24,21 @@ class RecalculateBudgetRemainingValues extends Command
                 ->where('be.budged_history_id', $budget->id)
                 ->sum('e.total_amount');
 
+            // Approved reimbursements draw on the budget too (ReimbursementService::approve)
+            $totalReimbursements = DB::table('t_budged_reimbursements as br')
+                ->join('t_reimbursements as r', 'br.reimbursement_id', '=', 'r.id')
+                ->where('br.budged_history_id', $budget->id)
+                ->sum('r.amount');
+
             // Calculate new remaining value
-            $newRemainingValue = $budget->budged_limit_value - $totalExpenses;
+            $newRemainingValue = $budget->budged_limit_value - $totalExpenses - $totalReimbursements;
 
             // Update budget
             DB::table('m_budgeds')
                 ->where('id', $budget->id)
                 ->update(['budged_remaining_value' => $newRemainingValue]);
 
-            $this->info("Budget #{$budget->id} ({$budget->budged_name}): Limit = {$budget->budged_limit_value}, Expenses = {$totalExpenses}, New Remaining = {$newRemainingValue}");
+            $this->info("Budget #{$budget->id} ({$budget->budged_name}): Limit = {$budget->budged_limit_value}, Expenses = {$totalExpenses}, Reimbursements = {$totalReimbursements}, New Remaining = {$newRemainingValue}");
         }
 
         $this->info('Budget recalculation completed!');
