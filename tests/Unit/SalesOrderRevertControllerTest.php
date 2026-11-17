@@ -43,6 +43,23 @@ class SalesOrderRevertControllerTest extends TestCase
         $this->assertFalse($response->getData(true)['success']);
     }
 
+    public function test_cancel_rejects_user_without_sales_order_edit_permission(): void
+    {
+        $user = Mockery::mock();
+        $user->shouldReceive('can')
+            ->once()
+            ->with('sales_order.edit')
+            ->andReturnFalse();
+
+        $request = Request::create('/main_transaction/sales_order/cancel/10', 'POST');
+        $request->setUserResolver(fn () => $user);
+
+        $response = app(SalesOrderController::class)->cancel($request, 10);
+
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertFalse($response->getData(true)['success']);
+    }
+
     public function test_revert_log_page_uses_its_own_view_permission(): void
     {
         $view = app(SalesOrderController::class)->revertLogIndex();

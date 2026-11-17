@@ -98,7 +98,6 @@ php artisan budget:recalculate   # recompute budget remaining values
 
 ## Gotchas
 - **Schedules live in `routes/console.php`** (`backup:run` 00:00, `backup:clean` 01:00, `telescope:prune` 02:00). Laravel 12 never loads `app/Console/Kernel.php`, so don't recreate it. The servers need the `schedule:run` cron. Backups go to the same server's `local` disk (`storage/app/private/<APP_NAME>/`), and without `backup:clean` they fill it (production reached 99% on 2026-11-16).
-- **`SalesOrderController::cancel`** calls `PermissionHelper::hasPermission('main_transaction_sales_order', 'write')`, which doesn't match the `(User, string)` signature. The `TypeError` makes cancel return a 500.
 - **`TransactionNumberService::generateNumber`** locks the module's `m_transaction_numbers` row (`lockForUpdate`) and throws a plain `\Exception` when that row is missing. A new numbered module needs a seed migration (e.g. `2026_05_24_000003_seed_kas_besar_transaction_number.php`).
 - **`env()` returns null under `config:cache`.** Use `config()` in code and views.
 - **Docs are mostly stale dev logs.** The root `*.md` files and most of `docs/` (especially the `*PERMISSION*` ones, written for the dropped RBAC) are out of date: trust the code over them.
