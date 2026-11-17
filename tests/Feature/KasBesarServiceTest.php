@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Services\KasBesarService;
-use App\Services\TransactionNumberService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -32,12 +31,23 @@ class KasBesarServiceTest extends TestCase
             $table->timestamps();
         });
 
-        $counter = 0;
-        $this->mock(TransactionNumberService::class)
-            ->shouldReceive('generateNumber')
-            ->andReturnUsing(function () use (&$counter) {
-                return 'KB-'.++$counter;
-            });
+        Schema::create('m_transaction_numbers', function (Blueprint $table) {
+            $table->id();
+            $table->string('module_name');
+            $table->string('module_initial');
+            $table->string('format_template');
+            $table->unsignedBigInteger('current_counter');
+            $table->tinyInteger('counter_padding');
+            $table->string('reset_frequency');
+            $table->date('last_reset_date')->nullable();
+            $table->string('status');
+            $table->timestamps();
+        });
+        DB::table('m_transaction_numbers')->insert([
+            'module_name' => 'kas_besar', 'module_initial' => 'KB', 'format_template' => 'KB-{YEAR}-{MM}-{COUNTER}',
+            'current_counter' => 0, 'counter_padding' => 4, 'reset_frequency' => 'monthly',
+            'last_reset_date' => now()->toDateString(), 'status' => 'active',
+        ]);
 
         session(['user_company_code' => '001']);
     }
@@ -45,6 +55,7 @@ class KasBesarServiceTest extends TestCase
     protected function tearDown(): void
     {
         Schema::dropIfExists('t_kas_besar');
+        Schema::dropIfExists('m_transaction_numbers');
 
         parent::tearDown();
     }
@@ -53,11 +64,11 @@ class KasBesarServiceTest extends TestCase
     {
         $kas = app(KasBesarService::class);
 
-        $kas->record('TOPUP', 100000, '2026-11-01');
-        $row = $kas->record('DEDUCTION', -30000, '2026-11-02', 'Pengeluaran: EXP-1', 7);
+        $kas->record('TOPUP', 100000, now()->toDateString());
+        $row = $kas->record('DEDUCTION', -30000, now()->toDateString(), 'Pengeluaran: EXP-1', 7);
 
         $deduction = DB::table('t_kas_besar')->find($row['id']);
-        $this->assertSame('KB-2', $row['transaction_number']);
+        $this->assertSame('KB-'.now()->format('Y-m').'-0002', $row['transaction_number']);
         $this->assertEquals(100000, $deduction->saldo_before);
         $this->assertEquals(70000, $deduction->saldo_after);
         $this->assertEquals(7, $deduction->f_expense_id);
@@ -66,13 +77,24 @@ class KasBesarServiceTest extends TestCase
     public function test_a_deduction_larger_than_the_saldo_is_refused(): void
     {
         $kas = app(KasBesarService::class);
-        $kas->record('TOPUP', 50000, '2026-11-01');
+        $kas->record('TOPUP', 50000, now()->toDateString());
 
         try {
-            $kas->record('DEDUCTION', -80000, '2026-11-02');
+            $kas->record('DEDUCTION', -80000, now()->toDateString());
             $this->fail('Expected the deduction to be refused.');
         } catch (ValidationException $e) {
             $this->assertSame(1, DB::table('t_kas_besar')->count());
         }
+    }
+
+    public function test_a_backdated_row_continues_its_own_month(): void
+    {
+        $kas = app(KasBesarService::class);
+        $lastMonth = now()->subMonthNoOverflow();
+
+        $this->assertSame('KB-'.now()->format('Y-m').'-0001', $kas->record('TOPUP', 10000, now()->toDateString())['transaction_number']);
+        $this->assertSame('KB-'.$lastMonth->format('Y-m').'-0001', $kas->record('TOPUP', 10000, $lastMonth->toDateString())['transaction_number']);
+        $this->assertSame('KB-'.$lastMonth->format('Y-m').'-0002', $kas->record('TOPUP', 10000, $lastMonth->toDateString())['transaction_number']);
+        $this->assertSame('KB-'.now()->format('Y-m').'-0002', $kas->record('TOPUP', 10000, now()->toDateString())['transaction_number']);
     }
 }
