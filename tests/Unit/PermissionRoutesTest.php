@@ -57,4 +57,26 @@ class PermissionRoutesTest extends TestCase
             $this->assertContains("can:$permission", $route->gatherMiddleware(), $name);
         }
     }
+
+    public function test_every_signed_in_write_route_checks_a_permission(): void
+    {
+        // Form helpers the expense pages call in the background; they write nothing a user owns.
+        $open = [
+            'master_data.transaction_number.check_duplicate',
+            'master_data.transaction_number.generate_number',
+            'master_data.transaction_number.preview_format',
+        ];
+
+        foreach (app('router')->getRoutes() as $route) {
+            $middleware = $route->gatherMiddleware();
+            if (! in_array('auth', $middleware) || in_array('GET', $route->methods()) || in_array($route->getName(), $open)) {
+                continue;
+            }
+
+            $this->assertNotEmpty(
+                array_filter($middleware, fn ($m) => str_starts_with($m, 'can:')),
+                $route->getName().' writes without a can: check'
+            );
+        }
+    }
 }

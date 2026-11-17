@@ -126,10 +126,10 @@ class PurchaseOrderController extends Controller
         $availableTags = app(TagService::class)->findAll();
 
         // Check permissions for adding related data
-        $canAddSuppliers = true;
-        $canAddPaymentTerms = true;
-        $canAddTags = true;
-        $canAddStorages = true;
+        $canAddSuppliers = auth()->user()->can('contact.create');
+        $canAddPaymentTerms = auth()->user()->can('payment_term.create');
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddStorages = auth()->user()->can('warehouse.create');
 
         return view('pages.main_transaction.purchase_order.add', [
             'suppliers' => $suppliers,
@@ -584,11 +584,11 @@ class PurchaseOrderController extends Controller
         ];
 
         // Check permissions for adding related data
-        $canAddSuppliers = true;
-        $canAddPaymentTerms = true;
-        $canAddTags = true;
-        $canAddStorages = true;
-        $canAddPIC = true;
+        $canAddSuppliers = auth()->user()->can('contact.create');
+        $canAddPaymentTerms = auth()->user()->can('payment_term.create');
+        $canAddTags = auth()->user()->can('tag.create');
+        $canAddStorages = auth()->user()->can('warehouse.create');
+        $canAddPIC = auth()->user()->can('contact.create');
 
         // Ensure all fields have default values
         $purchaseOrder['description'] = $purchaseOrder['description'] ?? '';
@@ -605,7 +605,7 @@ class PurchaseOrderController extends Controller
             'products' => $products,
             'paymentTerms' => $paymentTerms,
             'availableTags' => $availableTags,
-            'canWrite' => true,
+            'canWrite' => auth()->user()->can('purchase_order.edit'),
             'canAddSuppliers' => $canAddSuppliers,
             'canAddPaymentTerms' => $canAddPaymentTerms,
             'canAddTags' => $canAddTags,

@@ -33,9 +33,9 @@ class PaymentTermController extends Controller
         ];
 
         // Check permissions
-        $canAddPaymentTerm = true;
-        $canImportPaymentTerm = true;
-        $canExportPaymentTerm = true;
+        $canAddPaymentTerm = auth()->user()->can('payment_term.create');
+        $canImportPaymentTerm = auth()->user()->can('payment_term.create');
+        $canExportPaymentTerm = auth()->user()->can('payment_term.view');
 
         $data = [
             'totalPaymentTerms' => $totalPaymentTerms,
@@ -149,8 +149,8 @@ class PaymentTermController extends Controller
 
         $data = [
             'paymentTerm' => $paymentTerm,
-            'canEditPaymentTerm' => true,
-            'canDeletePaymentTerm' => true,
+            'canEditPaymentTerm' => auth()->user()->can('payment_term.edit'),
+            'canDeletePaymentTerm' => auth()->user()->can('payment_term.delete'),
         ];
 
         return view('pages.master_data.payment_term.detail', array_merge($data));
@@ -180,7 +180,7 @@ class PaymentTermController extends Controller
             'paymentTerm' => $paymentTerm,
             'statuses' => $statuses,
             'types' => $types,
-            'canWrite' => true,
+            'canWrite' => auth()->user()->can('payment_term.edit'),
         ];
 
         return view('pages.master_data.payment_term.edit', array_merge($data));
