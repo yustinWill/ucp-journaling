@@ -51,7 +51,7 @@ class KasBesarController extends Controller
         $filteredQuery = clone $query;
         $recordsFiltered = $filteredQuery->count();
 
-        $query->orderBy('kb.id', 'DESC');
+        $query->orderBy('kb.transaction_date', 'DESC')->orderBy('kb.id', 'DESC');
 
         $start  = (int) $request->input('start', 0);
         $length = (int) $request->input('length', 10);
@@ -89,11 +89,12 @@ class KasBesarController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'transaction_date' => 'required|date',
+            'transaction_date' => 'required|date|before_or_equal:today',
             'topup_amount'     => 'required|numeric|min:0.01',
             'notes'            => 'nullable|string|max:500',
         ], [
             'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
+            'transaction_date.before_or_equal' => 'Tanggal transaksi tidak boleh lebih dari hari ini.',
             'topup_amount.required'     => 'Jumlah topup wajib diisi.',
             'topup_amount.min'          => 'Jumlah topup harus lebih dari 0.',
         ]);
@@ -169,6 +170,7 @@ class KasBesarController extends Controller
 
         $latest = DB::table('t_kas_besar')
             ->where('company_code', $companyCode)
+            ->orderBy('transaction_date', 'DESC')
             ->orderBy('id', 'DESC')
             ->first();
 
