@@ -21,19 +21,23 @@
                         @endif
                         @if ($salesDelivery->is_confirmed != '1' && $salesDelivery->status !== 'CONFIRMED')
                             @if(!$salesDelivery->is_accepted)
+                            @if($canEditSalesDelivery ?? false)
                             <button type="button" id="btn-accept-delivery" class="btn btn-warning btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-package-import me-2"></i>
                                 Terima
                             </button>
+                            @endif
                             @else
                             <span class="badge bg-label-warning fs-6 py-2 px-3 me-1">
                                 <i class="icon-base ti tabler-package-import me-1"></i>
                                 Sudah Diterima
                             </span>
+                            @if($canEditSalesDelivery ?? false)
                             <button type="button" id="btn-confirm-delivery" class="btn btn-success btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-check me-2"></i>
                                 Konfirm
                             </button>
+                            @endif
                             @endif
                         @else
                             <span class="badge bg-label-success fs-6 py-2 px-3">
