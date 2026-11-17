@@ -49,7 +49,7 @@ php artisan budget:recalculate   # recompute budget remaining values
   4. The controller answers with JSON `{message}`.
   - Error handling: `ValidationException` → HTTP 400 with `ValidationHelper::formatErrors`. `AppException(ErrorCodes::X)` → its own status. `\Throwable` → `DiscordNotifier::reportException` and a 500.
   - Add new cases to `app/Enums/ErrorCodes.php` and `SuccessCodes.php`.
-  - Some newer controllers (`KasBesarController`) write with `DB::beginTransaction()` inline and return `{success, message}`.
+  - Some newer controllers (`KasBesarController`) return `{success, message}`.
 - **Multi-company scoping is manual. There is no global scope.** Every query filters on `company_code = session('user_company_code')`, and every insert sets the code. From CLI or a queue job, set the session and `Auth` yourself.
 - **Routes:** everything runs in the `web` group (session, CSRF and `EnsureUserIsActive`). New routes go inside the existing `Route::middleware(['auth'])` group in `routes/master_data.php` or `routes/main_transaction.php`.
   - Each entity has a `$<entity>_segment` variable, which must also be added to the group closure's `use (...)` list.
@@ -90,9 +90,10 @@ php artisan budget:recalculate   # recompute budget remaining values
   - The list needs `sales_order_revert.view`, the action needs `sales_order.delete`, and the log page needs `sales_order_revert_log.view`.
   - It is different from `cancel/{id}`, which only sets `CANCELLED` and only when the SO has no SD or SI.
 - **Sales-delivery accept** (`main_transaction.sales_delivery.accept`, `t_sales_deliveries.is_accepted`).
-- **Kas Besar** (`KasBesarController`, `t_kas_besar`):
-  - A running cash balance per company: each row stores `saldo_before`/`saldo_after`, computed from the latest row by id.
-  - It's topped up on its own page and drawn down by expenses (`ExpenseController` writes a row with `f_expense_id`).
+- **Kas Besar** (`KasBesarController`, `t_kas_besar`, staging only):
+  - A running cash balance per company: each row stores `saldo_before`/`saldo_after`, computed from the latest row by id (entry order, not transaction date).
+  - Every row goes through `KasBesarService::record`, which takes the number first (locking the counter row, so writes are serialized) and refuses a deduction below zero.
+  - It's topped up on its own page. A Kas/Tunai expense (`t_expenses.payment_method_type`) is deducted by `PaymentExpenseAction` when it is paid, so a pay-later expense deducts nothing until each payment, and an edit changes no deduction.
   - It has its own `kas_besar` transaction number. It posts no journal.
 - **Revenue split** on SO lines (`SalesOrderRevenueSplitService`, `RevenueSplitCalculator`; see `docs/REVENUE_SPLIT_BONUS_ANULIR_LOGIC.md`), and **Topup**.
 

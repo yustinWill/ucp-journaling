@@ -28,6 +28,8 @@ class ExpenseService
             'to_be_paid_later' => $data['pay_later'],
             'f_payment_term_id' => $data['payment_terms'],
             'f_payment_method_id' => $data['payment_method'],
+            'payment_method_type' => $data['payment_method_type'] ?? null,
+            'transfer_bank' => ($data['payment_method_type'] ?? null) === 'transfer' ? ($data['transfer_bank'] ?? null) : null,
             'due_date' => $data['due_date'],
             'f_receiver_customer_id' => $data['recipient_id'],
             'billing_address' => $data['billing_address'],
