@@ -387,10 +387,10 @@ class SalesOrderController extends Controller
         ]);
     }
 
-    public function cancel($id)
+    public function cancel(Request $request, $id)
     {
-        // Permission check
-        if (! PermissionHelper::hasPermission('main_transaction_sales_order', 'write')) {
+        // Same permission that shows the Cancel button on the detail page.
+        if (! $request->user()->can('sales_order.edit')) {
             return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses.'], 403);
         }
 
