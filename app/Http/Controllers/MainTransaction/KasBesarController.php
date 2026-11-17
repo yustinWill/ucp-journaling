@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MainTransaction;
 
 use App\Http\Controllers\Controller;
+use App\Services\KasBesarService;
 use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -98,46 +99,20 @@ class KasBesarController extends Controller
         ]);
 
         try {
-            DB::beginTransaction();
-
-            $companyCode = session('user_company_code');
-
-            $latest = DB::table('t_kas_besar')
-                ->where('company_code', $companyCode)
-                ->orderBy('id', 'DESC')
-                ->first();
-
-            $saldoBefore = $latest ? $latest->saldo_after : 0;
-            $saldoAfter  = $saldoBefore + $validated['topup_amount'];
-
-            $transactionNumber = app(TransactionNumberService::class)->generateNumber('kas_besar');
-
-            $id = DB::table('t_kas_besar')->insertGetId([
-                'company_code'       => $companyCode,
-                'transaction_number' => $transactionNumber,
-                'transaction_date'   => $validated['transaction_date'],
-                'type'               => 'TOPUP',
-                'topup_amount'       => $validated['topup_amount'],
-                'saldo_before'       => $saldoBefore,
-                'saldo_after'        => $saldoAfter,
-                'notes'              => $validated['notes'] ?? null,
-                'created_by'         => auth()->id(),
-                'updated_by'         => auth()->id(),
-                'created_at'         => now(),
-                'updated_at'         => now(),
-            ]);
-
-            DB::commit();
+            $row = app(KasBesarService::class)->record(
+                'TOPUP',
+                (float) $validated['topup_amount'],
+                $validated['transaction_date'],
+                $validated['notes'] ?? null
+            );
 
             return response()->json([
                 'success'            => true,
-                'message'            => 'Kas Besar berhasil ditambahkan dengan nomor: ' . $transactionNumber,
-                'id'                 => $id,
-                'transaction_number' => $transactionNumber,
+                'message'            => 'Kas Besar berhasil ditambahkan dengan nomor: ' . $row['transaction_number'],
+                'id'                 => $row['id'],
+                'transaction_number' => $row['transaction_number'],
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan: ' . $e->getMessage(),
@@ -173,7 +148,8 @@ class KasBesarController extends Controller
     public function generateTransactionNumber()
     {
         try {
-            $transactionNumber = app(TransactionNumberService::class)->generateNumber('kas_besar');
+            // Preview only: the number is taken when the top-up is saved.
+            $transactionNumber = app(TransactionNumberService::class)->getNextNumberPreview('kas_besar');
 
             return response()->json([
                 'success'            => true,

@@ -22,7 +22,6 @@ use App\Helpers\DiscordNotifier;
 use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
-use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -274,76 +273,8 @@ class ExpenseController extends Controller
                 ]);
             }
 
-            // Kas/Tunai: validate saldo and deduct inside the action
-            if ($validated['payment_method_type'] === 'kas_tunai') {
-                $companyCode = session('user_company_code');
-                $latest = DB::table('t_kas_besar')
-                    ->where('company_code', $companyCode)
-                    ->orderBy('id', 'DESC')
-                    ->first();
-                $saldo = $latest ? (float) $latest->saldo_after : 0;
-                $expenseAmount = (float) $validated['final_total'];
-                if ($expenseAmount > $saldo) {
-                    return response()->json([
-                        'message' => "Saldo Kas Besar tidak mencukupi. Saldo saat ini: Rp " . number_format($saldo, 0, ',', '.'),
-                        'error' => 'KAS_BESAR_INSUFFICIENT',
-                    ], 422);
-                }
-            }
-
+            // A Kas/Tunai expense paid now is deducted from Kas Besar inside the action.
             app(CreateExpenseAction::class)->execute($validated);
-
-            // Retrieve the newly created expense ID
-            $expenseId = DB::table('t_expenses')
-                ->where('transaction_no', $validated['transaction_number'])
-                ->value('id');
-
-            // Deduct from Kas Besar if payment is Kas/Tunai
-            if ($validated['payment_method_type'] === 'kas_tunai') {
-                $companyCode = session('user_company_code');
-                $latest = DB::table('t_kas_besar')
-                    ->where('company_code', $companyCode)
-                    ->orderBy('id', 'DESC')
-                    ->first();
-                $saldoBefore = $latest ? (float) $latest->saldo_after : 0;
-                $expenseAmount = (float) $validated['final_total'];
-                $saldoAfter = $saldoBefore - $expenseAmount;
-
-                $kasNumber = app(TransactionNumberService::class)->generateNumber('kas_besar');
-                $kasId = DB::table('t_kas_besar')->insertGetId([
-                    'company_code'       => $companyCode,
-                    'transaction_number' => $kasNumber,
-                    'transaction_date'   => $validated['transaction_date'],
-                    'type'               => 'DEDUCTION',
-                    'topup_amount'       => -$expenseAmount,
-                    'saldo_before'       => $saldoBefore,
-                    'saldo_after'        => $saldoAfter,
-                    'f_expense_id'       => $expenseId,
-                    'notes'              => 'Pengeluaran: ' . $validated['transaction_number'],
-                    'created_by'         => auth()->id(),
-                    'updated_by'         => auth()->id(),
-                    'created_at'         => now(),
-                    'updated_at'         => now(),
-                ]);
-
-                if ($expenseId) {
-                    DB::table('t_expenses')
-                        ->where('id', $expenseId)
-                        ->update([
-                            'payment_method_type' => 'kas_tunai',
-                            'f_kas_besar_id'      => $kasId,
-                            'updated_at'          => now(),
-                        ]);
-                }
-            } elseif ($validated['payment_method_type'] === 'transfer' && $expenseId) {
-                DB::table('t_expenses')
-                    ->where('id', $expenseId)
-                    ->update([
-                        'payment_method_type' => 'transfer',
-                        'transfer_bank'       => $validated['transfer_bank'] ?? null,
-                        'updated_at'          => now(),
-                    ]);
-            }
 
             return response()->json([
                 'message' => SuccessCodes::CREATE_EXPENSE_SUCCESS->message(),
