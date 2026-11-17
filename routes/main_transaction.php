@@ -153,11 +153,11 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_order_segment.'/index', 'index')->name('main_transaction.sales_order.index');
         Route::get($base_segment.$sales_order_segment.'/index_data_table', 'index_data_table')->name('main_transaction.sales_order.index_data_table');
         Route::get($base_segment.$sales_order_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.sales_order.generate_transaction_number');
-        Route::get($base_segment.$sales_order_segment.'/add', 'add')->name('main_transaction.sales_order.add');
-        Route::post($base_segment.$sales_order_segment.'/store', 'store')->name('main_transaction.sales_order.store');
+        Route::get($base_segment.$sales_order_segment.'/add', 'add')->middleware('can:sales_order.create')->name('main_transaction.sales_order.add');
+        Route::post($base_segment.$sales_order_segment.'/store', 'store')->middleware('can:sales_order.create')->name('main_transaction.sales_order.store');
         Route::get($base_segment.$sales_order_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_order.detail');
-        Route::get($base_segment.$sales_order_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_order.edit');
-        Route::post($base_segment.$sales_order_segment.'/update', 'update')->name('main_transaction.sales_order.update');
+        Route::get($base_segment.$sales_order_segment.'/edit/{id}', 'edit')->middleware('can:sales_order.edit')->name('main_transaction.sales_order.edit');
+        Route::post($base_segment.$sales_order_segment.'/update', 'update')->middleware('can:sales_order.edit')->name('main_transaction.sales_order.update');
         Route::get($base_segment.$sales_order_segment.'/import', 'import')->name('main_transaction.sales_order.import');
         Route::get($base_segment.$sales_order_segment.'/download_template', 'downloadTemplate')->name('main_transaction.sales_order.download_template');
         Route::post($base_segment.$sales_order_segment.'/validate_import', 'validateImport')->name('main_transaction.sales_order.validate_import');
@@ -169,7 +169,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_order_segment.'/summary_stats', 'summaryStats')->name('main_transaction.sales_order.summary_stats');
         Route::get($base_segment.$sales_order_segment.'/get_customer_info/{customer_id}', 'getCustomerInfo')->name('main_transaction.sales_order.get_customer_info');
         Route::get($base_segment.$sales_order_segment.'/get_warehouse_products/{customer_id}', 'getWarehouseProducts')->name('main_transaction.sales_order.get_warehouse_products');
-        Route::post($base_segment.$sales_order_segment.'/cancel/{id}', 'cancel')->name('main_transaction.sales_order.cancel');
+        Route::post($base_segment.$sales_order_segment.'/cancel/{id}', 'cancel')->middleware('can:sales_order.edit')->name('main_transaction.sales_order.cancel');
         Route::get($base_segment.$sales_order_segment.'/revert', 'revertIndex')
             ->middleware('can:sales_order_revert.view')
             ->name('main_transaction.sales_order_revert.index');
@@ -200,13 +200,13 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_delivery_segment.'/index', 'index')->name('main_transaction.sales_delivery.index');
         Route::get($base_segment.$sales_delivery_segment.'/index_data_table', 'index_data_table')->name('main_transaction.sales_delivery.index_data_table');
         Route::get($base_segment.$sales_delivery_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.sales_delivery.generate_transaction_number');
-        Route::get($base_segment.$sales_delivery_segment.'/add', 'add')->name('main_transaction.sales_delivery.add');
-        Route::post($base_segment.$sales_delivery_segment.'/create', 'create')->name('main_transaction.sales_delivery.create');
+        Route::get($base_segment.$sales_delivery_segment.'/add', 'add')->middleware('can:sales_delivery.create')->name('main_transaction.sales_delivery.add');
+        Route::post($base_segment.$sales_delivery_segment.'/create', 'create')->middleware('can:sales_delivery.create')->name('main_transaction.sales_delivery.create');
         Route::get($base_segment.$sales_delivery_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_delivery.detail');
-        Route::post($base_segment.$sales_delivery_segment.'/accept', 'accept')->name('main_transaction.sales_delivery.accept');
-        Route::post($base_segment.$sales_delivery_segment.'/confirm/{id}', 'confirm')->name('main_transaction.sales_delivery.confirm');
-        Route::get($base_segment.$sales_delivery_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_delivery.edit');
-        Route::post($base_segment.$sales_delivery_segment.'/update', 'update')->name('main_transaction.sales_delivery.update');
+        Route::post($base_segment.$sales_delivery_segment.'/accept', 'accept')->middleware('can:sales_delivery.edit')->name('main_transaction.sales_delivery.accept');
+        Route::post($base_segment.$sales_delivery_segment.'/confirm/{id}', 'confirm')->middleware('can:sales_delivery.edit')->name('main_transaction.sales_delivery.confirm');
+        Route::get($base_segment.$sales_delivery_segment.'/edit/{id}', 'edit')->middleware('can:sales_delivery.edit')->name('main_transaction.sales_delivery.edit');
+        Route::post($base_segment.$sales_delivery_segment.'/update', 'update')->middleware('can:sales_delivery.edit')->name('main_transaction.sales_delivery.update');
         Route::get($base_segment.$sales_delivery_segment.'/import', 'import')->name('main_transaction.sales_delivery.import');
         Route::get($base_segment.$sales_delivery_segment.'/download_template', 'downloadTemplate')->name('main_transaction.sales_delivery.download_template');
         Route::post($base_segment.$sales_delivery_segment.'/validate_import', 'validateImport')->name('main_transaction.sales_delivery.validate_import');
@@ -219,19 +219,19 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
     Route::controller(SalesInvoiceController::class)->group(function () use ($base_segment, $sales_invoice_segment) {
         Route::get($base_segment.$sales_invoice_segment.'/index', 'index')->name('main_transaction.sales_invoice.index');
         Route::get($base_segment.$sales_invoice_segment.'/index_data_table', 'index_data_table')->name('main_transaction.sales_invoice.index_data_table');
-        Route::get($base_segment.$sales_invoice_segment.'/add', 'add')->name('main_transaction.sales_invoice.add');
-        Route::post($base_segment.$sales_invoice_segment.'/store', 'store')->name('main_transaction.sales_invoice.store');
+        Route::get($base_segment.$sales_invoice_segment.'/add', 'add')->middleware('can:sales_invoice.create')->name('main_transaction.sales_invoice.add');
+        Route::post($base_segment.$sales_invoice_segment.'/store', 'store')->middleware('can:sales_invoice.create')->name('main_transaction.sales_invoice.store');
         Route::get($base_segment.$sales_invoice_segment.'/detail/{id}', 'detail')->name('main_transaction.sales_invoice.detail');
         Route::get($base_segment.$sales_invoice_segment.'/print/{id}', 'print')->name('main_transaction.sales_invoice.print');
-        Route::get($base_segment.$sales_invoice_segment.'/edit/{id}', 'edit')->name('main_transaction.sales_invoice.edit');
-        Route::put($base_segment.$sales_invoice_segment.'/update/{id}', 'update')->name('main_transaction.sales_invoice.update');
+        Route::get($base_segment.$sales_invoice_segment.'/edit/{id}', 'edit')->middleware('can:sales_invoice.edit')->name('main_transaction.sales_invoice.edit');
+        Route::put($base_segment.$sales_invoice_segment.'/update/{id}', 'update')->middleware('can:sales_invoice.edit')->name('main_transaction.sales_invoice.update');
         Route::get($base_segment.$sales_invoice_segment.'/import', 'import')->name('main_transaction.sales_invoice.import');
         Route::get($base_segment.$sales_invoice_segment.'/download_template', 'downloadTemplate')->name('main_transaction.sales_invoice.download_template');
         Route::post($base_segment.$sales_invoice_segment.'/validate_import', 'validateImport')->name('main_transaction.sales_invoice.validate_import');
         Route::post($base_segment.$sales_invoice_segment.'/process_import', 'processImport')->name('main_transaction.sales_invoice.process_import');
         Route::get($base_segment.$sales_invoice_segment.'/export', 'export')->name('main_transaction.sales_invoice.export');
         Route::post($base_segment.$sales_invoice_segment.'/process_export', 'processExport')->name('main_transaction.sales_invoice.process_export');
-        Route::get($base_segment.$sales_invoice_segment.'/payment_recipient', 'payment_recipient')->name('main_transaction.sales_invoice.payment_recipient');
+        Route::get($base_segment.$sales_invoice_segment.'/payment_recipient', 'payment_recipient')->middleware('can:sales_invoice.edit')->name('main_transaction.sales_invoice.payment_recipient');
 
         Route::get($base_segment.$sales_invoice_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('master_transaction.sales_invoice.generate_transaction_number');
 
@@ -239,7 +239,7 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$sales_invoice_segment.'/get_available_sales_orders', 'get_available_sales_orders')->name('main_transaction.sales_invoice.get_available_sales_orders');
         Route::get($base_segment.$sales_invoice_segment.'/get_so_products_for_invoice', 'get_so_products_for_invoice')->name('main_transaction.sales_invoice.get_so_products_for_invoice');
         Route::get($base_segment.$sales_invoice_segment.'/audit_log/{id}', 'auditLogDataTable')->name('main_transaction.sales_invoice.auditLogDataTable');
-        Route::post($base_segment.$sales_invoice_segment.'/payment_save', 'payment_save')->name('main_transaction.sales_invoice.payment_save');
+        Route::post($base_segment.$sales_invoice_segment.'/payment_save', 'payment_save')->middleware('can:sales_invoice.edit')->name('main_transaction.sales_invoice.payment_save');
     });
 
     Route::controller(CreditMemoController::class)->group(function () use ($base_segment, $credit_memo_segment) {
