@@ -87,12 +87,12 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
         Route::get($base_segment.$purchase_order_segment.'/index', 'index')->name('main_transaction.purchase_order.index');
         Route::get($base_segment.$purchase_order_segment.'/index_data_table', 'index_data_table')->name('main_transaction.purchase_order.index_data_table');
         Route::get($base_segment.$purchase_order_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.purchase_order.generate_transaction_number');
-        Route::get($base_segment.$purchase_order_segment.'/add', 'add')->name('main_transaction.purchase_order.add');
-        Route::post($base_segment.$purchase_order_segment.'/store', 'store')->name('main_transaction.purchase_order.store');
+        Route::get($base_segment.$purchase_order_segment.'/add', 'add')->middleware('can:purchase_order.create')->name('main_transaction.purchase_order.add');
+        Route::post($base_segment.$purchase_order_segment.'/store', 'store')->middleware('can:purchase_order.create')->name('main_transaction.purchase_order.store');
         Route::get($base_segment.$purchase_order_segment.'/detail/{id}', 'detail')->name('main_transaction.purchase_order.detail');
         Route::get($base_segment.$purchase_order_segment.'/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.purchase_order.audit_log_data_table');
-        Route::get($base_segment.$purchase_order_segment.'/edit/{id}', 'edit')->name('main_transaction.purchase_order.edit');
-        Route::post($base_segment.$purchase_order_segment.'/update', 'update')->name('main_transaction.purchase_order.update');
+        Route::get($base_segment.$purchase_order_segment.'/edit/{id}', 'edit')->middleware('can:purchase_order.edit')->name('main_transaction.purchase_order.edit');
+        Route::post($base_segment.$purchase_order_segment.'/update', 'update')->middleware('can:purchase_order.edit')->name('main_transaction.purchase_order.update');
         Route::get($base_segment.$purchase_order_segment.'/import', 'import')->name('main_transaction.purchase_order.import');
         Route::get($base_segment.$purchase_order_segment.'/download_template', 'downloadTemplate')->name('main_transaction.purchase_order.download_template');
         Route::post($base_segment.$purchase_order_segment.'/validate_import', 'validateImport')->name('main_transaction.purchase_order.validate_import');
@@ -105,12 +105,12 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
     Route::controller(PurchaseDeliveryController::class)->group(function () use ($base_segment, $purchase_delivery_segment) {
         Route::get($base_segment.$purchase_delivery_segment.'/index', 'index')->name('main_transaction.purchase_delivery.index');
         Route::get($base_segment.$purchase_delivery_segment.'/index_data_table', 'index_data_table')->name('main_transaction.purchase_delivery.index_data_table');
-        Route::get($base_segment.$purchase_delivery_segment.'/add', 'add')->name('main_transaction.purchase_delivery.add');
-        Route::post($base_segment.$purchase_delivery_segment.'/store', 'store')->name('main_transaction.purchase_delivery.store');
+        Route::get($base_segment.$purchase_delivery_segment.'/add', 'add')->middleware('can:purchase_delivery.create')->name('main_transaction.purchase_delivery.add');
+        Route::post($base_segment.$purchase_delivery_segment.'/store', 'store')->middleware('can:purchase_delivery.create')->name('main_transaction.purchase_delivery.store');
         Route::get($base_segment.$purchase_delivery_segment.'/detail/{id}', 'detail')->name('main_transaction.purchase_delivery.detail');
         Route::get($base_segment.$purchase_delivery_segment.'/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.purchase_delivery.audit_log_data_table');
-        Route::get($base_segment.$purchase_delivery_segment.'/edit/{id}', 'edit')->name('main_transaction.purchase_delivery.edit');
-        Route::post($base_segment.$purchase_delivery_segment.'/update', 'update')->name('main_transaction.purchase_delivery.update');
+        Route::get($base_segment.$purchase_delivery_segment.'/edit/{id}', 'edit')->middleware('can:purchase_delivery.edit')->name('main_transaction.purchase_delivery.edit');
+        Route::post($base_segment.$purchase_delivery_segment.'/update', 'update')->middleware('can:purchase_delivery.edit')->name('main_transaction.purchase_delivery.update');
         Route::get($base_segment.$purchase_delivery_segment.'/import', 'import')->name('main_transaction.purchase_delivery.import');
         Route::get($base_segment.$purchase_delivery_segment.'/download_template', 'downloadTemplate')->name('main_transaction.purchase_delivery.download_template');
         Route::post($base_segment.$purchase_delivery_segment.'/validate_import', 'validateImport')->name('main_transaction.purchase_delivery.validate_import');
@@ -130,12 +130,12 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
     Route::controller(PurchaseInvoiceController::class)->group(function () use ($base_segment, $purchase_invoice_segment) {
         Route::get($base_segment.$purchase_invoice_segment.'/index', 'index')->name('main_transaction.purchase_invoice.index');
         Route::get($base_segment.$purchase_invoice_segment.'/index_data_table', 'index_data_table')->name('main_transaction.purchase_invoice.index_data_table');
-        Route::get($base_segment.$purchase_invoice_segment.'/add', 'add')->name('main_transaction.purchase_invoice.add');
-        Route::post($base_segment.$purchase_invoice_segment.'/store', 'store')->name('main_transaction.purchase_invoice.store');
+        Route::get($base_segment.$purchase_invoice_segment.'/add', 'add')->middleware('can:purchase_invoice.create')->name('main_transaction.purchase_invoice.add');
+        Route::post($base_segment.$purchase_invoice_segment.'/store', 'store')->middleware('can:purchase_invoice.create')->name('main_transaction.purchase_invoice.store');
         Route::get($base_segment.$purchase_invoice_segment.'/detail/{id}', 'detail')->name('main_transaction.purchase_invoice.detail');
         Route::get($base_segment.$purchase_invoice_segment.'/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.purchase_invoice.audit_log_data_table');
-        Route::get($base_segment.$purchase_invoice_segment.'/edit/{id}', 'edit')->name('main_transaction.purchase_invoice.edit');
-        Route::post($base_segment.$purchase_invoice_segment.'/update', 'update')->name('main_transaction.purchase_invoice.update');
+        Route::get($base_segment.$purchase_invoice_segment.'/edit/{id}', 'edit')->middleware('can:purchase_invoice.edit')->name('main_transaction.purchase_invoice.edit');
+        Route::post($base_segment.$purchase_invoice_segment.'/update', 'update')->middleware('can:purchase_invoice.edit')->name('main_transaction.purchase_invoice.update');
         Route::get($base_segment.$purchase_invoice_segment.'/import', 'import')->name('main_transaction.purchase_invoice.import');
         Route::get($base_segment.$purchase_invoice_segment.'/download_template', 'downloadTemplate')->name('main_transaction.purchase_invoice.download_template');
         Route::post($base_segment.$purchase_invoice_segment.'/validate_import', 'validateImport')->name('main_transaction.purchase_invoice.validate_import');
@@ -191,8 +191,8 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
     Route::controller(SalesOrderRevenueSplitController::class)->group(function () use ($base_segment, $sales_order_segment) {
         Route::get($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}', 'getRevenueSplits')->name('main_transaction.sales_order.revenue_split.get');
         Route::get($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}/breakdown', 'showRevenueSplitBreakdown')->name('main_transaction.sales_order.revenue_split.breakdown');
-        Route::put($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}/product/{productId}', 'updateRevenueSplit')->name('main_transaction.sales_order.revenue_split.update');
-        Route::post($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}/product/{productId}/reset', 'resetRevenueSplit')->name('main_transaction.sales_order.revenue_split.reset');
+        Route::put($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}/product/{productId}', 'updateRevenueSplit')->middleware('can:revenue_split.edit')->name('main_transaction.sales_order.revenue_split.update');
+        Route::post($base_segment.$sales_order_segment.'/revenue-split/{salesOrderId}/product/{productId}/reset', 'resetRevenueSplit')->middleware('can:revenue_split.edit')->name('main_transaction.sales_order.revenue_split.reset');
     });
 
     // Sales Delivery Routes (Separated Module)
@@ -355,8 +355,8 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
     Route::controller(ReturnManagementController::class)->group(function () use ($base_segment, $return_management_segment) {
         Route::get($base_segment.$return_management_segment.'/index', 'index')->name('main_transaction.return_management.index');
         Route::get($base_segment.$return_management_segment.'/index_data_table', 'index_data_table')->name('main_transaction.return_management.index_data_table');
-        Route::get($base_segment.$return_management_segment.'/add', 'add')->name('main_transaction.return_management.add');
-        Route::post($base_segment.$return_management_segment.'/store', 'store')->name('main_transaction.return_management.store');
+        Route::get($base_segment.$return_management_segment.'/add', 'add')->middleware('can:return_management.create')->name('main_transaction.return_management.add');
+        Route::post($base_segment.$return_management_segment.'/store', 'store')->middleware('can:return_management.create')->name('main_transaction.return_management.store');
         Route::get($base_segment.$return_management_segment.'/detail/{id}', 'detail')->name('main_transaction.return_management.detail');
         Route::get($base_segment.$return_management_segment.'/audit_log_data_table/{id}', 'auditLogDataTable')->name('main_transaction.return_management.audit_log_data_table');
         Route::get($base_segment.$return_management_segment.'/edit/{id}', 'edit')->name('main_transaction.return_management.edit');

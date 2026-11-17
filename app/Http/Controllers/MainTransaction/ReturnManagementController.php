@@ -48,8 +48,8 @@ class ReturnManagementController extends Controller
 
     public function index()
     {
-        $canViewReturnManagement = true;
-        $canCreateReturnManagement = true;
+        $canViewReturnManagement = auth()->user()->can('return_management.view');
+        $canCreateReturnManagement = auth()->user()->can('return_management.create');
 
         return view('pages.main_transaction.return_management.index', [
             'canCreateReturnManagement' => $canCreateReturnManagement,
@@ -68,7 +68,7 @@ class ReturnManagementController extends Controller
     {
         $return_type = $request->input('return_type');
         $source_invoice_id = $request->input('source_invoice_id');
-        $canCreateReturnManagement = true;
+        $canCreateReturnManagement = auth()->user()->can('return_management.create');
 
         $transaction_number = '';
         if ($return_type == 'PURCHASE_RETURN') {
@@ -84,7 +84,7 @@ class ReturnManagementController extends Controller
         }
 
         $tags = app(TagService::class)->findAll();
-        $canViewProduct = true;
+        $canViewProduct = auth()->user()->can('product.view');
 
         return view('pages.main_transaction.return_management.add', [
             'canCreateReturnManagement' => $canCreateReturnManagement,
@@ -99,7 +99,7 @@ class ReturnManagementController extends Controller
 
     public function store(Request $request)
     {
-        $canCreateReturnManagement = true;
+        $canCreateReturnManagement = auth()->user()->can('return_management.create');
 
         if (! $canCreateReturnManagement) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -188,7 +188,7 @@ class ReturnManagementController extends Controller
 
     public function detail($id)
     {
-        $canViewReturnManagement = true;
+        $canViewReturnManagement = auth()->user()->can('return_management.view');
 
         if (! $canViewReturnManagement) {
             return redirect()->route('main_transaction.return_management.index')->with('error', 'Anda tidak memiliki akses untuk melihat detail Return Management');
@@ -204,8 +204,8 @@ class ReturnManagementController extends Controller
         $auditLogs = app(ReturnManagementAuditLogService::class)->findByReturnId($id);
 
         // Permission checks
-        $canViewUser = true;
-        $canViewProduct = true;
+        $canViewUser = auth()->user()->can('user.view');
+        $canViewProduct = auth()->user()->can('product.view');
 
         return view('pages.main_transaction.return_management.detail', [
             'return_data' => $return,
@@ -219,7 +219,7 @@ class ReturnManagementController extends Controller
 
     public function auditLogDataTable($id)
     {
-        $canViewReturnManagement = true;
+        $canViewReturnManagement = auth()->user()->can('return_management.view');
 
         if (! $canViewReturnManagement) {
             return response()->json(['error' => 'Unauthorized'], 403);
