@@ -66,8 +66,8 @@ php artisan budget:recalculate   # recompute budget remaining values
   - `RolePermissionMiddleware` (`role.permission`) and `PermissionGateProvider`'s `<module>.read|write|delete|approval` gates still query the old tables. They allow everything, because `isset($user->role_id)` is now false. Don't build on them.
   - Spatie names are `<entity>.<verb>` (`view`, `create`, `edit`, `delete`, plus custom verbs such as `inventory.dispose` and `warehouse.stock_transfer`). They are seeded by migrations: copy `2026_09_10_000001_add_sales_order_revert_view_permission.php`.
 - **Enforcement is mostly UI-only.** Menu items and buttons use `@can`, and controllers pass `PermissionHelper::getViewPermissions('<module>')` flags (`canView<X>`, `canCreate<X>`, …) to views.
-  - Only a few routes check server-side: `can:sales_order_revert.view`, `can:sales_order_revert_log.view`, `can:sales_order.delete`, and `dashboard.access`.
-  - A new sensitive write needs its own `->middleware('can:<entity>.<verb>')`.
+  - Server-side checks exist on the SO/SD/SI form and write routes (`<entity>.create` for add/store, `<entity>.edit` for edit/update, cancel, SD accept/confirm and SI payment; `SalesPermissionRoutesTest`), the SO revert pages, and `dashboard.access`. Purchase, returns, revenue split and everything else are still guarded only by `auth`.
+  - A new sensitive write needs its own `->middleware('can:<entity>.<verb>')`, and the detail page's flags must come from `can()`, never a hardcoded `true`.
   - `PermissionHelper::hasPermission(User $user, string $permission)` calls `hasPermissionTo`, which throws on an unseeded name. `getViewPermissions` swallows that.
 - **Dashboard:** `/dashboard` is limited to Spatie role ids 1 and 2 (owner/admin, `User::DASHBOARD_ROLE_IDS`, `EnsureDashboardAccess`). Login sends everyone else to `/home` (`LoginController.php:29`).
 - **`EnsureUserIsActive`** (appended to `web`) logs out a soft-deleted user or one whose `status` isn't `ACTIVE`, answering 401 JSON or redirecting to login. `DeletedUserAccessTest` covers it.

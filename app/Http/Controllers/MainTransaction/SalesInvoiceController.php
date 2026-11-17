@@ -194,10 +194,10 @@ class SalesInvoiceController extends Controller
         // $taxOptions = app(TaxService::class)->findAllForOptions();
 
         // Permission checks
-        $canEditSalesInvoice = true;
-        $canViewUser = true;
-        $canViewSalesOrder = true;
-        $canViewReturnManagement = true;
+        $canEditSalesInvoice = auth()->user()->can('sales_invoice.edit');
+        $canViewUser = auth()->user()->can('user.view');
+        $canViewSalesOrder = auth()->user()->can('sales_order.view');
+        $canViewReturnManagement = auth()->user()->can('return_management.view');
 
         return view('pages.main_transaction.sales_invoice.detail', [
             'invoice_data' => $invoice_data,
