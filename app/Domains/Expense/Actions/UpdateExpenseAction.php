@@ -20,6 +20,8 @@ class UpdateExpenseAction
             }
 
             $expense_id = $data['expense_id'];
+            // Read before the update, so the old budget gets the old total back.
+            $oldExpense = app(ExpenseService::class)->findOne($expense_id);
             app(ExpenseService::class)->update($data, $expense_id);
 
             $expense_coa_details = [];
@@ -36,8 +38,6 @@ class UpdateExpenseAction
 
             app(ExpenseCoaDetailService::class)->create($expense_coa_details);
 
-            // Get old expense data to handle budget updates
-            $oldExpense = app(ExpenseService::class)->findOne($expense_id);
             $oldBudgetMapping = DB::table('t_budged_expenses')
                 ->where('expense_id', $expense_id)
                 ->first();

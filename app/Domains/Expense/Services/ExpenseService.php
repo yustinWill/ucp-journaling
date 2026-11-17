@@ -4,6 +4,7 @@ namespace App\Domains\Expense\Services;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ExpenseService
 {
@@ -59,6 +60,15 @@ class ExpenseService
         } else {
             $data['payment_method'] = null;
         }
+
+        // Payments survive an edit, so the header keeps what they already paid.
+        $paid = (float) DB::table('t_expense_payments')->where('f_expense_id', $id)->sum('payment_amount');
+        if ($data['final_total'] < $paid) {
+            throw ValidationException::withMessages([
+                'final_total' => 'Total tidak boleh kurang dari jumlah yang sudah dibayar (Rp '.number_format($paid, 0, ',', '.').').',
+            ]);
+        }
+
         $update_data = [
             'transaction_date' => $data['transaction_date'],
             'to_be_paid_later' => $data['pay_later'],
@@ -76,8 +86,8 @@ class ExpenseService
             'total_discount' => $data['discount_amount'],
             'total_amount' => $data['final_total'],
             'category_type' => $data['category_type'] ?? null,
-            'total_remaining_amount' => $data['final_total'],
-            'total_paid_amount' => 0,
+            'total_remaining_amount' => $data['final_total'] - $paid,
+            'total_paid_amount' => $paid,
             'entity_type' => $data['entity_type'] ?? null,
             'updated_at' => now(),
             'updated_by' => Auth::id(),
