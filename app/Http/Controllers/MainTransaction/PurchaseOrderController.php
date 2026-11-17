@@ -415,16 +415,16 @@ class PurchaseOrderController extends Controller
         $data = [
             'purchaseOrder' => $purchaseOrder,
             'auditLogs' => $auditLogs,
-            'canEditPurchaseOrder' => true,
-            'canDeletePurchaseOrder' => true,
-            'canApprovePurchaseOrder' => true,
-            'canViewProduct' => true,
-            'canViewUser' => true,
-            'canViewPurchaseDelivery' => true,
-            'canViewPurchaseInvoice' => true,
-            'canCreatePurchaseDelivery' => !$allItemsDelivered,
-            'canCreatePurchaseInvoice' => !$allAmountInvoiced,
-            'canViewReturnManagement' => true,
+            'canEditPurchaseOrder' => auth()->user()->can('purchase_order.edit'),
+            'canDeletePurchaseOrder' => auth()->user()->can('purchase_order.delete'),
+            'canApprovePurchaseOrder' => auth()->user()->can('purchase_order.approve'),
+            'canViewProduct' => auth()->user()->can('product.view'),
+            'canViewUser' => auth()->user()->can('user.view'),
+            'canViewPurchaseDelivery' => auth()->user()->can('purchase_delivery.view'),
+            'canViewPurchaseInvoice' => auth()->user()->can('purchase_invoice.view'),
+            'canCreatePurchaseDelivery' => !$allItemsDelivered && auth()->user()->can('purchase_delivery.create'),
+            'canCreatePurchaseInvoice' => !$allAmountInvoiced && auth()->user()->can('purchase_invoice.create'),
+            'canViewReturnManagement' => auth()->user()->can('return_management.view'),
         ];
 
         return view('pages.main_transaction.purchase_order.detail', array_merge($data));

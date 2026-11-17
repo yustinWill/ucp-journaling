@@ -32,7 +32,7 @@ php artisan budget:recalculate   # recompute budget remaining values
   - The suites are small: `DashboardAccessTest`, `DeletedUserAccessTest`, `SalesOrderRevertControllerTest`, `RevenueSplitCalculatorTest` and the two `ExampleTest`s.
   - `tests/System/*.php` are standalone scripts that **change data in the real `.env` database**. Never run them casually. `tests/StockAdjustmentTest.php` is not in any suite.
 - The repo has no ESLint, Prettier, PHPStan or CI.
-- **Deploy:** no deploy script is in the repo. Keep hosts and credentials out of it. Take a `backup:run --only-db` before running a data migration on production. ucp runs a queue worker and Reverb under supervisor, so restart both after a deploy.
+- **Deploy:** no deploy script is in the repo. Keep hosts and credentials out of it. Take a `backup:run --only-db` before running a data migration on production. ucp runs a queue worker and Reverb under supervisor on staging, so restart both after a deploy. Production caches its routes (`route:cache`), so a deploy that touches routes must re-run it or the change is silently ignored.
 
 ## Database
 - **Naming:** `m_` = master, `t_` = transaction, `l_` = log/closing, and an `f_` prefix marks a foreign-key column. Users live in `users`. Master rows use `status` ACTIVE/INACTIVE (`App\Enums\GeneralStatuses`).
@@ -66,7 +66,7 @@ php artisan budget:recalculate   # recompute budget remaining values
   - `RolePermissionMiddleware` (`role.permission`) and `PermissionGateProvider`'s `<module>.read|write|delete|approval` gates still query the old tables. They allow everything, because `isset($user->role_id)` is now false. Don't build on them.
   - Spatie names are `<entity>.<verb>` (`view`, `create`, `edit`, `delete`, plus custom verbs such as `inventory.dispose` and `warehouse.stock_transfer`). They are seeded by migrations: copy `2026_09_10_000001_add_sales_order_revert_view_permission.php`.
 - **Enforcement is mostly UI-only.** Menu items and buttons use `@can`, and controllers pass `PermissionHelper::getViewPermissions('<module>')` flags (`canView<X>`, `canCreate<X>`, …) to views.
-  - Server-side checks exist on the SO/SD/SI form and write routes (`<entity>.create` for add/store, `<entity>.edit` for edit/update, cancel, SD accept/confirm and SI payment; `SalesPermissionRoutesTest`), the SO revert pages, and `dashboard.access`. Purchase, returns, revenue split and everything else are still guarded only by `auth`.
+  - Server-side checks exist on the SO/SD/SI and PO/PD/PI form and write routes (`<entity>.create` for add/store, `<entity>.edit` for edit/update, cancel, SD accept/confirm and SI payment), return add/store, revenue-split edit/reset (`revenue_split.edit`), the SO revert pages, and `dashboard.access`; `PermissionRoutesTest` lists them. Imports (mocks), expense, stock, production and master data are still guarded only by `auth`.
   - A new sensitive write needs its own `->middleware('can:<entity>.<verb>')`, and the detail page's flags must come from `can()`, never a hardcoded `true`.
   - `PermissionHelper::hasPermission(User $user, string $permission)` calls `hasPermissionTo`, which throws on an unseeded name. `getViewPermissions` swallows that.
 - **Dashboard:** `/dashboard` is limited to Spatie role ids 1 and 2 (owner/admin, `User::DASHBOARD_ROLE_IDS`, `EnsureDashboardAccess`). Login sends everyone else to `/home` (`LoginController.php:29`).

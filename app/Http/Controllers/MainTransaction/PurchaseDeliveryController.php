@@ -27,11 +27,11 @@ class PurchaseDeliveryController extends Controller
         $suppliers = app(ContactService::class)->findAllByFlag('supplier');
 
         // Map permissions to view variables
-        $canAddPurchaseDelivery = true;
+        $canAddPurchaseDelivery = auth()->user()->can('purchase_delivery.create');
         $canImportPurchaseDelivery = true;
         $canExportPurchaseDelivery = true;
-        $canViewPurchaseDelivery = true;
-        $canEditPurchaseDelivery = true;
+        $canViewPurchaseDelivery = auth()->user()->can('purchase_delivery.view');
+        $canEditPurchaseDelivery = auth()->user()->can('purchase_delivery.edit');
 
         $data = [
             'suppliers' => $suppliers,
