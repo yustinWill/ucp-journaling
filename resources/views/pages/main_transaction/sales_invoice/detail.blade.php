@@ -15,7 +15,7 @@
                     <div class="d-flex gap-2 justify-content-end">
                         {{-- Future: Invoice Settlement Button - will redirect to settlement page for payment processing --}}
                         {{-- Hide button if status is DRAFT or already PAID (fully settled) --}}
-                        @if (!in_array($invoice_data->status, ['DRAFT', 'PAID']))
+                        @if ($canEditSalesInvoice && !in_array($invoice_data->status, ['DRAFT', 'PAID']))
                             <a href="{{ route('main_transaction.sales_invoice.payment_recipient') }}?source_invoice_id={{ $invoice_data->id }}" class="btn btn-info btn-md waves-effect waves-light">
                                 <i class="icon-base ti tabler-credit-card me-2"></i>
                                 Settle Invoice
