@@ -51,7 +51,7 @@ class KasBesarController extends Controller
         $filteredQuery = clone $query;
         $recordsFiltered = $filteredQuery->count();
 
-        $query->orderBy('kb.id', 'DESC');
+        $query->orderBy('kb.transaction_date', 'DESC')->orderBy('kb.id', 'DESC');
 
         $start  = (int) $request->input('start', 0);
         $length = (int) $request->input('length', 10);
@@ -170,6 +170,7 @@ class KasBesarController extends Controller
 
         $latest = DB::table('t_kas_besar')
             ->where('company_code', $companyCode)
+            ->orderBy('transaction_date', 'DESC')
             ->orderBy('id', 'DESC')
             ->first();
 
