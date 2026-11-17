@@ -214,7 +214,8 @@
                             </div>
                             <div class="col-6">
                                 <input type="text" class="form-control currency-input" id="payment-amount"
-                                    name="payment_amount" dir="rtl" placeholder="Rp 0" value="0">
+                                    name="payment_amount" dir="rtl" placeholder="Rp 0"
+                                    value="Rp {{ number_format($expense->total_remaining_amount, 0, ',', '.') }}">
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -284,11 +285,10 @@
                 }
             }
 
-            // Helper function to parse currency (assuming it exists or needs to be created)
+            // Helper function to parse currency
             function parseCurrency(value) {
                 if (!value) return 0;
-                // Remove currency symbol, dots, and convert to number
-                return parseInt(value.toString().replace(/[^\d]/g, '')) || 0;
+                return Math.round(parseFloat(value.toString().replace(/[^\d]/g, '')) || 0);
             }
 
             // Helper function to format currency (assuming it exists or needs to be created)

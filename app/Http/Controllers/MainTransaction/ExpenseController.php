@@ -185,6 +185,8 @@ class ExpenseController extends Controller
         try {
             $validated = $request->validate([
                 // Basic transaction fields
+                'payment_method_type' => 'required|string|in:kas_tunai,transfer',
+                'transfer_bank' => 'nullable|string|in:BCA,Mandiri,BTPN',
                 'payment_method' => 'nullable|string|exists:m_payment_methods,id',
                 'pay_later' => 'required|boolean',
                 'transaction_number' => 'required|string|max:50|unique:t_expenses,transaction_no',
@@ -224,6 +226,9 @@ class ExpenseController extends Controller
                 'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB max
             ], [
                 // Custom error messages
+                'payment_method_type.required' => 'Sumber pembayaran wajib dipilih.',
+                'payment_method_type.in' => 'Sumber pembayaran tidak valid.',
+                'transfer_bank.in' => 'Bank transfer tidak valid.',
                 'payment_method.required' => 'Metode pembayaran wajib dipilih.',
                 'payment_method.in' => 'Metode pembayaran tidak valid.',
                 'transaction_number.required' => 'Nomor transaksi wajib diisi.',
@@ -252,8 +257,6 @@ class ExpenseController extends Controller
                 'budged_history_id.required' => 'Anggaran wajib dipilih.',
                 'budged_history_id.exists' => 'Anggaran tidak valid.',
                 'attachment.max' => 'Ukuran file lampiran maksimal 5MB.',
-                // 'category_type.required' => 'Kategori pengeluaran wajib dipilih.',
-                // 'category_type.in' => 'Kategori pengeluaran harus salah satu dari: Anggaran, Overhead, atau Lainnya.',
             ]);
 
             $validBudget = DB::table('m_budgeds as b')
@@ -270,6 +273,7 @@ class ExpenseController extends Controller
                 ]);
             }
 
+            // A Kas/Tunai expense paid now is deducted from Kas Besar inside the action.
             app(CreateExpenseAction::class)->execute($validated);
 
             return response()->json([
