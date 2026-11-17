@@ -397,12 +397,12 @@ Route::middleware(['auth'])->group(function () use ($base_segment, $journal_segm
 
     // Kas Besar Routes
     Route::controller(KasBesarController::class)->group(function () use ($base_segment, $kas_besar_segment) {
-        Route::get($base_segment.$kas_besar_segment.'/index', 'index')->name('main_transaction.kas_besar.index');
-        Route::get($base_segment.$kas_besar_segment.'/index_data_table', 'index_data_table')->name('main_transaction.kas_besar.index_data_table');
-        Route::get($base_segment.$kas_besar_segment.'/add', 'add')->name('main_transaction.kas_besar.add');
-        Route::post($base_segment.$kas_besar_segment.'/store', 'store')->name('main_transaction.kas_besar.store');
-        Route::get($base_segment.$kas_besar_segment.'/detail/{id}', 'detail')->name('main_transaction.kas_besar.detail');
-        Route::get($base_segment.$kas_besar_segment.'/generate_transaction_number', 'generateTransactionNumber')->name('main_transaction.kas_besar.generate_transaction_number');
+        Route::get($base_segment.$kas_besar_segment.'/index', 'index')->middleware('can:kas_besar.view')->name('main_transaction.kas_besar.index');
+        Route::get($base_segment.$kas_besar_segment.'/index_data_table', 'index_data_table')->middleware('can:kas_besar.view')->name('main_transaction.kas_besar.index_data_table');
+        Route::get($base_segment.$kas_besar_segment.'/add', 'add')->middleware('can:kas_besar.create')->name('main_transaction.kas_besar.add');
+        Route::post($base_segment.$kas_besar_segment.'/store', 'store')->middleware('can:kas_besar.create')->name('main_transaction.kas_besar.store');
+        Route::get($base_segment.$kas_besar_segment.'/detail/{id}', 'detail')->middleware('can:kas_besar.view')->name('main_transaction.kas_besar.detail');
+        Route::get($base_segment.$kas_besar_segment.'/generate_transaction_number', 'generateTransactionNumber')->middleware('can:kas_besar.create')->name('main_transaction.kas_besar.generate_transaction_number');
         Route::get($base_segment.$kas_besar_segment.'/get_latest_saldo', 'getLatestSaldo')->name('main_transaction.kas_besar.get_latest_saldo');
     });
 
