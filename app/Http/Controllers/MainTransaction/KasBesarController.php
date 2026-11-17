@@ -89,11 +89,12 @@ class KasBesarController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'transaction_date' => 'required|date',
+            'transaction_date' => 'required|date|before_or_equal:today',
             'topup_amount'     => 'required|numeric|min:0.01',
             'notes'            => 'nullable|string|max:500',
         ], [
             'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
+            'transaction_date.before_or_equal' => 'Tanggal transaksi tidak boleh lebih dari hari ini.',
             'topup_amount.required'     => 'Jumlah topup wajib diisi.',
             'topup_amount.min'          => 'Jumlah topup harus lebih dari 0.',
         ]);

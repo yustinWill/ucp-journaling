@@ -92,7 +92,7 @@ php artisan budget:recalculate   # recompute budget remaining values
 - **Sales-delivery accept** (`main_transaction.sales_delivery.accept`, `t_sales_deliveries.is_accepted`).
 - **Kas Besar** (`KasBesarController`, `t_kas_besar`, staging only):
   - A running cash balance per company: each row stores `saldo_before`/`saldo_after`, computed from the latest row by id (entry order, not transaction date).
-  - Every row goes through `KasBesarService::record`, which takes the number first (locking the counter row, so writes are serialized) and refuses a deduction below zero.
+  - Every row goes through `KasBesarService::record`, which takes the number first (locking the counter row, so writes are serialized) and refuses a deduction below zero. A row dated in an earlier month continues that month's own sequence (max existing number + 1) instead of using the current counter; top-ups can't be future-dated.
   - It's topped up on its own page. A Kas/Tunai expense (`t_expenses.payment_method_type`) is deducted by `PaymentExpenseAction` when it is paid, so a pay-later expense deducts nothing until each payment, and an edit changes no deduction.
   - It has its own `kas_besar` transaction number. It posts no journal.
 - **Revenue split** on SO lines (`SalesOrderRevenueSplitService`, `RevenueSplitCalculator`; see `docs/REVENUE_SPLIT_BONUS_ANULIR_LOGIC.md`), and **Topup**.
