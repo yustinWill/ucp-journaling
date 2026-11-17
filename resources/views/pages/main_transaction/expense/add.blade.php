@@ -950,8 +950,8 @@
                 } else if (paymentMethodType === 'transfer' && !$('#transfer-bank').val()) {
                     $('#transfer-bank').addClass('is-invalid');
                     isValid = false;
-                } else if (paymentMethodType === 'kas_tunai') {
-                    // Validate saldo
+                } else if (paymentMethodType === 'kas_tunai' && !$('#pay-later').is(':checked')) {
+                    // Validate saldo (pay-later expenses are deducted when paid)
                     const finalTotal = parseCurrency($('#final-total').val()) || 0;
                     if (finalTotal > kasBesarSaldo) {
                         Swal.fire({
