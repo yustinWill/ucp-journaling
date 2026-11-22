@@ -5,7 +5,13 @@
 @section('content')
     <div class="mt-6">
         <div class="card">
-            <h4 class="card-header">Kas Besar</h4>
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <h4 class="mb-0">Kas Besar</h4>
+                <div class="text-end">
+                    <small class="text-muted d-block">Saldo Saat Ini</small>
+                    <h4 class="mb-0 text-primary" id="sum-current">-</h4>
+                </div>
+            </div>
             <div class="card-body">
                 <!-- Search Form -->
                 <form class="dt_adv_search" method="GET" autocomplete="off">
@@ -15,7 +21,7 @@
                                 <div class="col-12 col-sm-6 col-lg-3">
                                     <label class="form-label">No Transaksi:</label>
                                     <input type="text" class="form-control" id="search-transaction-no"
-                                        placeholder="Cari No Transaksi" />
+                                        placeholder="No Kas Besar / Pengeluaran" />
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-3">
                                     <label class="form-label">Tanggal Mulai:</label>
@@ -37,8 +43,37 @@
 
                 <hr class="my-6 mx-n6" />
 
+                <!-- Saldo awal + masuk - keluar = saldo akhir, for the dates in the filter -->
+                <small class="text-muted d-block mb-2">Ringkasan periode: <span id="sum-period">Semua tanggal</span></small>
+                <div class="row g-3">
+                    <div class="col-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <small class="text-muted d-block">Saldo Awal</small>
+                            <h5 class="mb-0" id="sum-opening">-</h5>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <small class="text-muted d-block">Masuk</small>
+                            <h5 class="mb-0 text-success" id="sum-in">-</h5>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <small class="text-muted d-block">Keluar</small>
+                            <h5 class="mb-0 text-danger" id="sum-out">-</h5>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="border rounded p-3 h-100">
+                            <small class="text-muted d-block">Saldo Akhir</small>
+                            <h5 class="mb-0" id="sum-closing">-</h5>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Action Buttons -->
-                <div class="mt-4">
+                <div class="mt-6">
                     <div class="d-flex justify-content-end">
                         @can('kas_besar.create')
                             <a href="{{ route('main_transaction.kas_besar.add') }}"
@@ -57,11 +92,10 @@
                         <tr>
                             <th>Tanggal</th>
                             <th>No Transaksi</th>
-                            <th>Topup Amount</th>
-                            <th>Saldo Before</th>
-                            <th>Saldo After</th>
-                            <th>Tipe</th>
-                            <th>Diinput Oleh</th>
+                            <th>Keterangan</th>
+                            <th class="text-end">Masuk</th>
+                            <th class="text-end">Keluar</th>
+                            <th class="text-end">Saldo</th>
                         </tr>
                     </thead>
                 </table>
@@ -76,6 +110,33 @@
             const canRead = @json(auth()->user()->can('kas_besar.view'));
 
             let dt;
+
+            function rp(num) {
+                return 'Rp ' + parseFloat(num || 0).toLocaleString('id-ID');
+            }
+
+            function esc(text) {
+                return $('<div>').text(text).html();
+            }
+
+            function fmtDate(date) {
+                return new Date(date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+
+            function showSummary(sum) {
+                const start = $('#start-date').val();
+                const end = $('#end-date').val();
+                $('#sum-period').text(
+                    start && end ? `${fmtDate(start)} – ${fmtDate(end)}` :
+                    start ? `sejak ${fmtDate(start)}` :
+                    end ? `sampai ${fmtDate(end)}` : 'Semua tanggal'
+                );
+                $('#sum-current').text(rp(sum.current));
+                $('#sum-opening').text(rp(sum.opening));
+                $('#sum-in').text(rp(sum.in));
+                $('#sum-out').text(rp(sum.out));
+                $('#sum-closing').text(rp(sum.closing));
+            }
 
             dt = new DataTable('#main-table', {
                 processing: true,
@@ -111,47 +172,34 @@
                         }
                     },
                     {
-                        data: 'topup_amount',
-                        className: 'text-end',
+                        data: 'notes',
                         render: function(data, type, row) {
-                            if (type === 'display') {
-                                const val = parseFloat(data);
-                                const cls = val < 0 ? 'text-danger' : 'text-success';
-                                return `<span class="${cls}">Rp ${Math.abs(val).toLocaleString('id-ID')}</span>`;
+                            if (row.f_expense_id) {
+                                const url = `{{ route('main_transaction.expense.detail', ':id') }}`.replace(':id', row.f_expense_id);
+                                return `Pengeluaran <a href="${url}">${esc(row.expense_transaction_no || '')}</a>`;
                             }
-                            return data;
+                            return data ? `Topup <span class="text-muted">· ${esc(data)}</span>` : 'Topup';
                         }
                     },
                     {
-                        data: 'saldo_before',
-                        className: 'text-end',
+                        data: 'topup_amount',
+                        className: 'text-end text-nowrap',
                         render: function(data) {
-                            return 'Rp ' + parseFloat(data || 0).toLocaleString('id-ID');
+                            return parseFloat(data) > 0 ? `<span class="text-success">${rp(data)}</span>` : '';
+                        }
+                    },
+                    {
+                        data: 'topup_amount',
+                        className: 'text-end text-nowrap',
+                        render: function(data) {
+                            return parseFloat(data) < 0 ? `<span class="text-danger">${rp(-data)}</span>` : '';
                         }
                     },
                     {
                         data: 'saldo_after',
-                        className: 'text-end',
+                        className: 'text-end text-nowrap fw-semibold',
                         render: function(data) {
-                            return '<strong>Rp ' + parseFloat(data || 0).toLocaleString('id-ID') + '</strong>';
-                        }
-                    },
-                    {
-                        data: 'type',
-                        width: '100px',
-                        render: function(data) {
-                            if (data === 'TOPUP') {
-                                return '<span class="badge bg-label-success">TOPUP</span>';
-                            } else if (data === 'DEDUCTION') {
-                                return '<span class="badge bg-label-danger">PENGELUARAN</span>';
-                            }
-                            return data;
-                        }
-                    },
-                    {
-                        data: 'created_by_name',
-                        render: function(data) {
-                            return data || '-';
+                            return rp(data);
                         }
                     },
                 ],
@@ -175,6 +223,11 @@
                 responsive: true,
                 orderCellsTop: true,
                 ordering: false
+            });
+
+            dt.on('xhr', function() {
+                const json = dt.ajax.json();
+                if (json && json.summary) showSummary(json.summary);
             });
 
             $('#reset-filter').on('click', function() {
