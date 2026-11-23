@@ -334,11 +334,13 @@
                     url: '{{ route('master_data.transaction_number.generate_number', 'expense_payment') }}',
                     type: 'POST',
                     data: {
-                        _token: '{{ csrf_token() }}'
+                        _token: '{{ csrf_token() }}',
+                        preview: 1
                     },
                     success: function(response) {
                         if (response.success) {
-                            $('#transaction-number').val(response.number);
+                            // Only a preview: the number is taken on save, unless the user types their own.
+                            $('#transaction-number').val(response.number).data('preview', response.number);
                         } else {
                             console.error('Failed to generate transaction number:', response.message);
                             // Fallback - show error or use placeholder
@@ -385,6 +387,7 @@
                 formData.append('_token', '{{ csrf_token() }}');
                 formData.append('expense_id', $('#expense-id').val());
                 formData.append('transaction_number', $('#transaction-number').val());
+                formData.append('auto_number', $('#transaction-number').val() === $('#transaction-number').data('preview') ? '1' : '0');
                 formData.append('recipient_id', $('#recipient').val() || '');
                 formData.append('payment_coa', $('#payment_coa').val() || '');
                 formData.append('transaction_date', $('#transaction-date').val());

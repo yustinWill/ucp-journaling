@@ -2,19 +2,22 @@
 
 namespace App\Domains\Expense\Actions;
 
-use Illuminate\Support\Facades\DB;
-use App\Enums\ActionTypes;
-use App\Domains\Expense\Services\ExpenseService;
 use App\Domains\Expense\Services\ExpensePaymentService;
-use App\Domains\Expense\Services\ExpenseAuditLogService;
+use App\Domains\Expense\Services\ExpenseService;
 use App\Services\KasBesarService;
-
+use App\Services\TransactionNumberService;
+use Illuminate\Support\Facades\DB;
 
 class PaymentExpenseAction
 {
     public function execute(array $data)
     {
         return DB::transaction(function () use ($data) {
+            // The form only previewed the number; take it now, so a save that fails takes none.
+            if (! empty($data['auto_number'])) {
+                $data['transaction_number'] = app(TransactionNumberService::class)->generateNumber('expense_payment');
+            }
+
             // Handle file attachment upload
             if (isset($data['attachment']) && $data['attachment']) {
                 $data['attachment'] = $data['attachment']->store('expense_payments', 'public');
