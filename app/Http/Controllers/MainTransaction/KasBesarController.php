@@ -4,9 +4,9 @@ namespace App\Http\Controllers\MainTransaction;
 
 use App\Http\Controllers\Controller;
 use App\Services\KasBesarService;
-use App\Services\TransactionNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class KasBesarController extends Controller
 {
@@ -20,17 +20,17 @@ class KasBesarController extends Controller
         $companyCode = session('user_company_code');
 
         $query = DB::table('t_kas_besar as kb')
-            ->leftJoin('users as cu', 'kb.created_by', '=', 'cu.id')
+            ->leftJoin('t_expenses as ex', 'kb.f_expense_id', '=', 'ex.id')
             ->select([
                 'kb.id',
                 'kb.transaction_number',
                 'kb.transaction_date',
                 'kb.type',
                 'kb.topup_amount',
-                'kb.saldo_before',
                 'kb.saldo_after',
                 'kb.notes',
-                'cu.name as created_by_name',
+                'kb.f_expense_id',
+                'ex.transaction_no as expense_transaction_no',
             ])
             ->where('kb.company_code', $companyCode);
 
@@ -43,7 +43,8 @@ class KasBesarController extends Controller
         }
 
         if ($request->filled('search_transaction_no')) {
-            $query->where('kb.transaction_number', 'LIKE', '%' . $request->search_transaction_no . '%');
+            $search = '%'.$request->search_transaction_no.'%';
+            $query->where(fn ($q) => $q->where('kb.transaction_number', 'LIKE', $search)->orWhere('ex.transaction_no', 'LIKE', $search));
         }
 
         $recordsTotal = DB::table('t_kas_besar')->where('company_code', $companyCode)->count();
@@ -53,31 +54,18 @@ class KasBesarController extends Controller
 
         $query->orderBy('kb.transaction_date', 'DESC')->orderBy('kb.id', 'DESC');
 
-        $start  = (int) $request->input('start', 0);
+        $start = (int) $request->input('start', 0);
         $length = (int) $request->input('length', 10);
         if ($length > 0) {
             $query->skip($start)->take($length);
         }
 
-        $data = $query->get()->map(function ($item) {
-            return [
-                'id'                 => $item->id,
-                'transaction_number' => $item->transaction_number,
-                'transaction_date'   => $item->transaction_date,
-                'type'               => $item->type,
-                'topup_amount'       => $item->topup_amount,
-                'saldo_before'       => $item->saldo_before,
-                'saldo_after'        => $item->saldo_after,
-                'notes'              => $item->notes,
-                'created_by_name'    => $item->created_by_name,
-            ];
-        });
-
         return response()->json([
-            'draw'            => (int) $request->input('draw', 1),
-            'recordsTotal'    => $recordsTotal,
+            'draw' => (int) $request->input('draw', 1),
+            'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
-            'data'            => $data,
+            'data' => $query->get(),
+            'summary' => app(KasBesarService::class)->summary($request->start_date, $request->end_date),
         ]);
     }
 
@@ -90,13 +78,15 @@ class KasBesarController extends Controller
     {
         $validated = $request->validate([
             'transaction_date' => 'required|date|before_or_equal:today',
-            'topup_amount'     => 'required|numeric|min:0.01',
-            'notes'            => 'nullable|string|max:500',
+            'topup_amount' => 'required|numeric|min:0.01|max:9999999999999',
+            'notes' => 'nullable|string|max:500',
         ], [
             'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
             'transaction_date.before_or_equal' => 'Tanggal transaksi tidak boleh lebih dari hari ini.',
-            'topup_amount.required'     => 'Jumlah topup wajib diisi.',
-            'topup_amount.min'          => 'Jumlah topup harus lebih dari 0.',
+            'topup_amount.required' => 'Jumlah topup wajib diisi.',
+            'topup_amount.numeric' => 'Jumlah topup harus berupa angka.',
+            'topup_amount.min' => 'Jumlah topup harus lebih dari 0.',
+            'topup_amount.max' => 'Jumlah topup terlalu besar.',
         ]);
 
         try {
@@ -108,15 +98,20 @@ class KasBesarController extends Controller
             );
 
             return response()->json([
-                'success'            => true,
-                'message'            => 'Kas Besar berhasil ditambahkan dengan nomor: ' . $row['transaction_number'],
-                'id'                 => $row['id'],
+                'success' => true,
+                'message' => 'Kas Besar berhasil ditambahkan dengan nomor: '.$row['transaction_number'],
+                'id' => $row['id'],
                 'transaction_number' => $row['transaction_number'],
             ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyimpan: ' . $e->getMessage(),
+                'message' => 'Gagal menyimpan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -137,7 +132,7 @@ class KasBesarController extends Controller
             ->where('kb.company_code', $companyCode)
             ->first();
 
-        if (!$kasBesar) {
+        if (! $kasBesar) {
             abort(404, 'Data Kas Besar tidak ditemukan');
         }
 
@@ -146,14 +141,14 @@ class KasBesarController extends Controller
         ]);
     }
 
-    public function generateTransactionNumber()
+    public function generateTransactionNumber(Request $request)
     {
         try {
             // Preview only: the number is taken when the top-up is saved.
-            $transactionNumber = app(TransactionNumberService::class)->getNextNumberPreview('kas_besar');
+            $transactionNumber = app(KasBesarService::class)->previewNumber($this->dateFrom($request));
 
             return response()->json([
-                'success'            => true,
+                'success' => true,
                 'transaction_number' => $transactionNumber,
             ]);
         } catch (\Exception $e) {
@@ -164,19 +159,24 @@ class KasBesarController extends Controller
         }
     }
 
-    public function getLatestSaldo()
+    /** Saldo at the end of the given date (default today) and the most a deduction on that date may take. */
+    public function getLatestSaldo(Request $request)
     {
-        $companyCode = session('user_company_code');
-
-        $latest = DB::table('t_kas_besar')
-            ->where('company_code', $companyCode)
-            ->orderBy('transaction_date', 'DESC')
-            ->orderBy('id', 'DESC')
-            ->first();
+        $date = $this->dateFrom($request);
+        $kas = app(KasBesarService::class);
 
         return response()->json([
-            'success'     => true,
-            'saldo_after' => $latest ? $latest->saldo_after : 0,
+            'success' => true,
+            'date' => $date,
+            'saldo_after' => $kas->saldoOn($date),
+            'available' => $kas->availableOn($date),
         ]);
+    }
+
+    private function dateFrom(Request $request): string
+    {
+        $date = $request->query('date');
+
+        return is_string($date) && strtotime($date) ? date('Y-m-d', strtotime($date)) : date('Y-m-d');
     }
 }

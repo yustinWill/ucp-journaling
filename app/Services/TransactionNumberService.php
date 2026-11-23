@@ -98,7 +98,8 @@ class TransactionNumberService
             throw new Exception("Transaction number configuration not found for module: {$module}");
         }
 
-        $nextCounter = $config->current_counter + 1;
+        // Same rule as generateNumber: the first number after a reset is 1.
+        $nextCounter = $this->shouldResetCounter($config) ? 1 : $config->current_counter + 1;
 
         return $this->interpolateTemplate(
             $config->format_template,

@@ -33,7 +33,10 @@
                     <div class="col-md-6">
                         <label class="form-label">Tanggal Transaksi <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="transaction-date"
-                            name="transaction_date" value="{{ date('Y-m-d') }}" required>
+                            name="transaction_date" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}" required>
+                        <small class="text-warning d-none" id="backdate-note">
+                            Tanggal mundur: saldo semua transaksi sesudah tanggal ini ikut bertambah.
+                        </small>
                     </div>
                 </div>
 
@@ -48,7 +51,7 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Saldo Saat Ini</label>
+                        <label class="form-label" id="saldo-label">Saldo Saat Ini</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
                             <input type="text" class="form-control text-end bg-light" id="current-saldo"
@@ -89,26 +92,43 @@
                 return parseInt(num || 0).toLocaleString('id-ID');
             }
 
-            // Load current saldo
-            $.get('{{ route('main_transaction.kas_besar.get_latest_saldo') }}', function(res) {
-                if (res.success) {
-                    currentSaldo = parseFloat(res.saldo_after) || 0;
-                    $('#current-saldo').val(fmt(currentSaldo));
-                    updateSaldoPreview();
-                }
-            });
+            const today = '{{ date('Y-m-d') }}';
 
-            // Generate transaction number on page load
-            generateNumber();
+            function fmtDate(date) {
+                return new Date(date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+
+            // The number and saldo depend on the date: a backdated top-up continues that month's
+            // numbers and starts from the saldo on that day.
+            function loadForDate() {
+                const date = $('#transaction-date').val() || today;
+                $('#saldo-label').text(date === today ? 'Saldo Saat Ini' : `Saldo per ${fmtDate(date)}`);
+                $('#backdate-note').toggleClass('d-none', date >= today);
+                $('#current-saldo').val('').attr('placeholder', 'Memuat...');
+                $.get('{{ route('main_transaction.kas_besar.get_latest_saldo') }}', { date: date }, function(res) {
+                    if (res.success && date === ($('#transaction-date').val() || today)) {
+                        currentSaldo = parseFloat(res.saldo_after) || 0;
+                        $('#current-saldo').val(fmt(currentSaldo));
+                        updateSaldoPreview();
+                    }
+                });
+                generateNumber();
+            }
 
             function generateNumber() {
-                $.get('{{ route('main_transaction.kas_besar.generate_transaction_number') }}', function(res) {
+                const date = $('#transaction-date').val() || today;
+                $.get('{{ route('main_transaction.kas_besar.generate_transaction_number') }}', { date: date }, function(res) {
                     if (res.success) {
                         $('#transaction-number').val(res.transaction_number);
                     }
+                }).fail(function(xhr) {
+                    $('#transaction-number').val('');
+                    Swal.fire({ icon: 'error', title: 'Nomor transaksi', text: xhr.responseJSON?.message || 'Nomor transaksi gagal dibuat.' });
                 });
             }
 
+            loadForDate();
+            $('#transaction-date').on('change', loadForDate);
             $('#generate-number-btn').on('click', generateNumber);
 
             // Topup amount input formatting
@@ -147,13 +167,20 @@
                     Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Nomor transaksi wajib diisi.' });
                     return;
                 }
+                const date = $('#transaction-date').val();
+                if (!date || date > today) {
+                    Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Tanggal transaksi tidak boleh kosong atau lebih dari hari ini.' });
+                    return;
+                }
 
                 Swal.fire({
                     title: 'Konfirmasi Topup',
                     html: `<div class="text-start">
-                        <p><strong>Tanggal:</strong> ${$('#transaction-date').val()}</p>
+                        <p><strong>Nomor:</strong> ${$('#transaction-number').val()}</p>
+                        <p><strong>Tanggal:</strong> ${fmtDate(date)}</p>
                         <p><strong>Jumlah Topup:</strong> Rp ${fmt(topupAmount)}</p>
                         <p><strong>Saldo Setelah:</strong> Rp ${fmt(currentSaldo + topupAmount)}</p>
+                        ${date < today ? '<p class="text-warning mb-0">Saldo transaksi sesudah tanggal ini ikut bertambah.</p>' : ''}
                     </div>`,
                     icon: 'question',
                     showCancelButton: true,
@@ -199,7 +226,7 @@
                     },
                     error: function(xhr) {
                         const msg = xhr.responseJSON?.message || 'Terjadi kesalahan server.';
-                        Swal.fire({ icon: 'error', title: 'Error', text: msg });
+                        Swal.fire({ icon: xhr.status === 422 ? 'warning' : 'error', title: xhr.status === 422 ? 'Periksa kembali' : 'Error', text: msg });
                         $('#submit-btn').prop('disabled', false).html(
                             '<i class="icon-base ti tabler-device-floppy me-1"></i> Simpan'
                         );
