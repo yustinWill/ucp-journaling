@@ -136,6 +136,26 @@ class ExpenseNumberOnSaveTest extends TestCase
         $this->assertSame(5, $this->counter('expense_payment'));
     }
 
+    public function test_the_payment_number_setting_is_added_once(): void
+    {
+        DB::table('m_transaction_numbers')->where('module_name', 'expense_payment')->delete();
+        Schema::table('m_transaction_numbers', function (Blueprint $table) {
+            $table->string('company_code')->nullable();
+            $table->string('module_display_name')->nullable();
+        });
+        DB::table('m_transaction_numbers')->where('module_name', 'expense')->update(['company_code' => 'UCP']);
+        $migration = require database_path('migrations/2026_11_23_000001_seed_expense_payment_transaction_number.php');
+
+        $migration->up();
+        $migration->up();
+
+        $rows = DB::table('m_transaction_numbers')->where('module_name', 'expense_payment')->get();
+        $this->assertCount(1, $rows);
+        $this->assertSame('UCP', $rows[0]->company_code);
+        $this->postJson(route('master_data.transaction_number.generate_number', 'expense_payment'), ['preview' => 1])
+            ->assertJson(['number' => 'EP-'.now()->format('ymd').'-00001']);
+    }
+
     public function test_a_failed_save_takes_no_number(): void
     {
         // Kas/Tunai with an empty Kas Besar: the deduction is refused and everything rolls back.

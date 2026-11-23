@@ -342,20 +342,22 @@
                             // Only a preview: the number is taken on save, unless the user types their own.
                             $('#transaction-number').val(response.number).data('preview', response.number);
                         } else {
-                            console.error('Failed to generate transaction number:', response.message);
-                            // Fallback - show error or use placeholder
-                            $('#transaction-number').val('EXP-' + new Date().getFullYear() + '-001');
+                            numberFailed(response.message);
                         }
                     },
                     error: function(xhr) {
-                        console.error('Error generating transaction number:', xhr.responseText);
-                        // Fallback - use basic format
-                        $('#transaction-number').val('EXP-' + new Date().getFullYear() + '-001');
+                        numberFailed(xhr.responseJSON?.message);
                     },
                     complete: function() {
                         $('#generate-number-btn').prop('disabled', false);
                     }
                 });
+            }
+
+            // No made-up number: leave the field empty so the user sees it needs fixing.
+            function numberFailed(message) {
+                $('#transaction-number').val('').removeData('preview');
+                Swal.fire({ icon: 'error', title: 'Nomor transaksi', text: (message || 'Nomor transaksi gagal dibuat.') + ' Periksa pengaturan nomor transaksi, atau isi nomor secara manual.' });
             }
 
             function checkDuplicateNumber(number) {
