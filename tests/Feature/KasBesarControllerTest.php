@@ -45,6 +45,11 @@ class KasBesarControllerTest extends TestCase
             $table->id();
             $table->string('transaction_no');
         });
+        Schema::create('t_reimbursements', function (Blueprint $table) {
+            $table->id();
+            $table->string('transaction_code');
+            $table->unsignedBigInteger('f_kas_besar_id')->nullable();
+        });
         DB::table('m_transaction_numbers')->insert([
             'module_name' => 'kas_besar', 'module_initial' => 'KB', 'format_template' => 'KB-{YEAR}-{MM}-{COUNTER}',
             'current_counter' => 0, 'counter_padding' => 4, 'reset_frequency' => 'monthly',
@@ -62,6 +67,7 @@ class KasBesarControllerTest extends TestCase
         Schema::dropIfExists('t_kas_besar');
         Schema::dropIfExists('m_transaction_numbers');
         Schema::dropIfExists('t_expenses');
+        Schema::dropIfExists('t_reimbursements');
 
         parent::tearDown();
     }

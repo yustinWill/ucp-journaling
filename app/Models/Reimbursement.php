@@ -22,6 +22,9 @@ class Reimbursement extends Model
         'rejection_reason',
         'created_by',
         'f_budget_category_id',
+        'payment_method_type',
+        'transfer_bank',
+        'f_kas_besar_id',
         'reviewed_by',
         'reviewed_at',
         'company_code',
@@ -34,6 +37,16 @@ class Reimbursement extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /** "Kas / Tunai · KB-…", "Transfer BCA", or null for approvals made before the source was recorded. */
+    public function paymentSourceLabel(): ?string
+    {
+        return match ($this->payment_method_type) {
+            'kas_tunai' => 'Kas / Tunai'.($this->kas_besar_number ? ' · '.$this->kas_besar_number : ''),
+            'transfer' => trim('Transfer '.$this->transfer_bank),
+            default => null,
+        };
+    }
 
     // Relationships
     public function creator()

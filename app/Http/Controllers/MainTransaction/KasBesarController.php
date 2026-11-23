@@ -21,6 +21,7 @@ class KasBesarController extends Controller
 
         $query = DB::table('t_kas_besar as kb')
             ->leftJoin('t_expenses as ex', 'kb.f_expense_id', '=', 'ex.id')
+            ->leftJoin('t_reimbursements as rb', 'rb.f_kas_besar_id', '=', 'kb.id')
             ->select([
                 'kb.id',
                 'kb.transaction_number',
@@ -31,6 +32,8 @@ class KasBesarController extends Controller
                 'kb.notes',
                 'kb.f_expense_id',
                 'ex.transaction_no as expense_transaction_no',
+                'rb.id as reimbursement_id',
+                'rb.transaction_code as reimbursement_code',
             ])
             ->where('kb.company_code', $companyCode);
 
@@ -44,7 +47,7 @@ class KasBesarController extends Controller
 
         if ($request->filled('search_transaction_no')) {
             $search = '%'.$request->search_transaction_no.'%';
-            $query->where(fn ($q) => $q->where('kb.transaction_number', 'LIKE', $search)->orWhere('ex.transaction_no', 'LIKE', $search));
+            $query->where(fn ($q) => $q->where('kb.transaction_number', 'LIKE', $search)->orWhere('ex.transaction_no', 'LIKE', $search)->orWhere('rb.transaction_code', 'LIKE', $search));
         }
 
         $recordsTotal = DB::table('t_kas_besar')->where('company_code', $companyCode)->count();
@@ -124,10 +127,13 @@ class KasBesarController extends Controller
         $kasBesar = DB::table('t_kas_besar as kb')
             ->leftJoin('users as cu', 'kb.created_by', '=', 'cu.id')
             ->leftJoin('t_expenses as ex', 'kb.f_expense_id', '=', 'ex.id')
+            ->leftJoin('t_reimbursements as rb', 'rb.f_kas_besar_id', '=', 'kb.id')
             ->select([
                 'kb.*',
                 'cu.name as created_by_name',
                 'ex.transaction_no as expense_transaction_no',
+                'rb.id as reimbursement_id',
+                'rb.transaction_code as reimbursement_code',
             ])
             ->where('kb.id', $id)
             ->where('kb.company_code', $companyCode)

@@ -179,6 +179,12 @@
                                     <input type="text" class="form-control" id="modal-budget-name" disabled>
                                 </div>
                             </div>
+                            <div class="row g-3 mb-3" id="modal-source-row" style="display: none;">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Sumber Pembayaran</label>
+                                    <input type="text" class="form-control" id="modal-source-name" disabled>
+                                </div>
+                            </div>
                             <div class="row g-3 mb-3" id="modal-rejection-row" style="display: none;">
                                 <div class="col-md-12">
                                     <label class="form-label fw-bold">Alasan Penolakan</label>
@@ -216,6 +222,30 @@
                                         @endforeach --}}
                                     </select>
                                     <small class="text-muted">Pilih anggaran sebelum approve</small>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Sumber Pembayaran <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="modal-payment-method-type">
+                                        <option value="">Pilih Sumber Pembayaran</option>
+                                        <option value="kas_tunai">Kas / Tunai</option>
+                                        <option value="transfer">Transfer</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6" id="modal-kas-wrapper" style="display: none;">
+                                    <label class="form-label fw-bold">Saldo Kas Besar Hari Ini</label>
+                                    <input type="text" class="form-control bg-light text-end" id="modal-kas-saldo" readonly placeholder="Memuat...">
+                                    <small class="text-muted">Saldo Kas Besar langsung dipotong saat approve.</small>
+                                </div>
+                                <div class="col-md-6" id="modal-bank-wrapper" style="display: none;">
+                                    <label class="form-label fw-bold">Bank Transfer <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="modal-transfer-bank">
+                                        <option value="">Pilih Bank</option>
+                                        <option value="BCA">BCA</option>
+                                        <option value="Mandiri">Mandiri</option>
+                                        <option value="BTPN">BTPN</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="row g-3 mb-3">
@@ -428,6 +458,31 @@
         //         budgetSelect.trigger('change');
         //     });
         // }
+        let currentAmount = 0;
+        // The most a Kas Besar deduction dated today may take.
+        let kasAvailable = 0;
+
+        function toggleApprovalSource() {
+            const source = $('#modal-payment-method-type').val();
+            $('#modal-kas-wrapper').toggle(source === 'kas_tunai');
+            $('#modal-bank-wrapper').toggle(source === 'transfer');
+            if (source !== 'transfer') $('#modal-transfer-bank').val('');
+        }
+        $(document).on('change', '#modal-payment-method-type', toggleApprovalSource);
+
+        // Start on Kas / Tunai only when Kas Besar can cover this reimbursement today, otherwise on Transfer.
+        function loadKasBesarForApproval() {
+            $('#modal-kas-saldo').val('');
+            $.get('{{ route('main_transaction.kas_besar.get_latest_saldo') }}', function(res) {
+                kasAvailable = parseFloat(res.available) || 0;
+                $('#modal-kas-saldo').val('Rp ' + (parseFloat(res.saldo_after) || 0).toLocaleString('id-ID'));
+                if (!$('#modal-payment-method-type').val()) {
+                    $('#modal-payment-method-type').val(kasAvailable >= currentAmount ? 'kas_tunai' : 'transfer');
+                    toggleApprovalSource();
+                }
+            });
+        }
+
         function openReimbursementModal(id) {
             currentReimbursementId = id;
             // Reset modal state
@@ -436,10 +491,12 @@
             $('#btn-modal-approve, #btn-modal-reject').hide();
             $('#modal-review-section, #modal-approval-section').hide();
             $('#modal-description-row, #modal-attachment-row').hide();
-            $('#modal-budget-row, #modal-rejection-row').hide();
+            $('#modal-budget-row, #modal-rejection-row, #modal-source-row').hide();
             $('#modal-budged-entity-type').val('');
             $('#modal-budget-select').val('');
             $('#modal-reject-reason-input').val('');
+            $('#modal-payment-method-type, #modal-transfer-bank').val('');
+            $('#modal-kas-wrapper, #modal-bank-wrapper').hide();
 
             reimbursementModal.show();
 
@@ -476,10 +533,13 @@
                     var badges = { 'PENDING': 'bg-label-warning', 'APPROVED': 'bg-label-success', 'REJECTED': 'bg-label-danger' };
                     $('.modal-title').html('Detail Reimbursement <span class="badge ' + (badges[d.status] || '') + ' ms-2">' + d.status + '</span>');
 
+                    currentAmount = parseFloat(d.amount) || 0;
+
                     if (d.status === 'PENDING') {
                         // Show approval section
                         $('#modal-approval-section').show();
                         $('#btn-modal-approve, #btn-modal-reject').show();
+                        loadKasBesarForApproval();
                     } else {
                         // Show review info
                         $('#modal-reviewer').val(d.reviewer_name || '-');
@@ -489,6 +549,10 @@
                         if (d.status === 'APPROVED' && d.budget_category_name) {
                             $('#modal-budget-name').val(d.budget_category_name);
                             $('#modal-budget-row').show();
+                        }
+                        if (d.status === 'APPROVED' && d.payment_source) {
+                            $('#modal-source-name').val(d.payment_source);
+                            $('#modal-source-row').show();
                         }
                         if (d.status === 'REJECTED' && d.rejection_reason) {
                             $('#modal-rejection-reason').val(d.rejection_reason);
@@ -510,14 +574,31 @@
             var budgetEntity = $('#modal-budged-entity-type').val();
             var budgetCategoryId = $('#modal-budget-select').val();
 
+            var paymentMethodType = $('#modal-payment-method-type').val();
+            var transferBank = $('#modal-transfer-bank').val();
+
             if (!budgetCategoryId) {
                 Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan pilih anggaran terlebih dahulu!' });
+                return;
+            }
+            if (!paymentMethodType) {
+                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan pilih sumber pembayaran terlebih dahulu!' });
+                return;
+            }
+            if (paymentMethodType === 'transfer' && !transferBank) {
+                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan pilih bank transfer terlebih dahulu!' });
+                return;
+            }
+            if (paymentMethodType === 'kas_tunai' && currentAmount > kasAvailable) {
+                Swal.fire({ icon: 'error', title: 'Saldo Tidak Mencukupi', html: `Saldo Kas Besar <strong>Rp ${kasAvailable.toLocaleString('id-ID')}</strong> tidak mencukupi untuk reimbursement <strong>Rp ${currentAmount.toLocaleString('id-ID')}</strong>.` });
                 return;
             }
 
             Swal.fire({
                 title: 'Approve Reimbursement?',
-                text: 'Anda yakin akan menyetujui reimbursement ini?',
+                text: paymentMethodType === 'kas_tunai'
+                    ? `Saldo Kas Besar akan dipotong Rp ${currentAmount.toLocaleString('id-ID')}.`
+                    : `Dibayar lewat transfer ${transferBank}. Kas Besar tidak berubah.`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Ya, Approve!',
@@ -536,7 +617,9 @@
                         data: {
                             _token: '{{ csrf_token() }}',
                             budget_entity: budgetEntity,
-                            budget_category_id: budgetCategoryId
+                            budget_category_id: budgetCategoryId,
+                            payment_method_type: paymentMethodType,
+                            transfer_bank: transferBank
                         },
                         success: function(response) {
                             reimbursementModal.hide();

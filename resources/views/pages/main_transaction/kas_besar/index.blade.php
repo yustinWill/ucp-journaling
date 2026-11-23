@@ -21,7 +21,7 @@
                                 <div class="col-12 col-sm-6 col-lg-3">
                                     <label class="form-label">No Transaksi:</label>
                                     <input type="text" class="form-control" id="search-transaction-no"
-                                        placeholder="No Kas Besar / Pengeluaran" />
+                                        placeholder="No Kas Besar / Pengeluaran / Reimbursement" />
                                 </div>
                                 <div class="col-12 col-sm-6 col-lg-3">
                                     <label class="form-label">Tanggal Mulai:</label>
@@ -177,6 +177,13 @@
                             if (row.f_expense_id) {
                                 const url = `{{ route('main_transaction.expense.detail', ':id') }}`.replace(':id', row.f_expense_id);
                                 return `Pengeluaran <a href="${url}">${esc(row.expense_transaction_no || '')}</a>`;
+                            }
+                            if (row.reimbursement_id) {
+                                const url = `{{ route('main_transaction.reimbursement_approval.detail', ':id') }}`.replace(':id', row.reimbursement_id);
+                                return `Reimbursement <a href="${url}">${esc(row.reimbursement_code || '')}</a>`;
+                            }
+                            if (parseFloat(row.topup_amount) < 0) {
+                                return esc(data || 'Pengeluaran');
                             }
                             return data ? `Topup <span class="text-muted">· ${esc(data)}</span>` : 'Topup';
                         }
