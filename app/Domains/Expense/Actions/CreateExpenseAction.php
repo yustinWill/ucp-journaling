@@ -2,20 +2,24 @@
 
 namespace App\Domains\Expense\Actions;
 
-use Illuminate\Support\Facades\DB;
-use App\Enums\ActionTypes;
-use App\Domains\Expense\Services\ExpenseService;
-use App\Domains\Expense\Services\ExpenseCoaDetailService;
-use App\Domains\Expense\Services\ExpenseAuditLogService;
-use App\Domains\Expense\Actions\PaymentExpenseAction;
 use App\Domains\Budged\Services\BudgedService;
-
+use App\Domains\Expense\Services\ExpenseAuditLogService;
+use App\Domains\Expense\Services\ExpenseCoaDetailService;
+use App\Domains\Expense\Services\ExpenseService;
+use App\Enums\ActionTypes;
+use App\Services\TransactionNumberService;
+use Illuminate\Support\Facades\DB;
 
 class CreateExpenseAction
 {
     public function execute(array $data)
     {
         return DB::transaction(function () use ($data) {
+            // The form only previewed the number; take it now, so a save that fails takes none.
+            if (! empty($data['auto_number'])) {
+                $data['transaction_number'] = app(TransactionNumberService::class)->generateNumber('expense');
+            }
+
             // Handle file attachment upload
             if (isset($data['attachment']) && $data['attachment']) {
                 $data['attachment'] = $data['attachment']->store('expenses', 'public');
@@ -35,7 +39,7 @@ class CreateExpenseAction
             app(ExpenseCoaDetailService::class)->create($expense_coa_details);
 
             // Save budget mapping if provided and update budget remaining value
-            if (!empty($data['budged_history_id'])) {
+            if (! empty($data['budged_history_id'])) {
                 DB::table('t_budged_expenses')->insert([
                     'budged_history_id' => $data['budged_history_id'],
                     'expense_id' => $expense_id,
