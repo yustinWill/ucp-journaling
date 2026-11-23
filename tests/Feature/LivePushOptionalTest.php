@@ -12,9 +12,10 @@ class LivePushOptionalTest extends TestCase
     public function test_nothing_is_queued_when_broadcasting_is_off(): void
     {
         Queue::fake();
-        config(['broadcasting.default' => 'null']);
-
-        event(new MessageSent(['title' => 'SO baru']));
+        foreach ([null, 'null'] as $off) { // .env BROADCAST_CONNECTION=null arrives as a real null
+            config(['broadcasting.default' => $off]);
+            event(new MessageSent(['title' => 'SO baru']));
+        }
 
         Queue::assertNotPushed(BroadcastEvent::class);
     }
