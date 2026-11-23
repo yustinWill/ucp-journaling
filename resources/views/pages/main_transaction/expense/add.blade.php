@@ -36,11 +36,12 @@
                         </select>
                     </div>
                     <div class="col-md-4" id="kas-saldo-wrapper" style="display:none;">
-                        <label class="form-label">Saldo Kas Besar</label>
+                        <label class="form-label" id="kas-saldo-label">Saldo Kas Besar</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
                             <input type="text" class="form-control bg-light text-end" id="kas-saldo-display" readonly placeholder="Memuat...">
                         </div>
+                        <small class="text-warning d-none" id="kas-available-note"></small>
                     </div>
                 </div>
 
@@ -572,15 +573,29 @@
 
             // ── Kas Besar / Transfer source logic ────────────────────────────
             let kasBesarSaldo = 0;
+            // The most this expense may take on its date without a later Kas Besar row going below zero.
+            let kasBesarAvailable = 0;
 
             function loadKasSaldo() {
-                $.get('{{ route('main_transaction.kas_besar.get_latest_saldo') }}', function(res) {
-                    if (res.success) {
+                const date = $('#transaction-date').val();
+                const label = date ? new Date(date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+                $('#kas-saldo-label').text(label ? `Saldo Kas Besar per ${label}` : 'Saldo Kas Besar');
+                $('#kas-saldo-display').val('');
+                $.get('{{ route('main_transaction.kas_besar.get_latest_saldo') }}', { date: date }, function(res) {
+                    if (res.success && date === $('#transaction-date').val()) {
                         kasBesarSaldo = parseFloat(res.saldo_after) || 0;
+                        kasBesarAvailable = parseFloat(res.available) || 0;
                         $('#kas-saldo-display').val(kasBesarSaldo.toLocaleString('id-ID'));
+                        $('#kas-available-note')
+                            .toggleClass('d-none', kasBesarAvailable >= kasBesarSaldo)
+                            .text(`Maksimal Rp ${kasBesarAvailable.toLocaleString('id-ID')}, agar saldo transaksi sesudahnya tidak minus.`);
                     }
                 });
             }
+
+            $('#transaction-date').on('change', function() {
+                if ($('#payment-method-type').val() === 'kas_tunai') loadKasSaldo();
+            });
 
             $('#payment-method-type').on('change', function() {
                 const val = $(this).val();
@@ -953,11 +968,13 @@
                 } else if (paymentMethodType === 'kas_tunai' && !$('#pay-later').is(':checked')) {
                     // Validate saldo (pay-later expenses are deducted when paid)
                     const finalTotal = parseCurrency($('#final-total').val()) || 0;
-                    if (finalTotal > kasBesarSaldo) {
+                    if (finalTotal > kasBesarAvailable) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Saldo Tidak Mencukupi',
-                            html: `Saldo Kas Besar <strong>Rp ${kasBesarSaldo.toLocaleString('id-ID')}</strong> tidak mencukupi untuk pengeluaran <strong>Rp ${finalTotal.toLocaleString('id-ID')}</strong>.`
+                            html: kasBesarAvailable < kasBesarSaldo
+                                ? `Pengeluaran <strong>Rp ${finalTotal.toLocaleString('id-ID')}</strong> akan membuat saldo transaksi Kas Besar sesudah tanggal ini minus. Maksimal <strong>Rp ${kasBesarAvailable.toLocaleString('id-ID')}</strong>.`
+                                : `Saldo Kas Besar <strong>Rp ${kasBesarSaldo.toLocaleString('id-ID')}</strong> tidak mencukupi untuk pengeluaran <strong>Rp ${finalTotal.toLocaleString('id-ID')}</strong>.`
                         });
                         return false;
                     }
