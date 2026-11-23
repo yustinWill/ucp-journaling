@@ -14,7 +14,6 @@ use App\Helpers\PermissionHelper;
 use App\Helpers\ValidationHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class BudgedController extends Controller
@@ -45,10 +44,10 @@ class BudgedController extends Controller
             $duplicateData = app(BudgedService::class)->findBudgetPeriodWithBudgets($duplicateId);
         }
 
-        return view('pages.master_data.budged.add',[
-            "budgedlist" => $budgedlist["data"],
-            "budgetCategories" => $budgetCategories,
-            "duplicateData" => $duplicateData
+        return view('pages.master_data.budged.add', [
+            'budgedlist' => $budgedlist['data'],
+            'budgetCategories' => $budgetCategories,
+            'duplicateData' => $duplicateData,
         ]);
     }
 
@@ -207,7 +206,7 @@ class BudgedController extends Controller
                 $validated['period_end_date']
             );
 
-            if (!$validation['valid']) {
+            if (! $validation['valid']) {
                 return response()->json([
                     'success' => false,
                     'message' => $validation['message'],
@@ -265,7 +264,7 @@ class BudgedController extends Controller
                 $validated['history_id']
             );
 
-            if (!$validation['valid']) {
+            if (! $validation['valid']) {
                 return response()->json([
                     'success' => false,
                     'message' => $validation['message'],
@@ -347,7 +346,7 @@ class BudgedController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'valid' => false,
-                'message' => 'Gagal memvalidasi periode: ' . $e->getMessage()
+                'message' => 'Gagal memvalidasi periode: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -417,6 +416,7 @@ class BudgedController extends Controller
         try {
             $validated = $request->validate([
                 'period_id' => 'required|exists:m_budget_periods,id',
+                'period_end_date' => 'nullable|date_format:Y-m-d',
                 'type' => 'required|in:kingdom,owner',
                 'budgets' => 'required|array|min:1',
                 'budgets.*.id' => 'nullable|exists:m_budgeds,id',
@@ -425,6 +425,7 @@ class BudgedController extends Controller
                 'budgets.*.budged_remaining_value' => 'nullable|numeric',
             ], [], [
                 'period_id' => 'ID Periode',
+                'period_end_date' => 'Tanggal Akhir Periode',
                 'type' => 'Tipe',
                 'budgets' => 'Daftar Anggaran',
                 'budgets.*.f_budget_category_id' => 'Kategori Anggaran',
@@ -437,7 +438,7 @@ class BudgedController extends Controller
             $budgets = $validated['budgets'];
 
             // Use UpdateBudgedAction to handle the update logic
-            app(UpdateBudgedAction::class)->execute($periodId, $type, $budgets);
+            app(UpdateBudgedAction::class)->execute($periodId, $type, $budgets, $validated['period_end_date'] ?? null);
 
             return response()->json([
                 'success' => true,
