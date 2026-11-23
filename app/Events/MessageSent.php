@@ -2,9 +2,8 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Broadcasting\Channel; // Public Channel
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets; // Public Channel
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -24,6 +23,12 @@ class MessageSent implements ShouldBroadcast
     public function broadcastOn()
     {
         return new Channel('public-messages');
+    }
+
+    /** With broadcasting off (BROADCAST_CONNECTION=null) nothing is queued, so no job waits for a worker. */
+    public function broadcastWhen(): bool
+    {
+        return config('broadcasting.default') !== 'null';
     }
 
     public function broadcastAs()
