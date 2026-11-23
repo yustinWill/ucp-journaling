@@ -28,7 +28,8 @@ class MessageSent implements ShouldBroadcast
     /** With broadcasting off (BROADCAST_CONNECTION=null) nothing is queued, so no job waits for a worker. */
     public function broadcastWhen(): bool
     {
-        return config('broadcasting.default') !== 'null';
+        // env() turns BROADCAST_CONNECTION=null into a real null, so both spellings mean off.
+        return ! in_array(config('broadcasting.default'), [null, 'null'], true);
     }
 
     public function broadcastAs()
