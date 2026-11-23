@@ -83,6 +83,7 @@ class KasBesarController extends Controller
         ], [
             'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
             'transaction_date.before_or_equal' => 'Tanggal transaksi tidak boleh lebih dari hari ini.',
+            'transaction_date.date' => 'Tanggal transaksi tidak valid.',
             'topup_amount.required' => 'Jumlah topup wajib diisi.',
             'topup_amount.numeric' => 'Jumlah topup harus berupa angka.',
             'topup_amount.min' => 'Jumlah topup harus lebih dari 0.',

@@ -79,7 +79,7 @@ class KasBesarControllerTest extends TestCase
         $cases = [
             'tomorrow' => [['transaction_date' => now()->addDay()->toDateString(), 'topup_amount' => 1000], 'Tanggal transaksi tidak boleh lebih dari hari ini.'],
             'no date' => [['topup_amount' => 1000], 'Tanggal transaksi wajib diisi.'],
-            'not a date' => [['transaction_date' => 'kemarin', 'topup_amount' => 1000], null],
+            'not a date' => [['transaction_date' => 'kemarin', 'topup_amount' => 1000], 'Tanggal transaksi tidak valid.'],
             'zero' => [['transaction_date' => $today, 'topup_amount' => 0], 'Jumlah topup harus lebih dari 0.'],
             'negative' => [['transaction_date' => $today, 'topup_amount' => -5000], 'Jumlah topup harus lebih dari 0.'],
             'text' => [['transaction_date' => $today, 'topup_amount' => 'sejuta'], 'Jumlah topup harus berupa angka.'],
