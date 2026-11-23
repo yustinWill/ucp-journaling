@@ -54,6 +54,7 @@ class ExpenseController extends Controller
         $paymentMethods = app(PaymentMethodService::class)->findAll();
         $coa_accounts = app(CoaService::class)->findAll();
         $activeBudgets = app(BudgedService::class)->getActiveBudgets();
+
         return view('pages.main_transaction.expense.add', [
             'canAddTags' => auth()->user()->can('tag.create'),
             'canAddContacts' => auth()->user()->can('contact.create'),
@@ -189,7 +190,8 @@ class ExpenseController extends Controller
                 'transfer_bank' => 'nullable|string|in:BCA,Mandiri,BTPN',
                 'payment_method' => 'nullable|string|exists:m_payment_methods,id',
                 'pay_later' => 'required|boolean',
-                'transaction_number' => 'required|string|max:50|unique:t_expenses,transaction_no',
+                'auto_number' => 'nullable|boolean',
+                'transaction_number' => $request->boolean('auto_number') ? 'nullable|string|max:50' : 'required|string|max:50|unique:t_expenses,transaction_no',
                 'recipient_id' => 'nullable|integer|exists:m_contacts,id',
                 'transaction_date' => 'required|date|before_or_equal:today',
 
@@ -305,7 +307,8 @@ class ExpenseController extends Controller
         try {
             $validated = $request->validate([
                 'expense_id' => 'required|integer|exists:t_expenses,id',
-                'transaction_number' => 'required|string|max:50|unique:t_expenses,transaction_no',
+                'auto_number' => 'nullable|boolean',
+                'transaction_number' => $request->boolean('auto_number') ? 'nullable|string|max:50' : 'required|string|max:50|unique:t_expenses,transaction_no',
                 'recipient_id' => 'nullable|integer|exists:m_contacts,id',
                 'transaction_date' => 'required|date|before_or_equal:today',
                 'payment_coa' => 'nullable|string|exists:m_coas,code',
@@ -328,7 +331,7 @@ class ExpenseController extends Controller
                 'recipient_id.exists' => 'Penerima tidak valid.',
                 'transaction_date.required' => 'Tanggal transaksi wajib diisi.',
                 'transaction_date.before_or_equal' => 'Tanggal transaksi tidak boleh lebih dari hari ini.',
-                
+
                 'remaining_amount.required' => 'Subtotal wajib diisi.',
                 'remaining_amount.min' => 'Subtotal harus lebih dari 0.',
                 'payment_amount.required' => 'Total akhir wajib diisi.',
@@ -466,6 +469,7 @@ class ExpenseController extends Controller
     {
         $date = $request->input('date', now()->toDateString());
         $budgets = app(BudgedService::class)->getActiveBudgets(null, $date);
+
         return response()->json($budgets);
     }
 }

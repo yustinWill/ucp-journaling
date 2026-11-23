@@ -22,6 +22,7 @@ class TransactionNumberController extends Controller
     public function index()
     {
         $permissionData = PermissionHelper::getViewPermissions('master_data_transaction_number');
+
         return view('pages.master_data.transaction_number.index', $permissionData);
     }
 
@@ -213,7 +214,10 @@ class TransactionNumberController extends Controller
     public function generateNumber(Request $request, $module)
     {
         try {
-            $number = $this->transactionNumberService->generateNumber($module);
+            // A form shows the next number with preview=1; the number is taken when the document is saved.
+            $number = $request->boolean('preview')
+                ? $this->transactionNumberService->getNextNumberPreview($module)
+                : $this->transactionNumberService->generateNumber($module);
 
             return response()->json([
                 'success' => true,
