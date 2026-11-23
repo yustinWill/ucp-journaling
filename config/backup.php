@@ -1,5 +1,8 @@
 <?php
 
+// Alerts go to Discord only where a webhook is set; staging has none, and an empty URL made every backup log a cURL error.
+$backupAlertChannels = env('BACKUP_DISCORD_WEBHOOK') ? ['discord'] : [];
+
 return [
 
     'backup' => [
@@ -196,12 +199,12 @@ return [
      */
     'notifications' => [
         'notifications' => [
-            \Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification::class => ['discord'],
-            \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification::class => ['discord'],
-            \Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification::class => ['discord'],
-            \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class => ['discord'],
-            \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification::class => ['discord'],
-            \Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification::class => ['discord'],
+            \Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification::class => $backupAlertChannels,
+            \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification::class => $backupAlertChannels,
+            \Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification::class => $backupAlertChannels,
+            \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class => $backupAlertChannels,
+            \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification::class => $backupAlertChannels,
+            \Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification::class => $backupAlertChannels,
         ],
 
         /*
