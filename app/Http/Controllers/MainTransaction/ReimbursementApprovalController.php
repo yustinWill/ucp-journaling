@@ -64,7 +64,7 @@ class ReimbursementApprovalController extends Controller
 
         $reimbursement = $this->reimbursementService->findOne($id);
 
-        if (!$reimbursement) {
+        if (! $reimbursement) {
             abort(404, 'Reimbursement tidak ditemukan.');
         }
 
@@ -85,7 +85,7 @@ class ReimbursementApprovalController extends Controller
     {
         $reimbursement = $this->reimbursementService->findOne($id);
 
-        if (!$reimbursement) {
+        if (! $reimbursement) {
             return response()->json(['message' => 'Reimbursement tidak ditemukan.'], 404);
         }
 
@@ -106,6 +106,7 @@ class ReimbursementApprovalController extends Controller
                 'reviewer_name' => $reimbursement->reviewer->name ?? null,
                 'reviewed_at' => $reimbursement->reviewed_at ? $reimbursement->reviewed_at->format('d/m/Y H:i') : null,
                 'budget_category_name' => $reimbursement->budget_category->budged_name ?? null,
+                'payment_source' => $reimbursement->paymentSourceLabel(),
             ],
         ], SuccessCodes::GENERAL_SUCCESS->httpStatus());
     }
@@ -125,17 +126,27 @@ class ReimbursementApprovalController extends Controller
 
         try {
             $validated = $request->validate([
-                'budget_entity' => 'required',
+                // Unused by approve; the detail page never sent it, which made every approval there fail.
+                'budget_entity' => 'nullable',
                 'budget_category_id' => 'required|exists:m_budgeds,id',
-            ], [], [
+                'payment_method_type' => 'required|in:kas_tunai,transfer',
+                'transfer_bank' => 'nullable|required_if:payment_method_type,transfer|in:BCA,Mandiri,BTPN',
+            ], [
+                'payment_method_type.required' => 'Sumber pembayaran wajib dipilih.',
+                'payment_method_type.in' => 'Sumber pembayaran tidak valid.',
+                'transfer_bank.required_if' => 'Bank transfer wajib dipilih.',
+                'transfer_bank.in' => 'Bank transfer tidak valid.',
+            ], [
                 'budget_category_id' => 'Anggaran',
             ]);
 
             $reimbursement = $this->reimbursementService->approve(
                 $id,
-                $validated['budget_entity'],
+                $validated['budget_entity'] ?? null,
                 $validated['budget_category_id'],
-                auth()->id()
+                auth()->id(),
+                $validated['payment_method_type'],
+                $validated['transfer_bank'] ?? null
             );
 
             return response()->json([
