@@ -62,6 +62,7 @@
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        if (!window.Echo) return; // live push is off; the bell still lists saved notifications
         window.Echo.channel("public-messages")
             .listen(".message.sent", (event) => {
                 console.log("PUSH Notification Received:", event);
