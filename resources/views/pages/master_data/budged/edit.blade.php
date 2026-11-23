@@ -18,15 +18,15 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <label class="form-label">Tanggal Mulai Periode <span style="color: red;">*</span></label>
-                    <input type="text" class="form-control global-single-date-picker" id="period_start_date"
+                    <input type="text" class="form-control bg-light" id="period_start_date"
                            name="period_start_date" value="{{ $period_start_date }}" placeholder="yyyy-mm-dd" required readonly>
-                    <small class="text-muted">Periode tidak dapat diubah</small>
+                    <small class="text-muted">Tanggal mulai tidak dapat diubah</small>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Tanggal Akhir Periode <span style="color: red;">*</span></label>
                     <input type="text" class="form-control global-single-date-picker" id="period_end_date"
                            name="period_end_date" value="{{ $period_end_date }}" placeholder="yyyy-mm-dd" required readonly>
-                    <small class="text-muted">Periode tidak dapat diubah</small>
+                    <small class="text-muted">Tidak boleh sebelum tanggal mulai atau sebelum pengeluaran yang sudah tercatat</small>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Tipe <span style="color: red;">*</span></label>
@@ -340,6 +340,17 @@
                     return;
                 }
 
+                if (!$('#period_end_date').val() || $('#period_end_date').val() < $('#period_start_date').val()) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Tanggal akhir periode tidak boleh kosong atau sebelum tanggal mulai',
+                        customClass: { confirmButton: 'btn btn-primary' },
+                        buttonsStyling: false
+                    });
+                    return;
+                }
+
                 // Confirm save
                 Swal.fire({
                     title: 'Simpan Perubahan?',
@@ -365,6 +376,7 @@
                             data: {
                                 _token: '{{ csrf_token() }}',
                                 period_id: periodId,
+                                period_end_date: $('#period_end_date').val(),
                                 type: $('#type').val(),
                                 budgets: budgets
                             },
