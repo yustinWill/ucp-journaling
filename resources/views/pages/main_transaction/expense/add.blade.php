@@ -22,7 +22,7 @@
                         <label class="form-label">Sumber Pembayaran <span class="text-danger">*</span></label>
                         <select id="payment-method-type" name="payment_method_type" class="form-select" required>
                             <option value="">Pilih Sumber Pembayaran</option>
-                            <option value="kas_tunai" selected>Kas / Tunai</option>
+                            <option value="kas_tunai">Kas / Tunai</option>
                             <option value="transfer">Transfer</option>
                         </select>
                     </div>
@@ -625,7 +625,13 @@
                     $('#transfer-bank').prop('required', false).val('');
                 }
             });
-            $('#payment-method-type').trigger('change'); // Kas / Tunai by default
+            // Start on Kas / Tunai only when Kas Besar has money that day; otherwise on Transfer, so a new
+            // expense isn't refused by default. Untouched if the user already picked a source.
+            $.get('{{ route('main_transaction.kas_besar.get_latest_saldo') }}', { date: $('#transaction-date').val() }, function(res) {
+                if (!$('#payment-method-type').val()) {
+                    $('#payment-method-type').val(parseFloat(res.available) > 0 ? 'kas_tunai' : 'transfer').trigger('change');
+                }
+            });
 
             function initializeFormLogic() {
                 // Pay Later checkbox logic
