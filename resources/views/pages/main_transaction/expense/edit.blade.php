@@ -18,7 +18,7 @@
 
             <!-- Row 1: Payment Method, Pay Later, Transaction Number -->
             <div class="row g-3 mb-3">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
                     <select id="payment-method" name="payment_method" class="global-select2 form-select"
                         data-allow-clear="false" required>
