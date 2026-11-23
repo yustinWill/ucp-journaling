@@ -98,6 +98,31 @@
                 </div>
 
                 <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Sumber Pembayaran <span class="text-danger">*</span></label>
+                        <select class="form-select" id="payment_method_type">
+                            <option value="">Pilih Sumber Pembayaran</option>
+                            <option value="kas_tunai">Kas / Tunai</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6" id="kas-wrapper" style="display: none;">
+                        <label class="form-label fw-bold">Saldo Kas Besar Hari Ini</label>
+                        <input type="text" class="form-control bg-light text-end" id="kas-saldo" readonly placeholder="Memuat...">
+                        <small class="text-muted">Saldo Kas Besar langsung dipotong saat approve.</small>
+                    </div>
+                    <div class="col-md-6" id="bank-wrapper" style="display: none;">
+                        <label class="form-label fw-bold">Bank Transfer <span class="text-danger">*</span></label>
+                        <select class="form-select" id="transfer_bank">
+                            <option value="">Pilih Bank</option>
+                            <option value="BCA">BCA</option>
+                            <option value="Mandiri">Mandiri</option>
+                            <option value="BTPN">BTPN</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
                     <div class="col-md-12">
                         <label class="form-label fw-bold">Alasan Penolakan</label>
                         <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="3"
@@ -145,6 +170,14 @@
                                 value="{{ $reimbursement->budget_category->budged_name ?? '-' }}" readonly>
                         </div>
                     </div>
+                    @if ($reimbursement->paymentSourceLabel())
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Sumber Pembayaran</label>
+                                <input type="text" class="form-control" value="{{ $reimbursement->paymentSourceLabel() }}" readonly>
+                            </div>
+                        </div>
+                    @endif
                 @endif
 
                 @if ($reimbursement->status === 'REJECTED' && $reimbursement->rejection_reason)
@@ -168,8 +201,35 @@
 
 @section('js_script')
     <script>
+        const reimbursementAmount = {{ (float) $reimbursement->amount }};
+        // The most a Kas Besar deduction dated today may take.
+        let kasAvailable = 0;
+
+        function toggleSource() {
+            const source = $('#payment_method_type').val();
+            $('#kas-wrapper').toggle(source === 'kas_tunai');
+            $('#bank-wrapper').toggle(source === 'transfer');
+            if (source !== 'transfer') $('#transfer_bank').val('');
+        }
+
+        $(function() {
+            if (!$('#payment_method_type').length) return;
+            $('#payment_method_type').on('change', toggleSource);
+            // Start on Kas / Tunai only when Kas Besar can cover this reimbursement today, otherwise on Transfer.
+            $.get('{{ route('main_transaction.kas_besar.get_latest_saldo') }}', function(res) {
+                kasAvailable = parseFloat(res.available) || 0;
+                $('#kas-saldo').val('Rp ' + (parseFloat(res.saldo_after) || 0).toLocaleString('id-ID'));
+                if (!$('#payment_method_type').val()) {
+                    $('#payment_method_type').val(kasAvailable >= reimbursementAmount ? 'kas_tunai' : 'transfer');
+                    toggleSource();
+                }
+            });
+        });
+
         function approveReimbursement() {
             const budgetCategoryId = $('#budget_category_id').val();
+            const paymentMethodType = $('#payment_method_type').val();
+            const transferBank = $('#transfer_bank').val();
 
             if (!budgetCategoryId) {
                 Swal.fire({
@@ -177,6 +237,18 @@
                     title: 'Perhatian',
                     text: 'Silakan pilih budget category terlebih dahulu!',
                 });
+                return;
+            }
+            if (!paymentMethodType) {
+                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan pilih sumber pembayaran terlebih dahulu!' });
+                return;
+            }
+            if (paymentMethodType === 'transfer' && !transferBank) {
+                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Silakan pilih bank transfer terlebih dahulu!' });
+                return;
+            }
+            if (paymentMethodType === 'kas_tunai' && reimbursementAmount > kasAvailable) {
+                Swal.fire({ icon: 'error', title: 'Saldo Tidak Mencukupi', html: `Saldo Kas Besar <strong>Rp ${kasAvailable.toLocaleString('id-ID')}</strong> tidak mencukupi untuk reimbursement <strong>Rp ${reimbursementAmount.toLocaleString('id-ID')}</strong>.` });
                 return;
             }
 
@@ -187,6 +259,7 @@
                     <ul>
                         <li><strong>Jumlah:</strong> Rp {{ number_format($reimbursement->amount, 0, ',', '.') }}</li>
                         <li><strong>Staff:</strong> {{ $reimbursement->creator->name }}</li>
+                        <li><strong>Sumber:</strong> ${paymentMethodType === 'kas_tunai' ? 'Kas / Tunai (saldo Kas Besar dipotong)' : 'Transfer ' + transferBank}</li>
                     </ul>
                 </div>`,
                 icon: 'question',
@@ -206,7 +279,9 @@
                         type: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
-                            budget_category_id: budgetCategoryId
+                            budget_category_id: budgetCategoryId,
+                            payment_method_type: paymentMethodType,
+                            transfer_bank: transferBank
                         },
                         success: function(response) {
                             Swal.fire({

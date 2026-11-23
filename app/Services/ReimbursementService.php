@@ -162,6 +162,12 @@ class ReimbursementService
                 ->first();
         }
 
+        if ($reimbursement && $reimbursement->f_kas_besar_id) {
+            $reimbursement->kas_besar_number = DB::table('t_kas_besar')
+                ->where('id', $reimbursement->f_kas_besar_id)
+                ->value('transaction_number');
+        }
+
         return $reimbursement;
     }
 
@@ -180,6 +186,7 @@ class ReimbursementService
             $reimbursement = Reimbursement::create($data);
 
             DB::commit();
+
             return $reimbursement;
         } catch (\Exception $e) {
             DB::rollBack();
@@ -212,6 +219,7 @@ class ReimbursementService
             }
 
             DB::commit();
+
             return $reimbursements;
         } catch (\Exception $e) {
             DB::rollBack();
@@ -222,13 +230,13 @@ class ReimbursementService
     /**
      * Approve reimbursement and assign budget category
      */
-    public function approve($id,$budgetEntity, $budgetCategoryId, $reviewerId)
+    public function approve($id, $budgetEntity, $budgetCategoryId, $reviewerId, string $paymentMethodType, ?string $transferBank = null)
     {
         DB::beginTransaction();
         try {
             $reimbursement = $this->findOne($id);
 
-            if (!$reimbursement) {
+            if (! $reimbursement) {
                 throw new \Exception('Reimbursement not found');
             }
 
@@ -236,9 +244,23 @@ class ReimbursementService
                 throw new \Exception('Only pending reimbursements can be approved');
             }
 
+            // Kas / Tunai pays the staff out of Kas Besar on the approval day; a short saldo refuses the approval.
+            $kasBesarId = null;
+            if ($paymentMethodType === 'kas_tunai') {
+                $kasBesarId = app(KasBesarService::class)->record(
+                    'DEDUCTION',
+                    -(float) $reimbursement->amount,
+                    now()->toDateString(),
+                    'Reimbursement: '.$reimbursement->transaction_code
+                )['id'];
+            }
+
             $reimbursement->update([
                 'status' => ReimbursementStatuses::APPROVED,
                 'f_budget_category_id' => $budgetCategoryId,
+                'payment_method_type' => $paymentMethodType,
+                'transfer_bank' => $paymentMethodType === 'transfer' ? $transferBank : null,
+                'f_kas_besar_id' => $kasBesarId,
                 'reviewed_by' => $reviewerId,
                 'reviewed_at' => now(),
                 'rejection_reason' => null,
@@ -258,6 +280,7 @@ class ReimbursementService
             );
 
             DB::commit();
+
             return $reimbursement;
         } catch (\Exception $e) {
             DB::rollBack();
@@ -274,7 +297,7 @@ class ReimbursementService
         try {
             $reimbursement = $this->findOne($id);
 
-            if (!$reimbursement) {
+            if (! $reimbursement) {
                 throw new \Exception('Reimbursement not found');
             }
 
@@ -290,6 +313,7 @@ class ReimbursementService
             ]);
 
             DB::commit();
+
             return $reimbursement;
         } catch (\Exception $e) {
             DB::rollBack();

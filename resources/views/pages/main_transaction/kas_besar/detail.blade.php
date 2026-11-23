@@ -52,6 +52,17 @@
                             </td>
                         </tr>
                         @endif
+                        @if($kasBesar->reimbursement_id)
+                        <tr>
+                            <td class="text-muted">No Reimbursement</td>
+                            <td>
+                                <a href="{{ route('main_transaction.reimbursement_approval.detail', $kasBesar->reimbursement_id) }}"
+                                    class="text-primary fw-semibold">
+                                    {{ $kasBesar->reimbursement_code }}
+                                </a>
+                            </td>
+                        </tr>
+                        @endif
                     </table>
                 </div>
 
