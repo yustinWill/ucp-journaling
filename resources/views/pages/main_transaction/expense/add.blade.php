@@ -18,15 +18,15 @@
 
                 <!-- Row 0: Kas/Transfer Source -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label">Sumber Pembayaran <span class="text-danger">*</span></label>
                         <select id="payment-method-type" name="payment_method_type" class="form-select" required>
                             <option value="">Pilih Sumber Pembayaran</option>
-                            <option value="kas_tunai">Kas / Tunai</option>
+                            <option value="kas_tunai" selected>Kas / Tunai</option>
                             <option value="transfer">Transfer</option>
                         </select>
                     </div>
-                    <div class="col-md-4" id="transfer-bank-wrapper" style="display:none;">
+                    <div class="col-md-6" id="transfer-bank-wrapper" style="display:none;">
                         <label class="form-label">Bank Transfer <span class="text-danger">*</span></label>
                         <select id="transfer-bank" name="transfer_bank" class="form-select">
                             <option value="">Pilih Bank</option>
@@ -35,7 +35,7 @@
                             <option value="BTPN">BTPN</option>
                         </select>
                     </div>
-                    <div class="col-md-4" id="kas-saldo-wrapper" style="display:none;">
+                    <div class="col-md-6" id="kas-saldo-wrapper" style="display:none;">
                         <label class="form-label" id="kas-saldo-label">Saldo Kas Besar</label>
                         <div class="input-group">
                             <span class="input-group-text">Rp</span>
@@ -45,9 +45,9 @@
                     </div>
                 </div>
 
-                <!-- Row 1: Payment Method, Pay Later, Transaction Number -->
+                <!-- Row 1: Payment Method, Transaction Number -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label">Metode Pembayaran <span class="text-danger">*</span></label>
                         <select id="payment-method" name="payment_method" class="global-select2 form-select" required>
                             <option value="">Pilih Metode Pembayaran</option>
@@ -601,8 +601,15 @@
                 if ($('#payment-method-type').val() === 'kas_tunai') loadKasSaldo();
             });
 
+            // Metode Pembayaran follows Sumber (Kas / Tunai -> "Kas…", Transfer -> "Transfer…"); it can still be changed.
+            function matchPaymentMethod(prefix) {
+                const option = $('#payment-method option').filter((i, o) => o.value && o.text.trim().toLowerCase().startsWith(prefix)).first();
+                if (option.length) $('#payment-method').val(option.val()).trigger('change');
+            }
+
             $('#payment-method-type').on('change', function() {
                 const val = $(this).val();
+                if (val) matchPaymentMethod(val === 'transfer' ? 'transfer' : 'kas');
                 if (val === 'transfer') {
                     $('#transfer-bank-wrapper').show();
                     $('#kas-saldo-wrapper').hide();
@@ -618,6 +625,7 @@
                     $('#transfer-bank').prop('required', false).val('');
                 }
             });
+            $('#payment-method-type').trigger('change'); // Kas / Tunai by default
 
             function initializeFormLogic() {
                 // Pay Later checkbox logic
